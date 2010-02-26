@@ -18,5 +18,7 @@
 #pragma link C++ class TUCNParabola;
 #pragma link C++ class TUCNPolynomial;
 #pragma link C++ class TUCNData;
+#pragma link C++ class TUCNMagField;
+#pragma link C++ class TUCNUniformMagField;
 
 #endif

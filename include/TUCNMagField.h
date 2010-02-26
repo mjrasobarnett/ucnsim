@@ -1,0 +1,29 @@
+// TUCNMagField
+// Author: Matthew Raso-Barnett  30/09/2009
+
+#ifndef ROOT_TUCNMagField
+#define ROOT_TUCNMagField
+
+#ifndef ROOT_TNamed
+#include "TNamed.h"
+#endif
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// TUCNMagField - ABC for magnetic field.                                 //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
+class TUCNMagField : public TNamed
+{
+public:
+	TUCNMagField();
+	TUCNMagField(const char *name);
+   virtual ~TUCNMagField();
+   
+   virtual void Field(const Double_t *pos, Double_t *field) = 0;
+   
+   ClassDef(TUCNMagField, 1)              // Abstract base Mag field class
+};
+
+#endif
