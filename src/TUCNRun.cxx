@@ -1657,6 +1657,14 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		cout << "Current PATH: " << path << endl;
 	#endif
 	
+	// -- Check before step is made whether we are in the node we should be in
+	if (gGeoManager->GetCurrentNavigator()->IsSameLocation(particle->Vx(), particle->Vy(),particle->Vz()) == kFALSE) {
+		Error("MakeStep","BEFORE STEP: Particle is not in the correct volume!");
+		cout << "TrackId: " << gGeoManager->GetCurrentTrack()->GetId() << "\t";
+		cout << "Current Volume: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
+		return kFALSE;
+	}
+	
 	#ifdef VERBOSE_MODE	
 		cout << "------------------- START OF STEP ----------------------" << endl;
 		cout << "Initial Steptime (s): " << this->GetStepTime() << endl;
@@ -1810,6 +1818,14 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 				return kFALSE;
 			}
 		}
+	}
+	
+	// -- Check that the current point is where we say it is (ie: in the path we just cd() to)
+	if (gGeoManager->GetCurrentNavigator()->IsSameLocation(particle->Vx(), particle->Vy(),particle->Vz()) == kFALSE) {
+		Error("MakeStep","AFTER STEP: Particle is not in the correct volume!");
+		cout << "TrackId: " << gGeoManager->GetCurrentTrack()->GetId() << "\t";
+		cout << "Current Volume: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
+		return kFALSE;
 	}
 	
 	return kTRUE;
