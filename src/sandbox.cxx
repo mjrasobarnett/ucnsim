@@ -77,7 +77,7 @@ Int_t ucnstandalone() {
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Run Simulation
-	Double_t runTime = 10.*Units::s;
+	Double_t runTime = 10000.*Units::s;
 	Double_t maxStepTime = 1.00*Units::s;
 	Int_t particles = 1000;
 	Double_t V = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->FermiPotential();
@@ -86,7 +86,7 @@ Int_t ucnstandalone() {
 	cout << "V: " << V << "\t" << "f: " << f << endl;
 	
 	for (Int_t runNumber = 0; runNumber < numberOfRuns; runNumber++) {
-		totalEnergy = 0.57*V; //(1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
+		totalEnergy = 0.95*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
 		
 		TUCNRun* run = runManager->GetRun(runNumber);
 		cout << "Run number: " << runNumber << "\t" << "called: " << run->GetName() << endl;
@@ -124,7 +124,7 @@ Int_t ucnstandalone() {
 		cout << "End of run" << endl << endl;
 	}
 	
-	TFile* file = new TFile("runs.root","RECREATE");
+	TFile* file = new TFile("runs-0.95V.root","RECREATE");
 	runManager->WriteToFile(file);
 	
 

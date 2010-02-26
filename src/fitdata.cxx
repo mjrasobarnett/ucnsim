@@ -68,9 +68,9 @@ Int_t main(Int_t argc,Char_t **argv)
 
 	cout << "RunManager: " << runManager << endl;
 	cout << "GeoManager: " << runManager->GetGeoManager() << endl;
-
-/*	///////////////////////////////////////////////////////////////////////////////////////
-	// -- FITTING 
+	
+	///////////////////////////////////////////////////////////////////////////////////////
+/*	// -- FITTING 
 	Int_t nbins = 50;
 	Double_t maxlength = 0.12;
 	
@@ -144,23 +144,24 @@ Int_t main(Int_t argc,Char_t **argv)
 	Histogram3->SetYTitle("Number of Neutrons");
 	Histogram3->Draw("");
 	
-	///////////////////////////////////////////////////////////////////////////////////////
+*/	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Fitting
+	Int_t numberOfRuns = runManager->GetNumberOfRuns();
+	
 	Double_t point_x[numberOfRuns];
 	Double_t point_y[numberOfRuns];	
 	Double_t error_x[numberOfRuns];
 	Double_t error_y[numberOfRuns];
 	
 	
-	TCanvas * histcanvas = new TCanvas("HistCanvas","CollisonsBeforeLoss",20,20,1000,1000);
-//	histcanvas->Divide(5,2);
+	TCanvas * histcanvas = new TCanvas("HistCanvas","CollisonsBeforeLoss",20,20,600,600);
 	for(Int_t i = 0; i < numberOfRuns; i++) {
 		TUCNRun* run = runManager->GetRun(i);
 		
 		histcanvas->cd(i+1);
 		Int_t nbins = 100;
-		Int_t range = 100000;
-*/		
+		Int_t range = 15000;
+		
 /*		switch (i) {
 			case 0:
 				range = 60000;
@@ -181,22 +182,24 @@ Int_t main(Int_t argc,Char_t **argv)
 				range = 20000;
 				break;
 			case 6:
-				range = 15000;
+				range = 20000;
 				break;
 			case 7:
-				range = 15000;
+				range = 20000;
 				break;
 			case 8:
-				range = 12000;
+				range = 15000;
 				break;
 			case 9:
 				range = 10000;
 				break;
 		}
 */		
-/*		TH1F * Histogram = new TH1F("Histogram","Number of collisions before loss", nbins, 0.0, range);
+		TH1F * Histogram = new TH1F("Histogram","Number of collisions before loss", nbins, 0.0, range);
 		TF1 *f1 = new TF1("f1", "expo", range);
 		cout << "Filling Histogram..." << endl;
+		
+		Int_t particles = 1000;
 		
 		for (Int_t j = 0; j < particles; j++) {
 			// Get each Track
@@ -212,7 +215,7 @@ Int_t main(Int_t argc,Char_t **argv)
 		Double_t e2 = f1->GetParError(1);
 		cout <<  "After Fit: " << "\t" << "p1: " << p1 << "\t" << "p2: " << p2 << "\t" << "e1: " << e1 << "\t" << "e2: " << e2 << endl;
 
-		point_x[i] = 0.01;
+		point_x[i] = 0.95;
 		point_y[i] = TMath::Abs(p2)/f;
 		error_x[i] = 0.;
 		error_y[i] = e2/f;
@@ -237,11 +240,10 @@ Int_t main(Int_t argc,Char_t **argv)
 //	Double_t error_x[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
 //	Double_t error_y[13] = {0.00578513*f, 2.97809e-06, 6.76548e-06, 6.31687e-06, 1.91486e-06, 1.00426e-05, 1.03125e-05, 1.1159e-05, 1.42658e-05, 1.58957e-05, 2.26283e-05, 2.96299e-05, 3.39148e-05};
 //	Int_t numberOfRuns = 13;
-
-	for (Int_t i = 0; i < numberOfRuns; i++) {
-		point_y[i] = point_y[i]/f;
-		error_y[i] = error_y[i]/f;
-	}
+//	for (Int_t i = 0; i < numberOfRuns; i++) {
+//		point_y[i] = point_y[i]/f;
+//		error_y[i] = error_y[i]/f;
+//	}
 	
 	TGraphErrors* lossProb = new TGraphErrors(numberOfRuns, point_x, point_y, error_x, error_y);
 	lossProb->SetTitle("TGraphErrors Example");
@@ -255,8 +257,6 @@ Int_t main(Int_t argc,Char_t **argv)
 	lossf->GetYaxis()->SetRangeUser(0.,3.2);
 	lossf->GetXaxis()->SetTitle("E/V");
 	lossf->GetYaxis()->SetTitle("Loss Probability");
-	*/
-	
 	
 	theApp->Run();
 	return 0;
