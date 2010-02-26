@@ -24,15 +24,15 @@ public:
    virtual ~TUCNGeoBBox();
    
    // methods
-   virtual Double_t     TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
-                               Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
-   static  Double_t     TimeFromInsideAlongParabolaS(Double_t* point, Double_t* velocity, Double_t* field,
-                               Double_t dx, Double_t dy, Double_t dz, const Double_t *origin, Double_t stepmax=TGeoShape::Big());
-   virtual Double_t     TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
-                               Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
-   static  Double_t     TimeFromOutsideAlongParabolaS(Double_t* point, Double_t* velocity, Double_t* field,
-                               Double_t dx, Double_t dy, Double_t dz, const Double_t *origin, Double_t stepmax=TGeoShape::Big());
-   static  Bool_t       IsNextPointOnBox(Double_t* point, Double_t* velocity, Double_t* field, Double_t* boundary, Double_t t);
+   virtual Double_t     TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field,
+                               const Double_t stepmax=TGeoShape::Big()) const;
+   static  Double_t     TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field,
+                               const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Double_t stepmax=TGeoShape::Big());
+   virtual Double_t     TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field,
+                               const Double_t stepmax=TGeoShape::Big()) const;
+   static  Double_t     TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field,
+                               const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Double_t stepmax=TGeoShape::Big());
+   static  Bool_t       IsNextPointOnBox(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t* boundary, const Double_t t);
 	
 	ClassDef(TUCNGeoBBox, 1) // UCNGeoBBox
 };

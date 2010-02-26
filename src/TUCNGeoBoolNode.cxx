@@ -600,8 +600,8 @@ void TUCNGeoUnion::Sizeof3D() const
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoUnion::TimeFromOutsideAlongParabola(Double_t* /*point*/, Double_t* /*velocity*/, Double_t* /*field*/,
-                                 Double_t /*stepmax*/, Int_t /*iact*/, Double_t* /*safe*/) const
+Double_t TUCNGeoUnion::TimeFromOutsideAlongParabola(const Double_t* /*point*/, const Double_t* /*velocity*/, const Double_t* /*field*/,
+                                 const Double_t /*stepmax*/) const
 {
 // Compute the time from outside point to this composite shape along parabola.
 // Check if the bounding box is crossed within the requested distance
@@ -610,8 +610,8 @@ Double_t TUCNGeoUnion::TimeFromOutsideAlongParabola(Double_t* /*point*/, Double_
 }   
 
 //_____________________________________________________________________________
-Double_t TUCNGeoUnion::TimeFromInsideAlongParabola(Double_t* /*point*/, Double_t* /*velocity*/, Double_t* /*field*/,
-                                 Double_t /*stepmax*/, Int_t /*iact*/, Double_t* /*safe*/) const
+Double_t TUCNGeoUnion::TimeFromInsideAlongParabola(const Double_t* /*point*/, const Double_t* /*velocity*/, const Double_t* /*field*/,
+                                 const Double_t /*stepmax*/) const
 {
 // Compute time from inside point to outside of this composite shape along parabola.
 	Error("TimeFromInsideAlongParabola","Subtractions have not been implemented yet!");
@@ -913,8 +913,8 @@ void TUCNGeoSubtraction::Sizeof3D() const
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoSubtraction::TimeFromOutsideAlongParabola(Double_t* /*point*/, Double_t* /*velocity*/, Double_t* /*field*/,
-                                 Double_t /*stepmax*/, Int_t /*iact*/, Double_t* /*safe*/) const
+Double_t TUCNGeoSubtraction::TimeFromOutsideAlongParabola(const Double_t* /*point*/, const Double_t* /*velocity*/, const Double_t* /*field*/,
+                                 const Double_t /*stepmax*/) const
 {
 // Compute the time from outside point to this composite shape along parabola.
 // Check if the bounding box is crossed within the requested distance
@@ -923,8 +923,8 @@ Double_t TUCNGeoSubtraction::TimeFromOutsideAlongParabola(Double_t* /*point*/, D
 }   
 
 //_____________________________________________________________________________
-Double_t TUCNGeoSubtraction::TimeFromInsideAlongParabola(Double_t* /*point*/, Double_t* /*velocity*/, Double_t* /*field*/,
-                                 Double_t /*stepmax*/, Int_t /*iact*/, Double_t* /*safe*/) const
+Double_t TUCNGeoSubtraction::TimeFromInsideAlongParabola(const Double_t* /*point*/, const Double_t* /*velocity*/, const Double_t* /*field*/,
+                                 const Double_t /*stepmax*/) const
 {
 // Compute time from inside point to outside of this composite shape along parabola.
 	Error("TimeFromInsideAlongParabola","Subtractions have not been implemented yet!");
@@ -1311,18 +1311,10 @@ void TUCNGeoIntersection::Sizeof3D() const
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoIntersection::TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
-                                 Double_t stepmax, Int_t iact, Double_t *safe) const
+Double_t TUCNGeoIntersection::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax) const
 {
 // Compute the time from outside point to this composite shape along parabola.
 // Check if the bounding box is crossed within the requested distance
-  
-   // Compute the safety distance as a quick check of whether the nearest boundary is close
-   if (iact<3 && safe) {
-      *safe = Safety(point,kFALSE);
-      if (iact==0) return TGeoShape::Big();
-      if (iact==1 && stepmax<*safe) return TGeoShape::Big();
-   }
    
    TUCNGeoBoolNode *node = (TUCNGeoBoolNode*)this;
    Double_t leftPoint[3], rightPoint[3], masterPoint[3], leftVelocity[3], rightVelocity[3], leftField[3], rightField[3];
@@ -1348,11 +1340,11 @@ Double_t TUCNGeoIntersection::TimeFromOutsideAlongParabola(Double_t* point, Doub
    while (1) {
       leftTime = rightTime = 0.0;
       if (!inleft)  {
-         leftTime = static_cast<TUCNGeoBBox*>(fLeft)->TimeFromOutsideAlongParabola(leftPoint,leftVelocity,leftField,stepmax,3,safe);
+         leftTime = static_cast<TUCNGeoBBox*>(fLeft)->TimeFromOutsideAlongParabola(leftPoint,leftVelocity,leftField,stepmax);
          if (leftTime > 1E20) return TGeoShape::Big();
       }
       if (!inright) {  
-         rightTime = static_cast<TUCNGeoBBox*>(fRight)->TimeFromOutsideAlongParabola(rightPoint,rightVelocity,rightField,stepmax,3,safe);
+         rightTime = static_cast<TUCNGeoBBox*>(fRight)->TimeFromOutsideAlongParabola(rightPoint,rightVelocity,rightField,stepmax);
          if (rightTime > 1E20) return TGeoShape::Big();
       }
 
@@ -1390,18 +1382,10 @@ Double_t TUCNGeoIntersection::TimeFromOutsideAlongParabola(Double_t* point, Doub
 }   
 
 //_____________________________________________________________________________
-Double_t TUCNGeoIntersection::TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
-                                 Double_t stepmax, Int_t iact, Double_t *safe) const
+Double_t TUCNGeoIntersection::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax) const
 {
 // -- Compute time from inside point to outside of this composite shape along parabola.
-   
-   // Compute the safety distance as a quick check of whether the nearest boundary is close
-   if (iact<3 && safe) {
-      *safe = Safety(point,kTRUE);
-      if (iact==0) return TGeoShape::Big();
-      if (iact==1 && stepmax<*safe) return TGeoShape::Big();
-   }
-	// Compute the time to each of the shapes involved in the intersection
+  	// Compute the time to each of the shapes involved in the intersection
    TUCNGeoBoolNode *node = (TUCNGeoBoolNode*)this;
    Double_t leftPoint[3], rightPoint[3], leftVelocity[3], rightVelocity[3], leftField[3], rightField[3];
    Double_t leftTime, rightTime, timeFromInside=0.;
@@ -1409,12 +1393,12 @@ Double_t TUCNGeoIntersection::TimeFromInsideAlongParabola(Double_t* point, Doubl
    fLeftMat->MasterToLocal(point, &leftPoint[0]);
    fLeftMat->MasterToLocalVect(velocity, &leftVelocity[0]);
    fLeftMat->MasterToLocalVect(field, &leftField[0]);
-   leftTime = static_cast<TUCNGeoBBox*>(fLeft)->TimeFromInsideAlongParabola(&leftPoint[0], &leftVelocity[0], &leftField[0], stepmax, iact, safe);
+   leftTime = static_cast<TUCNGeoBBox*>(fLeft)->TimeFromInsideAlongParabola(&leftPoint[0], &leftVelocity[0], &leftField[0], stepmax);
    // Calculate the time to the boundary of the shape on the right branch
    fRightMat->MasterToLocal(point, &rightPoint[0]);
    fRightMat->MasterToLocalVect(velocity, &rightVelocity[0]);
    fRightMat->MasterToLocalVect(field, &rightField[0]);
-   rightTime = static_cast<TUCNGeoBBox*>(fRight)->TimeFromInsideAlongParabola(&rightPoint[0], &rightVelocity[0], &rightField[0], stepmax, iact, safe);
+   rightTime = static_cast<TUCNGeoBBox*>(fRight)->TimeFromInsideAlongParabola(&rightPoint[0], &rightVelocity[0], &rightField[0], stepmax);
    // Work out which time is the shortest
    if (leftTime < rightTime) {
       timeFromInside = leftTime;

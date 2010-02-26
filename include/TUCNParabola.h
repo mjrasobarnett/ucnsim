@@ -32,7 +32,7 @@ public:
    
 	static TUCNParabola* 	Instance();
 	
-	virtual Double_t			ArcLength(Double_t* velocity, Double_t* field, Double_t steptime)	const;
+	virtual Double_t			ArcLength(const Double_t* velocity, const Double_t* field, const Double_t steptime)	const;
 	
 	 
    ClassDef(TUCNParabola, 1)          // parabola singleton

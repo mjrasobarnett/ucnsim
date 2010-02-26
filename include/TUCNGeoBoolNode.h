@@ -87,10 +87,8 @@ public:
    virtual void      Sizeof3D() const;
    
    // new methods
-   virtual Double_t     TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
-                                    Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const = 0;
-   virtual Double_t     TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
-                                    Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const = 0;
+   virtual Double_t     TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax=TGeoShape::Big()) const = 0;
+   virtual Double_t     TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax=TGeoShape::Big()) const = 0;
 	
    ClassDef(TUCNGeoBoolNode, 1)              // a boolean node
 };
@@ -132,10 +130,8 @@ public:
    virtual void      Paint(Option_t *option);
 
    // new methods
-   virtual Double_t     TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
-                                    Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
-   virtual Double_t     TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
-                                    Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
+   virtual Double_t     TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax=TGeoShape::Big()) const;
+   virtual Double_t     TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax=TGeoShape::Big()) const;
 
    ClassDef(TUCNGeoUnion, 1)              // union node
 };
@@ -178,10 +174,8 @@ public:
    virtual void      Paint(Option_t *option);
 
    // new methods
-   virtual Double_t     TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
-                                    Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
-   virtual Double_t     TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
-                                    Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
+   virtual Double_t     TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax=TGeoShape::Big()) const;
+   virtual Double_t     TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax=TGeoShape::Big()) const;
 
    ClassDef(TUCNGeoIntersection, 1)              // intersection node
 };
@@ -223,10 +217,8 @@ public:
    virtual void      Paint(Option_t *option);
 
    // new methods
-   virtual Double_t     TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
-                                    Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
-   virtual Double_t     TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
-                                    Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
+   virtual Double_t     TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax=TGeoShape::Big()) const;
+   virtual Double_t     TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax=TGeoShape::Big()) const;
 
    ClassDef(TUCNGeoSubtraction, 1)              // subtraction node
 };

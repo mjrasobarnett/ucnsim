@@ -59,7 +59,7 @@ TUCNParabola *TUCNParabola::Instance()
 }   
 
 //_____________________________________________________________________________
-Double_t TUCNParabola::ArcLength(Double_t* velocity, Double_t* field, Double_t steptime) const
+Double_t TUCNParabola::ArcLength(const Double_t* velocity, const Double_t* field, const Double_t steptime) const
 {
 	// This method takes a parabola and calculates its length for a given period of time. These formulas are worked out completely in my notes
 	

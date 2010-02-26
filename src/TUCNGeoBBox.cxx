@@ -64,7 +64,7 @@ TUCNGeoBBox::~TUCNGeoBBox()
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, Double_t stepmax, Int_t iact, Double_t *safe) const
+Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepmax*/) const
 {
 	// This method calculates the time of all possible intersections of the particle's future path
 	// with all possible boundaries of the current shape.
@@ -77,7 +77,7 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point, Double_t* vel
 	// -- For efficiency calculate the safety distance along straight line to surface.
 	// -- If this distance is greater than the proposed stepmax, then just return Big()
 	// -- This code is from root's DistanceFrom... methods. 
-	Double_t smin,saf[6];
+	Double_t /*smin,*/saf[6];
    Double_t newpt[3];
 
 	// -- Determining minimum distances to all boundaries from point
@@ -89,7 +89,7 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point, Double_t* vel
    saf[4] = fDZ+newpt[2];
    saf[5] = fDZ-newpt[2];
 
-   if (iact<3 && safe) {
+/*   if (iact<3 && safe) {
       smin = saf[0];
       // compute safe distance
       for (Int_t i=1;i<6;i++) if (saf[i] < smin) smin = saf[i];
@@ -98,8 +98,8 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point, Double_t* vel
       if (iact==0) return TGeoShape::Big();
       if (iact==1 && stepmax<*safe) return TGeoShape::Big();
    }
+*/	
 	// ----------------------------------------------------------------------
-	
 	// -- Calculate actual time to boundary
 	Double_t t = 0.; // The smallest time to reach ANY boundary;
 	Double_t boundary[3] = {fDX, fDY, fDZ}; // Store the coordinates of the box boundaries
@@ -196,8 +196,8 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point, Double_t* vel
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoBBox::TimeFromInsideAlongParabolaS(Double_t* point, Double_t* velocity, Double_t* field, 
-																		Double_t dx, Double_t dy, Double_t dz, const Double_t *origin, Double_t /*stepmax*/)
+Double_t TUCNGeoBBox::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, 
+																		const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Double_t /*stepmax*/)
 {
 	// This method calculates the time of all possible intersections of the particle's future
 	// path with all possible boundaries of the current shape.
@@ -308,7 +308,7 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabolaS(Double_t* point, Double_t* ve
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, Double_t stepmax, Int_t iact, Double_t *safe) const
+Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax) const
 {
 	// This method calculates the time of all possible intersections of the particle's future path with all possible boundaries of the current shape.
 	// Method then compares the times found and checks that the corresponding point of intersection with each boundary plane actually corresponds to a point
@@ -339,7 +339,7 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 		if (in && saf[i] > 0) in = kFALSE;				  // 
    }
 
-   if (iact<3 && safe) {  // iact > 3 - compute only the distance to exiting, ignoring anything else
+/*   if (iact<3 && safe) {  // iact > 3 - compute only the distance to exiting, ignoring anything else
       // compute safe distance
       if (in) {
          *safe = 0.0;
@@ -355,24 +355,8 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 		// since it does not cross the shape boundaries. Otherwise, the distance to exiting the shape is 
 		// computed and returned.
    }
-	
-	// protection in case point is actually inside box -- from ROOT's code
-//	Double_t norm = TMath::Sqrt(velocity[0]*velocity[0] + velocity[1]*velocity[1] + velocity[2]*velocity[2]);
-//	Double_t dir[3] = {velocity[0]/norm, velocity[1]/norm, velocity[2]/norm};
-//	Int_t j;
-//   if (in) {
-//      j = 0;
-//      Double_t ss = saf[0];
-//      if (saf[1]>ss) {
-//         ss = saf[1];
-//         j = 1;
-//      }
-//      if (saf[2]>ss) j = 2;
-//      if (newpt[j]*dir[j]>0) return TGeoShape::Big(); // in fact exiting
-//		return 0.0;   
-//   }
+*/
 	// ----------------------------------------------------------------------
-	
 	// -- Compute actual time to reach boundary
 	Double_t tfinal = 0.; // The smallest time to reach any boundary;
 	Double_t boundary[3] = {fDX, fDY, fDZ}; // Store the coordinates of the box boundaries
@@ -473,8 +457,8 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoBBox::TimeFromOutsideAlongParabolaS(Double_t* point, Double_t* velocity, Double_t* field, 
-																		Double_t dx, Double_t dy, Double_t dz, const Double_t *origin, Double_t stepmax) 
+Double_t TUCNGeoBBox::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, 
+																		const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Double_t stepmax) 
 {
 	// This method calculates the time of all possible intersections of the particle's future path
 	// with all possible boundaries of the current shape. Method then compares the times found and
@@ -613,7 +597,7 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabolaS(Double_t* point, Double_t* v
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNGeoBBox::IsNextPointOnBox(Double_t* point, Double_t* velocity, Double_t* field, Double_t* boundary, Double_t t) 
+Bool_t TUCNGeoBBox::IsNextPointOnBox(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t* boundary, const Double_t t) 
 {
 	// Calculate the proposed intersection point given a time, starting point, direction and local field. 
 	// Check that this intersection is actually located on the surface of the box. 

@@ -1060,18 +1060,11 @@ const TBuffer3D & TUCNGeoTube::GetBuffer3D(Int_t reqSections, Bool_t localFrame)
 
 
 //_____________________________________________________________________________
-Double_t TUCNGeoTube::TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, Double_t stepmax, Int_t iact, Double_t *safe) const
+Double_t TUCNGeoTube::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepmax*/) const
 {
 	// Compute time from inside point to surface of the tube
 	#ifdef VERBOSE_MODE				
 		cout << "TimeFromInsideAlongParabola - Start" << endl;
-	#endif
-	if (iact<3 && safe) {
-	   *safe = Safety(point, kTRUE);
-	   if (iact==0) return TGeoShape::Big();
-	   if ((iact==1) && (*safe>stepmax)) return TGeoShape::Big();
-	}
-	#ifdef VERBOSE_MODE				
 		cout << "TimeFromInsideAlongParabola - Calling TimeFromInsideAlongParabolaS" << endl;
 	#endif
 	// compute time to surface
@@ -1079,7 +1072,7 @@ Double_t TUCNGeoTube::TimeFromInsideAlongParabola(Double_t* point, Double_t* vel
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoTube::TimeFromInsideAlongParabolaS(Double_t* point, Double_t* velocity, Double_t* field, Double_t rmin, Double_t rmax, Double_t dz)
+Double_t TUCNGeoTube::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz)
 {
 	// Compute time from inside point to surface of the tube	
 	Double_t tfinal = 0.; // Storage for the overall smallest, non-zero time to the nearest boundary
@@ -1355,21 +1348,14 @@ Double_t TUCNGeoTube::TimeFromInsideAlongParabolaS(Double_t* point, Double_t* ve
 	}	
 }
 
-// -----------------------------------------------------------------------------------------
-Double_t TUCNGeoTube::TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, Double_t stepmax, Int_t iact, Double_t *safe) const
+//_____________________________________________________________________________
+Double_t TUCNGeoTube::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax) const
 {
 	// Compute time from outside point to surface of the tube and safe distance
 	// Boundary safe algorithm.
 	// first localize point w.r.t tube
 	#ifdef VERBOSE_MODE				
 		cout << "TimeFromOutsideAlongParabola - Start" << endl;
-	#endif
-	if (iact<3 && safe) {
-      *safe = Safety(point, kFALSE);
-      if (iact==0) return TGeoShape::Big();
-      if ((iact==1) && (stepmax<=*safe)) return TGeoShape::Big();
-   }
-	#ifdef VERBOSE_MODE				
 		cout << "TimeFromOutsideAlongParabola - Check if Bounding box is within maximum step distance" << endl;
 	#endif
 	// Check if the bounding box is crossed within the requested distance
@@ -1383,8 +1369,8 @@ Double_t TUCNGeoTube::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 	return TimeFromOutsideAlongParabolaS(point, velocity, field, fRmin, fRmax, fDz);
 }
 
-// -----------------------------------------------------------------------------------------
-Double_t TUCNGeoTube::TimeFromOutsideAlongParabolaS(Double_t* point, Double_t* velocity, Double_t* field, Double_t rmin, Double_t rmax, Double_t dz)
+//_____________________________________________________________________________
+Double_t TUCNGeoTube::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz)
 {
 	// Compute time from outside point to the surface of the tube
 	Double_t tfinal = 0.; // Storage for the overall smallest, non-zero time to the nearest boundary
@@ -1671,8 +1657,8 @@ Double_t TUCNGeoTube::TimeFromOutsideAlongParabolaS(Double_t* point, Double_t* v
 	}
 }
 
-// -----------------------------------------------------------------------------------------
-Bool_t TUCNGeoTube::IsNextPointOnTube(Double_t* point, Double_t* velocity, Double_t* field, Double_t radius, const Double_t dz, const Double_t t)
+//_____________________________________________________________________________
+Bool_t TUCNGeoTube::IsNextPointOnTube(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t radius, const Double_t dz, const Double_t t)
 {
 	// Calculate the proposed intersection point given a time, starting point, direction and local field. 
 	// Check that this intersection is actually located on the surface of the tube. 
