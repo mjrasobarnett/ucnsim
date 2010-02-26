@@ -15,6 +15,7 @@
 
 #include "TGeoManager.h"
 #include "TUCNRunManager.h"
+#include "TUCNFieldManager.h"
 #include "TUCNRun.h"
 
 #include "Constants.h"
@@ -22,8 +23,8 @@
 
 using namespace std;
 
-Double_t total_energy = 200*neV;
-Double_t f = 0.000263472;
+const Double_t total_energy = 200*neV;
+
 
 Double_t lossFunc(Double_t* x, Double_t* par);
 Double_t densityf(Double_t* x, Double_t* par);
@@ -32,28 +33,38 @@ void		PlotFinalPositions(TCanvas* canvas, TUCNRunManager* runManager);
 
 Int_t main(Int_t argc,Char_t **argv)
 {
-	// -- Read in File name
-	TString filename;
-	if (argc == 2) {
-		filename = argv[1];
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- Read in Files
+	///////////////////////////////////////////////////////////////////////////////////////
+	TString dataFile, geomFile;
+	if (argc == 3) {
+		geomFile = argv[1];
+		dataFile = argv[2];
 	} else {
 		cerr << "Usage:" << endl;
-		cerr << "fitdata <rundata-filename.root> " << endl;
+		cerr << "fitdata <geom.root> <rundata.root>" << endl;
 		return -1;
 	}
 	
 	// Start 'the app' -- this is so we are able to enter into a ROOT session after the program has run, instead of just quitting. Useful to play with histograms.
 	TRint *theApp = new TRint("FittingApp", &argc, argv);
 	
-	// Read the file into memory
-	cerr << "Reading runs from " << filename << endl;
-	TFile * file = new TFile(filename,"UPDATE");
+	// -- Read the geometry into memory
+	cout << "-------------------------------------------" << endl;
+	cerr << "Reading Geometry from " << geomFile << endl;
+	cout << "-------------------------------------------" << endl;
+	TGeoManager* geoManager = TGeoManager::Import(geomFile);
+	
+	// -- Read the rundata into memory
+	cout << "-------------------------------------------" << endl;
+	cerr << "Reading RunData from " << dataFile << endl;
+	cout << "-------------------------------------------" << endl;
+	TFile * file = new TFile(dataFile, "UPDATE");
 	if ( !file->IsOpen() ) {
-		cerr << "Could not open file " << filename << endl;
+		cerr << "Could not open file " << dataFile << endl;
 		cerr << "Exiting..." << endl;
 		exit(-1);
 	}
-	
 	// Check contents of the file
 	file->ls();	
 	TIter next(file->GetListOfKeys()); 
@@ -61,24 +72,28 @@ Int_t main(Int_t argc,Char_t **argv)
 	while ((key=(TKey*)next())) {
 		printf("key: %s points to an object of class: %s at %i , with cycle number: %i \n", key->GetName(), key->GetClassName(),key->GetSeekKey(),key->GetCycle());
 	}
-	
-	// Get the GeoManager and the RunManager From the File
-	TUCNGeoManager* geoManager = 0;
-	file->GetObject("GeoManager;1", geoManager);
+	cout << "-------------------------------------------" << endl;
+	// Get the FieldManager and the RunManager From the File
 	TUCNRunManager* runManager = 0;
 	file->GetObject("RunManager;1", runManager);
-	file->ls();	
+	TUCNFieldManager* fieldManager = 0;
+	file->GetObject("FieldManager;1", fieldManager);
+	
+	cout << "-------------------------------------------" << endl;
+	cout << "Importing from files completed." << endl;
+	cout << "-------------------------------------------" << endl;
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- FITTING 
+	///////////////////////////////////////////////////////////////////////////////////////
 		
 	// Draw Final Positions 
 	TCanvas * canvas1 = new TCanvas("canvas1", "Final Particle Positions", 800, 10, 600, 600);
 	PlotFinalPositions(canvas1, runManager);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
-/*	// -- FITTING 
-	Int_t nbins = 50;
+	// -- FITTING 
+/*	Int_t nbins = 50;
 	Double_t maxlength = 0.12;
 	
 	// Plot Histogram
@@ -151,97 +166,75 @@ Int_t main(Int_t argc,Char_t **argv)
 	Histogram3->SetYTitle("Number of Neutrons");
 	Histogram3->Draw("");
 	
-*/	///////////////////////////////////////////////////////////////////////////////////////
+*/	
+	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Fitting
-//	void PlotWallLossFunction(TCanvas* canvas, TUCNRunManager* runManager) {
+	
+	//	void PlotWallLossFunction(TCanvas* canvas, TUCNRunManager* runManager) {
 		
-		// First we plot the number of bounces before particle was lost. Fitting this to an exponential gives the lifetime, and hence the probability of loss
-		// averaged over all collisions (which should, for enough particles and uniform distributions..., be the probability of loss averaged over all angles-of-incidence)
-		// Store this value for each energy. 
-		 
-		Int_t numberOfRuns = runManager->NumberOfRuns();
-		Double_t point_x[numberOfRuns], point_y[numberOfRuns], error_x[numberOfRuns], error_y[numberOfRuns];
-		TCanvas* histcanvas = new TCanvas("HistCanvas","CollisonsBeforeLoss",600,20,600,600);
+	// First we plot the number of bounces before particle was lost. Fitting this to an exponential gives the lifetime, and hence the probability of loss
+	// averaged over all collisions (which should, for enough particles and uniform distributions..., be the probability of loss averaged over all angles-of-incidence)
+	// Store this value for each energy. 
+	cout << "-------------------------------------------" << endl;
+	cout << " Plotting Wall-Loss-Probability Function" << endl;
+	cout << "-------------------------------------------" << endl;
+	TCanvas* histcanvas = new TCanvas("HistCanvas","CollisonsBeforeLoss",600,20,600,600);
+	
+	// Begin Fit
+	Int_t numberOfRuns = runManager->NumberOfRuns();
+	static const Double_t V = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->FermiPotential();
+	static const Double_t f = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->Eta();
+	
+	Double_t point_x[numberOfRuns], point_y[numberOfRuns], error_x[numberOfRuns], error_y[numberOfRuns];
+	
+	for(Int_t i = 0; i < numberOfRuns; i++) {
+		// Get Run Parameters
+		TUCNRun* run = runManager->GetRun(i);
+		Int_t particles = run->Particles(); 
+		Double_t totalEnergy = run->TotalEnergy();
 		
-		for(Int_t i = 0; i < numberOfRuns; i++) {
-			histcanvas->cd();
-			TUCNRun* run = runManager->GetRun(i);
-			Int_t nbins = 100;
-			Int_t range = 15000;
-		
-/*			switch (i) {
-				case 0:
-					range = 60000;
-					break;
-				case 1:
-					range = 40000;
-					break;
-				case 2:
-					range = 30000;
-					break;
-				case 3:
-					range = 20000;
-					break;
-				case 4:
-					range = 20000;
-					break;
-				case 5:
-					range = 20000;
-					break;
-				case 6:
-					range = 20000;
-					break;
-				case 7:
-					range = 20000;
-					break;
-				case 8:
-					range = 15000;
-					break;
-				case 9:
-					range = 10000;
-					break;
-			}
-*/		
-			TH1F * Histogram = new TH1F("Histogram","Number of collisions before loss", nbins, 0.0, range);
-			TF1 *f1 = new TF1("f1", "expo", range);
-			cout << "Filling Histogram..." << endl;
-		
-			Int_t particles = 1000;
-		
-			for (Int_t j = 0; j < particles; j++) {
-				// Get each Track
-				TUCNParticle* particle = run->GetParticle(j);
-				Histogram->Fill(particle->Bounces());
-			}
-		
-			Histogram->Fit("f1", "R");
-		
-			Double_t p1 = f1->GetParameter(0);
-			Double_t e1 = f1->GetParError(0);
-			Double_t p2 = f1->GetParameter(1);
-			Double_t e2 = f1->GetParError(1);
-			cout <<  "After Fit: " << "\t" << "p1: " << p1 << "\t" << "p2: " << p2 << "\t" << "e1: " << e1 << "\t" << "e2: " << e2 << endl;
-
-			point_x[i] = 0.95;
-			point_y[i] = TMath::Abs(p2)/f;
-			error_x[i] = 0.;
-			error_y[i] = e2/f;
-
-			cout << "Pointx: " << point_x[i] << "\t" << "Pointy: " << point_y[i] << endl;
-			cout << "Errorx: " << error_x[i] << "\t" << "Errory: " << error_y[i] << endl;
+		Int_t nbins = 100;
+		Int_t range = 20000;
+	
+		histcanvas->cd();
+		TH1F *Histogram = new TH1F("Histogram","Number of collisions before loss", nbins, 0.0, range);
+		TF1 *f1 = new TF1("f1", "expo", range);
+		cout << "Filling Histogram..." << endl;
+	
+		for (Int_t j = 0; j < particles; j++) {
+			// Get each Track
+			TUCNParticle* particle = run->GetParticle(j);
+			Histogram->Fill(particle->Bounces());
 		}
+	
+		Histogram->Fit("f1", "R");
+	
+		Double_t p1 = f1->GetParameter(0);
+		Double_t e1 = f1->GetParError(0);
+		Double_t p2 = f1->GetParameter(1);
+		Double_t e2 = f1->GetParError(1);
+		cout <<  "After Fit: " << "\t" << "p1: " << p1 << "\t" << "p2: " << p2 << "\t" << "e1: " << e1 << "\t" << "e2: " << e2 << endl;
 
-		//	Histogram->Draw();
+		point_x[i] = totalEnergy/V;
+		point_y[i] = TMath::Abs(p2)/f;
+		error_x[i] = 0.;
+		error_y[i] = e2/f;
 
-		TCanvas * histcanvas4 = new TCanvas("HistCanvas4","Loss Function",20,20,600,600);
-		histcanvas4->cd();
-	
-		TF1 *lossf = new TF1("lossf",lossFunc,0.0,1.0,0);
-		lossf->SetRange(0.0, 1.0);
-		lossf->Draw();
-		cout << lossf->Eval(1.,0.,0.,0.) << endl;
-	
-	
+		cout << "Pointx: " << point_x[i] << "\t" << "Pointy: " << point_y[i] << endl;
+		cout << "Errorx: " << error_x[i] << "\t" << "Errory: " << error_y[i] << endl;
+	}
+
+	//	Histogram->Draw();
+
+	TCanvas * histcanvas4 = new TCanvas("HistCanvas4","Loss Function",20,20,600,600);
+	histcanvas4->cd();
+
+	TF1 *lossf = new TF1("lossf",lossFunc,0.0,1.0,0);
+	lossf->SetRange(0.0, 1.0);
+	lossf->Draw();
+	cout << lossf->Eval(1.,0.,0.,0.) << endl;
+
+
 	//	Double_t point_x[13] = {0.01, 0.05, 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,1.0};
 	//	Double_t point_y[13] = {0.134027*f, 7.64717e-05, 0.000111426, 0.000162566, 0.780407*f, 0.000252422, 0.000301221, 0.00034624, 0.000389121, 0.000449889, 0.000510026, 0.000552799, 0.000782759 };	
 	//	Double_t error_x[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -251,19 +244,19 @@ Int_t main(Int_t argc,Char_t **argv)
 	//		point_y[i] = point_y[i]/f;
 	//		error_y[i] = error_y[i]/f;
 	//	}
-	
-		TGraphErrors* lossProb = new TGraphErrors(numberOfRuns, point_x, point_y, error_x, error_y);
-		lossProb->SetTitle("TGraphErrors Example");
-		lossProb->SetMarkerColor(4);
-		lossProb->SetMarkerSize(1);
-		lossProb->SetMarkerStyle(21);
-		lossProb->Draw("PSame");
-	
-	
-		lossf->GetXaxis()->SetRangeUser(0,1);
-		lossf->GetYaxis()->SetRangeUser(0.,3.2);
-		lossf->GetXaxis()->SetTitle("E/V");
-		lossf->GetYaxis()->SetTitle("Loss Probability");
+
+	TGraphErrors* lossProb = new TGraphErrors(numberOfRuns, point_x, point_y, error_x, error_y);
+	lossProb->SetTitle("TGraphErrors Example");
+	lossProb->SetMarkerColor(4);
+	lossProb->SetMarkerSize(1);
+	lossProb->SetMarkerStyle(21);
+	lossProb->Draw("PSame");
+
+
+	lossf->GetXaxis()->SetRangeUser(0,1);
+	lossf->GetYaxis()->SetRangeUser(0.,3.2);
+	lossf->GetXaxis()->SetTitle("E/V");
+	lossf->GetYaxis()->SetTitle("Loss Probability");
 	
 	file->ls(); 
 //	file->Close();
@@ -283,7 +276,7 @@ Double_t densityf(Double_t* x, Double_t* par)
 }
 
 // -------------------------------------------------------------------------------------- 
-Double_t lossFunc(Double_t* x, Double_t* par) {
+Double_t lossFunc(Double_t* x, Double_t* /*par*/) {
 	Double_t value = (2.*((1./x[0])*TMath::ASin(TMath::Sqrt(x[0])) - TMath::Sqrt((1./x[0]) - 1.)));   
 	return value;
 }

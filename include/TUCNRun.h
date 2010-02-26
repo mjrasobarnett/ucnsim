@@ -42,6 +42,11 @@ class TUCNRun : public TNamed
 		
 		void						Initialise(Int_t particles, Double_t totalEnergy, Double_t runTime, Double_t maxStepTime, TUCNGeoManager* geoManager, TUCNGravField* gravField=0);
 		
+		Int_t						Particles() {return fParticles;}
+		Double_t					TotalEnergy() {return fTotalEnergy;}
+		Double_t					RunTime() {return fRunTime;}
+		Double_t					MaxStepTime() {return fMaxStepTime;}
+		
 		void						DrawParticles(TCanvas* canvas, TPolyMarker3D* points);
 		void						DrawTrack(TCanvas* canvas, Int_t trackID);
 		Bool_t 					GenerateMonoEnergeticParticles(TUCNGeoManager* geoManager, TUCNGravField* gravField=0);

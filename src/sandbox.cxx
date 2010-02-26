@@ -96,7 +96,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	
 	
 	for (Int_t runNumber = 0; runNumber < numberOfRuns; runNumber++) {
-		totalEnergy = 0.95*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
+		totalEnergy = 0.5*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
 		
 		TUCNRun* run = runManager->GetRun(runNumber);
 		cout << "Run number: " << runNumber << "\t" << "called: " << run->GetName() << endl;
@@ -119,6 +119,25 @@ Int_t main(Int_t argc,Char_t **argv)
 		
 		cout << "End of run" << endl << endl;
 	}
+	
+	TString outputData = "data/datatestdata.root";
+	cerr << "Writing out data to file: " << outputData << endl;
+	TFile* outputFile = new TFile(outputData,"RECREATE");
+	if ( !outputFile->IsOpen() ) {
+		cerr << "Could not open output file " << endl;
+		cerr << "Exiting..." << endl;
+		exit(-1);
+	}
+	
+	runManager->Write();
+	fieldManager->Write();
+	outputFile->ls();
+	outputFile->Close();
+	
+	TString outputGeom = "data/geom.root";
+	cerr << "Writing out geometry to file: " << outputGeom << endl;
+	gGeoManager->Export(outputGeom);
+	
 	
 //	benchmark.Stop("UCNSim");
 //	benchmark.Show("UCNSim");
