@@ -73,7 +73,7 @@ Bool_t TUCNData::ChecksOut()
 	Int_t initialParticles = this->GetInitialParticlesTree()->GetEntries();
 	Int_t finalParticles = this->GetFinalParticlesTree()->GetEntries();
 	if (initialParticles != finalParticles) {
-		Error("ChecksOut", "Number of initial particle states does not match number of final states!");
+		Error("ChecksOut", "Number of initial particle states: %i, does not match number of final states: %i",initialParticles,finalParticles);
 		return kFALSE;
 	} 
 	Info("ChecksOut","Number of Initial States: %i. Number of Final States: %i.",initialParticles,finalParticles);
@@ -117,7 +117,10 @@ Bool_t TUCNData::AddFinalParticleState(TUCNParticle* particle)
 TGeoTrack* TUCNData::GetTrack(Int_t trackID) {
 	// -- Retrieve the track from the TTree
 	TGeoTrack* track = 0;
-	assert(trackID < this->GetTracksTree()->GetEntries() && trackID >= 0);
+	if (trackID > this->GetTracksTree()->GetEntries() || trackID < 0) {
+		Error("GetTrack","No Entry exists for Track: %i",trackID);
+		return 0;
+	}
 	this->GetTracksTree()->SetBranchAddress("Tracks", &track);
 	this->GetTracksTree()->GetEntry(trackID);
 	assert(track != NULL);
@@ -128,7 +131,10 @@ TGeoTrack* TUCNData::GetTrack(Int_t trackID) {
 TUCNParticle* TUCNData::GetInitialParticleState(Int_t particleID) {
 	// -- Retrieve the particle from the TTree	
 	TUCNParticle* particle = 0;
-	assert(particleID < this->GetInitialParticlesTree()->GetEntries() && particleID >= 0);
+	if (particleID > this->GetInitialParticlesTree()->GetEntries() || particleID < 0) {
+		Error("GetInitialParticleState","No Entry exists for Particle: %i", particleID);
+		return 0;
+	}
 	this->GetInitialParticlesTree()->SetBranchAddress("InitialParticles", &particle);
 	this->GetInitialParticlesTree()->GetEntry(particleID);
 	assert(particle != NULL);
@@ -139,7 +145,10 @@ TUCNParticle* TUCNData::GetInitialParticleState(Int_t particleID) {
 TUCNParticle* TUCNData::GetFinalParticleState(Int_t particleID) {
 	// -- Retrieve the particle from the TTree	
 	TUCNParticle* particle = 0;
-	assert(particleID < this->GetFinalParticlesTree()->GetEntries() && particleID >= 0);
+	if (particleID > this->GetFinalParticlesTree()->GetEntries() || particleID < 0) {
+		Error("GetFinalParticleState","No Entry exists for Particle: %i", particleID);
+		return 0;
+	}
 	this->GetFinalParticlesTree()->SetBranchAddress("FinalParticles", &particle);
 	this->GetFinalParticlesTree()->GetEntry(particleID);
 	assert(particle != NULL);
