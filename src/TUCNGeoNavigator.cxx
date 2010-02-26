@@ -932,13 +932,8 @@ Double_t TUCNGeoNavigator::DetermineNextStepTime(TUCNParticle* particle, const D
 //_____________________________________________________________________________
 void TUCNGeoNavigator::SetStepTime(Double_t stepTime) 
 {
-// 	
-	if (stepTime <= 0.0) {
-		Error("SetStepTime", "StepTime %f , cannot be set to zero or a negative value. StepTime will be set to the default value of 0.01s", stepTime);
-		fStepTime = 0.01*Units::s;
-	} else{
-		fStepTime = stepTime;
-	}
+	assert(stepTime > 0.0);
+	fStepTime = stepTime;
 }
 
 //_____________________________________________________________________________
