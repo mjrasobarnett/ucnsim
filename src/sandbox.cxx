@@ -122,7 +122,7 @@ Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& 
 {
 // -- Create a TPolyMarker3D object to store the final positions of the neutrons and write this to file. 
 	cout << "-------------------------------------------" << endl;
-	cout << "DrawInitialAndFinalPositions" <<  endl;
+	cout << "PlotInitialAndFinalPositions" <<  endl;
 	cout << "-------------------------------------------" << endl;
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Open File
@@ -180,7 +180,7 @@ Bool_t PlotInitialAndFinalAngularDistribution(const TString& dataFileName, const
 {
 // -- Create a Histogram object to store the angular distribution (as in, their initial and final directions about the origin). 
 	cout << "-------------------------------------------" << endl;
-	cout << "DrawInitialAndFinalAngularDistribution" <<  endl;
+	cout << "PlotInitialAndFinalAngularDistribution" <<  endl;
 	cout << "-------------------------------------------" << endl;
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Open File

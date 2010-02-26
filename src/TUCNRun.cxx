@@ -265,6 +265,40 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 		Bool_t propagated = this->PropagateTrack(geoManager, fieldManager);
 		if (!propagated) {
 			lostTracks.push_back(trackid);
+			// Add Final Particle State to data tree
+			this->AddParticle(static_cast<TUCNParticle*>(track->GetParticle()));
+			// Add Track to the data tree
+			this->AddTrack(track);
+			// Update fNeutrons to reflect number of completed particles
+			fNeutrons = trackid + 1; 
+			// Write the current track's points to file for debugging
+			TPolyMarker3D* badTrackPoints = new TPolyMarker3D(track->GetNpoints(), 1); // 1 is marker style
+			TPolyLine3D* badTrack = new TPolyLine3D();
+			for (Int_t i = 0; i < track->GetNpoints(); i++) {
+				const Double_t* point = track->GetPoint(i);
+				badTrackPoints->SetPoint(i, point[0], point[1], point[2]);
+				badTrack->SetPoint(i, point[0], point[1], point[2]);
+			}
+			badTrackPoints->SetMarkerColor(2);
+			badTrackPoints->SetMarkerStyle(7);
+			badTrack->SetLineColor(2);
+			badTrack->SetLineWidth(2);
+			// -- Write the points to the File
+			badTrackPoints->SetName("BadTrackPoints");
+			cout << "-------------------------------------------" << endl;
+			cout << "Track: " << track->GetId() << " has exited errorneously. Writing to file: temp/badtrackpoints.root" << endl;
+			TFile *f = TFile::Open("temp/badtrackpoints.root","recreate");
+			if (!f || f->IsZombie()) {
+			   Error("Propagate","Cannot open file");
+			   return kFALSE;
+			}
+			badTrackPoints->Write();
+			badTrack->Write();
+			f->ls();
+			f->Delete();
+			cout << "Track: " << track->GetId() << " was successfully written to file" << endl;
+			cout << "-------------------------------------------" << endl;
+			// Exit the loop
 			break;
 		}
 		// Add Final Particle State to data tree
