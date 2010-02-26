@@ -32,7 +32,9 @@ Int_t simulation_geom() {
 	TUCNGeoMaterial *matTracking  = new TUCNGeoMaterial("TrackingMaterial",0,0);
 	TUCNGeoMaterial *matBlackHole = new TUCNGeoMaterial("BlackHole",0,0);
 	TUCNGeoMaterial *matBoundary  = new TUCNGeoMaterial("BoundaryMaterial",0,0);
+	TUCNGeoMaterial *matDetector  = new TUCNGeoMaterial("DetectorMaterial",0,0);
 	
+   matDetector->IsDetectorMaterial(kTRUE);
 	matTracking->IsTrackingMaterial(kTRUE);
 	matBlackHole->IsBlackHole(kTRUE);
 	
@@ -40,6 +42,7 @@ Int_t simulation_geom() {
 	TGeoMedium *vacuum = new TGeoMedium("Vacuum",1, matTracking);
 	TGeoMedium *blackHole = new TGeoMedium("BlackHole",2, matBlackHole);
 	TGeoMedium *boundary = new TGeoMedium("Boundary",3, matBoundary);
+	TGeoMedium *detectorMedium = new TGeoMedium("DetectorMedium",3, matDetector);
 	
 	// -------------------------------------
 	// -- Making Top Volume
@@ -242,8 +245,8 @@ Int_t simulation_geom() {
 	Double_t detectorTubeTopXDisplacement = (bendRMin + bendRMax)/2.0 + detectorValveVolHalfX;
 	Double_t detectorTubeTopZDisplacement = 2.0*bendEntranceHalfZ + (bendRMin + bendRMax)/2.0 
 															+ detectorValveVolHalfZ + detectorTubeTopHalfLength;
-	TGeoRotation detectorTubeTopRot("ValveVolBackRot",0,detectorTubeTopAngle,0); // phi, theta, psi
-	TGeoTranslation detectorTubeTopTra("ValveVolBackTra",
+	TGeoRotation detectorTubeTopRot("DetectorTubeTopRot",0,detectorTubeTopAngle,0); // phi, theta, psi
+	TGeoTranslation detectorTubeTopTra("DetectorTubeTopTra",
 											-detectorTubeTopXDisplacement,detectorTubeTopYDisplacement,-detectorTubeTopZDisplacement); // x, y, z
 	TGeoCombiTrans detectorTubeTopCom(detectorTubeTopTra,detectorTubeTopRot);
 	TGeoHMatrix detectorTubeTopMat = detectorTubeTopCom;
@@ -251,7 +254,7 @@ Int_t simulation_geom() {
 	chamber->AddNode(detectorTubeTop, 1, new TGeoHMatrix(detectorTubeTopMat));
 	
 	// -------------------------------------
-	// -- DetectorTubeTop - Entrance into the detector tube
+	// -- DetectorTube
 	Double_t detectorTubeRMin = 0., detectorTubeRMax = 27.85*Units::mm, detectorTubeHalfLength = 250.75*Units::mm;
 	TGeoVolume *detectorTube = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("DetectorTube", 
 												vacuum, detectorTubeRMin, detectorTubeRMax, detectorTubeHalfLength);
@@ -266,15 +269,38 @@ Int_t simulation_geom() {
 	Double_t detectorTubeXDisplacement = (bendRMin + bendRMax)/2.0 + detectorValveVolHalfX;
 	Double_t detectorTubeZDisplacement = 2.0*bendEntranceHalfZ + (bendRMin + bendRMax)/2.0 
 															+ detectorValveVolHalfZ + 2.0*detectorTubeTopHalfLength + detectorTubeHalfLength;
-	TGeoRotation detectorTubeRot("ValveVolBackRot",0,detectorTubeAngle,0); // phi, theta, psi
-	TGeoTranslation detectorTubeTra("ValveVolBackTra",
+	TGeoRotation detectorTubeRot("DetectorTubeRot",0,detectorTubeAngle,0); // phi, theta, psi
+	TGeoTranslation detectorTubeTra("DetectorTubeTra",
 											-detectorTubeXDisplacement,detectorTubeYDisplacement,-detectorTubeZDisplacement); // x, y, z
 	TGeoCombiTrans detectorTubeCom(detectorTubeTra,detectorTubeRot);
 	TGeoHMatrix detectorTubeMat = detectorTubeCom;
 	
 	chamber->AddNode(detectorTube, 1, new TGeoHMatrix(detectorTubeMat));
-	// -------------------------------------
 	
+	// -------------------------------------
+	// -- Detector
+	Double_t detectorRMin = 0., detectorRMax = 27.85*Units::mm, detectorHalfLength = 5.*Units::mm;
+	TGeoVolume *detector = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("Detector", 
+												detectorMedium, detectorRMin, detectorRMax, detectorHalfLength);
+	detector->SetLineColor(kGray+3);
+	detector->SetLineWidth(1);
+	detector->SetVisibility(kTRUE);
+	detector->SetTransparency(0);
+	// -- Define the Valve volume back
+	Double_t detectorAngle = 0.0;
+	Double_t detectorYDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + 
+													2.0*valveVolFrontHalfLength + valveVolBackHalfLength;
+	Double_t detectorXDisplacement = (bendRMin + bendRMax)/2.0 + detectorValveVolHalfX;
+	Double_t detectorZDisplacement = 2.0*bendEntranceHalfZ + (bendRMin + bendRMax)/2.0 + detectorValveVolHalfZ +
+                                    2.0*detectorTubeTopHalfLength + 2.0*detectorTubeHalfLength + detectorHalfLength;
+	TGeoRotation detectorRot("DetectorRot",0,detectorTubeAngle,0); // phi, theta, psi
+	TGeoTranslation detectorTra("DetectorTra",
+											-detectorXDisplacement,detectorYDisplacement,-detectorZDisplacement); // x, y, z
+	TGeoCombiTrans detectorCom(detectorTra,detectorRot);
+	TGeoHMatrix detectorMat = detectorCom;
+	
+	chamber->AddNode(detector, 1, new TGeoHMatrix(detectorMat));
+	// -------------------------------------
 	
 	geoManager->CloseGeometry();
 	
@@ -303,7 +329,9 @@ Int_t visualisation_geom() {
 	TUCNGeoMaterial *matTracking  = new TUCNGeoMaterial("TrackingMaterial",0,0);
 	TUCNGeoMaterial *matBlackHole = new TUCNGeoMaterial("BlackHole",0,0);
 	TUCNGeoMaterial *matBoundary  = new TUCNGeoMaterial("BoundaryMaterial",0,0);
+	TUCNGeoMaterial *matDetector  = new TUCNGeoMaterial("DetectorMaterial",0,0);
 	
+   matDetector->IsDetectorMaterial(kTRUE);
 	matTracking->IsTrackingMaterial(kTRUE);
 	matBlackHole->IsBlackHole(kTRUE);
 	
@@ -311,6 +339,7 @@ Int_t visualisation_geom() {
 	TGeoMedium *vacuum = new TGeoMedium("Vacuum",1, matTracking);
 	TGeoMedium *blackHole = new TGeoMedium("BlackHole",2, matBlackHole);
 	TGeoMedium *boundary = new TGeoMedium("Boundary",3, matBoundary);
+	TGeoMedium *detectorMedium = new TGeoMedium("DetectorMedium",3, matDetector);
 	
 	// -------------------------------------
 	// -- Making Top Volume
@@ -513,8 +542,8 @@ Int_t visualisation_geom() {
 	Double_t detectorTubeTopXDisplacement = (bendRMin + bendRMax)/2.0 + detectorValveVolHalfX;
 	Double_t detectorTubeTopZDisplacement = 2.0*bendEntranceHalfZ + (bendRMin + bendRMax)/2.0 
 															+ detectorValveVolHalfZ + detectorTubeTopHalfLength;
-	TGeoRotation detectorTubeTopRot("ValveVolBackRot",0,detectorTubeTopAngle,0); // phi, theta, psi
-	TGeoTranslation detectorTubeTopTra("ValveVolBackTra",
+	TGeoRotation detectorTubeTopRot("DetectorTubeTopRot",0,detectorTubeTopAngle,0); // phi, theta, psi
+	TGeoTranslation detectorTubeTopTra("DetectorTubeTopTra",
 											-detectorTubeTopXDisplacement,detectorTubeTopYDisplacement,-detectorTubeTopZDisplacement); // x, y, z
 	TGeoCombiTrans detectorTubeTopCom(detectorTubeTopTra,detectorTubeTopRot);
 	TGeoHMatrix detectorTubeTopMat = detectorTubeTopCom;
@@ -522,7 +551,7 @@ Int_t visualisation_geom() {
 	chamber->AddNode(detectorTubeTop, 1, new TGeoHMatrix(detectorTubeTopMat));
 	
 	// -------------------------------------
-	// -- DetectorTubeTop - Entrance into the detector tube
+	// -- DetectorTube
 	Double_t detectorTubeRMin = 0., detectorTubeRMax = 27.85*Units::mm, detectorTubeHalfLength = 250.75*Units::mm;
 	TGeoVolume *detectorTube = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("DetectorTube", 
 												vacuum, detectorTubeRMin, detectorTubeRMax, detectorTubeHalfLength);
@@ -537,13 +566,38 @@ Int_t visualisation_geom() {
 	Double_t detectorTubeXDisplacement = (bendRMin + bendRMax)/2.0 + detectorValveVolHalfX;
 	Double_t detectorTubeZDisplacement = 2.0*bendEntranceHalfZ + (bendRMin + bendRMax)/2.0 
 															+ detectorValveVolHalfZ + 2.0*detectorTubeTopHalfLength + detectorTubeHalfLength;
-	TGeoRotation detectorTubeRot("ValveVolBackRot",0,detectorTubeAngle,0); // phi, theta, psi
-	TGeoTranslation detectorTubeTra("ValveVolBackTra",
+	TGeoRotation detectorTubeRot("DetectorTubeRot",0,detectorTubeAngle,0); // phi, theta, psi
+	TGeoTranslation detectorTubeTra("DetectorTubeTra",
 											-detectorTubeXDisplacement,detectorTubeYDisplacement,-detectorTubeZDisplacement); // x, y, z
 	TGeoCombiTrans detectorTubeCom(detectorTubeTra,detectorTubeRot);
 	TGeoHMatrix detectorTubeMat = detectorTubeCom;
 	
 	chamber->AddNode(detectorTube, 1, new TGeoHMatrix(detectorTubeMat));
+	
+	// -------------------------------------
+	// -- Detector
+	Double_t detectorRMin = 0., detectorRMax = 27.85*Units::mm, detectorHalfLength = 5.*Units::mm;
+	TGeoVolume *detector = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("Detector", 
+												detectorMedium, detectorRMin, detectorRMax, detectorHalfLength);
+	detector->SetLineColor(kGray+3);
+	detector->SetLineWidth(1);
+	detector->SetVisibility(kTRUE);
+	detector->SetTransparency(0);
+	// -- Define the Valve volume back
+	Double_t detectorAngle = 0.0;
+	Double_t detectorYDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + 
+													2.0*valveVolFrontHalfLength + valveVolBackHalfLength;
+	Double_t detectorXDisplacement = (bendRMin + bendRMax)/2.0 + detectorValveVolHalfX;
+	Double_t detectorZDisplacement = 2.0*bendEntranceHalfZ + (bendRMin + bendRMax)/2.0 + detectorValveVolHalfZ +
+                                    2.0*detectorTubeTopHalfLength + 2.0*detectorTubeHalfLength + detectorHalfLength;
+	TGeoRotation detectorRot("DetectorRot",0,detectorTubeAngle,0); // phi, theta, psi
+	TGeoTranslation detectorTra("DetectorTra",
+											-detectorXDisplacement,detectorYDisplacement,-detectorZDisplacement); // x, y, z
+	TGeoCombiTrans detectorCom(detectorTra,detectorRot);
+	TGeoHMatrix detectorMat = detectorCom;
+	
+	chamber->AddNode(detector, 1, new TGeoHMatrix(detectorMat));
+
 	// -------------------------------------
 	// -- Close Geometry
 	geoManager->CloseGeometry();
@@ -552,7 +606,7 @@ Int_t visualisation_geom() {
 	// -- Draw the geometry in OpenGLViewer
 	TCanvas* canvas = new TCanvas("GeomCanvas","Canvas for visualisation of EDM Geom",60,40,600,600);
 	canvas->cd();
-	geoManager->SetVisLevel(3); // Default draws 4 levels down volume heirarchy
+	geoManager->SetVisLevel(4); // Default draws 4 levels down volume heirarchy
 	geoManager->SetVisOption(0); // Default is 1, but 0 draws all the intermediate volumes not just the final bottom layer
 	geoManager->GetTopVolume()->Draw("ogl");
 	
@@ -563,7 +617,7 @@ Int_t visualisation_geom() {
 	glViewer->SetStyle(TGLRnrCtx::kFill); // TGLRnrCtx::kFill, TGLRnrCtx::kOutline, TGLRnrCtx::kWireFrame
 
 	// -- Set Background colour
-	glViewer->SetClearColor(TColor::kBlack);
+	glViewer->SetClearColor(TColor::kWhite);
 
 	// -- Set Lights - turn some off if you wish
 //	TGLLightSet* lightSet = glViewer->GetLightSet();
