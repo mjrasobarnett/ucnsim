@@ -38,8 +38,6 @@ using std::runtime_error;
 ClassImp(TUCNGeoNavigator)
 
 const Double_t 	TUCNGeoNavigator::fgTolerance;
-const Int_t 		TUCNGeoNavigator::fgMaxSteps;
-
 //_____________________________________________________________________________
 TUCNGeoNavigator::TUCNGeoNavigator()
               	  :TGeoNavigator()
@@ -53,7 +51,6 @@ TUCNGeoNavigator::TUCNGeoNavigator()
 	fUCNIsStepExiting = kFALSE;
 	fUCNIsOutside = kFALSE;
 	fUCNIsOnBoundary = kFALSE;
-	fDiffuseCoefficient = 0.0;
 	for (Int_t i=0; i<3; i++) {
 		fUCNNormal[i] = 0.;
 	}
@@ -71,7 +68,6 @@ TUCNGeoNavigator::TUCNGeoNavigator(TGeoManager* geom)
 	fUCNIsStepExiting = kFALSE;
 	fUCNIsOutside = kFALSE;
 	fUCNIsOnBoundary = kFALSE;
-	fDiffuseCoefficient = 0.0;
 	for (Int_t i=0; i<3; i++) {
 		fUCNNormal[i] = 0.;
 	}
@@ -85,8 +81,7 @@ TUCNGeoNavigator::TUCNGeoNavigator(const TUCNGeoNavigator& gn)
 						fUCNIsStepEntering(gn.fUCNIsStepEntering),
 	               fUCNIsStepExiting(gn.fUCNIsStepExiting),
 						fUCNIsOutside(gn.fUCNIsOutside),
-						fUCNIsOnBoundary(gn.fUCNIsOnBoundary),
-						fDiffuseCoefficient(gn.fDiffuseCoefficient)
+						fUCNIsOnBoundary(gn.fUCNIsOnBoundary)
 {
 // Copy constructor.
 	Info("TUCNGeoNavigator", "Copy Constructor");
@@ -107,7 +102,6 @@ TUCNGeoNavigator& TUCNGeoNavigator::operator=(const TUCNGeoNavigator& gn)
 		fUCNIsStepExiting = gn.fUCNIsStepExiting;
 		fUCNIsOutside = gn.fUCNIsOutside;
 		fUCNIsOnBoundary = gn.fUCNIsOnBoundary;
-		fDiffuseCoefficient = gn.fDiffuseCoefficient;
 		for (Int_t i=0; i<3; i++) {
 			fUCNNormal[i] = gn.fUCNNormal[i];
 		}
