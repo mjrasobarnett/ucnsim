@@ -119,9 +119,6 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 	cout << "-------------------------------------------" << endl;
 	cout << "Initialising: " << this->GetName() << endl;
 	cout << "-------------------------------------------" << endl;
-	// Reset the Navigator
-	gGeoManager->GetCurrentNavigator()->ResetAll();
-	
 	// Store the run parameters
 	// - Number of particles
 	fNeutrons = configFile->GetInt("Neutrons", this->GetName());
@@ -130,7 +127,7 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 	// Get the initial energy in units of (neV)
 	Double_t totalEnergyneV = configFile->GetFloat("InitialEnergy(neV)", this->GetName())*Units::neV;
 	// Get the initial energy in units of the FermiPotential of the boundary
-	Double_t V = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->FermiPotential();
+	Double_t V = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->FermiPotential(); // !!!! This is ugly and unsafe. Need a work around.
 	Double_t totalEnergyVFermi = configFile->GetFloat("InitialEnergy(VFermi)", this->GetName())*V;
 	if (totalEnergyneV != 0.0) {
 		fTotalEnergy = totalEnergyneV;
@@ -158,21 +155,23 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::Propagate(TUCNFieldManager* fieldManager)
+Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManager)
 {
 // -- Propagate all tracks stored in the GeoManager for a set period of time
-	Int_t numberOfTracks = gGeoManager->GetNtracks();
+	Int_t numberOfTracks = geoManager->GetNtracks();
 	// Container to store Ids of lost tracks;
 	vector<Int_t> lostTracks;
 
 	for (Int_t trackid = 0; trackid < numberOfTracks; trackid++) {
 		// Get Track from list
-		TVirtualGeoTrack* track = gGeoManager->GetTrack(trackid);
-		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+		TVirtualGeoTrack* track = geoManager->GetTrack(trackid);
+		// Set Current Track
+		geoManager->SetCurrentTrack(track);
 		// Propagate track
-		Bool_t propagated = this->PropagateTrack(track, fieldManager);
+		Bool_t propagated = this->PropagateTrack(geoManager, fieldManager);
 		if (!propagated) lostTracks.push_back(trackid);
 		// Add Track to data tree
+		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
 		fData->AddParticle(particle);
 //		fData->AddTrack(track);
 		// Reset Track to release memory
@@ -199,19 +198,20 @@ Bool_t TUCNRun::Propagate(TUCNFieldManager* fieldManager)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::PropagateTrack(TVirtualGeoTrack* track, TUCNFieldManager* fieldManager)
+Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldManager)
 {
 	// Propagate track through geometry until it is either stopped or the runTime has been reached
 	// Track passed MUST REFERENCE A TUCNPARTICLE as its particle type. UNITS:: runTime, stepTime in Seconds
 	
+	TVirtualGeoTrack* track = geoManager->GetCurrentTrack();
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-	TUCNGeoNavigator* navigator = static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator());
+	TUCNGeoNavigator* navigator = static_cast<TUCNGeoNavigator*>(geoManager->GetCurrentNavigator());
+	assert(track != NULL && particle != NULL && navigator != NULL);
 	
 	// -- 1. Initialise Track
-	// Set Current Track -- needed by fData
-	gGeoManager->SetCurrentTrack(track);
+	
 	// Initialise track - Sets navigator's current point/direction/node to that of the particle
-	gGeoManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
+	geoManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
 		particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
 	
 		#ifdef VERBOSE_MODE				

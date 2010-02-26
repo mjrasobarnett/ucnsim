@@ -322,7 +322,9 @@ Bool_t TUCNExperiment::ClearTracks()
 	// Why aren't ROOT TParticles owned by the track anyway!!??
 	cout << "-------------------------------------------" << endl;
 	cout << "Cleaning up all Tracks and Particles from the current Run." << endl;
-	// -- First Delete all the TParticles stored by the tracks
+	// -- First Reset the Navigator to wipe current Node etc...
+	this->GeoManager()->GetCurrentNavigator()->ResetAll();	
+	// -- Delete all the TParticles stored by the tracks
 	for (Int_t trackID = 0; trackID < this->GeoManager()->GetNtracks(); trackID++) {
 		TObject* particle = this->GeoManager()->GetTrack(trackID)->GetParticle();
 		if (particle != NULL) {delete particle; particle = 0;}
@@ -559,7 +561,8 @@ Bool_t TUCNExperiment::Run()
 		Char_t name[10], title[20];
 		sprintf(name,"Run%d",runNumber); 
 		sprintf(title,"Run no:%d",runNumber);
-		cout << endl << endl << "-------------------------------------------" << endl;
+		cout << endl << endl;
+		cout << "-------------------------------------------" << endl;
 		cout << "Creating New Run, Name: " << name << " Title: " << title << endl;
 		cout << "-------------------------------------------" << endl;
 		TUCNRun theRun(name, title);
@@ -577,7 +580,10 @@ Bool_t TUCNExperiment::Run()
 		}
 		
 		// Propagate the Run
-		
+		if (!(theRun.Propagate(this->GeoManager(), this->FieldManager()))) {
+			Fatal("Run","Run: &s failed to Propagate Correctly", theRun.GetName());
+			return kFALSE;
+		}
 		
 		// Write the Run data to outputFile
 		if (!(theRun.Export(outputFile))) {

@@ -59,8 +59,8 @@ class TUCNRun : public TNamed
 		TVirtualGeoTrack*		GetTrack(Int_t trackID);
 		TUCNParticle*			GetParticle(Int_t particleID);
 		
-		Bool_t					Propagate(TUCNFieldManager* fieldManager);
-		Bool_t 					PropagateTrack(TVirtualGeoTrack* track, TUCNFieldManager* fieldManager);
+		Bool_t					Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManager);
+		Bool_t 					PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldManager);
 		
 		Bool_t					Export(TString& outputFile);
 		
