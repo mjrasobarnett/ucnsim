@@ -71,7 +71,7 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(const Double_t* point, const D
 	// Method then compares the times found and returns the smallest, non-zero value. 
 	
 	#ifdef VERBOSE_MODE		
-		cout << "TimeFromInsideAlongParabola - iact: " << iact << "\t" << "stepmax: " << stepmax << endl;
+		cout << "TUCNGeoBBox::TimeFromInsideAlongParabola " << endl;
 	#endif
 	// ----------------------------------------------------------------------
 	// -- For efficiency calculate the safety distance along straight line to surface.
@@ -315,7 +315,7 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(const Double_t* point, const 
 	// on the box. From these valid solutions, the method	returns the smallest, non-zero value.
 	
 	#ifdef VERBOSE_MODE		
-		cout << "TimeFromOutsideAlongParabola - iact: " << iact << "\t" << "stepmax: " << stepmax << endl;
+		cout << "TUCNGeoBBox::TimeFromOutsideAlongParabola" << endl;
 	#endif
 	// ----------------------------------------------------------------------
 	// -- For efficiency calculate the safety distance along straight line to surface. If this distance is greater than the proposed stepmax, then just return Big()

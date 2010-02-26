@@ -1064,7 +1064,7 @@ Double_t TUCNGeoTube::TimeFromInsideAlongParabola(const Double_t* point, const D
 {
 	// Compute time from inside point to surface of the tube
 	#ifdef VERBOSE_MODE				
-		cout << "TimeFromInsideAlongParabola - Start" << endl;
+		cout << "TUCNGeoTube::TimeFromInsideAlongParabola" << endl;
 		cout << "TimeFromInsideAlongParabola - Calling TimeFromInsideAlongParabolaS" << endl;
 	#endif
 	// compute time to surface
@@ -1355,7 +1355,7 @@ Double_t TUCNGeoTube::TimeFromOutsideAlongParabola(const Double_t* point, const 
 	// Boundary safe algorithm.
 	// first localize point w.r.t tube
 	#ifdef VERBOSE_MODE				
-		cout << "TimeFromOutsideAlongParabola - Start" << endl;
+		cout << "TUCNGeoTube::TimeFromOutsideAlongParabola" << endl;
 		cout << "TimeFromOutsideAlongParabola - Check if Bounding box is within maximum step distance" << endl;
 	#endif
 	// Check if the bounding box is crossed within the requested distance
