@@ -1416,13 +1416,21 @@ Double_t TUCNGeoIntersection::TimeFromInsideAlongParabola(const Double_t* point,
    Info("TimeFromInsideAlongParabola","Finding Time from Inside to Left Node, %s.",fLeft->GetName());
 	leftTime = static_cast<TUCNGeoBBox*>(fLeft)->TimeFromInsideAlongParabola(&leftPoint[0], &leftVelocity[0], &leftField[0], stepTime, onBoundary);
    Info("TimeFromInsideAlongParabola","Time from Inside to Left Node, %s: %f",fLeft->GetName(),leftTime);
+	if (leftTime <= 0.0) {
+		Error("TimeFromInsideAlongParabola", "No boundary of left Node was hit from inside");
+		return 0.0;
+	}
 	// Calculate the time to the boundary of the shape on the right branch
    fRightMat->MasterToLocal(point, &rightPoint[0]);
    fRightMat->MasterToLocalVect(velocity, &rightVelocity[0]);
    fRightMat->MasterToLocalVect(field, &rightField[0]);
    Info("TimeFromInsideAlongParabola","Finding Time from Inside to Right Node, %s.",fRight->GetName());
    rightTime = static_cast<TUCNGeoBBox*>(fRight)->TimeFromInsideAlongParabola(&rightPoint[0], &rightVelocity[0], &rightField[0], stepTime, onBoundary);
-   Info("TimeFromInsideAlongParabola","Time from Inside to Right Node, %s: %f",fRight->GetName(),rightTime);
+   if (rightTime <= 0.0) {
+		Error("TimeFromInsideAlongParabola", "No boundary of right Node was hit from inside");
+		return 0.0;
+	}
+	Info("TimeFromInsideAlongParabola","Time from Inside to Right Node, %s: %f",fRight->GetName(),rightTime);
 	// Work out which time is the shortest
    if (leftTime < rightTime) {
       Info("TimeFromInsideAlongParabola","LeftTime < RightTime");
