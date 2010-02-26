@@ -133,20 +133,23 @@ Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& 
 	   return 0;
 	}
 	// -- Extract Run Object
+	cout << "Fetching run: " << runName << endl;
 	TUCNRun* run = new TUCNRun();
    file->GetObject(static_cast<const char*>(runName), run);
 	if (run == NULL) {
 		cerr << "Could not find run: " << runName << endl;
 		return kFALSE;
 	}
+	cout << "Successfully Loaded Run: " << runName << endl;
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Create the initial points
 	TPolyMarker3D* initialPoints = new TPolyMarker3D(run->Neutrons(), 1); // 1 is marker style
 	for (Int_t i = 0; i < run->Neutrons(); i++) {
 		TUCNParticle* particle = run->GetInitialParticle(i);
-		assert(particle != NULL);
+		if (particle == NULL) continue;
 		initialPoints->SetPoint(i, particle->Vx(), particle->Vy(), particle->Vz());
 	}
+	cout << "Created Initial Points" << endl;
 	initialPoints->SetMarkerColor(2);
 	initialPoints->SetMarkerStyle(6);
 	// -- Write the points to the File
@@ -157,9 +160,10 @@ Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& 
 	TPolyMarker3D* finalPoints = new TPolyMarker3D(run->Neutrons(), 1); // 1 is marker style
 	for (Int_t i = 0; i < run->Neutrons(); i++) {
 		TUCNParticle* particle = run->GetParticle(i);
-		assert(particle != NULL);
+		if (particle == NULL) continue;
 		finalPoints->SetPoint(i, particle->Vx(), particle->Vy(), particle->Vz());
 	}
+	cout << "Created Final Points" << endl;
 	finalPoints->SetMarkerColor(2);
 	finalPoints->SetMarkerStyle(6);
 	// -- Write the points to the File
@@ -209,7 +213,9 @@ Bool_t PlotInitialAndFinalAngularDistribution(const TString& dataFileName, const
 	
 	for (Int_t i = 0; i < run->Neutrons(); i++) {
 		TUCNParticle* initialParticle = run->GetInitialParticle(i);
+		if (initialParticle == NULL) continue;
 		TUCNParticle* finalParticle = run->GetParticle(i);
+		if (finalParticle == NULL) continue;
 		initialThetaHist->Fill(initialParticle->Theta()/TMath::Pi());
 		initialPhiHist->Fill(initialParticle->Phi()/TMath::Pi());
 		finalThetaHist->Fill(finalParticle->Theta()/TMath::Pi());
