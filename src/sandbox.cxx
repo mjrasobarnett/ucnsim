@@ -59,7 +59,6 @@ Int_t ucnstandalone() {
 	gSystem->Load("libUCN");
 #endif
 	
-	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Geometry Creation
 	
@@ -119,9 +118,6 @@ Int_t ucnstandalone() {
 		
 	// -- Arrange and close geometry
    geoManager->CloseGeometry();
-	geoManager->GetTopVolume()->Draw();
-	geoManager->SetVisLevel(4);
-	geoManager->SetVisOption(0);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Run Simulation
@@ -131,7 +127,7 @@ Int_t ucnstandalone() {
 	// -- Load / Define the parameters of the Run
 	Double_t runTime = 10.*Units::s;
 	Double_t maxStepTime = 1.00*Units::s;
-	Int_t particles = 10000;
+	Int_t particles = 10;
 	Double_t totalEnergy = 200*Units::neV;
 	
 	// Generating mono-energetic particles inside the source volume
@@ -150,23 +146,27 @@ Int_t ucnstandalone() {
 	cout << "Number Decayed: " << geoManager->GetNumberDecayed() << endl;
 	cout << "-------------------------------------------" << endl;
 	
+	// -- Write out data to file
+	// Warning - introducing TFile here is causing program to crash on exit. Needs closer examination before we do this.
+	///////////////////////////////////////////////////////////////////////////////////////
+/*	// -- Create a file to store the tracks
+	TFile* file = new TFile("tracks_test.root","RECREATE");
+	if ( file->IsOpen() ) {
+		cerr << "Opened tracks.root" << endl;
+	}
+	else {
+		cerr << "Could not open tracks.root" << endl;
+		return 1;
+	}
+	runManager->WriteOutData(file); 
+*/
+	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// Draw Final Positions 
-	
-	geoManager->GetTopVolume()->Draw();
-	geoManager->SetVisLevel(4);
-	geoManager->SetVisOption(0);
-	
-	TPolyMarker3D FinalPoints(particles, 1);
-	for (Int_t id = 0; id < particles; id++) {
-		// Get each Track
-		TVirtualGeoTrack* track = geoManager->GetTrack(id);
-		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-		FinalPoints.SetPoint(id, particle->Vx(), particle->Vy(), particle->Vz());
-	}
-	FinalPoints.SetMarkerColor(2);
-	FinalPoints.SetMarkerStyle(6);
-	FinalPoints.Draw();
+		
+	TCanvas * canvas1 = new TCanvas("canvas1", "Final Particle Positions", 800, 10, 600, 600);
+	TPolyMarker3D* finalPoints = new TPolyMarker3D(geoManager->GetNtracks(), 1);
+	runManager->DrawParticles(canvas1, finalPoints);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- FITTING 
@@ -228,6 +228,7 @@ Int_t ucnstandalone() {
 		theApp->Run();
 	#endif
 	///////////////////////////////////////////////////////////////////////////////////////
+	runManager->Delete();
 	
 	return 0;
 }

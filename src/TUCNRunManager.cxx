@@ -46,15 +46,15 @@ TUCNRunManager::TUCNRunManager()
 	navigator = NULL;
 	
 	// Create the data object
-//	fData = new TUCNData("ucndata", "ucndata");
+	fData = new TUCNData("ucndata", "ucndata");
 	
 } 
 
 //_____________________________________________________________________________
 TUCNRunManager::TUCNRunManager(const TUCNRunManager& runm)
 					:TNamed(runm),
-					 fManager(runm.fManager)
-//					 fData(runm.fData)
+					 fManager(runm.fManager),
+					 fData(runm.fData)
 {
 // -- Copy Constructor
 	Info("TUCNRunManager", "Copy Constructor");
@@ -67,7 +67,7 @@ TUCNRunManager& TUCNRunManager::operator=(const TUCNRunManager& runm)
 	if(this!=&runm) {
       TNamed::operator=(runm);
 		fManager = runm.fManager;
-//		fData = runm.fData;
+		fData = runm.fData;
 		
 	}
    return *this;
@@ -78,8 +78,8 @@ TUCNRunManager::~TUCNRunManager()
 { 
 // -- Destructor
 	Info("TUCNRunManager", "Destructor");
-//	fManager->Delete();
-//	fData->Delete();
+	fManager->Delete();
+	fData->Delete();
 }
 
 // -- METHODS --
@@ -266,11 +266,10 @@ Bool_t TUCNRunManager::PropagateAllTracks(Double_t runTime, Double_t maxStepTime
 		Bool_t propagated = static_cast<TUCNGeoNavigator*>(fManager->GetCurrentNavigator())->PropagateTrack(track, runTime, maxStepTime);
 		if (!propagated) lostTracks.push_back(trackid);
 		// Add Track to data tree
-//		fData->AddParticle(particle);
+		fData->AddParticle(particle);
 //		fData->AddTrack(track);
 		// Reset Track to release memory
 		track->ResetTrack();
-//		cout << "test" << trackid << endl;
 	}
 	
 	if (lostTracks.size() != 0) {
@@ -304,7 +303,7 @@ Bool_t TUCNRunManager::PropagateAllTracks(Int_t steps, Double_t maxStepTime)
 		Bool_t propagated = static_cast<TUCNGeoNavigator*>(fManager->GetCurrentNavigator())->PropagateTrack(track, steps, maxStepTime);
 		if (!propagated) lostTracks.push_back(trackid);
 		// Add Track to data tree
-//		fData->AddParticle(particle);
+		fData->AddParticle(particle);
 		// Reset Track to release memory
 		track->ResetTrack();
 	}
@@ -337,7 +336,7 @@ Bool_t TUCNRunManager::PropagateTrack(Double_t runTime, Double_t maxStepTime, In
 	// Propagate track
 	static_cast<TUCNGeoNavigator*>(fManager->GetCurrentNavigator())->PropagateTrack(track, runTime, maxStepTime);
 	// Add Track to data tree
-//	fData->AddParticle(particle);
+	fData->AddParticle(particle);
 	// Reset Track to free memory
 	track->ResetTrack();
 	
@@ -362,38 +361,40 @@ Bool_t TUCNRunManager::PropagateTrack(Int_t steps, Double_t maxStepTime, Int_t t
 	// Propagate track
 	static_cast<TUCNGeoNavigator*>(fManager->GetCurrentNavigator())->PropagateTrack(track, steps, maxStepTime);
 	// Add Track to data tree
-//	fData->AddParticle(particle);
+	fData->AddParticle(particle);
 	// Reset Track to free memory
 	track->ResetTrack();
 	
 	return kTRUE;
 }
 
-/*//_____________________________________________________________________________
+//_____________________________________________________________________________
 void TUCNRunManager::DrawParticles(TCanvas* canvas, TPolyMarker3D* points)
 {
-	canvas->Draw();
-	
 	// -- Draw Volumes
-	fManager->GetTopVolume()->Draw("ogl");
+	canvas->Draw();
+	fManager->GetTopVolume()->Draw();
 	fManager->SetVisLevel(4);
 	fManager->SetVisOption(0);
 	
 	// -- Number of particles
-	Int_t particles = fManager->GetNtracks();
+	Int_t particles = fData->GetTracks()->GetEntries();
+	cout << "Particles: " << particles << endl;
 	
 	// -- Draw Particles
 	for (Int_t i = 0; i < particles; i++) {
-		TUCNParticle* particle = static_cast<TUCNParticle*>(this->GetTrack(i)->GetParticle());
+		TUCNParticle* particle = this->GetParticle(i);
+		assert(particle != NULL);
 		points->SetPoint(i, particle->Vx(), particle->Vy(), particle->Vz());
 	}
+	
 	points->SetMarkerColor(2);
 	points->SetMarkerStyle(6);
 	points->Draw();
 }
 
 //_____________________________________________________________________________
-void	TUCNRunManager::DrawTrack(TCanvas* canvas, TVirtualGeoTrack* track)
+void	TUCNRunManager::DrawTrack(TCanvas* canvas, Int_t trackID)
 {
 	canvas->Draw();
 	// -- Draw Volumes
@@ -401,8 +402,11 @@ void	TUCNRunManager::DrawTrack(TCanvas* canvas, TVirtualGeoTrack* track)
 	fManager->SetVisLevel(4);
 	fManager->SetVisOption(0);
 	// -- Draw Track
+	TGeoTrack* track = this->GetTrack(trackID);
+	assert(track != NULL);
 	track->Draw();
 }
+
 
 //_____________________________________________________________________________
 void	TUCNRunManager::WriteOutData(TFile* file)
@@ -423,4 +427,13 @@ TGeoTrack* TUCNRunManager::GetTrack(Int_t trackID)
 	return track;
 }
 
-*/
+//_____________________________________________________________________________
+TUCNParticle* TUCNRunManager::GetParticle(Int_t particleID)
+{
+	TUCNParticle* particle = 0;
+	assert(particleID < fData->GetTracks()->GetEntries() && particleID >= 0);
+	fData->GetTracks()->SetBranchAddress("Particles", &particle);
+	fData->GetTracks()->GetEntry(particleID);
+	return particle;
+}
+
