@@ -1485,7 +1485,8 @@ Double_t TUCNGeoTube::TimeFromOutsideAlongParabolaS(Double_t* point, Double_t* v
 			if (c == 0.0) {
 				order = 1;
 				if (d == 0.0) {
-					// No solution - no intersection is possible (i.e: particle has no horizontal momentum and field is aligned along local z-axis?)
+					// No solution - no intersection is possible 
+					// (i.e: particle has no horizontal momentum and field is aligned along local z-axis? So will only hit top or bottom)
 					order = 0;
 				}
 			}
