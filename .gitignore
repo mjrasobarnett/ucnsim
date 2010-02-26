@@ -1,2 +1,5 @@
 .svn
 *.o
+*.so
+bin/*
+UCNDict.*
