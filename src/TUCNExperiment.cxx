@@ -50,14 +50,6 @@ TUCNExperiment::TUCNExperiment()
 {
 // -- Default constructor
    Info("TUCNExperiment", "Dummy Constructor");
-	// Create the GeoManager
-	new TGeoManager("GeoManager", "The Geometry Manager");
-	// Create the UCNNavigator and initialise in the UCNManager
-	// This must be done so that the manager defaults to our navigator. Otherwise it will create a new defualt navigator
-	// that is not of type UCNNavigator.
-	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(this->GeoManager());
-	Int_t navigatorIndex = this->GeoManager()->AddNavigator(navigator);
-	this->GeoManager()->SetCurrentNavigator(navigatorIndex);
 	// Initialise remaining data members
 	fConfigFile = 0;
 	fFieldManager = 0;
@@ -72,14 +64,6 @@ TUCNExperiment::TUCNExperiment(std::string configFileName)
 {
 // -- Default constructor
    Info("TUCNExperiment", "Constructor");
-	// Create the GeoManager
-	new TGeoManager("GeoManager", "The Geometry Manager");
-	// Create the UCNNavigator and initialise in the UCNManager
-	// This must be done so that the manager defaults to our navigator. Otherwise it will create a new defualt navigator
-	// that is not of type UCNNavigator.
-	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(this->GeoManager());
-	Int_t navigatorIndex = this->GeoManager()->AddNavigator(navigator);
-	this->GeoManager()->SetCurrentNavigator(navigatorIndex);
 	// Initialise remaining data members
 	fConfigFile = new TUCNConfigFile(configFileName);
 	fFieldManager = new TUCNFieldManager();
@@ -122,8 +106,8 @@ TUCNExperiment::~TUCNExperiment()
 // -- Destructor
 	Info("TUCNExperiment", "Destructor");
 	if (fConfigFile) delete fConfigFile;
-	if (gGeoManager) delete gGeoManager;
 	if (fFieldManager) delete fFieldManager;
+	if (gGeoManager) delete gGeoManager;
 }
 
 // -- METHODS --
@@ -472,6 +456,14 @@ Bool_t TUCNExperiment::Initialise()
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Geometry Creation
 	///////////////////////////////////////////////////////////////////////////////////////
+	// Create the GeoManager
+	new TGeoManager("GeoManager", "The Geometry Manager");
+	// Create the UCNNavigator and initialise in the UCNManager
+	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(this->GeoManager());
+	Int_t navigatorIndex = this->GeoManager()->AddNavigator(navigator);
+	this->GeoManager()->SetCurrentNavigator(navigatorIndex);
+	// This must be done so that the manager defaults to our navigator. Otherwise it will create a new defualt navigator
+	// that is not of type UCNNavigator.
 	cout << "-------------------------------------------" << endl;
 	cout << "Building Geometry..." << endl;
 	cout << "-------------------------------------------" << endl;	
@@ -568,10 +560,10 @@ Bool_t TUCNExperiment::Run()
 		}
 		
 		// Tidy up
-		if (!(this->ClearTracks())) {
-			Error("Run","Could not clean up current tracks/particles completely.");
-			return kFALSE;
-		}
+	//	if (!(this->ClearTracks())) {
+	//		Error("Run","Could not clean up current tracks/particles completely.");
+	//		return kFALSE;
+	//	}
 	}
 	
 	return kTRUE;

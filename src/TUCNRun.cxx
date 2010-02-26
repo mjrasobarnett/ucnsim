@@ -175,7 +175,7 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 		fData->AddParticle(particle);
 //		fData->AddTrack(track);
 		// Reset Track to release memory
-		track->ResetTrack();
+//		track->ResetTrack();
 	}
 	
 	if (lostTracks.size() != 0) {
@@ -238,9 +238,10 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 		navigator->DetermineNextStepTime(particle, fMaxStepTime, fRunTime);
 		
 		// -- Make a step
-		Bool_t stepSuccess = navigator->MakeStep(track, fieldManager);
-		assert(stepSuccess == kTRUE);
-		
+		if (!(navigator->MakeStep(track, fieldManager))) {
+			Error("PropagateTrack","Error in Step. Step Failed to complete.");
+			return kFALSE;	
+		} 
 		// -- Determine Particle destination
 		// Has lost flag been set?
 		if (particle->LostToBoundary() == kTRUE) {
@@ -262,7 +263,6 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 	}	
 	// -- END OF PROPAGATION LOOP
 //	Double_t avgField = particle->AvgMagField();
-	
 //	cout << "FINAL STATUS: " << "Track: " << track->GetId() << "\t" << "Steps taken: " << stepNumber << "\t";
 //	cout << "Time: " << particle->T() << "s" << "\t" << "Final Medium: " << navigator->GetCurrentNode()->GetMedium()->GetName() << "\t";
 //	cout << "Bounces: " << particle->Bounces() << "\t" << "Diffuse: " << particle->DiffuseBounces() << "\t" << "Specular: " << particle->SpecularBounces() << endl;
@@ -281,7 +281,6 @@ void TUCNRun::DrawParticles(TCanvas* canvas, TPolyMarker3D* points)
 	
 	// -- Number of particles
 	Int_t particles = fData->GetTracks()->GetEntries();
-	cout << "Particles: " << particles << endl;
 	
 	// -- Draw Particles
 	for (Int_t i = 0; i < particles; i++) {

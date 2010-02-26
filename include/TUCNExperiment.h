@@ -29,7 +29,6 @@ protected:
 	TUCNFieldManager*			FieldManager() const {return fFieldManager;}
 	// Runs
 	Int_t							fNumberOfRuns;
-	Int_t							NumberOfRuns() const {return fNumberOfRuns;}
 	// Source Volume/Matrix
 	Int_t 						fSourceVolumeIndex;
 	Int_t							fSourceMatrixIndex;
@@ -62,6 +61,9 @@ public:
 	Bool_t					Initialise();
 	Bool_t					Run();
 	Bool_t					Export();
+	
+	Int_t						NumberOfRuns() const {return fNumberOfRuns;}
+	
 	
    ClassDef(TUCNExperiment, 1)      
 };
