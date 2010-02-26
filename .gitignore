@@ -4,7 +4,7 @@
 bin/*
 UCNDict.*
 *.txt
-*.root
+data/oldformat/*
 *.log
 *.aux
 *.gz
