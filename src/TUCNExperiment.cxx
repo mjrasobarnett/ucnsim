@@ -50,7 +50,6 @@ TUCNExperiment::TUCNExperiment()
 // -- Default constructor
    Info("TUCNExperiment", "Dummy Constructor");
 	fConfigFile = 0;
-	fGeoManager = 0;
 	fFieldManager = 0;
 	fNumberOfRuns = 0;
 	fSourceVolumeIndex = 0;
@@ -63,8 +62,8 @@ TUCNExperiment::TUCNExperiment(std::string configFileName)
 {
 // -- Default constructor
    Info("TUCNExperiment", "Constructor");
+	new TGeoManager("GeoManager", "The Geometry Manager");
 	fConfigFile = new TUCNConfigFile(configFileName);
-	fGeoManager = new TGeoManager("GeoManager", "The Geometry Manager");
 	fFieldManager = new TUCNFieldManager();
 	fNumberOfRuns = 0;
 	fSourceVolumeIndex = 0;
@@ -75,7 +74,6 @@ TUCNExperiment::TUCNExperiment(std::string configFileName)
 TUCNExperiment::TUCNExperiment(const TUCNExperiment& other)
 					:TNamed(other),
 					 fConfigFile(other.fConfigFile),
-					 fGeoManager(other.fGeoManager),
 					 fFieldManager(other.fFieldManager),
 					 fNumberOfRuns(other.fNumberOfRuns),
 					 fSourceVolumeIndex(other.fSourceVolumeIndex),
@@ -92,7 +90,6 @@ TUCNExperiment& TUCNExperiment::operator=(const TUCNExperiment& other)
 	if(this!=&other) {
       TNamed::operator=(other);
 		fConfigFile = other.fConfigFile;
-		fGeoManager = other.fGeoManager;
 		fFieldManager = other.fFieldManager;
 		fNumberOfRuns = other.fNumberOfRuns;
 		fSourceVolumeIndex = other.fSourceVolumeIndex;
@@ -107,7 +104,7 @@ TUCNExperiment::~TUCNExperiment()
 // -- Destructor
 	Info("TUCNExperiment", "Destructor");
 	if (fConfigFile) delete fConfigFile;
-	if (fGeoManager) delete fGeoManager;
+	if (gGeoManager) delete gGeoManager;
 	if (fFieldManager) delete fFieldManager;
 }
 

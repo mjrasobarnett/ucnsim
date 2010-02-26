@@ -23,8 +23,7 @@ protected:
 	TUCNConfigFile*			fConfigFile;
 	TUCNConfigFile*			ConfigFile() const {return fConfigFile;}
 	// GeoManager
-	TGeoManager*				fGeoManager;
-	TGeoManager*				GeoManager() const {return fGeoManager;}
+	TGeoManager*				GeoManager() const {return gGeoManager;}
 	// FieldManager
 	TUCNFieldManager*			fFieldManager;
 	TUCNFieldManager*			FieldManager() const {return fFieldManager;}
