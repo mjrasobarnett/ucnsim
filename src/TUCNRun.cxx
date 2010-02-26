@@ -349,7 +349,7 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 		
 		// -- Make a step
 		if (!(this->MakeStep(track, gravField, magField))) {
-			Error("PropagateTrack","Error in Step. Step Failed to complete.");
+			Error("PropagateTrack","Error in Step Number %i. Step Failed to complete.", stepNumber);
 			return kFALSE;	
 		} 
 		// -- Determine Particle destination
@@ -501,7 +501,10 @@ Double_t* TUCNRun::FindUCNNormal()
 // Computes fast normal to next crossed boundary, assuming that the current point
 // is close enough to the boundary. Works only after calling FindNextBoundaryAndStepAlongParabola.
 // This method must be used exclusively instead of TGeoNavigator::FindNormal when gravity is present.
-	if (fUCNNextNode == NULL) return 0;
+	if (fUCNNextNode == NULL) {
+		Error("FindUCNNormal","No next node set");
+		return 0;
+	}
    Double_t local[3];
    Double_t ldir[3];
    Double_t lnorm[3];
