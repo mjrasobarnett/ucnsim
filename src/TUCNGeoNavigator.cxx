@@ -1135,7 +1135,8 @@ Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track, const Double_t* normal,
 		
 	// -- Calculate Probability of diffuse reflection
 	Double_t fermiPotential = wallMaterial->FermiPotential();
-	Double_t diffuseProbability = ucnparticle->DiffuseProbability(fDiffuseCoefficient, normal, fermiPotential);
+	Double_t diffuseCoefficient = wallMaterial->RoughnessCoeff();
+	Double_t diffuseProbability = ucnparticle->DiffuseProbability(diffuseCoefficient, normal, fermiPotential);
 	
 	// Determine Reflection Type 
 	Double_t prob = gRandom->Uniform(0.0,1.0);
