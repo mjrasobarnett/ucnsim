@@ -233,9 +233,9 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* co
 	geoManager->SetTopVolume(chamber);
 	
 	// -- Make a GeoTube object via the UCNGeoManager
-	Double_t rMin = 0.0, rMax = 1.1, length = 2.1;
-	Double_t innerR = rMax - 0.1;
-	Double_t innerLength = length - 0.1; 
+	Double_t rMin = 0.0, rMax = 0.236, length = 0.121;
+	Double_t innerR = rMax - 0.001;
+	Double_t innerLength = length - 0.001; 
 	TGeoVolume* tube = this->MakeUCNTube("tube",boundary, rMin, rMax, length/2.);
 	TGeoVolume* innerTube = this->MakeUCNTube("innerTube",vacuum, rMin, innerR, innerLength/2.);
 	

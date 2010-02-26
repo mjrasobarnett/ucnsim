@@ -38,21 +38,28 @@
 
 using std::vector;
 
-Double_t gTotalEnergy = 0.0*Units::neV;
+Double_t gTotalEnergy = 0.0*Units::neV; // Global required by the densityf function. Value defined by DrawNeutronHeightDist...
 
 Bool_t DrawInitialAndFinalPositions(const char* fileName, TGeoManager* geoManager);
 Bool_t DrawInitialAndFinalDirections(const char* fileName, TGeoManager* geoManager); 
 Bool_t DrawNeutronHeightDistribution(const char* fileName);
-Double_t densityf(Double_t* x, Double_t* par); 
+Bool_t DrawLossFunction(const char* fileName);
+
+Double_t densityf(Double_t* x, Double_t* par);
+Double_t lossFunc(Double_t* x, Double_t* par);
+ 
 
 Int_t buildtest_plot(const char* fileName) {
 	
 	// -- Import Geometry
-	TGeoManager* geoManager = TGeoManager::Import(fileName);
+	TGeoManager* geoManager = TGeoManager::Import(fileName); 
+	// Needs to be imported first because we draw the volumes in certain histograms from it, so we do not want it
+	// deleted in each function. 
 	
 	DrawInitialAndFinalPositions(fileName, geoManager);
 	DrawInitialAndFinalDirections(fileName, geoManager);
 	DrawNeutronHeightDistribution(fileName);
+	DrawLossFunction(fileName);
 	
 	return 0;
 }
@@ -215,6 +222,40 @@ Bool_t DrawNeutronHeightDistribution(const char* fileName)
 	residuals->SetTitle("Residuals");
 	residuals->Draw("AC*");
 	
+	// Clean up
+	delete run;
+		
+	return kTRUE;
+}
+
+// -------------------------------------------------------------------------------------- 
+Bool_t DrawLossFunction(const char* fileName)
+{
+// -- Function reads in the Loss Function Graph from file and fits it to the analytical expression	
+	// -- Open File
+	TFile *file = 0;
+	file = TFile::Open(fileName, "read");
+	if (!file || file->IsZombie()) {
+	   cerr << "Cannot open file: " << fileName << endl;
+	   return 0;
+	}
+	// -- Extract LossFunctionGraph
+	const char* graphName = "LossProbGraph;1";
+	TGraphErrors* graph = new TGraphErrors();
+   file->GetObject(graphName, graph);
+	if (graph == NULL) {
+		cerr << "Could not find required graph: " << graphName << endl;
+		return kFALSE;
+	}
+	
+	// -- Draw analytic curve
+	TCanvas* canvas = new TCanvas("LossProbabilityCanvas","Loss Probability as a function of Energy",60,0,600,600);
+	canvas->cd();
+	TF1* analyticCurve = new TF1("AnalyticLossFunc",lossFunc,0.0,1.0,0);
+	analyticCurve->Draw();
+	// -- Draw the loss graph data on top
+	graph->Draw("PSame");
+	
 	return kTRUE;
 }
 
@@ -226,3 +267,10 @@ Double_t densityf(Double_t* x, Double_t* par)
 	assert(value >= 0.0);
 	return par[0]*sqrt(value);
 }
+
+// -------------------------------------------------------------------------------------- 
+Double_t lossFunc(Double_t* x, Double_t* /*par*/) {
+	Double_t value = (2.*((1./x[0])*TMath::ASin(TMath::Sqrt(x[0])) - TMath::Sqrt((1./x[0]) - 1.)));   
+	return value;
+}
+

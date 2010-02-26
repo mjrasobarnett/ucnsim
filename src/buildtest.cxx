@@ -96,15 +96,6 @@ Int_t main(Int_t argc,Char_t ** argv)
 		return EXIT_FAILURE;
 	}
 	
-/*	TCanvas canvas("canvas","canvas",60,0,800,800);
-	canvas.Divide(2,2);
-	for (Int_t i = 0; i < 4; i++) {
-		canvas.cd(i+1);
-		gGeoManager->GetTopVolume()->Draw();
-		gGeoManager->GetTrack(i)->Draw();
-	}	
-	theApp->Run();
-*/	
 	cout << endl << endl << "END OF SIMULATION" << endl << endl << endl;
 	delete experiment;		
 	
@@ -352,6 +343,11 @@ Bool_t PlotLossFunction(const TString& dataFileName)
 	Int_t numberOfRuns = 9; // We must ensure that only runs 2-10 are for losses //experiment->NumberOfRuns();
 	static const Double_t V = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->FermiPotential();
 	static const Double_t eta = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->Eta();
+//	if (eta == 0.0 || V == 0.0) {
+//		cerr << "V or Eta are read to be zero from geoManager stored in File - Exiting" << endl;
+//		return kFALSE;
+//	}
+	
 	Double_t point_x[numberOfRuns], point_y[numberOfRuns], error_x[numberOfRuns], error_y[numberOfRuns];
 		
 	for (Int_t runNumber = 2; runNumber <= 10; runNumber++) {
@@ -373,41 +369,44 @@ Bool_t PlotLossFunction(const TString& dataFileName)
 		Int_t nbins = 100;
 		Int_t range = 100000;
 		// -- Fill Histogram
-		TH1F *histogram = new TH1F("CollisionsBeforeLost","Number of collisions before loss", nbins, 0.0, range);
+		
+		TCanvas canvas;
+		canvas.cd();
+		TH1F histogram("CollisionsBeforeLost","Number of collisions before loss", nbins, 0.0, range);
 		for (Int_t i = 0; i < particles; i++) {
 			// Get each Track
 			TUCNParticle* particle = run->GetParticle(i);
-			histogram->Fill(particle->Bounces());
+			histogram.Fill(particle->Bounces());
 		}
 		// -- Fit to exponential
-		TF1 *expntl = new TF1("expntl", "expo", range);
-		histogram->Fit("expntl", "R");
+		TF1 expntl("expntl", "expo", range);
+		histogram.Fit("expntl", "R");
 //		Double_t p1 = expntl->GetParameter(0);
 //		Double_t e1 = expntl->GetParError(0);
-		Double_t lossParameter = expntl->GetParameter(1);
-		Double_t error = expntl->GetParError(1);
+		Double_t lossParameter = expntl.GetParameter(1);
+		Double_t error = expntl.GetParError(1);
 		
 		// -- Fill array with fitted neutron lifetime for each run
-		point_x[runNumber] = totalEnergy/V; // Total energy of the neutrons in units of the fermi potential V
-		point_y[runNumber] = TMath::Abs(lossParameter)/eta; // Loss probability in units of f, averaged over all angles of incidence.
-		error_x[runNumber] = 0.;
-		error_y[runNumber] = error/eta; // Error on the loss probability
+		point_x[runNumber-2] = totalEnergy/V; // Total energy of the neutrons in units of the fermi potential V
+		point_y[runNumber-2] = TMath::Abs(lossParameter)/eta; // Loss probability in units of f, averaged over all angles of incidence.
+		error_x[runNumber-2] = 0.;
+		error_y[runNumber-2] = error/eta; // Error on the loss probability
+		
+		cout << point_x[runNumber] << "\t" << point_y[runNumber] << "\t" << error_x[runNumber] << "\t" << error_y[runNumber] << endl;
 		
 		delete run; run = 0;
-		delete histogram; histogram = 0;
-		delete expntl; expntl = 0;
 	}
 	
 	// -- Plot the angle averaged loss probabilities for each energy
 	TGraphErrors* lossProb = new TGraphErrors(numberOfRuns, point_x, point_y, error_x, error_y);
-	lossProb->SetTitle("Angle-averaged loss probability of monochromatic UCN as a function of the total initial energy");
+	lossProb->SetName("LossProbGraph");
+	lossProb->SetTitle("Angle-averaged loss probability");
 	lossProb->SetMarkerColor(4);
 	lossProb->SetMarkerSize(1);
 	lossProb->SetMarkerStyle(21);
 	
 	// -- Write to file
 	lossProb->Write();
-	file->ls();
 	// Clean up
 	delete lossProb;
 	delete file;
