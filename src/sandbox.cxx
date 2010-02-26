@@ -162,9 +162,9 @@ void BuildGeometry(TUCNGeoManager* geoManager)
 	TGeoMedium* boundary = new TGeoMedium("Boundary",3, matBoundary);
 	
 	// -- Making Top Volume
- 	TGeoVolume* chamber = geoManager->MakeUCNBox("TOP",blackHole,20,20,20);
-	geoManager->SetTopVolume(chamber);
-				
+	TGeoVolume* chamber = geoManager->MakeUCNBox("TOP",blackHole,20,20,20);
+	gGeoManager->SetTopVolume(chamber);
+	
 	// -- Make a GeoTube object via the UCNGeoManager
 	Double_t rMin = 0.0, rMax = 0.236, length = 0.121; 
 	TGeoVolume* tube   = geoManager->MakeUCNTube("tube",boundary, rMin, rMax, length/2.);
@@ -194,5 +194,5 @@ void BuildGeometry(TUCNGeoManager* geoManager)
 	geoManager->SetSourceMatrix(matrix);
 	
 	// -- Arrange and close geometry
-   geoManager->CloseGeometry();
+   gGeoManager->CloseGeometry();
 }

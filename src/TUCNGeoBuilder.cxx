@@ -6,7 +6,6 @@
 #include "TGeoVolume.h"
 #include "TGeoBuilder.h"
 
-#include "TUCNGeoManager.h"
 #include "TUCNGeoBBox.h"
 #include "TUCNGeoTube.h"
 
@@ -24,7 +23,6 @@ TUCNGeoBuilder::TUCNGeoBuilder()
 // Default constructor.
    Info("TUCNGeoBuilder", "Constructor");
 	fgUCNInstance = this;
-	fUCNGeometry = NULL;
 } 
 
 //_____________________________________________________________________________
@@ -54,7 +52,7 @@ TUCNGeoBuilder &TUCNGeoBuilder::operator=(const TUCNGeoBuilder&)
 
 
 //_____________________________________________________________________________
-TUCNGeoBuilder *TUCNGeoBuilder::UCNInstance(TUCNGeoManager *geom) 
+TUCNGeoBuilder *TUCNGeoBuilder::UCNInstance(TGeoManager *geom) 
 {
 // Return pointer to singleton.
    if (!geom) {
@@ -62,7 +60,6 @@ TUCNGeoBuilder *TUCNGeoBuilder::UCNInstance(TUCNGeoManager *geom)
       return NULL;
    }   
    if (!fgUCNInstance) fgUCNInstance = new TUCNGeoBuilder();
-	fgUCNInstance->SetUCNGeometry(geom);
 	return fgUCNInstance;
 }   
 
@@ -73,7 +70,7 @@ TGeoVolume* TUCNGeoBuilder::MakeUCNBox(const char *name, TGeoMedium *medium, Dou
    TUCNGeoBBox *box = new TUCNGeoBBox(name, dx, dy, dz);
    TGeoVolume *vol = 0;
    if (box->IsRunTimeShape()) {
-      vol = fUCNGeometry->MakeVolumeMulti(name, medium);
+      vol = gGeoManager->MakeVolumeMulti(name, medium);
       vol->SetShape(box);
    } else {
       vol = new TGeoVolume(name, box, medium);
@@ -91,7 +88,7 @@ TGeoVolume* TUCNGeoBuilder::MakeUCNTube(const char *name, TGeoMedium *medium, Do
    TUCNGeoTube *tube = new TUCNGeoTube(name, rmin, rmax, dz);
    TGeoVolume *vol = 0;
    if (tube->IsRunTimeShape()) {
-      vol = fUCNGeometry->MakeVolumeMulti(name, medium);
+      vol = gGeoManager->MakeVolumeMulti(name, medium);
       vol->SetShape(tube);
    } else {
       vol = new TGeoVolume(name, tube, medium);

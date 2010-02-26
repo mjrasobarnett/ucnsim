@@ -84,7 +84,7 @@ TUCNGeoManager::~TUCNGeoManager()
 TGeoVolume* TUCNGeoManager::MakeUCNBox(const char *name, TGeoMedium *medium, Double_t dx, Double_t dy, Double_t dz)
 {
 // Make in one step a volume pointing to a box shape with given medium.
-	return TUCNGeoBuilder::UCNInstance(this)->MakeUCNBox(name, medium, dx, dy, dz);
+	return TUCNGeoBuilder::UCNInstance(gGeoManager)->MakeUCNBox(name, medium, dx, dy, dz);
 }
 
 //_____________________________________________________________________________
@@ -92,7 +92,7 @@ TGeoVolume *TUCNGeoManager::MakeUCNTube(const char *name, TGeoMedium *medium,
 	Double_t rmin, Double_t rmax, Double_t dz)
 {
 // Make in one step a volume pointing to a tube shape with given medium.
-	return TUCNGeoBuilder::UCNInstance(this)->MakeUCNTube(name, medium, rmin, rmax, dz);
+	return TUCNGeoBuilder::UCNInstance(gGeoManager)->MakeUCNTube(name, medium, rmin, rmax, dz);
 }
 
 //_____________________________________________________________________________

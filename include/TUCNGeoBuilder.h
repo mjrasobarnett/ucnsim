@@ -28,14 +28,11 @@ protected:
    TUCNGeoBuilder& operator=(const TUCNGeoBuilder&);
 
 private:
-	TUCNGeoManager* fUCNGeometry;             //! current geometry
-	
-   void SetUCNGeometry(TUCNGeoManager *geom) {fUCNGeometry = geom;}
 
 public:
 	virtual ~TUCNGeoBuilder();
    
-	static TUCNGeoBuilder* UCNInstance(TUCNGeoManager *geom);
+	static TUCNGeoBuilder* UCNInstance(TGeoManager *geom);
 	
    TGeoVolume* MakeUCNBox(const char *name, TGeoMedium *medium, Double_t dx, Double_t dy, Double_t dz);
    TGeoVolume* MakeUCNTube(const char *name, TGeoMedium *medium, Double_t rmin, Double_t rmax, Double_t dz);
