@@ -989,7 +989,7 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 		// Has lost flag been set?
 		if (particle->Lost() == kTRUE) {
 			fLostCounter++;
-			return kFALSE; // -- End Propagtion Loop
+			break; // -- End Propagtion Loop
 		// Has detected flag been set?
 		} else if (particle->Detected() == kTRUE) {
 			fDetectedCounter++;
@@ -1169,11 +1169,11 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* field)
 				return kFALSE;
 			}
 		// -- Was particle lost to boundary (absorbed/upscattered) ?
-		} else if (kFALSE /* Needs implementing still */) {	
+		} else if (particle->IsLostToWall(currentMaterial, this->FindUCNNormal())) {	
 			particle->Lost(kTRUE); // Set lost flag
 		// -- Are we outside the geometry heirarchy we have built - ie: in TOP
 		} else if (currentMaterial->IsBlackHole() == kTRUE) {
-			particle->Lost(kTRUE);
+			return kFALSE;
 		} else {
 			// -- PARTICLE ON SURFACE OF BOUNDARY
 			TGeoNode* boundaryNode = this->GetCurrentNode();
