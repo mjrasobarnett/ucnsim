@@ -1022,7 +1022,7 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 			} else if (kFALSE) {	
 				particle->Lost(kTRUE); // Set lost flag
 			// -- Are we outside the geometry heirarchy we have built - ie: in TOP
-			} else if (currentMaterial->IsBlackhole() == kTRUE) {
+			} else if (currentMaterial->IsBlackHole() == kTRUE) {
 				particle->Lost(kTRUE);
 			//	throw runtime_error("In TUCNGeoNavigator::PropagateTrack - track has entered TOP/Blackhole!");
 			} else {
@@ -1197,7 +1197,7 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Int_t ste
 			} else if (kFALSE) {	
 				particle->Lost(kTRUE); // Set lost flag
 			// -- Are we outside the geometry heirarchy we have built - ie: in TOP
-			} else if (currentMaterial->IsBlackhole() == kTRUE) {
+			} else if (currentMaterial->IsBlackHole() == kTRUE) {
 				particle->Lost(kTRUE);
 			//	throw runtime_error("In TUCNGeoNavigator::PropagateTrack - track has entered TOP/Blackhole!");
 			} else {

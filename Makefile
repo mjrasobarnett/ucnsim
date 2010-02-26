@@ -129,27 +129,28 @@ endif
 endif
 endif
 
-TUCNGEOMANAGERO:			include/TUCNGeoManager.h
+TUCNGEOMANAGERO:				include/TUCNGeoManager.h
 TUCNGEONAVIGATORO:			include/TUCNGeoNavigator.h 
-TUCNGEOBUILDERO:			include/TUCNGeoBuilder.h
-TUCNGEOBBOXO:				include/TUCNGeoBBox.h
-TUCNGEOTUBEO:				include/TUCNGeoTube.h
-TUCNGEOMATERIALO:			include/TUCNGeoMaterial.h
+TUCNGEOBUILDERO:				include/TUCNGeoBuilder.h
+TUCNGEOBBOXO:					include/TUCNGeoBBox.h
+TUCNGEOTUBEO:					include/TUCNGeoTube.h
+TUCNGEOMATERIALO:				include/TUCNGeoMaterial.h
 TUCNGRAVFIELDO:				include/TUCNGravField.h
 TUCNPARTICLECLOUDO:			include/TUCNParticleCloud.h
-TUCNPARTICLEO:				include/TUCNParticle.h
-TUCNEXPERIMENTO:			include/TUCNExperiment.h
-TUCNDATAPARSERO:			include/TUCNDataParser.h
-TUCNPARABOLAO:				include/TUCNParabola.h
-TUCNPOLYNOMIALO:			include/TUCNPolynomial.h
-#TUCNRUNMANAGERO:			include/TUCNRunManager.h
-#TUCNDATAO:					include/TUCNData.h
+TUCNPARTICLEO:					include/TUCNParticle.h
+TUCNDATAPARSERO:				include/TUCNDataParser.h
+TUCNPARABOLAO:					include/TUCNParabola.h
+TUCNPOLYNOMIALO:				include/TUCNPolynomial.h
+#TUCNRUNMANAGERO:				include/TUCNRunManager.h
+#TUCNDATAO:						include/TUCNData.h
 
-UCNDict.$(SrcSuf):		include/TUCNGeoManager.h include/TUCNGeoNavigator.h include/TUCNGeoBuilder.h include/TUCNGeoBBox.h include/TUCNGeoTube.h \
-						include/TUCNGeoMaterial.h include/TUCNGravField.h include/TUCNParticleCloud.h include/TUCNParticle.h include/TUCNExperiment.h \
-						include/TUCNDataParser.h include/TUCNPolynomial.h include/TUCNParabola.h $(LINKDEF) #include/TUCNRunManager.h include/TUCNData.h 
-						@echo "Generating dictionary $@..."
-						$(ROOTCINT) -f $@ -c $^
+UCNDict.$(SrcSuf):		include/TUCNGeoManager.h include/TUCNGeoNavigator.h include/TUCNGeoBuilder.h \
+								include/TUCNGeoBBox.h include/TUCNGeoTube.h include/TUCNGeoMaterial.h \
+								include/TUCNGravField.h include/TUCNParticleCloud.h include/TUCNParticle.h \
+								include/TUCNDataParser.h include/TUCNPolynomial.h include/TUCNParabola.h $(LINKDEF)
+								#include/TUCNRunManager.h include/TUCNData.h 
+								@echo "Generating dictionary $@..."
+								$(ROOTCINT) -f $@ -c $^
 
 .$(SrcSuf).$(ObjSuf):
 	$(CXX)  $(CXXFLAGS) -I./include -c $< -o $@

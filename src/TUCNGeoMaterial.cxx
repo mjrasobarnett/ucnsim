@@ -16,7 +16,7 @@ TUCNGeoMaterial::TUCNGeoMaterial()
 	Info("TUCNGeoMaterial", "Default Constructor");
 	this->ScatteringLength(0.);
 	this->TotalLossCrossSection(0.);
-	this->IsBlackhole(kFALSE);
+	this->IsBlackHole(kFALSE);
 	this->IsTrackingMaterial(kFALSE);
 	this->IsDetectorMaterial(kFALSE);
 	this->DetectionEfficiency(1.);
@@ -30,7 +30,7 @@ TUCNGeoMaterial::TUCNGeoMaterial(const char *name)
 	Info("TUCNGeoMaterial", "Constructor");
 	this->ScatteringLength(0.);
 	this->TotalLossCrossSection(0.);
-	this->IsBlackhole(kFALSE);
+	this->IsBlackHole(kFALSE);
 	this->IsTrackingMaterial(kFALSE);
 	this->IsDetectorMaterial(kFALSE);
 	this->DetectionEfficiency(1.);	
@@ -41,10 +41,10 @@ TUCNGeoMaterial::TUCNGeoMaterial(const char *name, Double_t a, Double_t z, Doubl
              	 :TGeoMaterial(name, a, z, rho, radlen, intlen)
 {
 // constructor
- 	Info("TUCNGeoMaterial", "Constructor");
+	Info("TUCNGeoMaterial", "Constructor");
 	this->ScatteringLength(0.);
 	this->TotalLossCrossSection(0.);
-	this->IsBlackhole(kFALSE);
+	this->IsBlackHole(kFALSE);
 	this->IsTrackingMaterial(kFALSE);
 	this->IsDetectorMaterial(kFALSE);
 	this->DetectionEfficiency(1.);  
@@ -55,10 +55,10 @@ TUCNGeoMaterial::TUCNGeoMaterial(const char *name, TGeoElement *elem, Double_t r
              	 :TGeoMaterial(name, elem, rho)
 {
 // constructor
- 	Info("TUCNGeoMaterial", "Constructor");
+	Info("TUCNGeoMaterial", "Constructor");
 	this->ScatteringLength(0.);
 	this->TotalLossCrossSection(0.);
-	this->IsBlackhole(kFALSE);
+	this->IsBlackHole(kFALSE);
 	this->IsTrackingMaterial(kFALSE);
 	this->IsDetectorMaterial(kFALSE); 
 	this->DetectionEfficiency(1.); 
@@ -69,7 +69,7 @@ TUCNGeoMaterial::TUCNGeoMaterial(const TUCNGeoMaterial& gm)
              	 :TGeoMaterial(gm),
 					  fScatteringLength(gm.fScatteringLength),
 					  fTotalLossCrossSection(gm.fTotalLossCrossSection),
-					  fIsBlackhole(gm.fIsBlackhole),
+					  fIsBlackHole(gm.fIsBlackHole),
 					  fIsTrackingMaterial(gm.fIsTrackingMaterial),
 					  fIsDetectorMaterial(gm.fIsDetectorMaterial),
 					  fDetectionEfficiency(gm.fDetectionEfficiency)
@@ -82,13 +82,13 @@ TUCNGeoMaterial::TUCNGeoMaterial(const TUCNGeoMaterial& gm)
 TUCNGeoMaterial& TUCNGeoMaterial::operator=(const TUCNGeoMaterial& gm) 
 {
    //assignment operator
- 	Info("TUCNGeoMaterial", "Assignment");  
+	Info("TUCNGeoMaterial", "Assignment");  
 
    if(this!=&gm) {
       TGeoMaterial::operator=(gm);
 		fScatteringLength = gm.fScatteringLength;
 		fTotalLossCrossSection = gm.fTotalLossCrossSection;
-		fIsBlackhole = gm.fIsBlackhole;
+		fIsBlackHole = gm.fIsBlackHole;
 		fIsTrackingMaterial = gm.fIsTrackingMaterial;
 		fIsDetectorMaterial = gm.fIsDetectorMaterial;
 		fDetectionEfficiency = gm.fDetectionEfficiency;
@@ -100,5 +100,5 @@ TUCNGeoMaterial& TUCNGeoMaterial::operator=(const TUCNGeoMaterial& gm)
 TUCNGeoMaterial::~TUCNGeoMaterial()
 {
 // Destructor
- 	Info("TUCNGeoMaterial", "Destructor");  
+	Info("TUCNGeoMaterial", "Destructor");  
 }

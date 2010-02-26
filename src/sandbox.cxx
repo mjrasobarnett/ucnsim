@@ -56,7 +56,7 @@ Int_t ucnstandalone() {
    	TUCNGeoMaterial* matDetector  = new TUCNGeoMaterial("Detector Material", 0,0,0);
 
 	matTracking->IsTrackingMaterial(kTRUE);
-	matBlackHole->IsBlackhole(kTRUE);
+	matBlackHole->IsBlackHole(kTRUE);
 	matDetector->IsDetectorMaterial(kTRUE);
 	
 	// -- Making Mediums
@@ -107,7 +107,7 @@ Int_t ucnstandalone() {
 
 	// -- Create Particle Cloud
 	Double_t totalEnergy = 200*Units::neV;
-	UInt_t particles = 100000;
+	UInt_t particles = 50000;
 	TUCNParticleCloud* particleCloud = myManager->AddParticleCloud();
 //	myManager->RandomPoints(myUCNTube);
 	particleCloud->UniformMonoEnergeticDistribution(particles, totalEnergy, innerBox, matrix);

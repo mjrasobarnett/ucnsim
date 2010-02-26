@@ -29,8 +29,6 @@
 #include "TF1.h"
 #include "TPolyMarker3D.h"
 
-
-#include "TUCNExperiment.h"
 #include "TUCNParticle.h"
 #include "Constants.h"
 
