@@ -342,6 +342,7 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 	for (stepNumber = 1 ; ; stepNumber++) {
 		
 		#ifdef VERBOSE_MODE		
+			cout << endl << "-------------------------------------------------------" << endl;
 			cout << "STEP " << stepNumber << "\t" << particle->T() << " s" << "\t" << navigator->GetCurrentNode()->GetName() << endl;	
 		#endif
 			
@@ -1112,8 +1113,8 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
    Bool_t is_assembly;
    fUCNIsStepExiting  = kFALSE;
    fUCNIsStepEntering = kFALSE;
-	fUCNIsOutside = gGeoManager->GetCurrentNavigator()->IsOutside();
-	fUCNIsOnBoundary = gGeoManager->GetCurrentNavigator()->IsOnBoundary();
+//	fUCNIsOutside = gGeoManager->GetCurrentNavigator()->IsOutside();
+//	fUCNIsOnBoundary = gGeoManager->GetCurrentNavigator()->IsOnBoundary();
    TGeoNode *skip;
 	
 	// -- Store time step and step distance -- these two should always be convertible
@@ -1146,7 +1147,7 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
    }   
    
 	// -- If we are on the boundary step off it by tolerance
-	Double_t extra = (fUCNIsOnBoundary) ? fgTolerance:0.0;
+	Double_t extra = (fUCNIsOnBoundary) ? TGeoShape::Tolerance() : 0.0;
    
 	#ifdef VERBOSE_MODE
 		cout << "FNBASAP - Is On Boundary?: " << this->IsUCNOnBoundary() << endl;
@@ -1395,27 +1396,6 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 	gGeoManager->GetCurrentNavigator()->SetStep(gGeoManager->GetCurrentNavigator()->GetStep() + extra);
 	this->SetStepTime(this->GetStepTime() + extra);
 	
-	gGeoManager->GetCurrentNavigator()->GetCurrentMatrix()->MasterToLocal(currentPoint, &localPoint[0]);
-   gGeoManager->GetCurrentNavigator()->GetCurrentMatrix()->MasterToLocalVect(currentVelocity, &localVelocity[0]);
-	
-	#ifdef VERBOSE_MODE		
-		cout << "---------------------------------------" << endl;
-		cout << "Final Global Coordinates: " << endl;
-		cout << "X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] << "\t" << "Z: " << currentPoint[2] << endl;
-		cout << "Vx: " << currentVelocity[0] << "\t" << "Vy: " << currentVelocity[1] << "\t" << "Vz: " << currentVelocity[2] << endl;
-		cout << "Current Volume: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
-		cout << "Current Volume contains: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->Contains(currentPoint) << endl;
-		cout << "---------------------------------------" << endl;
-		cout << "Final Local Coordinates: " << endl;
-		gGeoManager->GetCurrentNavigator()->GetCurrentMatrix()->Print();
-		cout << "X: " << localPoint[0] << "\t" << "Y: " << localPoint[1] << "\t" << "Z: " << localPoint[2] << endl;
-		cout << "Vx: " << localVelocity[0] << "\t" << "Vy: " << localVelocity[1] << "\t" << "Vz: " << localVelocity[2] << endl;
-		cout << "Current Volume: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
-		cout << "Current Volume contains: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->Contains(localPoint) << endl;
-		cout << "---------------------------------------" << endl;
-	#endif
-	
-	
 	// *********************************************************************
 	// -- BRANCH 4
 	// -- Final check on results of above
@@ -1440,10 +1420,14 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
          return 0;
       }   
       if (gGeoManager->GetCurrentNavigator()->GetCurrentNode()->IsOffset()) {
-			throw runtime_error("In TUCNRun FNBASAP Need to call CrossDivisionCell but can't!"); //return gGeoManager->GetCurrentNavigator()->CrossDivisionCell();
+			throw runtime_error("In TUCNRun FNBASAP Need to call CrossDivisionCell but can't!"); 
+			//return gGeoManager->GetCurrentNavigator()->CrossDivisionCell();
 		}   
-      if (gGeoManager->GetCurrentNavigator()->GetLevel()) gGeoManager->GetCurrentNavigator()->CdUp();
-      else        skip = 0;
+      if (gGeoManager->GetCurrentNavigator()->GetLevel()) {
+			gGeoManager->GetCurrentNavigator()->CdUp();
+      } else {
+			skip = 0;
+		}
 		TGeoNode* finalNode = gGeoManager->GetCurrentNavigator()->CrossBoundaryAndLocate(kFALSE, skip);
 		#ifdef VERBOSE_MODE		
       	cout << "FNBASAP - Final Node: " << finalNode->GetName() << endl;
