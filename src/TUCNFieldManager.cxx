@@ -65,3 +65,16 @@ TUCNFieldManager::~TUCNFieldManager()
 }
 
 // -- METHODS --
+
+//______________________________________________________________________________
+TUCNGravField* TUCNFieldManager::AddGravField()
+{
+// Create and store reference to grav field object	
+	if (fGravField) {
+		cerr << "Field: " << fGravField->GetName() << " already exists." << endl;
+	} else {
+		fGravField = new TUCNGravField();
+		cerr << "Field: " << fGravField->GetName() << " created." << endl;
+	}
+	return fGravField;
+}

@@ -25,7 +25,6 @@ public:
 	
 	// -- constructors
 	TUCNGravField();
-	TUCNGravField(const char *name, const char *title);
    TUCNGravField(const TUCNGravField&);
 	TUCNGravField& operator=(const TUCNGravField&);
 	   

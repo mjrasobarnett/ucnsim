@@ -20,20 +20,11 @@ const Double_t 	TUCNGravField::fGravAcceleration;
 //_____________________________________________________________________________
 TUCNGravField::TUCNGravField()
 				  :TNamed("GravField","Universal Grav Field Vector"),
-					fGlobalFieldVector(0.,0.,-1.0)
+					fGlobalFieldVector(0.,0.,-1.)
 {
 // -- Default constructor.
 	Info("TUCNGravField", "Constructor");
 } 
-
-//_____________________________________________________________________________
-TUCNGravField::TUCNGravField(const char *name, const char *title)
-				  :TNamed(name, title),
-					fGlobalFieldVector(0.,0.,-1.0)
-{
-// -- Constructor.
-	Info("TUCNGravField", "Constructor");
-}
 
 //_____________________________________________________________________________
 TUCNGravField::TUCNGravField(const TUCNGravField& other)

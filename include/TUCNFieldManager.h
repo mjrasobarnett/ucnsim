@@ -30,7 +30,8 @@ public:
 	virtual ~TUCNFieldManager();
 
 	// -- methods
-
+	TUCNGravField*			AddGravField();
+	TUCNGravField* 		GetGravField() {return fGravField;}
 	
    ClassDef(TUCNFieldManager, 1)      
 };

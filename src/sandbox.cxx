@@ -55,7 +55,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Geometry Creation
-	
+	///////////////////////////////////////////////////////////////////////////////////////
 	// Create the geoManager
 	TUCNGeoManager* geoManager = new TUCNGeoManager("GeoManager", "Geometry Manager");
 	// Create the UCNNavigator and initialise in the UCNManager
@@ -69,10 +69,15 @@ Int_t main(Int_t argc,Char_t **argv)
 	cout << static_cast<TUCNGeoManager*>(gGeoManager)->GetSourceVolume()->GetName() << endl;
 	cout << static_cast<TUCNGeoManager*>(gGeoManager)->GetSourceMatrix()->GetName() << endl;
 	
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- Field Creation
+	///////////////////////////////////////////////////////////////////////////////////////
 	TUCNFieldManager* fieldManager = new TUCNFieldManager();
+	TUCNGravField* gravField =	fieldManager->AddGravField();
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Run Simulation
+	///////////////////////////////////////////////////////////////////////////////////////
 	TUCNRunManager* runManager = new TUCNRunManager();
 	
 	Int_t numberOfRuns = 1;
@@ -88,7 +93,6 @@ Int_t main(Int_t argc,Char_t **argv)
 	Double_t totalEnergy = 0;
 	cout << "V: " << V << "\t" << "f: " << f << endl;
 	
-	TUCNGravField* gravField = new TUCNGravField();
 	
 	for (Int_t runNumber = 0; runNumber < numberOfRuns; runNumber++) {
 		totalEnergy = 0.95*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
