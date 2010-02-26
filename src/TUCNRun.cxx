@@ -312,22 +312,29 @@ Bool_t TUCNRun::Export(TString& outputFile)
 // -- Export this run to file
 	cout << "-------------------------------------------" << endl;
 	cout << "Writing " << this->GetName() << " out to File: " << outputFile << endl;
+	// -- Check that Data 'checks out'
+	if (this->GetData()->ChecksOut() == kFALSE) {
+		Error("Export", "TUCNData doesn't check out. Cannot Export Run to file.");
+		return kFALSE;
+	}
+	// -- Check we have a .root file
 	if (!(outputFile.Contains(".root"))) {
 		Error("Export", "OutputFile is not a ROOT filename");
 		return kFALSE;
-	} else {
-		TFile *f = TFile::Open(outputFile,"update");
-		if (!f || f->IsZombie()) {
-		   Error("Export","Cannot open file");
-		   return kFALSE;
-		}
-		char keyname[256];
-		strcpy(keyname,this->GetName());
-		this->Write(keyname);
-		delete f;
-		cout << "Run: " << keyname << " was successfully written to file" << endl;
-		cout << "-------------------------------------------" << endl;
+	} 
+	// -- Write out
+	TFile *f = TFile::Open(outputFile,"update");
+	if (!f || f->IsZombie()) {
+	   Error("Export","Cannot open file");
+	   return kFALSE;
 	}
+	char keyname[256];
+	strcpy(keyname,this->GetName());
+	this->Write(keyname);
+	cout << "Run: " << keyname << " was successfully written to file" << endl;
+	cout << "-------------------------------------------" << endl;
+	// -- Clean up
+	delete f;
 	return kTRUE;
 }
 
