@@ -347,13 +347,13 @@ Bool_t TUCNRun::AddTrack(TGeoTrack* track)
 //_____________________________________________________________________________
 Bool_t TUCNRun::AddInitialParticle(TUCNParticle* particle) 
 {
-	return this->GetData()->AddFinalParticleState(particle);
+	return this->GetData()->AddInitialParticleState(particle);
 }
 
 //_____________________________________________________________________________
 Bool_t TUCNRun::AddParticle(TUCNParticle* particle)
 {
-	return this->GetData()->AddInitialParticleState(particle);
+	return this->GetData()->AddFinalParticleState(particle);
 }
 
 //_____________________________________________________________________________
