@@ -87,9 +87,9 @@ Int_t main(Int_t argc,Char_t **argv)
 	runManager->CreateRuns(numberOfRuns);
 	
 	Double_t runTime = 150.*Units::s;
-	Double_t maxStepTime = 1.00*Units::s;
+	Double_t maxStepTime = 0.5*Units::s;
 	Int_t particles = 1000;
-	Double_t diffCoeff = 0.1;
+	Double_t diffCoeff = 0.01;
 	navigator->DiffuseCoefficient(diffCoeff);
 	
 	Double_t V = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->FermiPotential();
@@ -123,7 +123,7 @@ Int_t main(Int_t argc,Char_t **argv)
 		cout << "End of run" << endl << endl;
 	}
 	
-	TString outputData = "data/datatestdata2.root";
+	TString outputData = "data/magfield-0.01Diff-0.5-noloss.root";
 	cerr << "Writing out data to file: " << outputData << endl;
 	TFile* outputFile = new TFile(outputData,"RECREATE");
 	if ( !outputFile->IsOpen() ) {
@@ -161,7 +161,7 @@ void BuildGeometry(TUCNGeoManager* geoManager)
 	Double_t fermiPotential = (0.91*Units::m)*Constants::height_equivalent_conversion;
 	Double_t totalEnergy = (0.52*Units::m)*Constants::height_equivalent_conversion;
 	Double_t initialVelocity = TMath::Sqrt(2.*totalEnergy/Constants::neutron_mass);
-	Double_t meanFreePath = 0.16*Units::m;
+	Double_t meanFreePath = 0.1589*Units::m;
 	
 	// Calculate f = W/V and hence W
 	Double_t X = totalEnergy/fermiPotential;

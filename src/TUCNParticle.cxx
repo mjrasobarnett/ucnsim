@@ -202,17 +202,10 @@ Double_t TUCNParticle::Mass_GeV_c2() const
 }
 
 //______________________________________________________________________________
-void TUCNParticle::SampleMagField(const Double_t integratedField, const Double_t stepTime)
-{
-	// Adds current field to average field
-	Double_t timeAveragedField = integratedField/stepTime;
-	fAvgMagField.push_back(timeAveragedField);
-}
-
-//______________________________________________________________________________
 Bool_t TUCNParticle::IsLostToWall(TUCNGeoMaterial* wall, const Double_t* normal) const
 {
 // Calculate whether particle will be absorbed/upscattered by the wall
+	return kFALSE;
 	Double_t fermiPotential = wall->FermiPotential();
 	Double_t eta = wall->Eta();
 //	cout << "Material: " << wall->GetName() << "\t" << "eta: " << eta << "\t" <<  "fermiPotential: " << fermiPotential << "\t" << endl;
@@ -246,6 +239,14 @@ Double_t	TUCNParticle::DiffuseProbability(const Double_t diffuseCoeff, const Dou
 	assert(diffProb <= 1.0 && diffProb >= 0.0);
 	//return diffProb;
 	return diffuseCoeff;
+}
+
+//______________________________________________________________________________
+void TUCNParticle::SampleMagField(const Double_t integratedField, const Double_t stepTime)
+{
+	// Adds current field to average field
+	Double_t timeAveragedField = integratedField/stepTime;
+	fAvgMagField.push_back(timeAveragedField);
 }
 
 //______________________________________________________________________________

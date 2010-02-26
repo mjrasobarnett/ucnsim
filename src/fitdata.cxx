@@ -268,7 +268,10 @@ Int_t main(Int_t argc,Char_t **argv)
 	for(Int_t i = 0; i < numberOfRuns; i++) {
 		// Get Run Parameters
 		TUCNRun* run = runManager->GetRun(i);
-		Int_t particles = run->Particles(); 
+		Int_t particles = run->Particles();
+		cout << "Total Particles: " << run->Particles() << "\t"
+			  << "Lost To Boundary: " << run->LostToBoundary() << "\t"
+			  << "Remaining: " << run->Particles() - run->LostToBoundary() << endl;
 		Double_t totalEnergy = run->TotalEnergy();
 		
 		Int_t nbins = 100;
@@ -281,12 +284,16 @@ Int_t main(Int_t argc,Char_t **argv)
 		for (Int_t j = 0; j < particles; j++) {
 			// Get each Track
 			TUCNParticle* particle = run->GetParticle(j);
-			Histogram->Fill(particle->AvgMagField());
+			if (particle->LostToBoundary()) { 
+				continue; 
+			} else {
+				Histogram->Fill(particle->AvgMagField());
+			}
 		}
 		
 		Histogram->SetXTitle("Step-Averaged BField seen by Neutron (Normalised)");
 		Histogram->SetYTitle("Number of Neutrons");
-		Histogram->SetTitle("E: 0.57V, DiffuseCoeff: 0.1, RunTime: 100s");
+		Histogram->SetTitle("E: 0.57V, DiffuseCoeff: 0.1, RunTime: 150s");
 		Histogram->Draw("E1");
 		
 	}

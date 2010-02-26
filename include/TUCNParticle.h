@@ -33,6 +33,7 @@ private:
 	Int_t 					fDiffuseBounces;
 	
 	vector<Double_t>		fAvgMagField;
+	Double_t					fAvgField;
 		
 public:
 	// -- constructors
