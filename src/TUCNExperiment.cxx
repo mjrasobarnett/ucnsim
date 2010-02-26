@@ -233,16 +233,18 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* co
 	geoManager->SetTopVolume(chamber);
 	
 	// -- Make a GeoTube object via the UCNGeoManager
-	Double_t rMin = 0.0, rMax = 1.1, length = 2.1; 
+	Double_t rMin = 0.0, rMax = 1.1, length = 2.1;
+	Double_t innerR = rMax - 0.1;
+	Double_t innerLength = length - 0.1; 
 	TGeoVolume* tube = this->MakeUCNTube("tube",boundary, rMin, rMax, length/2.);
-	TGeoVolume* innerTube = this->MakeUCNTube("innerTube",vacuum, rMin, rMax-0.1, (length-0.1)/2.);
+	TGeoVolume* innerTube = this->MakeUCNTube("innerTube",vacuum, rMin, innerR, innerLength/2.);
 	
 	
 	// -- Define the transformation of the volume
 	TGeoRotation r1,r2; 
 	r1.SetAngles(0,0,0);          //rotation defined by Euler angles 
 	r2.SetAngles(0,0,0); 	 
-	TGeoTranslation t1(0.,0.,length/2.); 
+	TGeoTranslation t1(0.,0.,innerLength/2.); 
 	TGeoTranslation t2(0.,0.,0.); 
 	TGeoCombiTrans c1(t1,r1); 
 	TGeoCombiTrans c2(t2,r2); 
