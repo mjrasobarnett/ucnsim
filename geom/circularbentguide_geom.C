@@ -60,7 +60,7 @@ Int_t circularbentguide_geom()
 	bendboxmatrix->RegisterYourself();
 	
 	// -- Create a composite bend
-	TGeoCompositeShape *bendshape = new TGeoCompositeShape("BendShape","(CircleBend * BendBox:BendBoxMatrix)");
+	TUCNGeoCompositeShape *bendshape = new TUCNGeoCompositeShape("BendShape","(CircleBend * BendBox:BendBoxMatrix)");
 	TGeoVolume * bend = new TGeoVolume("Bend",bendshape,vacuum);
 	
 	// -- Define the transformation of the bend
