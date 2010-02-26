@@ -1084,7 +1084,7 @@ Double_t TUCNGeoTube::TimeFromInsideAlongParabolaS(const Double_t* point, const 
    // -- Storage for the overall smallest, non-zero time to the nearest boundary
 	Double_t tfinal = 0.; 
 	// --------------------------------------------------------------------------------------
-	// -- 1. FIRST CHECK WHETHER WE WILL HIT THE ENDS OF THE TUBE AT +/-Zs
+	// -- 1. First check whether we will hit the end caps of the tube at +/- Z
 	Double_t tmin = TUCNGeoTube::InsideTimeToZBoundary(point, velocity, field, dz, onBoundary);
 	if (tmin == 0.0) {
 		cout << "Error: Particle has failed to hit either z-boundary from Inside. Exiting." << endl;
@@ -1092,223 +1092,61 @@ Double_t TUCNGeoTube::TimeFromInsideAlongParabolaS(const Double_t* point, const 
 	} else {
 		// -- Solution found. Setting as the current smallest time
 		#ifdef VERBOSE_MODE				
-			cout << "Particle has reached first z-boundary in: " << tmin << endl;
+			cout << "Particle will reach first z-boundary in: " << tmin << endl;
 		#endif
 		tfinal = tmin;
 	}
 	
 	// --------------------------------------------------------------------------------------
    // -- 2. Next Calculate the time to reach the circular boundaries of the tube.
-	// -- The general case require us to solve a quartic polynomial. 
-	Double_t a, b, c, d; 	// Four of the constants of the quartic polynomial. see notes for the equations.
-	a = 0.25*(field[0]*field[0] + field[1]*field[1]);
-	b = velocity[0]*field[0] + velocity[1]*field[1];
-	c = point[0]*field[0] + point[1]*field[1] + velocity[0]*velocity[0] + velocity[1]*velocity[1];
-	d = 2.0*(point[0]*velocity[0] + point[1]*velocity[1]);
-	
-	// -- Check for rounding errors on the parameters
-	// Sometimes a,b,c or d can be extremely small but non-zero, due to rounding errors.
-	// I have often seen this for the fields after they have been rotated into the local coordinate frame.
-	if (TMath::Abs(a) < TGeoShape::Tolerance()) {
-		// a = 0 if the field component in the x-y plane is zero
-		// This happens if the tube is not rotated and is aligned with the field (conventially set along the z-axis)
-		a = 0.;
-	}
-	if (TMath::Abs(b) < TGeoShape::Tolerance()) {
-		// b = 0 if the velocity or field component in the x-y plane is zero (i.e it wont hit the boundary anyway)
-		b = 0.;
-	}
-	if (TMath::Abs(c) < TGeoShape::Tolerance()) {
-		// c = 0 if the velocity and field components in the x-y plane are zero (i.e it wont hit the boundary anyway)
-		c = 0.;
-	}
-	if (TMath::Abs(d) < TGeoShape::Tolerance()) {
-		// d = 0 if the velocity components in the x-y plane are zero (i.e it wont hit the boundary anyway)
-		d = 0.;
-	}
-	
-	// -- It is possible we have a lower class of equation however. Check for this. 
-	Int_t order = 4; // Order of the polynomial
-	if (a == 0.0) {
-		// We have a cubic or less
-		order = 3;
-		if (b == 0.0) {
-			order = 2;
-			if (c == 0.0) {
-				order = 1;
-				if (d == 0.0) {
-					// No solution - no intersection is possible (i.e: particle has no horizontal momentum and field is aligned along local z-axis?)
-					order = 0;
-				}
-			}
-		} 
-	}
-	
-	#ifdef VERBOSE_MODE				
-		cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Polynomial Order: " <<  order << endl;
-	#endif
-	
-	Double_t params[5] = {0.,0.,0.,0.,0.};
 	// --------------------------------------------------------------------------------------
 	// -- CASE 1 - Inner Cylinder
-   if (rmin > 0.) {
-		// -- Solve the quartic equation to find the intersections of the parabola with the inner cylinder
-		Double_t e = point[0]*point[0] + point[1]*point[1] - rmin*rmin; // the fifth constant of the quartic polynomial. see notes for equation
-		params[0] = a;
-		params[1] = b;
-		params[2] = c;
-		params[3] = d;
-		params[4] = e;
-		
+	tmin = InsideTimeToRBoundary(point, velocity, field, rmin, onBoundary);
+	if (tmin == 0.0) {
 		#ifdef VERBOSE_MODE				
-			cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Quartic Eqn - a: " <<  a << "  b: " << b << "  c: " << c << "  d: " << d << "  e: " << e << endl;
+			cout << "Warning: Particle has failed to hit rmin boundary from Inside. " << endl;
 		#endif
-		
-		Int_t solutions = 0; // Counts the number of possible solutions
-		Double_t roots[4] = {0.,0.,0.,0.};
-		
-		if (order < 4) {
-			// We have a lower class of problem. 
-			if (order == 3) {
-				// We have a cubic. Organise parameters and solve. 
-				Double_t cubicParams[4] = {params[1], params[2], params[3], params[4]};
-				solutions = TUCNPolynomial::Instance()->CubicRootFinder(cubicParams, roots);
-				
-			} else if (order == 2) {
-				Double_t quadraticParams[3] = {params[2], params[3], params[4]};
-				solutions = TUCNPolynomial::Instance()->QuadraticRootFinder(quadraticParams, roots);
-
-			} else if (order == 1) {
-				// We have a linear equation. 
-				assert(d != 0.0);
-				roots[0] = -e/d;
-				solutions = 1;
-				
-			} else if (order == 0) {
-				// No solutions - no intersection
-				solutions = 0;
-				
-			} else {
-				throw runtime_error("TimeFromInsideAlongParabolaS - Order of polynomial is not between 0 and 4!");
-			}	
-		} else {
-			// We have a quartic equation
-			solutions = TUCNPolynomial::Instance()->QuarticRootFinder(params, roots);
-		}
-		
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Solutions: " <<  solutions << endl;
-		#endif
-		
-		// -- Find the smallest, positive, non-zero, real root of the polynomial
-		for (Int_t i = 0; i < solutions; i++) {
-			// -- Check if the current root positive and non-zero
-			if (roots[i] > 0.0) {
-				if (tfinal == 0.0) {
-					// -- If a particular root is positive and tfinal has not yet been set, then intialise tfinal with that value
-					tfinal = roots[i];
-				} else if (roots[i] < tfinal) {
-					// -- If tfinal has been set to a certain solution, check if current solution is smaller and if so set that to be the current smallest tfinal
-					tfinal = roots[i];
-				}
-			} else {
-				// -- Root is negative or zero, nothing to see here...
-				continue;
-			}
-		}
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "RMIN BOUNDARY --- tfinal: " <<  tfinal << endl;
-		#endif
-	}	
-
-   // --------------------------------------------------------------------------------------
-	// -- CASE 2 - Outer Cylinder
-	if (rmax > 0.) {
-		// -- Solve the quartic equation to find the intersections of the parabola with the outer cylinder
-		Double_t e = point[0]*point[0] + point[1]*point[1] - rmax*rmax;
-		params[0] = a;
-		params[1] = b;
-		params[2] = c;
-		params[3] = d;
-		params[4] = e;	
-
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Quartic Eqn - a: " <<  a << "  b: " << b << "  c: " << c << "  d: " << d << "  e: " << e << endl;
-		#endif
-		
-//		Double_t pointRadius = TMath::Sqrt(point[0]*point[0] + point[1]*point[1]);
-//		if (pointRadius - rmax > 0.0) {
-//			cout << "Point is outside the tube" << "\t" << "e: " << e << endl;
-//		}
-		
-		Int_t solutions = 0; // Counts the number of possible solutions
-		Double_t roots[4] = {0.,0.,0.,0.};
-		if (order < 4) {
-			// We have a lower class of problem. 
-			if (order == 3) {
-				// We have a cubic. Organise parameters and solve. 
-				Double_t cubicParams[4] = {b, c, d, e};
-				solutions = TUCNPolynomial::Instance()->CubicRootFinder(cubicParams, roots);
-				
-			} else if (order == 2) {
-				Double_t quadraticParams[3] = {c, d, e};
-				solutions = TUCNPolynomial::Instance()->QuadraticRootFinder(quadraticParams, roots);
-
-			} else if (order == 1) {
-				// We have a linear equation. 
-				assert(d != 0.0);
-				roots[0] = -e/d;
-				solutions = 1;
-				
-			} else if (order == 0) {
-				// No solutions - no intersection
-				solutions = 0;
-				
-			} else {
-				throw runtime_error("TimeFromInsideAlongParabolaS - Order of polynomial less than 0!");
-			}	
-		} else {
-			// We have a quartic equation
-			solutions = TUCNPolynomial::Instance()->QuarticRootFinder(params, roots);
-		}
-		
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Solutions: " <<  solutions << endl;
-		#endif
-		
-		// -- Find the smallest, positive, non-zero, real root of the polynomial
-		for (Int_t i = 0; i < solutions; i++) {
-			// -- Check if the current root positive and non-zero
-			if (roots[i] > 0.0) {
-				if (tfinal == 0.0) {
-					// -- If a particular root is positive and tfinal has not yet been set, then intialise tfinal with that value
-					tfinal = roots[i];
-				} else if (roots[i] < tfinal) {
-					// -- If tfinal has been set to a certain solution, check if current solution is smaller
-					tfinal = roots[i];
-				}
-			} else {
-				// -- Root is negative or zero, nothing to see here...
-				continue;
-			}
-		}
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "RMAX BOUNDARY --- tfinal: " <<  tfinal << endl;
-		#endif
-		
 	} else {
-		throw runtime_error("TimeFromInsideAlongParabolaS - rmax <= 0");
+		// -- Solution found. Check to see if it is smaller than the current smallest.
+		#ifdef VERBOSE_MODE				
+			cout << "Particle will reach rmin-boundary in: " << tmin << endl;
+		#endif
+		if (tmin < tfinal) {
+			tfinal = tmin;
+		}
 	}
 	
-	// Find the smallest root of the polynomial
+   // --------------------------------------------------------------------------------------
+	// -- CASE 2 - Outer Cylinder
+	tmin = InsideTimeToRBoundary(point, velocity, field, rmax, onBoundary);
+	if (tmin == 0.0) {
+		#ifdef VERBOSE_MODE				
+			cout << "Error: Particle has failed to hit rmax boundary from Inside. " << endl;
+		#endif
+		// Particle should always hit the outer tube boundary at least at some positive time
+		return 0.0;
+	} else {
+		// -- Solution found. Check to see if it is smaller than the current smallest.
+		#ifdef VERBOSE_MODE				
+			cout << "Particle will reach rmax-boundary in: " << tmin << endl;
+		#endif
+		if (tmin < tfinal) {
+			tfinal = tmin;
+		}
+	}
+	
+	// --------------------------------------------------------------------------------------
+   // Return the smallest time
 	if (tfinal > 0.) { 
 		#ifdef VERBOSE_MODE		
 			cout << "TimeFromInsideAlongParabolaS - Time to nearest boundary: " <<  tfinal << endl; 
 		#endif
 		return tfinal;
 	} else {
-		throw runtime_error("TimeFromInsideAlongParabolaS - No boundary reached!");
-		return 0;
+		#ifdef VERBOSE_MODE				
+			cout << "Error - Particle has failed to hit any boundary: " << tfinal << endl;
+		#endif
+		return 0.;
 	}	
 }
 
@@ -1356,233 +1194,63 @@ Double_t TUCNGeoTube::TimeFromOutsideAlongParabolaS(const Double_t* point, const
 	} else {
 		// -- Solution found. Setting as the current smallest time
 		#ifdef VERBOSE_MODE				
-			cout << "Particle has reached first z-boundary in: " << tmin << endl;
+			cout << "TimeFromOutsideAlongParabolaS - Particle has reached first z-boundary in: " << tmin << endl;
 		#endif
 		tfinal = tmin;
 	}
 	
 	// --------------------------------------------------------------------------------------
-   // -- 2. Calculate the time to reach the circular boundaries of the tube.
-	// -- The general case require us to solve a quartic polynomial. 
-	Double_t a, b, c, d; 	// Four of the constants of the quartic polynomial. see notes for the equations.
-	a = 0.25*(field[0]*field[0] + field[1]*field[1]);
-	b = velocity[0]*field[0] + velocity[1]*field[1];
-	c = point[0]*field[0] + point[1]*field[1] + velocity[0]*velocity[0] + velocity[1]*velocity[1];
-	d = 2.0*(point[0]*velocity[0] + point[1]*velocity[1]);
-	
-	// -- Check for rounding errors on the parameters
-	// Sometimes a,b,c or d can be extremely small but non-zero, due to rounding errors.
-	// I have often seen this for the fields after they have been rotated into the local coordinate frame.
-	if (TMath::Abs(a) < TGeoShape::Tolerance()) {
-		// a = 0 if the field component in the x-y plane is zero
-		// This happens if the tube is not rotated and is aligned with the field (conventially set along the z-axis)
-		a = 0.;
-	}
-	if (TMath::Abs(b) < TGeoShape::Tolerance()) {
-		// b = 0 if the velocity or field component in the x-y plane is zero (i.e it wont hit the boundary anyway)
-		b = 0.;
-	}
-	if (TMath::Abs(c) < TGeoShape::Tolerance()) {
-		// c = 0 if the velocity and field components in the x-y plane are zero (i.e it wont hit the boundary anyway)
-		c = 0.;
-	}
-	if (TMath::Abs(d) < TGeoShape::Tolerance()) {
-		// d = 0 if the velocity components in the x-y plane are zero (i.e it wont hit the boundary anyway)
-		d = 0.;
-	}
-	
-	// -- It is possible we have a lower class of equation however. Check for this. 
-	Int_t order = 4; // Order of the polynomial
-	if (a == 0.0) {
-		// We have a cubic or less
-		order = 3;
-		if (b == 0.0) {
-			order = 2;
-			if (c == 0.0) {
-				order = 1;
-				if (d == 0.0) {
-					// No solution - no intersection is possible 
-					// (i.e: particle has no horizontal momentum and field is aligned along local z-axis? So will only hit top or bottom)
-					order = 0;
-				}
-			}
-		} 
-	}
-	
-	#ifdef VERBOSE_MODE				
-		cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Polynomial Order: " <<  order << endl;
-	#endif
-	
-	Double_t params[5] = {0.,0.,0.,0.,0.};
+   // -- 2. Next Calculate the time to reach the circular boundaries of the tube.
 	// --------------------------------------------------------------------------------------
 	// -- CASE 1 - Inner Cylinder
-   if (rmin > 0.) {
-		// -- Solve the quartic equation to find the intersections of the parabola with the inner cylinder
-		Double_t e = point[0]*point[0] + point[1]*point[1] - rmin*rmin; // the fifth constant of the quartic polynomial. see notes for equation
-		params[0] = a;
-		params[1] = b;
-		params[2] = c;
-		params[3] = d;
-		params[4] = e;
-		
+	tmin = OutsideTimeToRBoundary(point, velocity, field, rmin, dz, onBoundary);
+	if (tmin == 0.0) {
 		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Quartic Eqn - a: " <<  a << "  b: " << b << "  c: " << c << "  d: " << d << "  e: " << e << endl;
+			cout << "Warning: Particle has failed to hit rmin boundary from Outside. " << endl;
 		#endif
-		
-		Int_t solutions = 0; // Counts the number of possible solutions
-		Double_t roots[4] = {0.,0.,0.,0.};
-		
-		if (order < 4) {
-			// We have a lower class of problem. 
-			if (order == 3) {
-				// We have a cubic. Organise parameters and solve. 
-				Double_t cubicParams[4] = {b, c, d, e};
-				solutions = TUCNPolynomial::Instance()->CubicRootFinder(cubicParams, roots);
-				
-			} else if (order == 2) {
-				Double_t quadraticParams[3] = {c, d, e};
-				solutions = TUCNPolynomial::Instance()->QuadraticRootFinder(quadraticParams, roots);
-
-			} else if (order == 1) {
-				// We have a linear equation. 
-				assert(d != 0.0);
-				roots[0] = -e/d;
-				solutions = 1;
-				
-			} else if (order == 0) {
-				// No solutions - no intersection
-				solutions = 0;
-				
-			} else {
-				throw runtime_error("TimeFromOutsideAlongParabolaS - Order of polynomial is not between 0 and 4!");
-			}	
-		} else {
-			// We have a quartic equation
-			solutions = TUCNPolynomial::Instance()->QuarticRootFinder(params, roots);
-		}
-		
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Solutions: " <<  solutions << endl;
-			for (Int_t i = 0; i < solutions; i++) {
-				cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "i: " << i << "  Root: " << roots[i] << endl;
-			}
-		#endif
-		
-		
-		// -- Find the smallest, positive, non-zero, real root of the polynomial
-		for (Int_t i = 0; i < solutions; i++) {
-			#ifdef VERBOSE_MODE				
-				cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "i: " << i << "  Root: " << roots[i] << endl;
-			#endif
-			// -- Check if the current root positive and non-zero
-			if (roots[i] > 0.0 && IsNextPointOnTube(point, velocity, field, rmin, dz, roots[i]) == kTRUE) {
-				if (tfinal == 0.0) {
-					// -- If a particular root is positive and tfinal has not yet been set, then intialise tfinal with that value
-					tfinal = roots[i];
-				} else if (roots[i] < tfinal) {
-					// -- If tfinal has been set to a certain solution, check if current solution is smaller and if so set that to be the current smallest tfinal
-					tfinal = roots[i];
-				}
-			} else {
-				// -- Root is negative or zero, nothing to see here...
-				continue;
-			}
-		}
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "RMIN BOUNDARY --- tfinal: " <<  tfinal << endl;
-		#endif
-	}	
-
-   // --------------------------------------------------------------------------------------
-	// -- CASE 2 - Outer Cylinder
-	if (rmax > 0.) {
-		// -- Solve the quartic equation to find the intersections of the parabola with the outer cylinder
-		Double_t e = point[0]*point[0] + point[1]*point[1] - rmax*rmax;
-		params[0] = a;
-		params[1] = b;
-		params[2] = c;
-		params[3] = d;
-		params[4] = e;	
-
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Quartic Eqn - a: " <<  a << "  b: " << b << "  c: " << c << "  d: " << d << "  e: " << e << endl;
-		#endif
-		
-		Int_t solutions = 0; // Counts the number of possible solutions
-		Double_t roots[4] = {0.,0.,0.,0.};
-		if (order < 4) {
-			// We have a lower class of problem. 
-			if (order == 3) {
-				// We have a cubic. Organise parameters and solve. 
-				Double_t cubicParams[4] = {b, c, d, e};
-				solutions = TUCNPolynomial::Instance()->CubicRootFinder(cubicParams, roots);
-				
-			} else if (order == 2) {
-				Double_t quadraticParams[3] = {c, d, e};
-				solutions = TUCNPolynomial::Instance()->QuadraticRootFinder(quadraticParams, roots);
-
-			} else if (order == 1) {
-				// We have a linear equation. 
-				assert(d != 0.0);
-				roots[0] = -e/d;
-				solutions = 1;
-				
-			} else if (order == 0) {
-				// No solutions - no intersection
-				solutions = 0;
-				
-			} else {
-				throw runtime_error("TimeOutsideInsideAlongParabolaS - Order of polynomial less than 0!");
-			}	
-		} else {
-			// We have a quartic equation
-			solutions = TUCNPolynomial::Instance()->QuarticRootFinder(params, roots);
-		}
-		
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Solutions: " <<  solutions << endl;
-			for (Int_t i = 0; i < solutions; i++) {
-				cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "i: " << i << "  Root: " << roots[i] << endl;
-			}
-		#endif
-		
-		// -- Find the smallest, positive, non-zero, real root of the polynomial
-		for (Int_t i = 0; i < solutions; i++) {
-			// -- Check if the current root positive and non-zero
-			if (roots[i] > 0.0 && IsNextPointOnTube(point, velocity, field, rmax, dz, roots[i]) == kTRUE) {
-				if (tfinal == 0.0) {
-					// -- If a particular root is positive and tfinal has not yet been set, then intialise tfinal with that value
-					tfinal = roots[i];
-				} else if (roots[i] < tfinal) {
-					// -- If tfinal has been set to a certain solution, check if current solution is smaller and if so set that to be the current smallest tfinal
-					tfinal = roots[i];
-				}
-			} else {
-				// -- Root is negative or zero, nothing to see here...
-				continue;
-			}
-		}
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "RMAX BOUNDARY --- tfinal: " <<  tfinal << endl;
-		#endif
-		
 	} else {
-		throw runtime_error("TimeFromOutsideAlongParabolaS - rmax <= 0");
+		// -- Solution found. Check to see if it is smaller than the current smallest.
+		#ifdef VERBOSE_MODE				
+			cout << "TimeFromOutsideAlongParabolaS - Particle will reach rmin-boundary in: " << tmin << endl;
+		#endif
+		if (tmin < tfinal) {
+			tfinal = tmin;
+		}
 	}
 	
-	// Find the smallest root of the polynomial
+   // --------------------------------------------------------------------------------------
+	// -- CASE 2 - Outer Cylinder
+	tmin = OutsideTimeToRBoundary(point, velocity, field, rmax, dz, onBoundary);
+	if (tmin == 0.0) {
+		#ifdef VERBOSE_MODE				
+			cout << "Warning: Particle has failed to hit rmax boundary from Outside. " << endl;
+		#endif
+	} else {
+		// -- Solution found. Check to see if it is smaller than the current smallest.
+		#ifdef VERBOSE_MODE				
+			cout << "TimeFromOutsideAlongParabolaS - Particle will reach rmax-boundary in: " << tmin << endl;
+		#endif
+		if (tmin < tfinal) {
+			tfinal = tmin;
+		}
+	}
+	
+	// --------------------------------------------------------------------------------------
+   // -- Return the smallest time to boundary (if any were hit)
 	if (tfinal > 0.) { 
 		#ifdef VERBOSE_MODE		
-			cout << "TimeFromOutsideAlongParabolaS - Time to nearest boundary: " <<  tfinal << endl; 
+			cout << "TimeFromInsideAlongParabolaS - Time to nearest boundary: " <<  tfinal << endl; 
 		#endif
 		return tfinal;
-	} 	else if (tfinal == 0.) {
-		#ifdef VERBOSE_MODE		
-			cout << "TimeFromOutsideAlongParabolaS - No Boundary hit" << endl;
+	} else if (tfinal == 0.) {
+		#ifdef VERBOSE_MODE				
+			cout << "TimeFromOutsideAlongParabolaS - Particle has failed to hit any boundary: " << tfinal << endl;
 		#endif
 		return TGeoShape::Big();
 	} else {
-		throw runtime_error("In TUCNGeoBBox, TimeFromOutsideAlongParabola - Calculation error - time to boundary is negative");
+		#ifdef VERBOSE_MODE				
+			cout << "Error - TimeFromOutsideAlongParabolaS - Calculation has failed" << tfinal << endl;
+		#endif
 		return 0.;
 	}
 }
@@ -1866,7 +1534,364 @@ Double_t TUCNGeoTube::OutsideTimeToZBoundary(const Double_t* point, const Double
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoTube::InsideTimeToRBoundary(const Double_t* /*point*/, const Double_t* /*velocity*/, const Double_t* /*field*/, const Double_t /*radius*/, const Bool_t /*onBoundary*/) 
+Double_t TUCNGeoTube::InsideTimeToRBoundary(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rBoundary, const Bool_t onBoundary) 
 {
-	return 0;
+	// -- Calculate the time to reach the circular boundary of the tube.
+	if (rBoundary <= 0.0) {
+		// -- No intersection possible since there is no boundary to cross!
+		return 0.0;
+	}
+	
+	// -- The general case require us to solve a quartic polynomial. 
+	Double_t a, b, c, d; 	// Four of the constants of the quartic polynomial. see notes for the equations.
+	a = 0.25*(field[0]*field[0] + field[1]*field[1]);
+	b = velocity[0]*field[0] + velocity[1]*field[1];
+	c = point[0]*field[0] + point[1]*field[1] + velocity[0]*velocity[0] + velocity[1]*velocity[1];
+	d = 2.0*(point[0]*velocity[0] + point[1]*velocity[1]);
+
+	// The fifth constant of the quartic polynomial. see notes for equation
+	// This is an important constant, since it represents the distance of the point from the the circular boundary	
+	// First we calculate the current radius of the point
+	Double_t rCurrent = TMath::Sqrt(point[0]*point[0] + point[1]*point[1]);
+	// The fifth constant of the quartic polynomial. see notes for equation
+	Double_t e = point[0]*point[0] + point[1]*point[1] - rBoundary*rBoundary; 
+	
+	// Now if the onBoundary flag is set, and our current radius is within 1E-9 of the boundary,
+	// we will put this down to being the case of sitting on this boundary, and therefore set e = 0;
+	if (TMath::Abs(rCurrent - rBoundary) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+		e = 0.0;
+	}
+	if (TMath::Abs(e) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+		e = 0.0;
+	}
+	
+	// -- Check for rounding errors on the remaining parameters
+	// Sometimes a,b,c or d can be extremely small but non-zero, due to rounding errors.
+	// I have often seen this for the fields after they have been rotated into the local coordinate frame.
+	if (TMath::Abs(a) < TGeoShape::Tolerance()) {
+		// a = 0 if the field component in the x-y plane is zero
+		// This happens if the tube is not rotated and is aligned with the field (conventially set along the z-axis)
+		a = 0.;
+	}
+	if (TMath::Abs(b) < TGeoShape::Tolerance()) {
+		// b = 0 if the velocity or field component in the x-y plane is zero (i.e it wont hit the boundary anyway)
+		b = 0.;
+	}
+	if (TMath::Abs(c) < TGeoShape::Tolerance()) {
+		// c = 0 if the velocity and field components in the x-y plane are zero (i.e it wont hit the boundary anyway)
+		c = 0.;
+	}
+	if (TMath::Abs(d) < TGeoShape::Tolerance()) {
+		// d = 0 if the velocity components in the x-y plane are zero (i.e it wont hit the boundary anyway)
+		d = 0.;
+	}
+	
+	// -- It is possible we have a lower class of equation however. Check for this. 
+	Int_t order = 4; // Order of the polynomial
+	if (a == 0.0) {
+		// We have a cubic or less
+		order = 3;
+		if (b == 0.0) {
+			order = 2;
+			if (c == 0.0) {
+				order = 1;
+				if (d == 0.0) {
+					// No solution - no intersection is possible (i.e: particle has no horizontal momentum and field is aligned along local z-axis?)
+					order = 0;
+				}
+			}
+		} 
+	}
+	
+	// --------------------------------------------------------------------------------------
+   // -- Solve the quartic equation to find the intersections of the parabola with the inner cylinder
+	#ifdef VERBOSE_MODE				
+		cout << "InsideTimeToRBoundary - Quartic Eqn - a: " <<  a << "  b: " << b << "  c: " << c << "  d: " << d << "  e: " << e << endl;
+		cout << "InsideTimeToRBoundary - Polynomial Order: " <<  order << endl;
+	#endif
+	
+	Int_t solutions = 0; // Counts the number of possible solutions
+	Double_t params[5] = {a,b,c,d,e}; // equation parameters
+	Double_t roots[4] = {0.,0.,0.,0.}; // roots of equation
+
+	if (order == 4) {
+		// We have a quartic equation
+		solutions = TUCNPolynomial::Instance()->QuarticRootFinder(params, roots);
+	} else {
+		// We have a lower class of problem. 
+		if (order == 3) {
+			// We have a cubic. Organise parameters and solve. 
+			Double_t cubicParams[4] = {params[1], params[2], params[3], params[4]};
+			solutions = TUCNPolynomial::Instance()->CubicRootFinder(cubicParams, roots);
+		
+		} else if (order == 2) {
+			Double_t quadraticParams[3] = {params[2], params[3], params[4]};
+			solutions = TUCNPolynomial::Instance()->QuadraticRootFinder(quadraticParams, roots);
+
+		} else if (order == 1) {
+			// We have a linear equation. 
+			assert(d != 0.0);
+			roots[0] = -e/d;
+			solutions = 1;
+		
+		} else {
+			// No solutions - no intersection
+			solutions = 0;
+			return 0.0;
+		}
+	}
+	// --------------------------------------------------------------------------------------
+	// -- Find the smallest, positive, non-zero, real root of the polynomial
+	
+	// First check if we are sitting on a boundary
+	if (onBoundary == kTRUE) {
+		// If on boundary, we must be vigilant as one of the roots, representing the time to the boundary we are
+		// sitting on, should be zero, or very close to zero.
+		// If one is very very small, we need to set it to zero, to ensure that the larger root, indicating the correct
+		// time to the next boundary is chosen.
+		
+		// If more than one are very very small, then we need to be wary. This could mean we are on the boundary, but
+		// our angle of approach was so shallow that we are about to hit the boundary again very very soon (this should
+		// be extremely rare, but may as well flag the case in case it causes problems in future)
+		Int_t numberOfSuspectSolutions = 0;
+		for (Int_t i = 0; i < solutions; i++) {
+			if (roots[i] != 0.0 && TMath::Abs(roots[i]) < 1.E-8) numberOfSuspectSolutions++;
+		}
+		// Check the number of solutions that are very small
+		if (numberOfSuspectSolutions > 1) {
+			// This indicates the (hopefully) rare case when more than one solution is extremely small
+			cout << "InsideTimeToRBoundary - More than one of the roots are very small" << endl;
+			cout << "Root 1: " << roots[0] << "\t" << "Root 2: " << roots[1] << "\t" << "Root 3: " << roots[2] << "\t" << "Root 4: " << roots[3] << endl;
+			throw runtime_error("At least two very small roots encountered. Unsure how to proceed.");
+		} else if (numberOfSuspectSolutions == 1) {
+			// This (hopefully) represents the time to the boundary we are currently sitting on
+			// and should be set to zero to avoid confusion
+			for (Int_t i = 0; i < solutions; i++) {
+				if (TMath::Abs(roots[i]) < 1.E-8) {
+					cout << "InsideTimeToRBoundary - Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
+					roots[i] = 0.0;
+				}
+			}
+		} else {
+			// No very small solutions
+			// This is good (hopefully!). Should mean that we have no problems with the roots.
+		}
+	}
+	
+	#ifdef VERBOSE_MODE				
+		cout << "InsideTimeToRBoundary" << "\t" <<  "Solutions: " <<  solutions << endl;
+	#endif
+	// -- Define the smallest non-zero time to boundary
+	Double_t tmin = 0.0;
+	for (Int_t i = 0; i < solutions; i++) {
+		// -- Check if the current root positive and non-zero
+		if (roots[i] > 0.0) {
+			if (tmin == 0.0) {
+				// -- If a particular root is positive and tfinal has not yet been set, then intialise tfinal with that value
+				tmin = roots[i];
+			} else if (roots[i] < tmin) {
+				// -- If tfinal has been set to a certain solution, check if current solution is smaller
+				// -- and if so set that to be the current smallest tfinal
+				tmin = roots[i];
+			}
+		} else {
+			// -- Root is negative or zero, nothing to see here...
+			continue;
+		}
+	}
+	#ifdef VERBOSE_MODE				
+		cout << "InsideTimeToRBoundary - Smallest Time to Boundary: " <<  tmin << endl;
+	#endif
+	
+	// -- Since we are coming from Inside, we would expect at least one solution, unless we have no 
+	// -- horizontal velocity (which is checked above) or we are sitting on the boundary that we are looking
+	// -- for intersections with.
+	if (tmin <= 0.0) {
+		#ifdef VERBOSE_MODE				
+			cout << "Warning - InsideTimeToRBoundary has not found an positive intersection!" << endl;
+		#endif
+		return 0.0;
+	}
+	
+	return tmin;
+}
+
+//_____________________________________________________________________________
+Double_t TUCNGeoTube::OutsideTimeToRBoundary(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rBoundary, const Double_t dz, const Bool_t onBoundary) 
+{
+	// -- Calculate the time to reach the circular boundary of the tube from outside.
+	if (rBoundary <= 0.0) {
+		// -- No intersection possible since there is no boundary to cross!
+		return 0.0;
+	}
+	
+	// -- The general case require us to solve a quartic polynomial. 
+	Double_t a, b, c, d; 	// Four of the constants of the quartic polynomial. see notes for the equations.
+	a = 0.25*(field[0]*field[0] + field[1]*field[1]);
+	b = velocity[0]*field[0] + velocity[1]*field[1];
+	c = point[0]*field[0] + point[1]*field[1] + velocity[0]*velocity[0] + velocity[1]*velocity[1];
+	d = 2.0*(point[0]*velocity[0] + point[1]*velocity[1]);
+
+	// The fifth constant of the quartic polynomial. see notes for equation
+	// This is an important constant, since it represents the distance of the point from the the circular boundary	
+	// First we calculate the current radius of the point
+	Double_t rCurrent = TMath::Sqrt(point[0]*point[0] + point[1]*point[1]);
+	// The fifth constant of the quartic polynomial. see notes for equation
+	Double_t e = point[0]*point[0] + point[1]*point[1] - rBoundary*rBoundary; 
+	
+	// Now if the onBoundary flag is set, and our current radius is within 1E-9 of the boundary,
+	// we will put this down to being the case of sitting on this boundary, and therefore set e = 0;
+	if (TMath::Abs(rCurrent - rBoundary) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+		e = 0.0;
+	}
+	if (TMath::Abs(e) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+		e = 0.0;
+	}
+	
+	// -- Check for rounding errors on the remaining parameters
+	// Sometimes a,b,c or d can be extremely small but non-zero, due to rounding errors.
+	// I have often seen this for the fields after they have been rotated into the local coordinate frame.
+	if (TMath::Abs(a) < TGeoShape::Tolerance()) {
+		// a = 0 if the field component in the x-y plane is zero
+		// This happens if the tube is not rotated and is aligned with the field (conventially set along the z-axis)
+		a = 0.;
+	}
+	if (TMath::Abs(b) < TGeoShape::Tolerance()) {
+		// b = 0 if the velocity or field component in the x-y plane is zero (i.e it wont hit the boundary anyway)
+		b = 0.;
+	}
+	if (TMath::Abs(c) < TGeoShape::Tolerance()) {
+		// c = 0 if the velocity and field components in the x-y plane are zero (i.e it wont hit the boundary anyway)
+		c = 0.;
+	}
+	if (TMath::Abs(d) < TGeoShape::Tolerance()) {
+		// d = 0 if the velocity components in the x-y plane are zero (i.e it wont hit the boundary anyway)
+		d = 0.;
+	}
+	
+	// -- It is possible we have a lower class of equation however. Check for this. 
+	Int_t order = 4; // Order of the polynomial
+	if (a == 0.0) {
+		// We have a cubic or less
+		order = 3;
+		if (b == 0.0) {
+			order = 2;
+			if (c == 0.0) {
+				order = 1;
+				if (d == 0.0) {
+					// No solution - no intersection is possible (i.e: particle has no horizontal momentum and field is aligned along local z-axis?)
+					order = 0;
+				}
+			}
+		} 
+	}
+	
+	// --------------------------------------------------------------------------------------
+   // -- Solve the quartic equation to find the intersections of the parabola with the inner cylinder
+	#ifdef VERBOSE_MODE				
+		cout << "OutsideTimeToRBoundary - Quartic Eqn - a: " <<  a << "  b: " << b << "  c: " << c << "  d: " << d << "  e: " << e << endl;
+		cout << "OutsideTimeToRBoundary - Polynomial Order: " <<  order << endl;
+	#endif
+	
+	Int_t solutions = 0; // Counts the number of possible solutions
+	Double_t params[5] = {a,b,c,d,e}; // equation parameters
+	Double_t roots[4] = {0.,0.,0.,0.}; // roots of equation
+
+	if (order == 4) {
+		// We have a quartic equation
+		solutions = TUCNPolynomial::Instance()->QuarticRootFinder(params, roots);
+	} else {
+		// We have a lower class of problem. 
+		if (order == 3) {
+			// We have a cubic. Organise parameters and solve. 
+			Double_t cubicParams[4] = {params[1], params[2], params[3], params[4]};
+			solutions = TUCNPolynomial::Instance()->CubicRootFinder(cubicParams, roots);
+		
+		} else if (order == 2) {
+			Double_t quadraticParams[3] = {params[2], params[3], params[4]};
+			solutions = TUCNPolynomial::Instance()->QuadraticRootFinder(quadraticParams, roots);
+
+		} else if (order == 1) {
+			// We have a linear equation. 
+			assert(d != 0.0);
+			roots[0] = -e/d;
+			solutions = 1;
+		
+		} else {
+			// No solutions - no intersection
+			solutions = 0;
+			return 0.0;
+		}
+	}
+	// --------------------------------------------------------------------------------------
+	// -- Find the smallest, positive, non-zero, real root of the polynomial
+	
+	// First check if we are sitting on a boundary
+	if (onBoundary == kTRUE) {
+		// If on boundary, we must be vigilant as one of the roots, representing the time to the boundary we are
+		// sitting on, should be zero, or very close to zero.
+		// If one is very very small, we need to set it to zero, to ensure that the larger root, indicating the correct
+		// time to the next boundary is chosen.
+		
+		// If more than one are very very small, then we need to be wary. This could mean we are on the boundary, but
+		// our angle of approach was so shallow that we are about to hit the boundary again very very soon (this should
+		// be extremely rare, but may as well flag the case in case it causes problems in future)
+		Int_t numberOfSuspectSolutions = 0;
+		for (Int_t i = 0; i < solutions; i++) {
+			if (roots[i] != 0.0 && TMath::Abs(roots[i]) < 1.E-8) numberOfSuspectSolutions++;
+		}
+		// Check the number of solutions that are very small
+		if (numberOfSuspectSolutions > 1) {
+			// This indicates the (hopefully) rare case when more than one solution is extremely small
+			cout << "OutsideTimeToRBoundary - More than one of the roots are very small" << endl;
+			cout << "Root 1: " << roots[0] << "\t" << "Root 2: " << roots[1] << "\t" << "Root 3: " << roots[2] << "\t" << "Root 4: " << roots[3] << endl;
+			throw runtime_error("At least two very small roots encountered. Unsure how to proceed.");
+		} else if (numberOfSuspectSolutions == 1) {
+			// This (hopefully) represents the time to the boundary we are currently sitting on
+			// and should be set to zero to avoid confusion
+			for (Int_t i = 0; i < solutions; i++) {
+				if (TMath::Abs(roots[i]) < 1.E-8) {
+					cout << "OutsideTimeToRBoundary - Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
+					roots[i] = 0.0;
+				}
+			}
+		} else {
+			// No very small solutions
+			// This is good (hopefully!). Should mean that we have no problems with the roots.
+		}
+	}
+	
+	#ifdef VERBOSE_MODE				
+		cout << "OutsideTimeToRBoundary" << "\t" <<  "Solutions: " <<  solutions << endl;
+	#endif
+	// -- Define the smallest non-zero time to boundary
+	Double_t tmin = 0.0;
+	for (Int_t i = 0; i < solutions; i++) {
+		// -- Check if the current root positive and non-zero
+		if (roots[i] > 0.0 && IsNextPointOnTube(point, velocity, field, rBoundary, dz, roots[i]) == kTRUE) {
+			if (tmin == 0.0) {
+				// -- If a particular root is positive and tfinal has not yet been set, then intialise tfinal with that value
+				tmin = roots[i];
+			} else if (roots[i] < tmin) {
+				// -- If tfinal has been set to a certain solution, check if current solution is smaller
+				// -- and if so set that to be the current smallest tfinal
+				tmin = roots[i];
+			}
+		} else {
+			// -- Root is negative or zero, nothing to see here...
+			continue;
+		}
+	}
+	
+	#ifdef VERBOSE_MODE				
+		cout << "OutsideTimeToRBoundary - Smallest Time to Boundary: " <<  tmin << endl;
+	#endif
+	// -- Since we are coming from Outside, there are no guarentees we will hit anything. 
+	if (tmin <= 0.0) {
+		#ifdef VERBOSE_MODE				
+			cout << "Warning - OusideTimeToRBoundary has not found an positive intersection!" << endl;
+		#endif
+		return 0.0;
+	}	
+	return tmin;
 }
