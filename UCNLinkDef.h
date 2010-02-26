@@ -17,7 +17,6 @@
 #pragma link C++ class TUCNDataParser;
 #pragma link C++ class TUCNParabola;
 #pragma link C++ class TUCNPolynomial;
-//#pragma link C++ class TUCNData;
-//#pragma link C++ class TUCNParticleCloud;
+#pragma link C++ class TUCNData;
 
 #endif

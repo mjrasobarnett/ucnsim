@@ -44,8 +44,6 @@ TUCNGEOMATERIALO		= src/TUCNGeoMaterial.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNGEOMATERIALS		= src/TUCNGeoMaterial.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNGRAVFIELDO			= src/TUCNGravField.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNGRAVFIELDS			= src/TUCNGravField.$(SrcSuf)  UCNDict.$(SrcSuf)
-#TUCNPARTICLECLOUDO		= src/TUCNParticleCloud.$(ObjSuf)  UCNDict.$(ObjSuf)
-#TUCNPARTICLECLOUDS		= src/TUCNParticleCloud.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNPARTICLEO			= src/TUCNParticle.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNPARTICLES			= src/TUCNParticle.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNEXPERIMENTO			= src/TUCNExperiment.$(ObjSuf)  UCNDict.$(ObjSuf)
@@ -56,8 +54,8 @@ TUCNPARABOLAO			= src/TUCNParabola.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNPARABOLAS			= src/TUCNParabola.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNPOLYNOMIALO			= src/TUCNPolynomial.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNPOLYNOMIALS			= src/TUCNPolynomial.$(SrcSuf)  UCNDict.$(SrcSuf)
-#TUCNDATAO				= src/TUCNData.$(ObjSuf) UCNDict.$(ObjSuf)
-#TUCNDATAS				= src/TUCNData.$(SrcSuf) UCNDict.$(SrcSuf)
+TUCNDATAO				= src/TUCNData.$(ObjSuf) UCNDict.$(ObjSuf)
+TUCNDATAS				= src/TUCNData.$(SrcSuf) UCNDict.$(SrcSuf)
 TUCNRUNMANAGERO		= src/TUCNRunManager.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNRUNMANAGERS		= src/TUCNRunManager.$(SrcSuf)  UCNDict.$(SrcSuf)
 
@@ -69,9 +67,9 @@ UCNSO   		= lib/libUCN.$(DllSuf)
 UCNLIB			= -L./lib -lUCN -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter
 #------------------------------------------------------------------------------
 OBJS         =	$(SANDBOXO) $(UCNSIMO) $(FITDATAO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) \
-				$(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
-				$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) #$(TUCNDATAO) $(TUCNPARTICLECLOUDO) 
-PROGRAMS     = 	$(UCNSO) $(UCNSIM) $(FITDATA) $(SANDBOX)
+					$(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
+					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) 
+PROGRAMS     = $(UCNSO) $(UCNSIM) $(FITDATA) $(SANDBOX)
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 .PHONY:     UCN
@@ -83,7 +81,7 @@ clean:
 
 $(SANDBOX):		$(SANDBOXO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) \
 					$(TUCNGEOTUBEO) $(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) #$(TUCNDATAO) $(TUCNPARTICLECLOUDO) 
+					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO)
 					$(LD) $(LDFLAGS) $(SANDBOXO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
@@ -91,7 +89,7 @@ $(SANDBOX):		$(SANDBOXO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDE
 
 $(UCNSIM):		$(UCNSIMO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) \
 					$(TUCNGEOTUBEO) $(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) #$(TUCNDATAO) $(TUCNPARTICLECLOUDO)  
+					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO)
 					$(LD) $(LDFLAGS) $(UCNSIMO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
@@ -106,7 +104,7 @@ $(FITDATA):		$(FITDATAO) $(TUCNDATAPARSERO)
 UCN:				$(UCNSO)
 $(UCNSO):		$(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) \
 					$(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) #$(TUCNDATAO) $(TUCNPARTICLECLOUDO)
+					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO)
 
 ifeq ($(ARCH),aix)
 		/usr/ibmcxx/bin/makeC++SharedLib $(OutPutOpt) $@ $(LIBS) -p 0 $^
@@ -144,15 +142,13 @@ TUCNDATAPARSERO:				include/TUCNDataParser.h
 TUCNPARABOLAO:					include/TUCNParabola.h
 TUCNPOLYNOMIALO:				include/TUCNPolynomial.h
 TUCNRUNMANAGERO:				include/TUCNRunManager.h
-#TUCNDATAO:						include/TUCNData.h
-#TUCNPARTICLECLOUDO:			include/TUCNParticleCloud.h
+TUCNDATAO:						include/TUCNData.h
 
 UCNDict.$(SrcSuf):		include/TUCNGeoManager.h include/TUCNGeoNavigator.h include/TUCNGeoBuilder.h \
 								include/TUCNGeoBBox.h include/TUCNGeoTube.h include/TUCNGeoMaterial.h \
 								include/TUCNGravField.h include/TUCNParticle.h \
 								include/TUCNDataParser.h include/TUCNPolynomial.h include/TUCNParabola.h \
-								include/TUCNRunManager.h $(LINKDEF)
-								#include/TUCNData.h include/TUCNParticleCloud.h
+								include/TUCNRunManager.h include/TUCNData.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 
