@@ -14,10 +14,6 @@
 
 class TUCNGeoBBox : public TGeoBBox 
 {
-private:
-	static Double_t      SmallestInsideTime(const Int_t solutions, Double_t* roots, const Bool_t onBoundary);
-	static Double_t      SmallestOutsideTime(const Int_t solutions, Double_t* roots, const Bool_t onBoundary, const Double_t* point, 
-												const Double_t* velocity, const Double_t* field, const Double_t* boundary);
 
 public:
    // constructors
@@ -38,6 +34,9 @@ public:
    static  Double_t     TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field,
                                const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Bool_t onBoundary);
    static  Bool_t       IsNextPointOnBox(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t* boundary, const Double_t t);
+	static Double_t      SmallestInsideTime(const Int_t solutions, Double_t* roots, const Bool_t onBoundary);
+	static Double_t      SmallestOutsideTime(const Int_t solutions, Double_t* roots, const Bool_t onBoundary, const Double_t* point, 
+												const Double_t* velocity, const Double_t* field, const Double_t* boundary);
 	
 	ClassDef(TUCNGeoBBox, 1) // UCNGeoBBox
 };

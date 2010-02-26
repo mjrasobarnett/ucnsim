@@ -1072,94 +1072,60 @@ Double_t TUCNGeoTube::TimeFromInsideAlongParabola(const Double_t* point, const D
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoTube::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t /*onBoundary*/)
+Double_t TUCNGeoTube::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t onBoundary)
 {
 	// Compute time from inside point to surface of the tube	
-	Double_t tfinal = 0.; // Storage for the overall smallest, non-zero time to the nearest boundary
 	#ifdef VERBOSE_MODE				
-		cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Local Field Coords - X: " <<  field[0] << "  Y: " << field[1] << "  Z: " << field[2] << endl;
-		cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Local Point - X: " <<  point[0] << "  Y: " << point[1] << "  Z: " << point[2] << endl;
-		cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Local Velocity - X: " <<  velocity[0] << "  Y: " << velocity[1] << "  Z: " << velocity[2] << endl;
+		cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Local Field - X: " <<  field[0] << " Y: " << field[1] << " Z: " << field[2] << endl;
+		cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Local Point - X: " <<  point[0] << " Y: " << point[1] << " Z: " << point[2] << endl;
+		cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Local Vel - X: " <<  velocity[0] << " Y: " << velocity[1] << " Z: " << velocity[2] << endl;
 	#endif
 	// --------------------------------------------------------------------------------------
-   // -- First calculate time to intersect the +/- Z planes.
-	Double_t boundary = dz;
-	
-	// -- Loop over +/- Z boundaries
-	#ifdef VERBOSE_MODE				
-		cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Solve for +/- Z Boundaries" << endl;
-	#endif
-	for (Int_t j = 0; j < 2; j++) {
-		// -- Define storage for the smallest non-zero root to the CURRENT boundary
-		Double_t tmin = 0.0;
-		// -- Define the constants in the quadratic equation, a, b, c - see note book for details
-		Double_t params[3] = {0., 0., 0.};
-		params[0] = 0.5*field[2];
-		params[1] = velocity[2]; 
-		params[2] = point[2] - (TMath::Power(-1,j)*boundary);
-
-		// -- Solve equation for potential roots
-		Double_t roots[2] = {0., 0.};
-		Int_t solutions = TUCNPolynomial::Instance()->QuadraticRootFinder(&params[0], &roots[0]);
-
-		#ifdef VERBOSE_MODE		
-			cout << j << "\t" << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
-			cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
-		#endif
-
-		// -- Determing number of roots, and select the smallest, real, non-zero value. 
-		if (solutions == 2) {
-			// -- Two roots
-			if (roots[0] > 0. && roots[1] > 0.) {
-				// If both are positive - determine which of two positive roots is the smaller
-				if (roots[0] < roots[1]) {
-					tmin = roots[0];
-				} else {
-					tmin = roots[1];
-				}
-			} else if (roots[0] > 0.) {
-				tmin = roots[0];
-			} else if (roots[1] > 0.) {
-				tmin = roots[1];
-			} else {
-				#ifdef VERBOSE_MODE		
-					cout << "TimeFromInsideAlongParabola" << "\t" <<  "Both roots are negative or zero." << endl; 
-				#endif
-			}
-		} else if (solutions == 1) {
-			// -- One Root
-			if (roots[0] > 0.) {
-				tmin = roots[0];
-			} else {
-				//-- Only Root is negative or zero
-			}
-		} else if (solutions == 0) {
-			// -- No Real Roots
-		} else {
-			throw runtime_error("In TUCNGeoBBox, TimeFromInsideAlongParabola - number of quadratic eqn roots is not between 0 and 2");
-		}
-		
-		if (tmin > 0.0 && tfinal == 0.0) {
-			// -- If the current overall smallest time to any boundary is zero, initialise it to the first non-zero time to a boundary
-			tfinal = tmin;
-		} else if (tmin > 0.0 && tmin < tfinal) {
-			// -- Check if this time, the smallest, non-zero time to the current boundary, is smaller than the current overall smallest time to any boundary
-			tfinal = tmin;
-		}
+   // -- Storage for the overall smallest, non-zero time to the nearest boundary
+	Double_t tfinal = 0.; 
+	// --------------------------------------------------------------------------------------
+	// -- 1. FIRST CHECK WHETHER WE WILL HIT THE ENDS OF THE TUBE AT +/-Zs
+	Double_t tmin = TUCNGeoTube::InsideTimeToZBoundary(point, velocity, field, dz, onBoundary);
+	if (tmin == 0.0) {
+		cout << "Error: Particle has failed to hit either z-boundary from Inside. Exiting." << endl;
+		return 0.0;
+	} else {
+		// -- Solution found. Setting as the current smallest time
 		#ifdef VERBOSE_MODE				
-			cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Z BOUNDARY --- tfinal: " <<  tfinal << endl;
+			cout << "Particle has reached first z-boundary in: " << tmin << endl;
 		#endif
+		tfinal = tmin;
 	}
 	
-	
 	// --------------------------------------------------------------------------------------
-   // -- Now Calculate the time to reach the circular boundaries of the tube.
+   // -- 2. Next Calculate the time to reach the circular boundaries of the tube.
 	// -- The general case require us to solve a quartic polynomial. 
 	Double_t a, b, c, d; 	// Four of the constants of the quartic polynomial. see notes for the equations.
 	a = 0.25*(field[0]*field[0] + field[1]*field[1]);
 	b = velocity[0]*field[0] + velocity[1]*field[1];
 	c = point[0]*field[0] + point[1]*field[1] + velocity[0]*velocity[0] + velocity[1]*velocity[1];
 	d = 2.0*(point[0]*velocity[0] + point[1]*velocity[1]);
+	
+	// -- Check for rounding errors on the parameters
+	// Sometimes a,b,c or d can be extremely small but non-zero, due to rounding errors.
+	// I have often seen this for the fields after they have been rotated into the local coordinate frame.
+	if (TMath::Abs(a) < TGeoShape::Tolerance()) {
+		// a = 0 if the field component in the x-y plane is zero
+		// This happens if the tube is not rotated and is aligned with the field (conventially set along the z-axis)
+		a = 0.;
+	}
+	if (TMath::Abs(b) < TGeoShape::Tolerance()) {
+		// b = 0 if the velocity or field component in the x-y plane is zero (i.e it wont hit the boundary anyway)
+		b = 0.;
+	}
+	if (TMath::Abs(c) < TGeoShape::Tolerance()) {
+		// c = 0 if the velocity and field components in the x-y plane are zero (i.e it wont hit the boundary anyway)
+		c = 0.;
+	}
+	if (TMath::Abs(d) < TGeoShape::Tolerance()) {
+		// d = 0 if the velocity components in the x-y plane are zero (i.e it wont hit the boundary anyway)
+		d = 0.;
+	}
 	
 	// -- It is possible we have a lower class of equation however. Check for this. 
 	Int_t order = 4; // Order of the polynomial
@@ -1177,8 +1143,6 @@ Double_t TUCNGeoTube::TimeFromInsideAlongParabolaS(const Double_t* point, const 
 			}
 		} 
 	}
-	
-	
 	
 	#ifdef VERBOSE_MODE				
 		cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Polynomial Order: " <<  order << endl;
@@ -1320,7 +1284,7 @@ Double_t TUCNGeoTube::TimeFromInsideAlongParabolaS(const Double_t* point, const 
 					// -- If a particular root is positive and tfinal has not yet been set, then intialise tfinal with that value
 					tfinal = roots[i];
 				} else if (roots[i] < tfinal) {
-					// -- If tfinal has been set to a certain solution, check if current solution is smaller and if so set that to be the current smallest tfinal
+					// -- If tfinal has been set to a certain solution, check if current solution is smaller
 					tfinal = roots[i];
 				}
 			} else {
@@ -1369,96 +1333,63 @@ Double_t TUCNGeoTube::TimeFromOutsideAlongParabola(const Double_t* point, const 
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoTube::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t /*onBoundary*/)
+Double_t TUCNGeoTube::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t onBoundary)
 {
 	// Compute time from outside point to the surface of the tube
-	Double_t tfinal = 0.; // Storage for the overall smallest, non-zero time to the nearest boundary
 	#ifdef VERBOSE_MODE				
-		cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Local Field Coords - X: " <<  field[0] << "  Y: " << field[1] << "  Z: " << field[2] << endl;
-		cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Local Point - X: " <<  point[0] << "  Y: " << point[1] << "  Z: " << point[2] << endl;
-		cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Local Velocity - X: " <<  velocity[0] << "  Y: " << velocity[1] << "  Z: " << velocity[2] << endl;
+		cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Local Field - X: " <<  field[0] << " Y: " << field[1] << " Z: " << field[2] << endl;
+		cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Local Point - X: " <<  point[0] << " Y: " << point[1] << " Z: " << point[2] << endl;
+		cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Local Vel - X: " <<  velocity[0] << " Y: " << velocity[1] << " Z: " << velocity[2] << endl;
 	#endif
 	// --------------------------------------------------------------------------------------
-   // -- First calculate time to intersect the +/- Z planes.
-	Double_t boundary = dz;
-	
-	// -- Loop over +/- Z boundaries
-	#ifdef VERBOSE_MODE				
-		cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Solve for +/- Z Boundaries" << endl;
-	#endif
-	for (Int_t j = 0; j < 2; j++) {
-		// -- Define storage for the smallest non-zero root to the CURRENT boundary
-		Double_t tmin = 0.0;
-		// -- Define the constants in the quadratic equation, a, b, c - see note book for details
-		Double_t params[3] = {0., 0., 0.};
-		params[0] = 0.5*field[2];
-		params[1] = velocity[2]; 
-		params[2] = point[2] - (TMath::Power(-1,j)*boundary);
-
-		// -- Solve equation for potential roots
-		Double_t roots[2] = {0., 0.};
-		Int_t solutions = TUCNPolynomial::Instance()->QuadraticRootFinder(&params[0], &roots[0]);
-
-		#ifdef VERBOSE_MODE		
-			cout << j << "\t" << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
-			cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
-		#endif
-
-		// -- Determing number of roots, and select the smallest, real, non-zero value. 
-		if (solutions == 2) {
-			// -- Two roots
-			// -- Check first root to see if it is positive and corresponds to a point actually on the surface of the tube
-			if (roots[0] > 0. && IsNextPointOnTube(point, velocity, field, rmax, boundary, roots[0]) == kTRUE) {
-				tmin = roots[0];
-			}
-			// -- Check the second root for the same criteria.
-			if (roots[1] > 0. && IsNextPointOnTube(point, velocity, field, rmax, boundary, roots[1]) == kTRUE) {
-				if (tmin == 0.) {
-					// -- If the first root wasn't a valid solution, then just set tmin to the second root. 
-					tmin = roots[1];
-				} else if (tmin > 0. && roots[1] < tmin) {
-					// -- If both roots are valid, then compare the two roots and pick the smallest value. 
-					tmin = roots[1];
-				} else {
-					#ifdef VERBOSE_MODE		
-						cout << "TimeFromOutsideAlongParabolaS - Both roots are negative, zero or invalid" << endl; 
-					#endif
-				}
-			}
-		} else if (solutions == 1) {
-			// -- One Root
-			if (roots[0] > 0. && IsNextPointOnTube(point, velocity, field, rmax, boundary, roots[0]) == kTRUE) {
-				tmin = roots[0];
-			} else {
-				//-- Only Root is negative or zero
-			}
-		} else if (solutions == 0) {
-			// -- No Real Roots
-		} else {
-			throw runtime_error("TimeFromOutsideAlongParabolaS - number of quadratic eqn roots is not between 0 and 2");
-		}
-		
-		if (tmin > 0.0 && tfinal == 0.0) {
-			// -- If the current overall smallest time to any boundary is zero, initialise it to the first non-zero time to a boundary
-			tfinal = tmin;
-		} else if (tmin > 0.0 && tmin < tfinal) {
-			// -- Check if this time, the smallest, non-zero time to the current boundary, is smaller than the current overall smallest time to any boundary
-			tfinal = tmin;
-		}
+   // -- Storage for the overall smallest, non-zero time to the nearest boundary
+	Double_t tfinal = 0.; 
+	// --------------------------------------------------------------------------------------
+	// -- 1. FIRST CHECK WHETHER WE WILL HIT THE ENDS OF THE TUBE AT +/-Zs
+	// -- First calculate time to intersect the +/- Z planes.
+	Double_t tmin = TUCNGeoTube::OutsideTimeToZBoundary(point, velocity, field, rmax, dz, onBoundary);
+	if (tmin == 0.0) {
+		// -- Failed to hit either of the z-boundaries
 		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Z BOUNDARY --- tfinal: " <<  tfinal << endl;
+			cout << "Particle has failed to hit either z-boundary from Inside." << endl;
 		#endif
+	} else {
+		// -- Solution found. Setting as the current smallest time
+		#ifdef VERBOSE_MODE				
+			cout << "Particle has reached first z-boundary in: " << tmin << endl;
+		#endif
+		tfinal = tmin;
 	}
 	
-	
 	// --------------------------------------------------------------------------------------
-   // -- Now Calculate the time to reach the circular boundaries of the tube.
+   // -- 2. Calculate the time to reach the circular boundaries of the tube.
 	// -- The general case require us to solve a quartic polynomial. 
 	Double_t a, b, c, d; 	// Four of the constants of the quartic polynomial. see notes for the equations.
 	a = 0.25*(field[0]*field[0] + field[1]*field[1]);
 	b = velocity[0]*field[0] + velocity[1]*field[1];
 	c = point[0]*field[0] + point[1]*field[1] + velocity[0]*velocity[0] + velocity[1]*velocity[1];
 	d = 2.0*(point[0]*velocity[0] + point[1]*velocity[1]);
+	
+	// -- Check for rounding errors on the parameters
+	// Sometimes a,b,c or d can be extremely small but non-zero, due to rounding errors.
+	// I have often seen this for the fields after they have been rotated into the local coordinate frame.
+	if (TMath::Abs(a) < TGeoShape::Tolerance()) {
+		// a = 0 if the field component in the x-y plane is zero
+		// This happens if the tube is not rotated and is aligned with the field (conventially set along the z-axis)
+		a = 0.;
+	}
+	if (TMath::Abs(b) < TGeoShape::Tolerance()) {
+		// b = 0 if the velocity or field component in the x-y plane is zero (i.e it wont hit the boundary anyway)
+		b = 0.;
+	}
+	if (TMath::Abs(c) < TGeoShape::Tolerance()) {
+		// c = 0 if the velocity and field components in the x-y plane are zero (i.e it wont hit the boundary anyway)
+		c = 0.;
+	}
+	if (TMath::Abs(d) < TGeoShape::Tolerance()) {
+		// d = 0 if the velocity components in the x-y plane are zero (i.e it wont hit the boundary anyway)
+		d = 0.;
+	}
 	
 	// -- It is possible we have a lower class of equation however. Check for this. 
 	Int_t order = 4; // Order of the polynomial
@@ -1544,7 +1475,7 @@ Double_t TUCNGeoTube::TimeFromOutsideAlongParabolaS(const Double_t* point, const
 				cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "i: " << i << "  Root: " << roots[i] << endl;
 			#endif
 			// -- Check if the current root positive and non-zero
-			if (roots[i] > 0.0 && IsNextPointOnTube(point, velocity, field, rmin, boundary, roots[i]) == kTRUE) {
+			if (roots[i] > 0.0 && IsNextPointOnTube(point, velocity, field, rmin, dz, roots[i]) == kTRUE) {
 				if (tfinal == 0.0) {
 					// -- If a particular root is positive and tfinal has not yet been set, then intialise tfinal with that value
 					tfinal = roots[i];
@@ -1618,7 +1549,7 @@ Double_t TUCNGeoTube::TimeFromOutsideAlongParabolaS(const Double_t* point, const
 		// -- Find the smallest, positive, non-zero, real root of the polynomial
 		for (Int_t i = 0; i < solutions; i++) {
 			// -- Check if the current root positive and non-zero
-			if (roots[i] > 0.0 && IsNextPointOnTube(point, velocity, field, rmax, boundary, roots[i]) == kTRUE) {
+			if (roots[i] > 0.0 && IsNextPointOnTube(point, velocity, field, rmax, dz, roots[i]) == kTRUE) {
 				if (tfinal == 0.0) {
 					// -- If a particular root is positive and tfinal has not yet been set, then intialise tfinal with that value
 					tfinal = roots[i];
@@ -1696,4 +1627,246 @@ Bool_t TUCNGeoTube::IsNextPointOnTube(const Double_t* point, const Double_t* vel
 		cout << "IsNextPointOnTube - Point on surface of tube. Return true" << endl;
 	#endif
 	return kTRUE;
+}
+
+//_____________________________________________________________________________
+Double_t TUCNGeoTube::InsideTimeToZBoundary(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t dz, const Bool_t onBoundary)
+{
+	// -- Find the smallest, non-zero, positive time to one of the tube end caps
+	#ifdef VERBOSE_MODE				
+		cout << "InsideTimeToZBoundary" << "\t" <<  "Solve for +/- Z Boundaries" << endl;
+	#endif
+	Double_t tfinal = 0.0;
+	Double_t boundary = dz;
+	// -- Loop over +/- Z boundaries
+	for (Int_t j = 0; j < 2; j++) {
+		// -- Define the constants in the quadratic equation, a, b, c - see note book for details
+		Double_t params[3] = {0., 0., 0.};
+		params[0] = 0.5*field[2];
+		params[1] = velocity[2]; 
+		params[2] = point[2] - (TMath::Power(-1,j)*boundary);
+		
+		// Sometimes a,b or c (usually c) can be extremely small but non-zero, due to the fact that
+		// we are usually sitting on a boundary and c measures the distance to the current boundary.
+		if (TMath::Abs(params[0]) < TGeoShape::Tolerance()) {
+			// a = 0 if the field component in this direction is zero
+			params[0] = 0.;
+		}
+		if (TMath::Abs(params[1]) < TGeoShape::Tolerance()) {
+			// b = 0 if the velocity component in this direction is zero (i.e it wont hit the boundary anyway)
+			params[1] = 0.;
+		}
+		// We are usually sitting on a boundary so c will occasionally be within a few ~E-10 of zero.
+		// Therefore if c is less than 1E-9, and the onBoundary flag is set to TRUE, then we assume that
+		// we are on this boundary and set c = 0 to signify this. 
+		if (TMath::Abs(params[2]) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+			params[2] = 0.;
+		}
+	
+		// -- Solve equation for potential roots
+		Double_t roots[2] = {0., 0.};
+		Int_t solutions = TUCNPolynomial::Instance()->QuadraticRootFinder(&params[0], &roots[0]);
+
+		#ifdef VERBOSE_MODE		
+			cout << j << "\t" << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
+			cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
+		#endif
+		
+		// -- Store the smallest non-zero root to the CURRENT boundary
+		Double_t tmin = TUCNGeoBBox::SmallestInsideTime(solutions, &roots[0], onBoundary);
+		
+		if (tmin > 0.0 && tfinal == 0.0) {
+			// -- If the current overall smallest time to any boundary is zero, initialise it to the first non-zero time to a boundary
+			tfinal = tmin;
+		} else if (tmin > 0.0 && tmin < tfinal) {
+			// -- Check if this time, the smallest, non-zero time to the current boundary, is smaller than the current overall smallest time to any boundary
+			tfinal = tmin;
+		} else if (tmin <= 0.0) {
+			// -- The returned time to the boundary was zero/negative
+			#ifdef VERBOSE_MODE				
+				cout << "InsideTimeToZBoundary" << "\t" <<  "Time to Boundary: " << TMath::Power(-1,j) << "z, is negative or zero: " << tmin << endl;
+			#endif
+		} else {
+			// -- The time is larger than the current smallest time to z-boundary.
+			#ifdef VERBOSE_MODE				
+				cout << "InsideTimeToZBoundary" << "\t" <<  "Time to current boundary is larger than current smallest: " << tmin << endl;
+			#endif
+		}
+		#ifdef VERBOSE_MODE				
+			cout << "InsideTimeToZBoundary" << "\t" <<  "Current tfinal: " <<  tfinal << endl;
+		#endif
+	}
+	
+	// -- If either of the z-boundaries were hit, tfinal should be non-zero. Since we are coming from Inside, and 
+	// -- the end-caps are effectively infinite planes here, we should always hit at least one of the boundaries.
+	if (tfinal <= 0.0) {
+		#ifdef VERBOSE_MODE				
+			cout << "Error - InsideTimeToZBoundary has not found an intersection with either boundary: " <<  tfinal << endl;
+		#endif
+		return 0.0;
+	}
+	
+	// -- Return the smallest time to the z-boundaries
+	return tfinal;
+}
+
+//_____________________________________________________________________________
+Double_t TUCNGeoTube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmax, const Double_t dz, const Bool_t onBoundary)
+{
+	// -- Find the smallest, non-zero, positive time to one of the tube end caps from Outside
+	#ifdef VERBOSE_MODE				
+		cout << "OutsideTimeToZBoundary" << "\t" <<  "Solve for +/- Z Boundaries" << endl;
+	#endif
+	Double_t tfinal = 0.0;
+	Double_t boundary = dz;
+	// -- Loop over +/- Z boundaries
+	for (Int_t j = 0; j < 2; j++) {
+		// -- Define the constants in the quadratic equation, a, b, c - see note book for details
+		Double_t params[3] = {0., 0., 0.};
+		params[0] = 0.5*field[2];
+		params[1] = velocity[2]; 
+		params[2] = point[2] - (TMath::Power(-1,j)*boundary);
+		
+		// Sometimes a,b or c (usually c) can be extremely small but non-zero, due to the fact that
+		// we are usually sitting on a boundary and c measures the distance to the current boundary.
+		if (TMath::Abs(params[0]) < TGeoShape::Tolerance()) {
+			// a = 0 if the field component in this direction is zero
+			params[0] = 0.;
+		}
+		if (TMath::Abs(params[1]) < TGeoShape::Tolerance()) {
+			// b = 0 if the velocity component in this direction is zero (i.e it wont hit the boundary anyway)
+			params[1] = 0.;
+		}
+		// We are usually sitting on a boundary so c will occasionally be within a few ~E-10 of zero.
+		// Therefore if c is less than 1E-9, and the onBoundary flag is set to TRUE, then we assume that
+		// we are on this boundary and set c = 0 to signify this. 
+		if (TMath::Abs(params[2]) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+			params[2] = 0.;
+		}
+		
+		// -- Solve equation for potential roots
+		Double_t roots[2] = {0., 0.};
+		Int_t solutions = TUCNPolynomial::Instance()->QuadraticRootFinder(&params[0], &roots[0]);
+
+		#ifdef VERBOSE_MODE		
+			cout << j << "\t" << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
+			cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
+		#endif
+
+		// First check if we are sitting on a boundary
+		if (onBoundary == kTRUE) {
+			// If on boundary, we must be vigilant as one of the roots, representing the time to the boundary we are
+			// sitting on, should be zero, or very close to zero.
+			// If one is very very small, we need to set it to zero, to ensure that the larger root, indicating the correct
+			// time to the next boundary is chosen.
+			// If both are very very small, then we need to be wary. This could mean we are on a boundary, but also in the
+			// corner of a box, where the next boundary is very very close by. 
+			if (solutions == 2) {
+				if (TMath::Abs(roots[0]) < 1.E-8 && TMath::Abs(roots[1]) < 1.E-8) {
+					cout << "OutsideTimeToZBoundary - Two roots are both very small" << endl;
+					cout << "Root 1: " << roots[0] << "\t" << "Root 2: " << roots[1] << endl;
+					throw runtime_error("Two very small roots encountered. Unsure how to proceed.");
+				}
+				for (Int_t i = 0; i < 2; i++) {
+					if (TMath::Abs(roots[i]) < 1.E-8) {
+						cout << "OutsideTimeToZBoundary - Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
+						roots[i] = 0.0;
+					}
+				}
+			} else if (solutions == 1) {
+				// Need to be careful here. One solution is zero, which should/may be because we are sitting
+				// on a boundary and this has been computed correctly by the RootFinder. 
+				// It could also be because in this direction, the field is zero, and therefore we are moving along a straight line
+				// and if we are coming from inside the box, there will only be one intersection. (Coming from outside would still
+				// produce two intersections in this case).
+				// We could also be very very close to another boundary, say if we are sitting right in the corner of a box.
+				// In any case, we have a single solution which should be correct and not need setting to zero.
+				if (TMath::Abs(roots[0]) < 1.E-8) cout << "OutsideTimeToZBoundary - Single Root found to be < 1.E-8 : " << roots[0] << endl;
+			} else {
+				// Nothing to be done - both roots should be zero anyway - no solutions found
+			}
+		}
+		
+		// -- Store the smallest non-zero root to the CURRENT boundary
+		Double_t tmin = 0.0;
+		// -- Determing number of roots, and select the smallest, real, non-zero value. 
+		if (solutions == 2) {
+			// -- Two roots
+			// -- Check first root to see if it is positive and corresponds to a point actually on the surface of the tube
+			if (roots[0] > 0. && TUCNGeoTube::IsNextPointOnTube(point, velocity, field, rmax, boundary, roots[0]) == kTRUE) {
+				tmin = roots[0];
+			}
+			// -- Check the second root for the same criteria.
+			if (roots[1] > 0. && TUCNGeoTube::IsNextPointOnTube(point, velocity, field, rmax, boundary, roots[1]) == kTRUE) {
+				if (tmin == 0.) {
+					// -- If the first root wasn't a valid solution, then just set tmin to the second root. 
+					tmin = roots[1];
+				} else if (tmin > 0. && roots[1] < tmin) {
+					// -- If both roots are valid, then compare the two roots and pick the smallest value. 
+					tmin = roots[1];
+				} else {
+					#ifdef VERBOSE_MODE		
+						cout << "OutsideTimeToZBoundary - Both roots are negative, zero or invalid" << endl; 
+					#endif
+					return 0;
+				}
+			}
+		} else if (solutions == 1) {
+			// -- One Root
+			if (roots[0] > 0. && TUCNGeoTube::IsNextPointOnTube(point, velocity, field, rmax, boundary, roots[0]) == kTRUE) {
+				tmin = roots[0];
+			} else {
+				//-- Only Root is negative or zero
+				#ifdef VERBOSE_MODE		
+					cout << "OutsideTimeToZBoundary - Only root is negative, zero or invalid" << endl; 
+				#endif
+				return 0;
+			}
+		} else {
+			// -- No Real Roots
+			#ifdef VERBOSE_MODE		
+				cout << "OutsideTimeToZBoundary - No solutions" << endl; 
+			#endif
+			return 0;
+		}
+		
+		if (tmin > 0.0 && tfinal == 0.0) {
+			// -- If the current overall smallest time to any boundary is zero, initialise it to the first non-zero time to a boundary
+			tfinal = tmin;
+		} else if (tmin > 0.0 && tmin < tfinal) {
+			// -- Check if this time, the smallest, non-zero time to the current boundary, is smaller than the current overall smallest time to any boundary
+			tfinal = tmin;
+		} else if (tmin <= 0.0) {
+			// -- The returned time to the boundary was zero/negative
+			#ifdef VERBOSE_MODE				
+				cout << "OutsideTimeToZBoundary - Time to Boundary: " << TMath::Power(-1,j) << "z, is negative or zero: " << tmin << endl;
+			#endif
+		} else {
+			// -- The time is larger than the current smallest time to z-boundary.
+			#ifdef VERBOSE_MODE				
+				cout << "OutsideTimeToZBoundary - Time to current boundary is larger than current smallest: " << tmin << endl;
+			#endif
+		}
+		#ifdef VERBOSE_MODE				
+			cout << "OutsideTimeToZBoundary" << "\t" <<  "Boundary: " << TMath::Power(-1,j) << "z, --- current tfinal: " <<  tfinal << endl;
+		#endif
+	}
+	
+	// -- If either of the z-boundaries were hit, tfinal should be non-zero. Since we are coming from Inside, and 
+	// -- the end-caps are effectively infinite planes here, we should always hit at least one of the boundaries.
+	if (tfinal <= 0.0) {
+		#ifdef VERBOSE_MODE				
+			cout << "OutsideTimeToZBoundary has not found an intersection with either boundary" << endl;
+		#endif
+		return 0.0;
+	}
+	
+	// -- Return the smallest time to the z-boundaries -- (may be zero, i.e: neither z-boundary was hit)
+	return tfinal;
+}
+
+//_____________________________________________________________________________
+Double_t TUCNGeoTube::InsideTimeToRBoundary(const Double_t* /*point*/, const Double_t* /*velocity*/, const Double_t* /*field*/, const Double_t /*radius*/, const Bool_t /*onBoundary*/) 
+{
+	return 0;
 }

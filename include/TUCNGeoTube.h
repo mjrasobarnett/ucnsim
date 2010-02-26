@@ -75,12 +75,22 @@ class TUCNGeoTube : public TUCNGeoBBox
 	   virtual void          Sizeof3D() const;
 
       // -- new methods
-      virtual Double_t     TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
-      static  Double_t     TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t onBoundary);
-      virtual Double_t     TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
-      static  Double_t     TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t onBoundary);
-      static  Bool_t       IsNextPointOnTube(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t radius, const Double_t dz, const Double_t t);
-
+		virtual Double_t     TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field,
+															const Double_t stepTime, const Bool_t onBoundary) const;
+		static  Double_t     TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field,
+															const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t onBoundary);
+		virtual Double_t     TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field,
+															const Double_t stepTime, const Bool_t onBoundary) const;
+		static  Double_t     TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field,
+															const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t onBoundary);
+		static  Bool_t       IsNextPointOnTube(const Double_t* point, const Double_t* velocity, const Double_t* field,
+															const Double_t radius, const Double_t dz, const Double_t t);
+		static  Double_t		InsideTimeToZBoundary(const Double_t* point, const Double_t* velocity, const Double_t* field,
+															const Double_t dz, const Bool_t onBoundary);
+		static  Double_t		OutsideTimeToZBoundary(const Double_t* point, const Double_t* velocity, const Double_t* field,
+															const Double_t rMax, const Double_t dz, const Bool_t onBoundary);
+		static  Double_t		InsideTimeToRBoundary(const Double_t* point, const Double_t* velocity, const Double_t* field,
+															const Double_t radius, const Bool_t onBoundary);
       ClassDef(TUCNGeoTube, 1)     // UCNGeoTube
 };
 
