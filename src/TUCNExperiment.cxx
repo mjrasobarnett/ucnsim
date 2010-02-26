@@ -387,6 +387,7 @@ Bool_t TUCNExperiment::GenerateParticles(TUCNRun* run)
 				currentNode = NULL;
 				kineticEnergy = 0.0;
 				height = 0.0;
+				Warning("GenerateParticles","Regions of your source volume are not accessible by neutrons of total-energy(neV): %f",totalEnergy/Units::neV);
 				continue;
 			}
 			#ifdef VERBOSE_MODE

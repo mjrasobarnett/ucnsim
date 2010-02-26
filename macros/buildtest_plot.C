@@ -72,7 +72,7 @@ Bool_t DrawInitialPositions(const char* fileName, TGeoManager* geoManager)
 		return kFALSE;
 	}
 	// -- Draw Points
-	TCanvas *canvas = new TCanvas("InitialPositionsCanvas","Neutron InitialPositions",60,0,400,400);
+	TCanvas *canvas = new TCanvas("InitialPositionsCanvas","Neutron Initial Positions",60,0,400,400);
 	canvas->cd();
 	geoManager->GetTopVolume()->Draw();
 	geoManager->SetVisLevel(4);

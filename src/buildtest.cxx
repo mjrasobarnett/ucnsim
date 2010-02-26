@@ -55,8 +55,6 @@ using std::endl;
 using std::cerr;
 using std::string;
 
-const Double_t total_energy = 50*Units::neV;
-
 Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& runName);
 Bool_t PlotFinalHeightDistribution(const TString& dataFileName);
 Bool_t PlotLossFunction(const TString& dataFileName);
@@ -96,7 +94,16 @@ Int_t main(Int_t argc,Char_t ** argv)
 		cerr << "Experiment failed to write to File. Program aborting." << endl;
 		return EXIT_FAILURE;
 	}
-
+	
+/*	TCanvas canvas("canvas","canvas",60,0,800,800);
+	canvas.Divide(2,2);
+	for (Int_t i = 0; i < 4; i++) {
+		canvas.cd(i+1);
+		gGeoManager->GetTopVolume()->Draw();
+		gGeoManager->GetTrack(i)->Draw();
+	}	
+	theApp->Run();
+*/	
 	cout << endl << endl << "END OF SIMULATION" << endl << endl << endl;
 	delete experiment;		
 	
