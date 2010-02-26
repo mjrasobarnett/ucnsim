@@ -341,13 +341,15 @@ Bool_t PlotLossFunction(const TString& dataFileName)
 	///////////////////////////////////////////////////////////////////////////////////////
 	
 	Int_t numberOfRuns = 9; // We must ensure that only runs 2-10 are for losses //experiment->NumberOfRuns();
-	static const Double_t V = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->FermiPotential();
-	static const Double_t eta = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->Eta();
-//	if (eta == 0.0 || V == 0.0) {
-//		cerr << "V or Eta are read to be zero from geoManager stored in File - Exiting" << endl;
-//		return kFALSE;
-//	}
-	
+	const Double_t V = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->FermiPotential();
+	const Double_t W = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->WPotential();
+	if (V == 0.0 || W == 0.0) {
+		cout << "Error: V = 0 or W = 0" << endl;
+		return kFALSE;
+	}
+	const Double_t eta = W/V;
+	cout << "V: " << V << "\t" << "W: " << W << endl;
+	cout << "ETA: " << eta << endl;
 	Double_t point_x[numberOfRuns], point_y[numberOfRuns], error_x[numberOfRuns], error_y[numberOfRuns];
 		
 	for (Int_t runNumber = 2; runNumber <= 10; runNumber++) {
@@ -376,23 +378,27 @@ Bool_t PlotLossFunction(const TString& dataFileName)
 		for (Int_t i = 0; i < particles; i++) {
 			// Get each Track
 			TUCNParticle* particle = run->GetParticle(i);
-			histogram.Fill(particle->Bounces());
+			// Only store number of bounces from those particles that actually decayed
+			if (particle->LostToBoundary() == kTRUE) {
+				histogram.Fill(particle->Bounces());
+			} else {
+				continue;
+			}
 		}
 		// -- Fit to exponential
 		TF1 expntl("expntl", "expo", range);
 		histogram.Fit("expntl", "R");
-//		Double_t p1 = expntl->GetParameter(0);
-//		Double_t e1 = expntl->GetParError(0);
 		Double_t lossParameter = expntl.GetParameter(1);
 		Double_t error = expntl.GetParError(1);
 		
 		// -- Fill array with fitted neutron lifetime for each run
+		cout << "Total Energy: " << totalEnergy << "\t" << "V: " << V << "\t" << "Eta: " << eta << endl;
 		point_x[runNumber-2] = totalEnergy/V; // Total energy of the neutrons in units of the fermi potential V
 		point_y[runNumber-2] = TMath::Abs(lossParameter)/eta; // Loss probability in units of f, averaged over all angles of incidence.
 		error_x[runNumber-2] = 0.;
 		error_y[runNumber-2] = error/eta; // Error on the loss probability
 		
-		cout << point_x[runNumber] << "\t" << point_y[runNumber] << "\t" << error_x[runNumber] << "\t" << error_y[runNumber] << endl;
+		cout << point_x[runNumber-2] << "\t" << point_y[runNumber-2] << "\t" << error_x[runNumber-2] << "\t" << error_y[runNumber-2] << endl;
 		
 		delete run; run = 0;
 	}

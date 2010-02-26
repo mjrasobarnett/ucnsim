@@ -204,15 +204,13 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* co
 		Warning("BuildGeometry","No value of the fermiPotential has been set! Aborting.");
 		return kFALSE;
 	}
-	// Read in value of f
-	Double_t f = TMath::Abs(configFile->GetFloat("f", "Geometry"));
+	// Read in value of W
+	Double_t W = TMath::Abs(configFile->GetFloat("WPotential(neV)", "Geometry"))*Units::neV;
 	// Check values were set
 	if (V == 0.0) {
 		cout << "Boundary Material FermiPotential, V, has not been set! Check ConfigFile and try again." << endl;
 		return kFALSE;
 	}
-	// Determine W
-	Double_t W = f*V;
 	
 	// Materials
 	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);

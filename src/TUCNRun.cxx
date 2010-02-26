@@ -48,10 +48,12 @@ TUCNRun::TUCNRun()
 	fTotalEnergy = 0.0;
 	fRunTime = 0.0;
 	fMaxStepTime = 0.0;
+	fDiffuseCoeff = 0;
+	fSampleMagField = kFALSE;
+	fWallLosses = kFALSE;
 	fBoundaryLossCounter = 0;
 	fDetectedCounter = 0;
 	fDecayedCounter = 0;
-	fDiffuseCoeff = 0;
 } 
 
 //_____________________________________________________________________________
@@ -68,6 +70,7 @@ TUCNRun::TUCNRun(const char *name, const char *title)
 	fMaxStepTime = 0.0;
 	fDiffuseCoeff = 0;
 	fSampleMagField = kFALSE;
+	fWallLosses = kFALSE;
 	fBoundaryLossCounter = 0;
 	fDetectedCounter = 0;
 	fDecayedCounter = 0;
@@ -83,6 +86,7 @@ TUCNRun::TUCNRun(const TUCNRun& run)
 			fMaxStepTime(run.fMaxStepTime),
 			fDiffuseCoeff(run.fDiffuseCoeff),
 			fSampleMagField(run.fSampleMagField),
+			fWallLosses(run.fWallLosses),
 			fBoundaryLossCounter(run.fBoundaryLossCounter),
 			fDetectedCounter(run.fDetectedCounter),
 			fDecayedCounter(run.fDecayedCounter)
@@ -104,6 +108,7 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& run)
 		fMaxStepTime = run.fMaxStepTime;
 		fDiffuseCoeff = run.fDiffuseCoeff;
 		fSampleMagField = run.fSampleMagField;
+		fWallLosses = run.fWallLosses;
 		fBoundaryLossCounter = run.fBoundaryLossCounter;
 		fDetectedCounter = run.fDetectedCounter;
 		fDecayedCounter = run.fDecayedCounter;
@@ -130,15 +135,15 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 	// Store the run parameters
 	///////////////////////////////////////////////////////////////////////////////////////
 	// - Number of particles
-	fNeutrons = configFile->GetInt("Neutrons", this->GetName());
+	fNeutrons = TMath::Abs(configFile->GetInt("Neutrons", this->GetName()));
 	if (fNeutrons == 0) { Warning("Initialise","No number of particles has been set"); return kFALSE; }
 	///////////////////////////////////////////////////////////////////////////////////////
 	// - Initial Energy
 	// Get the initial energy in units of (neV)
-	Double_t totalEnergyneV = configFile->GetFloat("InitialEnergy(neV)", this->GetName())*Units::neV;
+	Double_t totalEnergyneV = TMath::Abs(configFile->GetFloat("InitialEnergy(neV)", this->GetName()))*Units::neV;
 	// Get the initial energy in units of the FermiPotential of the boundary
 	Double_t V = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->FermiPotential(); // !!!! This is ugly and unsafe. Needs a work around.
-	Double_t totalEnergyVFermi = configFile->GetFloat("InitialEnergy(VFermi)", this->GetName())*V;
+	Double_t totalEnergyVFermi = TMath::Abs(configFile->GetFloat("InitialEnergy(VFermi)", this->GetName()))*V;
 	// Determine what to do based on which value was set in the config file
 	if (totalEnergyneV != 0.0) {
 		fTotalEnergy = totalEnergyneV;
@@ -150,20 +155,29 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 	}
 	///////////////////////////////////////////////////////////////////////////////////////
 	// - Run Time
-	fRunTime = configFile->GetFloat("RunTime(s)", this->GetName())*Units::s;
+	fRunTime = TMath::Abs(configFile->GetFloat("RunTime(s)", this->GetName()))*Units::s;
 	if (fRunTime == 0.0) { Warning("Initialise","No RunTime has been set"); return kFALSE; }
 	///////////////////////////////////////////////////////////////////////////////////////
 	// - Max Step Time
-	fMaxStepTime = configFile->GetFloat("MaxStepTime(s)", this->GetName())*Units::s;
+	fMaxStepTime = TMath::Abs(configFile->GetFloat("MaxStepTime(s)", this->GetName()))*Units::s;
 	if (fMaxStepTime == 0.0) { Warning("Initialise","No max step time has been set"); return kFALSE; }
 	///////////////////////////////////////////////////////////////////////////////////////
 	// - Diffuse Coefficient
-	fDiffuseCoeff = configFile->GetFloat("DiffuseBounceCoefficient", this->GetName());
+	fDiffuseCoeff = TMath::Abs(configFile->GetFloat("DiffuseBounceCoefficient", this->GetName()));
 	// - Set material's roughness parameter to the Diffuse Coefficient
 	static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->RoughnessCoeff(fDiffuseCoeff); // !!!! This is ugly and unsafe. Needs a work around
 	///////////////////////////////////////////////////////////////////////////////////////	
 	// - Determine if we will sample the magnetic field
 	fSampleMagField = configFile->GetBool("SampleMagField", this->GetName());
+	///////////////////////////////////////////////////////////////////////////////////////
+	// - Determine if we will sample the magnetic field
+	fWallLosses = configFile->GetBool("WallLosses", this->GetName());
+	if (fWallLosses == kFALSE) {
+		static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->WPotential(0.0); // !!!! This is ugly and unsafe. Needs a work around
+	} else {
+		Double_t W = TMath::Abs(configFile->GetFloat("WPotential(neV)", "Geometry"))*Units::neV;
+		static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->WPotential(W); // !!!! This is ugly and unsafe. Needs a work around
+	}
 	///////////////////////////////////////////////////////////////////////////////////////
 	cout << "Particles: " << fNeutrons << endl;
 	cout << "Total Energy(neV): " << fTotalEnergy/Units::neV << endl;
@@ -171,6 +185,8 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 	cout << "MaxStepTime(s): " << fMaxStepTime << endl;
 	cout << "DiffuseCoeff: " << fDiffuseCoeff << endl;
 	cout << "SampleMagField: " << fSampleMagField << endl;
+	cout << "WallLosses: " << fWallLosses << endl;
+	cout << "W: " << static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->WPotential()/Units::neV << endl;
 	cout << "-------------------------------------------" << endl;
 	cout << "Run successfully initialised" << endl;
 	cout << "-------------------------------------------" << endl;
