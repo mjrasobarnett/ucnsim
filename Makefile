@@ -12,13 +12,13 @@ include ./Makefile.arch
 #------------------------------------------------------------------------------
 SANDBOXS			= src/sandbox.$(SrcSuf)
 SANDBOXO			= src/sandbox.$(ObjSuf)
-SANDBOX				= bin/sandbox$(ExeSuf)
-UCNSIMS				= src/ucnsim.$(SrcSuf)
-UCNSIMO				= src/ucnsim.$(ObjSuf)
-UCNSIM				= bin/ucnsim$(ExeSuf)
+SANDBOX			= bin/sandbox$(ExeSuf)
+UCNSIMS			= src/ucnsim.$(SrcSuf)
+UCNSIMO			= src/ucnsim.$(ObjSuf)
+UCNSIM			= bin/ucnsim$(ExeSuf)
 FITDATAS			= src/fitdata.$(SrcSuf)
 FITDATAO			= src/fitdata.$(ObjSuf)
-FITDATA				= bin/fitdata$(ExeSuf)
+FITDATA			= bin/fitdata$(ExeSuf)
 
 #------------------------------------------------------------------------------
 # root that knows about my classes
@@ -62,6 +62,8 @@ TUCNMAGFIELDO			= src/TUCNMagField.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNMAGFIELDS			= src/TUCNMagField.$(SrcSuf) UCNDict.$(SrcSuf)
 TUCNUNIFORMMAGFIELDO	= src/TUCNUniformMagField.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNUNIFORMMAGFIELDS	= src/TUCNUniformMagField.$(SrcSuf) UCNDict.$(SrcSuf)
+TUCNRUNO					= src/TUCNRun.$(ObjSuf)  UCNDict.$(ObjSuf)
+TUCNRUNS					= src/TUCNRun.$(SrcSuf)  UCNDict.$(SrcSuf)
 
 
 #------------------------------------------------------------------------------
@@ -73,7 +75,7 @@ UCNLIB			= -L./lib -lUCN -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter
 #------------------------------------------------------------------------------
 OBJS         =	$(SANDBOXO) $(UCNSIMO) $(FITDATAO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) \
 					$(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO)
+					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO)
 PROGRAMS     = $(UCNSO) $(UCNSIM) $(FITDATA) $(SANDBOX)
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
@@ -86,7 +88,7 @@ clean:
 
 $(SANDBOX):		$(SANDBOXO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) \
 					$(TUCNGEOTUBEO) $(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO)
+					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO)
 					$(LD) $(LDFLAGS) $(SANDBOXO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
@@ -94,7 +96,7 @@ $(SANDBOX):		$(SANDBOXO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDE
 
 $(UCNSIM):		$(UCNSIMO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) \
 					$(TUCNGEOTUBEO) $(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO)
+					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO)
 					$(LD) $(LDFLAGS) $(UCNSIMO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
@@ -109,7 +111,7 @@ $(FITDATA):		$(FITDATAO) $(TUCNDATAPARSERO)
 UCN:				$(UCNSO)
 $(UCNSO):		$(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) \
 					$(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO)
+					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO)
 
 ifeq ($(ARCH),aix)
 		/usr/ibmcxx/bin/makeC++SharedLib $(OutPutOpt) $@ $(LIBS) -p 0 $^
@@ -150,12 +152,14 @@ TUCNRUNMANAGERO:				include/TUCNRunManager.h
 TUCNDATAO:						include/TUCNData.h
 TUCNMAGFIELDO:					include/TUCNMagField.h
 TUCNUNIFORMMAGFIELDO:		include/TUCNUniformMagField.h
+TUCNRUNO:						include/TUCNRun.h
 
 UCNDict.$(SrcSuf):		include/TUCNGeoManager.h include/TUCNGeoNavigator.h include/TUCNGeoBuilder.h \
 								include/TUCNGeoBBox.h include/TUCNGeoTube.h include/TUCNGeoMaterial.h \
 								include/TUCNGravField.h include/TUCNParticle.h \
 								include/TUCNDataParser.h include/TUCNPolynomial.h include/TUCNParabola.h \
-								include/TUCNRunManager.h include/TUCNData.h include/TUCNMagField.h include/TUCNUniformMagField.h $(LINKDEF)
+								include/TUCNRunManager.h include/TUCNData.h include/TUCNMagField.h include/TUCNUniformMagField.h \
+								include/TUCNRun.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 

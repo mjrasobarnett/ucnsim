@@ -20,5 +20,6 @@
 #pragma link C++ class TUCNData;
 #pragma link C++ class TUCNMagField;
 #pragma link C++ class TUCNUniformMagField;
+#pragma link C++ class TUCNRun;
 
 #endif

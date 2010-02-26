@@ -38,7 +38,7 @@
 #include "TUCNRunManager.h"
 #include "TUCNMagField.h"
 #include "TUCNUniformMagField.h"
-
+#include "TUCNRun.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -69,6 +69,7 @@ Int_t ucnstandalone() {
 	
 	TUCNRunManager* runManager = new TUCNRunManager();
 	TUCNGeoManager* geoManager = runManager->GetGeoManager();
+	TUCNRun* run = new TUCNRun();
 	
 	Double_t height_equivalent_units = Constants::grav_acceleration*Constants::neutron_mass;
 	
@@ -111,7 +112,7 @@ Int_t ucnstandalone() {
 	TGeoMedium* boundary = new TGeoMedium("Boundary",3, matBoundary);
 	
 	// -- Making Top Volume
- 	TGeoVolume* chamber = geoManager->MakeBox("TOP",blackHole,20,20,20);
+ 	TGeoVolume* chamber = geoManager->MakeUCNBox("TOP",blackHole,20,20,20);
 	geoManager->SetTopVolume(chamber);
 			
 	// -- Make a GeoBBox object via the UCNGeoManager
@@ -157,7 +158,7 @@ Int_t ucnstandalone() {
 	Double_t maxStepTime = 1.00*Units::s;
 	Int_t particles = 1000;
 	
-	runManager->TurnGravityOn();
+	run->TurnGravityOn();
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Mag Field
@@ -169,11 +170,11 @@ Int_t ucnstandalone() {
 	
 	// Generating mono-energetic particles inside the source volume
 	cout << "Generating " << particles << " particles..."	<< endl;
-	runManager->GenerateMonoEnergeticParticles(innerVolume, matrix, particles, totalEnergy);
+	run->GenerateMonoEnergeticParticles(innerVolume, matrix, particles, totalEnergy);
 	cout << "Particle's created. Preparing to Propagate..." << endl;
 	
 	// -- Propagate the tracks according to the run parameters
-	runManager->PropagateAllTracks(runTime, maxStepTime);	
+	run->PropagateAllTracks(runTime, maxStepTime);	
 	
 	cout << "-------------------------------------------" << endl;
 	cout << "Propagation Results: " << endl;
@@ -195,7 +196,7 @@ Int_t ucnstandalone() {
 //		cerr << "Could not open tracks.root" << endl;
 //		return 1;
 //	}
-//	runManager->WriteOutData(file); 
+//	run->WriteOutData(file); 
 
 	
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -203,7 +204,7 @@ Int_t ucnstandalone() {
 		
 	TCanvas * canvas1 = new TCanvas("canvas1", "Final Particle Positions", 800, 10, 600, 600);
 	TPolyMarker3D* finalPoints = new TPolyMarker3D(geoManager->GetNtracks(), 1);
-	runManager->DrawParticles(canvas1, finalPoints);
+	run->DrawParticles(canvas1, finalPoints);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- FITTING 
