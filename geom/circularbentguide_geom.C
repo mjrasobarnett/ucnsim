@@ -43,7 +43,7 @@ Int_t circularbentguide_geom()
 	// -- Make a GeoTube object via the UCNGeoManager
 	Double_t rmin = 0.3, rmax = 0.5, bendwidth = 0.1;
 	TGeoVolume *circlebend = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("CircleBend", vacuum, rmin, rmax, bendwidth);
-	TGeoVolume *bendbox = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNBox("BendBox", vacuum, 2.0*bendwidth, rmax, rmax);
+	TGeoVolume *bendbox = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNBox("BendBox", boundary, 2.0*bendwidth, rmax, rmax);
 	
 	Double_t guideX = 0.1, guideY = 0.1, guideZ = 0.5;
 	TGeoVolume *sourceguide = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNBox("SourceGuide", vacuum, guideX, guideY, guideZ);
