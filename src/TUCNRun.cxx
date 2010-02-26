@@ -1475,12 +1475,12 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 {
 	// -- Find time to reach next boundary and step along parabola
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-	
 	// -- Get the Navigator
 	TGeoNavigator* navigator = gGeoManager->GetCurrentNavigator();
 
 	#ifdef VERBOSE_MODE	
-		cout << endl << "------------------- START OF STEP ----------------------" << endl;
+		cout.precision(16);
+      cout << endl << "------------------- START OF STEP ----------------------" << endl;
 		cout << "Steptime (s): " << this->GetStepTime() << "\t" << "Stepsize: " << navigator->GetStep() << endl;
 		cout << "Vertex (m): " << "X:" << particle->Vx() << "\t" << "Y:" << particle->Vy()  << "\t" << "Z:" << particle->Vz() << "\t" << "T:" << particle->T() << endl;
 		cout << "Dir: " << "X:" << particle->DirX()  << "\t" << "Y:" << particle->DirY()  << "\t" << "Z:" << particle->DirZ() << "\t" << "Mag:" << particle->Dir() << endl;
@@ -1632,6 +1632,8 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 				cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
 				cout << "Local Point: ";
 				cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
+				cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(nextLocalPoint[0],2) + TMath::Power(nextLocalPoint[1],2)) << endl;
+				cout << "Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(nextLocalPoint[0],2) + TMath::Power(nextLocalPoint[2],2)) << endl;
 				cout << "Current Volume Contains Local Point: " << nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint) << endl;
 			#endif
 			// At this point we know that the point is contained by the current volume, but therefore, there must be a
@@ -1673,7 +1675,9 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 					cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
 					cout << "Point Local to initial volume after micro-step: ";
 					cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
-					cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(nextLocalPoint[0]*nextLocalPoint[0] + nextLocalPoint[1]*nextLocalPoint[1]) << endl;
+					cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(nextLocalPoint[0],2) + TMath::Power(nextLocalPoint[1],2)) << endl;
+   				cout << "Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(nextLocalPoint[0],2) + TMath::Power(nextLocalPoint[2],2)) << endl;
+               
 				#endif
 				if (navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
 					break;
@@ -1791,7 +1795,9 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 					cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
 					cout << "Local Point: ";
 					cout << "X:" << finalLocalPoint[0] << "\t" << "Y:" << finalLocalPoint[1] << "\t" << "Z:" << finalLocalPoint[2] << endl;
-					cout << "Current Volume Contains Local Point: " << finalNode->GetVolume()->GetShape()->Contains(finalLocalPoint) << endl;
+					cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(finalLocalPoint[0],2) + TMath::Power(finalLocalPoint[1],2)) << endl;
+   				cout << "Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(finalLocalPoint[0],2) + TMath::Power(finalLocalPoint[2],2)) << endl;
+               cout << "Current Volume Contains Local Point: " << finalNode->GetVolume()->GetShape()->Contains(finalLocalPoint) << endl;
 				#endif
 				// Now, we know that the point is not in the volume that it should be, and that volume may not actually contain the point.
 				// Either way, we will now make a microstep back along the way we came (since the direction has been reversed)
@@ -1828,7 +1834,9 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 						cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
 						cout << "Local Point after micro-step: ";
 						cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
-						cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(nextLocalPoint[0]*nextLocalPoint[0] + nextLocalPoint[1]*nextLocalPoint[1]) << endl;
+						cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(nextLocalPoint[0],2) + TMath::Power(nextLocalPoint[1],2)) << endl;
+      				cout << "Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(nextLocalPoint[0],2) + TMath::Power(nextLocalPoint[2],2)) << endl;
+                  
 					#endif
 					if (navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
 						break;
