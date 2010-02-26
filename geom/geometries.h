@@ -234,20 +234,20 @@ TGeoNode* CreateGeometry_v4(TUCNGeoManager* myManager)
 	// usual properties of materials can be set, but at the moment are not current required for navigation. In
 	// the future expect to set the material element type, scattering length (or effective potential) and other
 	// quantities. 
-   	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0,0);
+	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0,0);
 	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0,0);
 	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0,0);
-   	TUCNGeoMaterial* matDetector  = new TUCNGeoMaterial("Detector Material", 0,0,0);
+//	TUCNGeoMaterial* matDetector  = new TUCNGeoMaterial("Detector Material", 0,0,0);
 
 	matTracking->IsTrackingMaterial(kTRUE);
 	matBlackHole->IsBlackHole(kTRUE);
-	matDetector->IsDetectorMaterial(kTRUE);
+//	matDetector->IsDetectorMaterial(kTRUE);
 	
 	// -- Making Mediums
 	TGeoMedium* vacuum = new TGeoMedium("Vacuum",1, matTracking);
 	TGeoMedium* blackHole = new TGeoMedium("BlackHole",2, matBlackHole);
 	TGeoMedium* boundary = new TGeoMedium("Boundary",3, matBoundary);
-	TGeoMedium* detectorMedium = new TGeoMedium("DetectorBoundary",4, matDetector);
+//	TGeoMedium* detectorMedium = new TGeoMedium("DetectorBoundary",4, matDetector);
 	
 	// -- Making Top Volume
  	TGeoVolume* chamber = myManager->MakeUCNBox("TOP",blackHole,20,20,20);
@@ -282,7 +282,7 @@ TGeoNode* CreateGeometry_v4(TUCNGeoManager* myManager)
 	TGeoHMatrix *matrix1 = new TGeoHMatrix(hm1);
 	matrix1->Print();
 	
-	TGeoRotation r2; 
+/*	TGeoRotation r2; 
 	r2.SetAngles(0,90,0);          	//	rotation defined by Euler angles 
 	TGeoTranslation t2(0.,-0.1,0.9); 
 	TGeoCombiTrans c2(t2,r2); 
@@ -295,7 +295,7 @@ TGeoNode* CreateGeometry_v4(TUCNGeoManager* myManager)
 	TGeoCombiTrans c3(t3,r3); 
 	TGeoHMatrix hm3 = c3;        // composition is done via TGeoHMatrix class 
 	TGeoHMatrix *matrix3 = new TGeoHMatrix(hm3);
-	
+*/	
 	
 	// -- Create the nodes
 	box->AddNode(innerBox,1);

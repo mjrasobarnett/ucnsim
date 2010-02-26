@@ -275,7 +275,7 @@ Bool_t TUCNRunManager::PropagateAllTracks(Double_t runTime, Double_t maxStepTime
 	
 	if (lostTracks.size() != 0) {
 		cout << "Lost Tracks:" << endl;
-		for (Int_t i = 0; i < lostTracks.size(); i++) {
+		for (UInt_t i = 0; i < lostTracks.size(); i++) {
 			cout << lostTracks[i] << endl;
 		}
 	}
@@ -311,7 +311,7 @@ Bool_t TUCNRunManager::PropagateAllTracks(Int_t steps, Double_t maxStepTime)
 	
 	if (lostTracks.size() != 0) {
 		cout << "Lost Tracks:" << endl;
-		for (Int_t i = 0; i < lostTracks.size(); i++) {
+		for (UInt_t i = 0; i < lostTracks.size(); i++) {
 			cout << lostTracks[i] << endl;
 		}
 	}

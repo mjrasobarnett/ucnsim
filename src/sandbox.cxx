@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
+#include <cassert>
 
 #include "TCanvas.h"
 #include "TBenchmark.h"
@@ -10,6 +11,13 @@
 #include "TRint.h"
 #include "TRandom.h"
 #include "TObjArray.h"
+
+#include "TF1.h"
+#include "TH1.h"
+#include "TStyle.h"
+#include "TMath.h"
+#include "TLegend.h"
+#include "TGraphErrors.h"
 
 #include "TGeoManager.h"
 #include "TGeoNavigator.h"
@@ -37,6 +45,9 @@
 using std::cout;
 using std::endl;
 
+Double_t total_energy = 200*neV;	
+Double_t densityf(Double_t*x, Double_t*par);
+
 Int_t main(Int_t argc,Char_t **argv)
 {
 	TRint *theApp = new TRint("UCN App", &argc, argv);
@@ -50,7 +61,8 @@ Int_t ucnstandalone() {
 	
 	
 	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Create a Run Manager
+	// -- Geometry Creation
+	
 	TUCNRunManager* runManager = new TUCNRunManager();
 	TUCNGeoManager* geoManager = runManager->GetGeoManager();
 	
@@ -93,8 +105,8 @@ Int_t ucnstandalone() {
 	TGeoHMatrix hm = c1 * c2;        // composition is done via TGeoHMatrix class 
 	TGeoHMatrix *matrix = new TGeoHMatrix(hm);
 	
-	TGeoVolume* volume = box;
-	TGeoVolume* innerVolume = innerBox;
+	TGeoVolume* volume = tube;
+	TGeoVolume* innerVolume = innerTube;
 	
 	// -- Create the nodes	
 	volume->AddNode(innerVolume,1);
@@ -112,46 +124,20 @@ Int_t ucnstandalone() {
 	geoManager->SetVisOption(0);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
+	// -- Run Simulation
 	
-	// -- Include/Don't include gravity
 	runManager->TurnGravityOn();
 
 	// -- Load / Define the parameters of the Run
-	Double_t runTime = 100.*Units::s;
-	Double_t maxStepTime = 0.10*Units::s;
-	Int_t particles = 50000;
+	Double_t runTime = 10.*Units::s;
+	Double_t maxStepTime = 1.00*Units::s;
+	Int_t particles = 10000;
 	Double_t totalEnergy = 200*Units::neV;
 	
 	// Generating mono-energetic particles inside the source volume
 	cout << "Generating " << particles << " particles..."	<< endl;
 	runManager->GenerateMonoEnergeticParticles(innerVolume, matrix, particles, totalEnergy);
 	cout << "Particle's created. Preparing to Propagate..." << endl;
-	
-	///////////////////////////////////////////////////////////////////////////////////////
-	// WRITE OUT DATA
-	ofstream initialout("initialdata.txt");
-	ofstream finalout("finaldata.txt");
-	// --------------------------------------------------------------------------------------
-	initialout << "Number" << "\t" << "Neutron Time" << "\t" << "Neutron Energy" << "\t";
-	initialout << "X Position" << "\t" << "Y Position" << "\t" << "Z Position" << "\t" << "PX" << "\t" << "PY" << "\t" << "PZ" << "\t";
-	initialout << "Detected" << "\t" << "Decayed" << "\t" << "Lost" << "\t" << endl;
-	// --------------------------------------------------------------------------------------
-	finalout << "Number" << "\t" << "Neutron Time" << "\t" << "Neutron Energy" << "\t";
-	finalout << "X Position" << "\t" << "Y Position" << "\t" << "Z Position" << "\t" << "PX" << "\t" << "PY" << "\t" << "PZ" << "\t";
-	finalout << "Detected" << "\t" << "Decayed" << "\t" << "Lost" << "\t" << endl;
-	
-	Int_t tracks = geoManager->GetNtracks();
-
-	for (Int_t id = 0; id < tracks; id++) {
-		// Get each Track
-		TVirtualGeoTrack* track = geoManager->GetTrack(id);
-		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-		// Write out the initial particle data
-		initialout << id << "\t" << particle->T() /Units::s << "\t" << particle->Energy() /Units::neV << "\t";
-		initialout << particle->Vx() /Units::m << "\t" << particle->Vy() /Units::m << "\t" << particle->Vz() /Units::m << "\t";
-		initialout << particle->Px() /Units::eV << "\t" << particle->Py() /Units::eV << "\t" << particle->Pz() /Units::eV << "\t";
-		initialout << particle->Detected() << "\t" << particle->Decayed() << "\t" << particle->Lost() << "\t" << endl;
-	}
 	
 	// -- Propagate the tracks according to the run parameters
 	runManager->PropagateAllTracks(runTime, maxStepTime);	
@@ -164,25 +150,15 @@ Int_t ucnstandalone() {
 	cout << "Number Decayed: " << geoManager->GetNumberDecayed() << endl;
 	cout << "-------------------------------------------" << endl;
 	
-	for (Int_t id = 0; id < tracks; id++) {
-		// Get each Track
-		TVirtualGeoTrack* track = geoManager->GetTrack(id);
-		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-		// Write out the initial particle data
-		finalout << id << "\t" << particle->T() /Units::s << "\t" << particle->Energy() /Units::neV << "\t";
-		finalout << particle->Vx() /Units::m << "\t" << particle->Vy() /Units::m << "\t" << particle->Vz() /Units::m << "\t";
-		finalout << particle->Px() /Units::eV << "\t" << particle->Py() /Units::eV << "\t" << particle->Pz() /Units::eV << "\t";
-		finalout << particle->Detected() << "\t" << particle->Decayed() << "\t" << particle->Lost() << "\t" << endl;
-	}
 	///////////////////////////////////////////////////////////////////////////////////////
+	// Draw Final Positions 
 	
-	// Draw Points
 	geoManager->GetTopVolume()->Draw();
 	geoManager->SetVisLevel(4);
 	geoManager->SetVisOption(0);
 	
 	TPolyMarker3D FinalPoints(particles, 1);
-	for (Int_t id = 0; id < tracks; id++) {
+	for (Int_t id = 0; id < particles; id++) {
 		// Get each Track
 		TVirtualGeoTrack* track = geoManager->GetTrack(id);
 		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
@@ -191,11 +167,77 @@ Int_t ucnstandalone() {
 	FinalPoints.SetMarkerColor(2);
 	FinalPoints.SetMarkerStyle(6);
 	FinalPoints.Draw();
-				
-#ifndef __CINT__
-	theApp->Run();
-#endif
+	
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- FITTING 
+	
+	Int_t nbins = 50;
+	Double_t maxlength = 0.9;
+		
+	// Plot Histogram
+	TH1F * Histogram = new TH1F("Histogram3a","Neutron Density versus height",nbins,0.0, 2.*maxlength);	
+		
+		
+	for (Int_t i = 0; i < particles; i++) {
+		// Get each Track
+		TVirtualGeoTrack* track = geoManager->GetTrack(i);
+		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+		Histogram->Fill(particle->Vz());
+	}
+	
+	// --------------------------------------------------------------------------------------
+	// Fit Neutron Density versus Height
+	TCanvas * histcanvas = new TCanvas("HistCanvas3","Neutron Density versus height",0,0,800,800);
+   histcanvas->Divide(1,2);
+	histcanvas->SetGrid();
+	histcanvas->cd(1);
+	
+	// -- Max height of neutrons
+	Double_t maxheight = totalEnergy/(Constants::neutron_mass*(Constants::grav_acceleration));
+	
+	TF1 * fitdensf = new TF1("fitdensf", densityf, 0.0, maxheight, 1); 
+	fitdensf->SetParName(0,"Const");
+	fitdensf->SetParameter(0, 240);
+	fitdensf->SetLineColor(kRed);
+	
+	Histogram->SetLineColor(kBlack);
+	Histogram->SetXTitle("Height from bottom of Tube (m)");
+	Histogram->SetYTitle("Number of Neutrons");
+	
+	Histogram->Fit("fitdensf", "R");
+	Histogram->Draw("E1");
+
+	// -------------------------------------------------------------------------------------- 
+	// -- Plot difference between bin content and fitted distribution of above histogram
+	histcanvas->cd(2);	
+	Int_t n = nbins;
+  	Double_t ex[n], ey[n], x[n], y[n]; 
+  	for (Int_t i=1;i<n;i++) { 
+		x[i] = Histogram->GetBinCenter(i); 
+		y[i] = Histogram->GetBinContent(i) - fitdensf->Eval(x[i]);
+		ex[i] = 0.;
+		ey[i] = Histogram->GetBinError(i);
+	} 
+  	// create graph 
+  	TGraphErrors* gr1  = new TGraphErrors(n,x,y,ex,ey); 
+	gr1->SetTitle("Bin value minus fitted value versus height");
+	gr1->Draw("AC*");
+	
+	
+	#ifndef __CINT__
+		theApp->Run();
+	#endif
+	///////////////////////////////////////////////////////////////////////////////////////
+	
 	return 0;
+}
+
+// -------------------------------------------------------------------------------------- 
+Double_t densityf(Double_t*x, Double_t*par)
+{
+	Double_t value = (total_energy - (Constants::neutron_mass)*(Constants::grav_acceleration)*x[0])/total_energy;
+	assert(value >= 0.0);
+	return par[0]*sqrt(value);
 }
 
 

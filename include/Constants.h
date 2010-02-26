@@ -87,6 +87,9 @@ namespace Constants
 	static const Double_t           amu_c2 = 931.49432 * MeV;
 	static const Double_t              amu = amu_c2/c_squared;
 
+	static const Double_t neutron_mass 		= (neutron_mass_c2/c_squared);
+	
+
 	//
 	// permeability of free space mu0    = 2.01334e-16 Mev*(ns*eplus)^2/mm
 	// permittivity of free space epsil0 = 5.52636e+10 eplus^2/(MeV*mm)
