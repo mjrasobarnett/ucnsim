@@ -89,7 +89,7 @@ class TUCNRun : public TNamed
 		void						DrawParticles(TCanvas* canvas, TPolyMarker3D* points);
 		void						DrawTrack(TCanvas* canvas, Int_t trackID);
 		
-		Bool_t					AddTrack(TGeoTrack* track);
+		Bool_t					AddTrack(TVirtualGeoTrack* track);
 		Bool_t					AddInitialParticle(TUCNParticle* particle);
 		Bool_t					AddParticle(TUCNParticle* particle);
 		TGeoTrack*				GetTrack(Int_t trackID);

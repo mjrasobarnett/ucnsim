@@ -268,6 +268,8 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 		}
 		// Add Final Particle State to data tree
 		this->AddParticle(static_cast<TUCNParticle*>(track->GetParticle()));
+		// Add Track to the data tree
+//		this->AddTrack(track);
 		// Reset Track to release memory
 		track->ResetTrack();
 	}
@@ -448,9 +450,9 @@ Bool_t TUCNRun::Export(TString& outputFile)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::AddTrack(TGeoTrack* track)
+Bool_t TUCNRun::AddTrack(TVirtualGeoTrack* track)
 {
-	return this->GetData()->AddTrack(track);
+	return this->GetData()->AddTrack(static_cast<TGeoTrack*>(track));
 }
 
 //_____________________________________________________________________________
