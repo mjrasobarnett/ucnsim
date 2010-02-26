@@ -10,8 +10,6 @@
 #include "TUCNExperiment.h"
 
 #include "TUCNFieldManager.h"
-#include "TUCNGeoManager.h"
-#include "TUCNGeoBuilder.h"
 #include "TUCNGeoMaterial.h"
 #include "TUCNGravField.h"
 #include "TUCNParticle.h"
@@ -110,20 +108,6 @@ TUCNExperiment::~TUCNExperiment()
 }
 
 // -- METHODS --
-//_____________________________________________________________________________
-TGeoVolume* TUCNExperiment::MakeUCNBox(const char *name, TGeoMedium *medium, Double_t dx, Double_t dy, Double_t dz)
-{
-// Make in one step a volume pointing to a box shape with given medium.
-	return TUCNGeoBuilder::UCNInstance(this->GeoManager())->MakeUCNBox(name, medium, dx, dy, dz);
-}
-
-//_____________________________________________________________________________
-TGeoVolume *TUCNExperiment::MakeUCNTube(const char *name, TGeoMedium *medium,
-	Double_t rmin, Double_t rmax, Double_t dz)
-{
-// Make in one step a volume pointing to a tube shape with given medium.
-	return TUCNGeoBuilder::UCNInstance(this->GeoManager())->MakeUCNTube(name, medium, rmin, rmax, dz);
-}
 
 //_____________________________________________________________________________
 void	TUCNExperiment::SetSourceVolume(TGeoVolume* sourceVolume)
@@ -187,23 +171,24 @@ TGeoMatrix*	TUCNExperiment::GetSourceMatrix() const
 //______________________________________________________________________________
 Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* configFile)
 {
-	// -------------------------------------
-	// BUILDING GEOMETRY
-//	this->BuildVerticalTube(geoManager,configFile);
+	// --------------------------------------------------------------------------
+	// -- BUILDING GEOMETRY
 	TString geomFileName = configFile->GetString("GeomFile","I/O");
+	if (geomFileName == "") { Error("BuildGeometry","No Geometry File has been specified"); return kFALSE; }
+	// Load the Geometry from the File
 	TGeoManager::Import(geomFileName);
-	
-	// Read in value of FermiPotential
+	// --------------------------------------------------------------------------
+	// -- Define the Boundary Material's FermiPotential
 	Double_t V = 0.0;
-	Double_t fermiPotentialneV  = configFile->GetFloat("FermiPotential(neV)", "Geometry")*Units::neV;
-	Double_t fermiPotentialm    = configFile->GetFloat("FermiPotential(m)", "Geometry")*Constants::height_equivalent_conversion;
+	Double_t fermiPotentialneV  = configFile->GetFloat("FermiPotential(neV)","Geometry")*Units::neV;
+	Double_t fermiPotentialm    = configFile->GetFloat("FermiPotential(m)","Geometry")*Constants::height_equivalent_conversion;
 	// Determine which of these two values is zero (if any) and returning the remaining value.
 	if (fermiPotentialneV != 0.0) {
 		V = fermiPotentialneV;
 	} else if (fermiPotentialm != 0.0) {
 		V = fermiPotentialm; 
 	} else {
-		Warning("BuildGeometry","No value of the fermiPotential has been set! Aborting.");
+		Warning("BuildGeometry","No value of the FermiPotential has been set! Aborting.");
 		return kFALSE;
 	}
 	// Check values were set
@@ -212,91 +197,15 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* co
 		return kFALSE;
 	}
 	// Set boundary fermi potential
-	static_cast<TUCNGeoMaterial*>(this->GeoManager()->GetMaterial("Boundary Material"))->FermiPotential(V);
-	
-	this->SetSourceVolume(this->GeoManager()->FindVolumeFast("innerTube"));
-	this->SetSourceMatrix(static_cast<TGeoMatrix*>(this->GeoManager()->GetListOfMatrices()->FindObject("SourceMatrix")));
-	
-	this->GeoManager()->GetListOfNavigators()->Print();
-	
-	return kTRUE;
-}
-
-//______________________________________________________________________________
-Bool_t TUCNExperiment::BuildVerticalTube(TGeoManager* geoManager, TUCNConfigFile* configFile)
-{
-// Build a Vertical Tube with dimensions relevant to Mike P's volume averaged magfield	
-	// Read in value of FermiPotential
-	Double_t V = 0.0;
-	Double_t fermiPotentialneV  = configFile->GetFloat("FermiPotential(neV)", "Geometry")*Units::neV;
-	Double_t fermiPotentialm    = configFile->GetFloat("FermiPotential(m)", "Geometry")*Constants::height_equivalent_conversion;
-	// Determine which of these two values is zero (if any) and returning the remaining value.
-	if (fermiPotentialneV != 0.0) {
-		V = fermiPotentialneV;
-	} else if (fermiPotentialm != 0.0) {
-		V = fermiPotentialm; 
-	} else {
-		Warning("BuildGeometry","No value of the fermiPotential has been set! Aborting.");
-		return kFALSE;
-	}
-	// Read in value of W
-	Double_t W = TMath::Abs(configFile->GetFloat("WPotential(neV)", "Geometry"))*Units::neV;
-	// Check values were set
-	if (V == 0.0) {
-		cout << "Boundary Material FermiPotential, V, has not been set! Check ConfigFile and try again." << endl;
-		return kFALSE;
-	}
-	
-	// Materials
-	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);
-	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0);
-	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", V, W);
-	cout << "Boundary Material has been defined with V (neV): " << V/Units::neV << "  W (neV): " << W/Units::neV << endl;
-	
-	matTracking->IsTrackingMaterial(kTRUE);
-	matBlackHole->IsBlackHole(kTRUE);
-	
-	// -- Making Mediums
-	TGeoMedium* vacuum = new TGeoMedium("Vacuum",1, matTracking);
-	TGeoMedium* blackHole = new TGeoMedium("BlackHole",2, matBlackHole);
-	TGeoMedium* boundary = new TGeoMedium("Boundary",3, matBoundary);
-	
-	// -- Making Top Volume
-	TGeoVolume* chamber = this->MakeUCNBox("TOP",blackHole,20,20,20);
-	geoManager->SetTopVolume(chamber);
-	
-	// -- Make a GeoTube object via the UCNGeoManager
-	Double_t rMin = 0.0, rMax = 0.236, length = 0.121;
-	Double_t innerR = rMax - 0.001;
-	Double_t innerLength = length - 0.001; 
-	TGeoVolume* tube = this->MakeUCNTube("tube",boundary, rMin, rMax, length/2.);
-	TGeoVolume* innerTube = this->MakeUCNTube("innerTube",vacuum, rMin, innerR, innerLength/2.);
-	
-	
-	// -- Define the transformation of the volume
-	TGeoRotation r1,r2; 
-	r1.SetAngles(0,0,0);          //rotation defined by Euler angles 
-	r2.SetAngles(0,0,0); 	 
-	TGeoTranslation t1(0.,0.,innerLength/2.); 
-	TGeoTranslation t2(0.,0.,0.); 
-	TGeoCombiTrans c1(t1,r1); 
-	TGeoCombiTrans c2(t2,r2); 
-	TGeoHMatrix hm = c1 * c2;        // composition is done via TGeoHMatrix class 
-	TGeoHMatrix *matrix = new TGeoHMatrix(hm);
-	
-	TGeoVolume* volume = tube;
-	TGeoVolume* innerVolume = innerTube;
-	
-	// -- Create the nodes	
-	volume->AddNode(innerVolume, 1);
-	chamber->AddNode(volume, 1, matrix);
-	
-	// -- Define the Source in our geometry where we will create the particles
-	this->SetSourceVolume(innerVolume);
-	this->SetSourceMatrix(matrix);
-	
-	// -- Arrange and close geometry
-	geoManager->CloseGeometry();
+	static_cast<TUCNGeoMaterial*>(this->GeoManager()->GetMaterial("BoundaryMaterial"))->FermiPotential(V);
+	// --------------------------------------------------------------------------
+	// -- Define the Source Volume and the Source Matrix for creating the neutrons
+	TString sourceVolumeName = configFile->GetString("SourceVolume","Geometry");
+	if (sourceVolumeName == "") { Error("BuildGeometry","No SourceVolume has been specified"); return kFALSE; }
+	TString sourceMatrixName = configFile->GetString("SourceMatrix","Geometry");
+	if (sourceMatrixName == "") { Error("BuildGeometry","No SourceMatrix has been specified"); return kFALSE; }
+	this->SetSourceVolume(this->GeoManager()->FindVolumeFast(sourceVolumeName));
+	this->SetSourceMatrix(static_cast<TGeoMatrix*>(this->GeoManager()->GetListOfMatrices()->FindObject(sourceMatrixName)));
 	
 	return kTRUE;
 }

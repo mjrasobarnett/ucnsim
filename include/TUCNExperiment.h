@@ -38,13 +38,6 @@ protected:
 	TGeoMatrix*					GetSourceMatrix() const;
 	// Geometry Building
 	Bool_t						BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* configFile);
-	Bool_t						BuildVerticalTube(TGeoManager* geoManager, TUCNConfigFile* configFile);
-	Bool_t						BuildHorizontalGuides(TGeoManager* geoManager, TUCNConfigFile* configFile);
-	
-	
-	// Make UCNVolumes using TUCNGeoBuilder
-	TGeoVolume*					MakeUCNBox(const char *name, TGeoMedium *medium, Double_t dx, Double_t dy, Double_t dz);
- 	TGeoVolume*					MakeUCNTube(const char *name, TGeoMedium *medium, Double_t rmin, Double_t rmax, Double_t dz);
 	
 	// Particle & Track Management
 	Bool_t 						GenerateParticles(TUCNRun* run);
