@@ -97,7 +97,7 @@ public:
 
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
-// TUCNGeoUnion - Boolean node representing a union between two components.    //
+// TUCNGeoUnion - Boolean node representing a union between two components. //
 //                                                                          //
 //////////////////////////////////////////////////////////////////////////////
 
