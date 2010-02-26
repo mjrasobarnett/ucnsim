@@ -37,7 +37,7 @@ protected:
 	void							SetSourceMatrix(TGeoMatrix* sourceMatrix);
 	TGeoMatrix*					GetSourceMatrix() const;
 	// Geometry Building
-	Bool_t						BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* configFile);
+	Bool_t						BuildGeometry(TUCNConfigFile* configFile);
 	
 	// Particle & Track Management
 	Bool_t 						GenerateParticles(TUCNRun* run);

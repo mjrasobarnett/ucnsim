@@ -169,7 +169,7 @@ TGeoMatrix*	TUCNExperiment::GetSourceMatrix() const
 }
 
 //______________________________________________________________________________
-Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* configFile)
+Bool_t TUCNExperiment::BuildGeometry(TUCNConfigFile* configFile)
 {
 	// --------------------------------------------------------------------------
 	// -- BUILDING GEOMETRY
@@ -412,7 +412,7 @@ Bool_t TUCNExperiment::Initialise()
 	cout << "Building Geometry..." << endl;
 	cout << "-------------------------------------------" << endl;	
 	// Build Geometry
-	if (!(this->BuildGeometry(this->GeoManager(), this->ConfigFile()))) { 
+	if (!(this->BuildGeometry(this->ConfigFile()))) { 
 		Warning("Initialise","Failed building geometry.");
 		return kFALSE;
 	}
