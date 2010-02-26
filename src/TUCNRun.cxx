@@ -269,7 +269,7 @@ Bool_t TUCNRun::PropagateAllTracks(Double_t runTime, Double_t maxStepTime)
 		fData->AddParticle(particle);
 //		fData->AddTrack(track);
 		// Reset Track to release memory
-//		track->ResetTrack();
+		track->ResetTrack();
 	}
 	
 	if (lostTracks.size() != 0) {

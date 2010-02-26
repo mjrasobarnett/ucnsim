@@ -1,11 +1,13 @@
 // TUCNGeoMaterial
 // Author: Matthew Raso-Barnett  22/05/2009
+#include <iostream>
 #include <cassert>
 
 #include "TGeoMaterial.h"
 
 #include "TUCNGeoMaterial.h"
 
+using namespace std;
 
 ClassImp(TUCNGeoMaterial)
 
@@ -87,7 +89,10 @@ TUCNGeoMaterial::~TUCNGeoMaterial()
 //_____________________________________________________________________________
 Double_t TUCNGeoMaterial::Eta() const
 {
-	assert(fFermiPotential != 0.0 && fWPotential != 0.0);
+	if (fFermiPotential == 0.0 && fWPotential == 0.0) {
+		cerr << this->GetName() << "\t" << fFermiPotential << "\t" << fWPotential << endl;
+		assert(fFermiPotential != 0.0 && fWPotential != 0.0);
+	}
 	return (fWPotential/fFermiPotential);
 }
 

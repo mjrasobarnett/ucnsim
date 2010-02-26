@@ -86,12 +86,12 @@ void TUCNRunManager::InitialiseGeometry()
 	Double_t observedLifetime = 150.*Units::s;
 	Double_t fermiPotential = (0.91*Units::m)*Constants::height_equivalent_conversion;
 	Double_t totalEnergy = (0.52*Units::m)*Constants::height_equivalent_conversion;
-	Double_t initialVelocity = TMath::Sqrt(2*totalEnergy/Constants::neutron_mass);
+	Double_t initialVelocity = TMath::Sqrt(2.*totalEnergy/Constants::neutron_mass);
 	Double_t meanFreePath = 0.16*Units::m;
 	
 	// Calculate f = W/V and hence W
-	Double_t X = fermiPotential/totalEnergy;
-	Double_t L = (X*TMath::ASin(TMath::Sqrt(1./X)) - TMath::Sqrt(X - 1.));
+	Double_t X = totalEnergy/fermiPotential;
+	Double_t L = 2.0*((1./X)*TMath::ASin(TMath::Sqrt(X)) - TMath::Sqrt((1./X) - 1.));
 	cout << "E: " << totalEnergy/Units::neV << "\t" << "V: " << fermiPotential/Units::neV << "\t" << "V/E: " << X << "\t"<< "L: " << L << endl;
 	Double_t f = meanFreePath/(initialVelocity*observedLifetime*L);
 	Double_t W = f*fermiPotential;
