@@ -918,14 +918,10 @@ void TUCNGeoNavigator::SetStepTime(Double_t stepTime)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNFieldManager* fieldManager)
+Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCNMagField* magField)
 {
 	// -- Find time to reach next boundary and step along parabola
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-	
-	// -- Get the Fields
-	TUCNGravField* gravField = fieldManager->GravField();
-	TUCNMagField* magField = fieldManager->MagField();
 	
 	// -- Save Path to current node - we will want to return to this in the event we make a bounce
 	const char* path = this->GetPath();
@@ -966,7 +962,7 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNFieldManager* fie
 	}
 	
 	// -- Sample Magnetic Field if there is one	
-	if (magField) {
+	if (magField != NULL) {
 		const Double_t integratedField = magField->IntegratedField(this->GetStepTime(), particle, gravField);
 		particle->SampleMagField(integratedField, this->GetStepTime());	
 	}

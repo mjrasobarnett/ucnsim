@@ -472,7 +472,6 @@ Bool_t PlotAvgMagField(const TString& dataFileName)
 		}
 		
 	}
-
 	// Loop over the surviving neutrons
 	for (Int_t j = 0; j < lossesRun->Neutrons(); j++) {
 		TUCNParticle* lossesParticle = lossesRun->GetParticle(j);

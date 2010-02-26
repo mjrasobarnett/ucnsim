@@ -301,7 +301,6 @@ Bool_t DrawVolumeAveragedMagField(const char* fileName)
 	return kTRUE;
 }
 
-
 // -------------------------------------------------------------------------------------- 
 Double_t densityf(Double_t* x, Double_t* par)
 {
@@ -312,7 +311,8 @@ Double_t densityf(Double_t* x, Double_t* par)
 }
 
 // -------------------------------------------------------------------------------------- 
-Double_t lossFunc(Double_t* x, Double_t* /*par*/) {
+Double_t lossFunc(Double_t* x, Double_t* /*par*/) 
+{
 	Double_t value = (2.*((1./x[0])*TMath::ASin(TMath::Sqrt(x[0])) - TMath::Sqrt((1./x[0]) - 1.)));   
 	return value;
 }

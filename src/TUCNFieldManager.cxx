@@ -76,7 +76,7 @@ Bool_t TUCNFieldManager::Initialise(TUCNConfigFile* configFile)
 	cout << "-------------------------------------------" << endl;
 	cout << "Initialising the Field Environment" << endl;
 	cout << "-------------------------------------------" << endl;
-	// Start with the Grav Field
+	// Set-up the Grav Field
 	if (configFile->GetBool("Presence","GravField")) {
 		Info("Initialise","Gravitational Field set to be ON. Creating...");
 		this->AddGravField();

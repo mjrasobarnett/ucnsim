@@ -34,6 +34,7 @@ class TUCNRun : public TNamed
 		Double_t					fRunTime;
 		Double_t					fMaxStepTime;
 		Double_t					fDiffuseCoeff;
+		Bool_t					fSampleMagField;
 		
 		Int_t 					fBoundaryLossCounter;
 		Int_t 					fDetectedCounter;

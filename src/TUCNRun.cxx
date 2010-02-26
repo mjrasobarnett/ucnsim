@@ -66,10 +66,11 @@ TUCNRun::TUCNRun(const char *name, const char *title)
 	fTotalEnergy = 0.0;
 	fRunTime = 0.0;
 	fMaxStepTime = 0.0;
+	fDiffuseCoeff = 0;
+	fSampleMagField = kFALSE;
 	fBoundaryLossCounter = 0;
 	fDetectedCounter = 0;
 	fDecayedCounter = 0;
-	fDiffuseCoeff = 0;
 }
 
 //_____________________________________________________________________________
@@ -81,6 +82,7 @@ TUCNRun::TUCNRun(const TUCNRun& run)
 			fRunTime(run.fRunTime),
 			fMaxStepTime(run.fMaxStepTime),
 			fDiffuseCoeff(run.fDiffuseCoeff),
+			fSampleMagField(run.fSampleMagField),
 			fBoundaryLossCounter(run.fBoundaryLossCounter),
 			fDetectedCounter(run.fDetectedCounter),
 			fDecayedCounter(run.fDecayedCounter)
@@ -100,10 +102,11 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& run)
 		fTotalEnergy = run.fTotalEnergy;
 		fRunTime = run.fRunTime;
 		fMaxStepTime = run.fMaxStepTime;
+		fDiffuseCoeff = run.fDiffuseCoeff;
+		fSampleMagField = run.fSampleMagField;
 		fBoundaryLossCounter = run.fBoundaryLossCounter;
 		fDetectedCounter = run.fDetectedCounter;
 		fDecayedCounter = run.fDecayedCounter;
-		fDiffuseCoeff = run.fDiffuseCoeff;
 	}
    return *this;
 }
@@ -123,17 +126,20 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 	cout << "-------------------------------------------" << endl;
 	cout << "Initialising: " << this->GetName() << endl;
 	cout << "-------------------------------------------" << endl;
+	///////////////////////////////////////////////////////////////////////////////////////
 	// Store the run parameters
+	///////////////////////////////////////////////////////////////////////////////////////
 	// - Number of particles
 	fNeutrons = configFile->GetInt("Neutrons", this->GetName());
 	if (fNeutrons == 0) { Warning("Initialise","No number of particles has been set"); return kFALSE; }
-	
+	///////////////////////////////////////////////////////////////////////////////////////
 	// - Initial Energy
 	// Get the initial energy in units of (neV)
 	Double_t totalEnergyneV = configFile->GetFloat("InitialEnergy(neV)", this->GetName())*Units::neV;
 	// Get the initial energy in units of the FermiPotential of the boundary
-	Double_t V = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->FermiPotential(); // !!!! This is ugly and unsafe. Need a work around.
+	Double_t V = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->FermiPotential(); // !!!! This is ugly and unsafe. Needs a work around.
 	Double_t totalEnergyVFermi = configFile->GetFloat("InitialEnergy(VFermi)", this->GetName())*V;
+	// Determine what to do based on which value was set in the config file
 	if (totalEnergyneV != 0.0) {
 		fTotalEnergy = totalEnergyneV;
 	} else if (totalEnergyVFermi != 0.0) {
@@ -142,25 +148,29 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 		Warning("Initialise","No initial energy has been set for this Run.");
 		return kFALSE;
 	}
-	
+	///////////////////////////////////////////////////////////////////////////////////////
 	// - Run Time
 	fRunTime = configFile->GetFloat("RunTime(s)", this->GetName())*Units::s;
 	if (fRunTime == 0.0) { Warning("Initialise","No RunTime has been set"); return kFALSE; }
-	
+	///////////////////////////////////////////////////////////////////////////////////////
 	// - Max Step Time
 	fMaxStepTime = configFile->GetFloat("MaxStepTime(s)", this->GetName())*Units::s;
 	if (fMaxStepTime == 0.0) { Warning("Initialise","No max step time has been set"); return kFALSE; }
-	
+	///////////////////////////////////////////////////////////////////////////////////////
 	// - Diffuse Coefficient
 	fDiffuseCoeff = configFile->GetFloat("DiffuseBounceCoefficient", this->GetName());
 	// - Set material's roughness parameter to the Diffuse Coefficient
-	static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->RoughnessCoeff(fDiffuseCoeff);
-		
+	static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->RoughnessCoeff(fDiffuseCoeff); // !!!! This is ugly and unsafe. Needs a work around
+	///////////////////////////////////////////////////////////////////////////////////////	
+	// - Determine if we will sample the magnetic field
+	fSampleMagField = configFile->GetBool("SampleMagField", this->GetName());
+	///////////////////////////////////////////////////////////////////////////////////////
 	cout << "Particles: " << fNeutrons << endl;
 	cout << "Total Energy(neV): " << fTotalEnergy/Units::neV << endl;
 	cout << "RunTime(s): " << fRunTime << endl;
 	cout << "MaxStepTime(s): " << fMaxStepTime << endl;
-	cout << "DiffuseCoeff: " << static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->RoughnessCoeff() << endl;
+	cout << "DiffuseCoeff: " << fDiffuseCoeff << endl;
+	cout << "SampleMagField: " << fSampleMagField << endl;
 	cout << "-------------------------------------------" << endl;
 	cout << "Run successfully initialised" << endl;
 	cout << "-------------------------------------------" << endl;
@@ -216,13 +226,28 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 	// Propagate track through geometry until it is either stopped or the runTime has been reached
 	// Track passed MUST REFERENCE A TUCNPARTICLE as its particle type. UNITS:: runTime, stepTime in Seconds
 	
+	// -- Get the 
 	TVirtualGeoTrack* track = geoManager->GetCurrentTrack();
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
 	TUCNGeoNavigator* navigator = static_cast<TUCNGeoNavigator*>(geoManager->GetCurrentNavigator());
 	assert(track != NULL && particle != NULL && navigator != NULL);
 	
-	// -- 1. Initialise Track
+	///////////////////////////////////////////////////////////////////////////////////////	
+	// -- Get the Fields
+	TUCNGravField* gravField = 0;
+	TUCNMagField* magField = 0;
+	gravField = fieldManager->GravField();
+	// -- Check if we are to sample the mag field
+	if (fSampleMagField == kTRUE) {
+		magField = fieldManager->MagField();
+		if (magField == NULL) {
+			Error("PropagateTrack","Configuration asks to sample mag field, but no field can be found!");
+			return kFALSE;
+		}
+	}
 	
+	///////////////////////////////////////////////////////////////////////////////////////	
+	// -- 1. Initialise Track
 	// Initialise track - Sets navigator's current point/direction/node to that of the particle
 	geoManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
 		particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
@@ -237,9 +262,8 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 		return kFALSE;
 	}
 	
-	///////////////////////////////////	
+	///////////////////////////////////////////////////////////////////////////////////////	
 	// -- 2. Propagation Loop
-	///////////////////////////////////
 	Int_t stepNumber;
 	for (stepNumber = 1 ; ; stepNumber++) {
 		
@@ -251,7 +275,7 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 		navigator->DetermineNextStepTime(particle, fMaxStepTime, fRunTime);
 		
 		// -- Make a step
-		if (!(navigator->MakeStep(track, fieldManager))) {
+		if (!(navigator->MakeStep(track, gravField, magField))) {
 			Error("PropagateTrack","Error in Step. Step Failed to complete.");
 			return kFALSE;	
 		} 
@@ -275,7 +299,6 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 		}
 	}	
 	// -- END OF PROPAGATION LOOP
-//	Double_t avgField = particle->AvgMagField();
 //	cout << "FINAL STATUS: " << "Track: " << track->GetId() << "\t" << "Steps taken: " << stepNumber << "\t";
 //	cout << "Time: " << particle->T() << "s" << "\t" << "Final Medium: " << navigator->GetCurrentNode()->GetMedium()->GetName() << "\t";
 //	cout << "Bounces: " << particle->Bounces() << "\t" << "Diffuse: " << particle->DiffuseBounces() << "\t" << "Specular: " << particle->SpecularBounces() << endl;
