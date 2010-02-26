@@ -1181,7 +1181,7 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
    }   
    
 	// -- If we are on the boundary step off it by tolerance
-	Double_t extra = (fUCNIsOnBoundary) ? TGeoShape::Tolerance() : 0.0;
+/*	Double_t extra = (fUCNIsOnBoundary) ? TGeoShape::Tolerance() : 0.0;
    
 	#ifdef VERBOSE_MODE
 		cout << "FNBASAP - Is On Boundary?: " << this->IsUCNOnBoundary() << endl;
@@ -1200,7 +1200,7 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 		cout << "FNBASAP - Is On Boundary?: " << this->IsUCNOnBoundary() << endl;
 		cout << "FNBASAP - New Current Point: X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] << "\t" << "Z: " << currentPoint[2] << endl;
 	#endif
-	
+*/	
 	gGeoManager->GetCurrentNavigator()->GetHMatrix()->CopyFrom(gGeoManager->GetCurrentNavigator()->GetCurrentMatrix());
    	
 	// *********************************************************************
