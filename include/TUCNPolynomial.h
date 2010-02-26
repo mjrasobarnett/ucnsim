@@ -32,12 +32,15 @@ public:
    
 	static TUCNPolynomial* 	Instance();
 	
-	virtual Int_t 			QuadraticRootFinder(const Double_t* params, Double_t* roots);
-	virtual Int_t 			QuarticRootFinder(const Double_t* params, Double_t* roots);
-	virtual Int_t 			CubicRootFinder(const Double_t* params, Double_t* roots);
+	virtual Int_t		QuadraticRootFinder(const Double_t* params, Double_t* roots);
+	virtual Int_t		QuarticRootFinder(const Double_t* params, Double_t* roots);
+	virtual Int_t		CubicRootFinder(const Double_t* params, Double_t* roots);
 	
-	virtual Int_t			AnalyticCubicAlgorithm(const Double_t p, const Double_t q, const Double_t a2, Double_t* roots);
-	 
+	virtual Int_t		AnalyticCubicAlgorithm(const Double_t p, const Double_t q,
+	 																const Double_t a2, Double_t* roots);
+	virtual Int_t		AnalyticQuarticAlgorithm(const Double_t a3, const Double_t a2,
+	 																const Double_t a1, const Double_t a0, Double_t* roots);
+
    ClassDef(TUCNPolynomial, 1)          // Polynomial singleton
 };
 
