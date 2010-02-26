@@ -78,18 +78,7 @@ Int_t TUCNPolynomial::QuadraticRootFinder(const Double_t* params, Double_t* root
 	a = params[0];
 	b = params[1]; 
 	c = params[2];
-			
-	// Sometimes a,b or c (usually a) can be extremely small but non-zero, ie: (10^-16), due to computational precision I imagine. This
-	// then screws up the calculations below.
-	if (TMath::Abs(a) < TGeoShape::Tolerance()) {
-		a = 0.;
-	}
-	if (TMath::Abs(b) < TGeoShape::Tolerance()) {
-		b = 0.;
-	}
-	if (TMath::Abs(c) < TGeoShape::Tolerance()) {
-		c = 0.;
-	}		
+	
 	#ifdef VERBOSE_MODE		
 		cout << "QuadraticRootFinder - a: " << a << "\t" << "b: " << b << "\t" << "c: " << c << endl;
 	#endif
@@ -134,7 +123,7 @@ Int_t TUCNPolynomial::QuadraticRootFinder(const Double_t* params, Double_t* root
 	}
 	
 	
-	// -- Have quadratic equation. Check the discriminant to determine number of roots 
+	// -- We therefore have a quadratic equation. Check the discriminant to determine number of roots 
 	Double_t discriminant = b*b - 4*a*c;
 	#ifdef VERBOSE_MODE		
 		cout << "QuadraticRootFinder - Quad. eqn - b*b - 4*a*c: " << discriminant << endl;
@@ -177,7 +166,7 @@ Int_t TUCNPolynomial::QuadraticRootFinder(const Double_t* params, Double_t* root
 		#endif
 	}
 	
-//	// -- Ensure solutions are within tolerance
+//	// -- Finally check to see if any solutions are errorneously small. 
 //	for(Int_t i=0; i < numberOfSolutions; i++) {
 //		if (TMath::Abs(roots[i]) < TGeoShape::Tolerance()) {
 //			roots[i] = 0.0;

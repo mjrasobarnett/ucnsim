@@ -78,9 +78,9 @@ public:
 
    // methods
    virtual Double_t     TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field,
-                                    const Double_t stepmax=TGeoShape::Big()) const;
+                                    const Double_t stepmax, const Bool_t onBoundary) const;
    virtual Double_t     TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field,
-                                    const Double_t stepmax=TGeoShape::Big()) const;
+                                    const Double_t stepmax, const Bool_t onBoundary) const;
 	
    ClassDef(TUCNGeoCompositeShape, 1)         // boolean composite shape
 };

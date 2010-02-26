@@ -1060,7 +1060,7 @@ const TBuffer3D & TUCNGeoTube::GetBuffer3D(Int_t reqSections, Bool_t localFrame)
 
 
 //_____________________________________________________________________________
-Double_t TUCNGeoTube::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepmax*/) const
+Double_t TUCNGeoTube::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
 {
 	// Compute time from inside point to surface of the tube
 	#ifdef VERBOSE_MODE				
@@ -1068,11 +1068,11 @@ Double_t TUCNGeoTube::TimeFromInsideAlongParabola(const Double_t* point, const D
 		cout << "TimeFromInsideAlongParabola - Calling TimeFromInsideAlongParabolaS" << endl;
 	#endif
 	// compute time to surface
-	return TimeFromInsideAlongParabolaS(point, velocity, field, fRmin, fRmax, fDz);
+	return TimeFromInsideAlongParabolaS(point, velocity, field, fRmin, fRmax, fDz, onBoundary);
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoTube::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz)
+Double_t TUCNGeoTube::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t /*onBoundary*/)
 {
 	// Compute time from inside point to surface of the tube	
 	Double_t tfinal = 0.; // Storage for the overall smallest, non-zero time to the nearest boundary
@@ -1349,7 +1349,7 @@ Double_t TUCNGeoTube::TimeFromInsideAlongParabolaS(const Double_t* point, const 
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoTube::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax) const
+Double_t TUCNGeoTube::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 	// Compute time from outside point to surface of the tube and safe distance
 	// Boundary safe algorithm.
@@ -1359,18 +1359,17 @@ Double_t TUCNGeoTube::TimeFromOutsideAlongParabola(const Double_t* point, const 
 		cout << "TimeFromOutsideAlongParabola - Check if Bounding box is within maximum step distance" << endl;
 	#endif
 	// Check if the bounding box is crossed within the requested distance
-   Double_t tBox = TUCNGeoBBox::TimeFromOutsideAlongParabolaS(point, velocity, field, fDX, fDY, fDZ, fOrigin, stepmax);
-	Double_t sBox = TUCNParabola::Instance()->ArcLength(velocity, field, tBox);
+   Double_t tBox = TUCNGeoBBox::TimeFromOutsideAlongParabolaS(point, velocity, field, fDX, fDY, fDZ, fOrigin, onBoundary);
    #ifdef VERBOSE_MODE				
-		cout << "TimeFromOutsideAlongParabola - Distance to Box: " << sBox << "\t" << "Max Step Distance: " << stepmax << endl;
+		cout << "TimeFromOutsideAlongParabola - Time to Box: " << tBox << endl;
 	#endif
-	if (sBox>=stepmax) return TGeoShape::Big();
+	if (tBox > stepTime + TGeoShape::Tolerance()) return TGeoShape::Big();
    // find time to shape
-	return TimeFromOutsideAlongParabolaS(point, velocity, field, fRmin, fRmax, fDz);
+	return TimeFromOutsideAlongParabolaS(point, velocity, field, fRmin, fRmax, fDz, onBoundary);
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoTube::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz)
+Double_t TUCNGeoTube::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t /*onBoundary*/)
 {
 	// Compute time from outside point to the surface of the tube
 	Double_t tfinal = 0.; // Storage for the overall smallest, non-zero time to the nearest boundary

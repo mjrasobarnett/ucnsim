@@ -357,20 +357,20 @@ Int_t TUCNGeoCompositeShape::GetNmeshVertices() const
 
 
 //_____________________________________________________________________________
-Double_t TUCNGeoCompositeShape::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax) const
+Double_t TUCNGeoCompositeShape::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 // Compute the time from outside point to this composite shape along parabola.
 // Check if the bounding box is crossed within the requested distance
-   Double_t timeStep = TUCNGeoBBox::TimeFromOutsideAlongParabolaS(point,velocity,field, fDX, fDY, fDZ, fOrigin, stepmax);
-   if (timeStep>=stepmax) return TGeoShape::Big();
-   if (fNode) return fNode->TimeFromOutsideAlongParabola(point, velocity, field, stepmax);
+   Double_t tBox = TUCNGeoBBox::TimeFromOutsideAlongParabolaS(point,velocity,field, fDX, fDY, fDZ, fOrigin, onBoundary);
+   if (tBox > stepTime + TGeoShape::Tolerance()) return TGeoShape::Big();
+   if (fNode) return fNode->TimeFromOutsideAlongParabola(point, velocity, field, stepTime, onBoundary);
    return TGeoShape::Big();
 }   
 
 //_____________________________________________________________________________
-Double_t TUCNGeoCompositeShape::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax) const
+Double_t TUCNGeoCompositeShape::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 // Compute time from inside point to outside of this composite shape along parabola.
-   if (fNode) return fNode->TimeFromInsideAlongParabola(point, velocity, field, stepmax);
+   if (fNode) return fNode->TimeFromInsideAlongParabola(point, velocity, field, stepTime, onBoundary);
    return TGeoShape::Big();
 }

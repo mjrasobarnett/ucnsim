@@ -64,49 +64,30 @@ TUCNGeoBBox::~TUCNGeoBBox()
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepmax*/) const
+Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
 {
 	// This method calculates the time of all possible intersections of the particle's future path
 	// with all possible boundaries of the current shape.
 	// Method then compares the times found and returns the smallest, non-zero value. 
+	// In the case of an error, a value of zero, or a negative value will be returned.
 	
 	#ifdef VERBOSE_MODE		
 		cout << "TUCNGeoBBox::TimeFromInsideAlongParabola " << endl;
 	#endif
-	// ----------------------------------------------------------------------
-	// -- For efficiency calculate the safety distance along straight line to surface.
-	// -- If this distance is greater than the proposed stepmax, then just return Big()
-	// -- This code is from root's DistanceFrom... methods. 
-	Double_t /*smin,*/saf[6];
-   Double_t newpt[3];
-
-	// -- Determining minimum distances to all boundaries from point
-   for (Int_t i=0; i<3; i++) newpt[i] = point[i] - fOrigin[i];
-   saf[0] = fDX+newpt[0];
-   saf[1] = fDX-newpt[0];
-   saf[2] = fDY+newpt[1];
-   saf[3] = fDY-newpt[1];
-   saf[4] = fDZ+newpt[2];
-   saf[5] = fDZ-newpt[2];
-
-/*   if (iact<3 && safe) {
-      smin = saf[0];
-      // compute safe distance
-      for (Int_t i=1;i<6;i++) if (saf[i] < smin) smin = saf[i];
-		*safe = smin;
-      if (smin<0) *safe = 0.0;
-      if (iact==0) return TGeoShape::Big();
-      if (iact==1 && stepmax<*safe) return TGeoShape::Big();
-   }
-*/	
+	// -- Determine the local point in case the box origin is not as the local centre (ie: 0,0,0)
+	// -- (Not sure of why this would ever be the case, but ROOT does allow you to set the origin...)
+	Double_t localpt[3];
+	for (Int_t i=0; i<3; i++) localpt[i] = point[i] - fOrigin[i];
+	
 	// ----------------------------------------------------------------------
 	// -- Calculate actual time to boundary
-	Double_t t = 0.; // The smallest time to reach ANY boundary;
+	Double_t tfinal = 0.; // The smallest time to reach ANY boundary;
 	Double_t boundary[3] = {fDX, fDY, fDZ}; // Store the coordinates of the box boundaries
 		
 	#ifdef VERBOSE_MODE		
 		cout << "TimeFromInsideAlongParabola - (Local) +Boundaries - +X: " << boundary[0] << "\t" << "+Y: " << boundary[1] << "\t" <<  "+Z: " << boundary[2] << endl;
-		cout << "TimeFromInsideAlongParabola - (Local) point - +X: " << newpt[0] << "\t" << "+Y: " << newpt[1] << "\t" <<  "+Z: " << newpt[2] << endl;
+		cout << "TimeFromInsideAlongParabola - Origin - +X: " << fOrigin[0] << "\t" << "+Y: " << fOrigin[1] << "\t" <<  "+Z: " << fOrigin[2] << endl;
+		cout << "TimeFromInsideAlongParabola - (Local) point - +X: " << localpt[0] << "\t" << "+Y: " << localpt[1] << "\t" <<  "+Z: " << localpt[2] << endl;
 		cout << "TimeFromInsideAlongParabola - (Local) velocity - +X: " << velocity[0] << "\t" << "+Y: " << velocity[1] << "\t" <<  "+Z: " << velocity[2] << endl;
 		cout << "TimeFromInsideAlongParabola - (Local) field direction - +X: " << field[0] << "\t" << "+Y: " << field[1] << "\t" <<  "+Z: " << field[2] << endl;
 	#endif
@@ -119,16 +100,29 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(const Double_t* point, const D
 	for (Int_t i=0; i<3; i++) {
 		// -- Loop over +/- fDX,fDY,fDZ boundaries
 		for (Int_t j=0; j<2; j++) {
-						
-			// -- Define storage for the smallest non-zero root to the CURRENT boundary
-			Double_t tmin = 0.0;
-
 			// -- Define the constants in the quadratic equation, a, b, c - see note book for details
 			Double_t params[3] = {0., 0., 0.};
 			params[0] = 0.5*field[i];
 			params[1] = velocity[i]; 
-			params[2] = newpt[i] - (TMath::Power(-1,j)*boundary[i]);
-
+			params[2] = localpt[i] - (TMath::Power(-1,j)*boundary[i]);
+			
+			// Sometimes a,b or c (usually c) can be extremely small but non-zero, due to the fact that
+			// we are usually sitting on a boundary and c measures the distance to the current boundary.
+			if (TMath::Abs(params[0]) < TGeoShape::Tolerance()) {
+				// a = 0 if the field component in this direction is zero
+				params[0] = 0.;
+			}
+			if (TMath::Abs(params[1]) < TGeoShape::Tolerance()) {
+				// b = 0 if the velocity component in this direction is zero (i.e it wont hit the boundary anyway)
+				params[1] = 0.;
+			}
+			// We are usually sitting on a boundary so c will occasionally be within a few ~E-10 of zero.
+			// Therefore if c is less than 1E-9, and the onBoundary flag is set to TRUE, then we assume that
+			// we are on this boundary and set c = 0 to signify this. 
+			if (TMath::Abs(params[2]) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+				params[2] = 0.;
+			}
+			
 			// -- Solve equation for potential roots
 			Double_t roots[2] = {0., 0.};
 			Int_t solutions = TUCNPolynomial::Instance()->QuadraticRootFinder(&params[0], &roots[0]);
@@ -137,91 +131,59 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(const Double_t* point, const D
 				cout << i << "\t" << j << "\t" << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
 				cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
 			#endif
-
-			// -- Determing number of roots, and select the smallest, real, non-zero value. 
-			if (solutions == 2) {
-				// -- Two roots
-				if (roots[0] > 0. && roots[1] > 0.) {
-					// If both are positive - determine which of two positive roots is the smaller
-					if (roots[0] < roots[1]) {
-						tmin = roots[0];
-					} else {
-						tmin = roots[1];
-					}
-				} else if (roots[0] > 0.) {
-					tmin = roots[0];
-				} else if (roots[1] > 0.) {
-					tmin = roots[1];
-				} else {
-					#ifdef VERBOSE_MODE		
-						cout << "TimeFromInsideAlongParabola - Both roots are negative or zero." << endl; 
-					#endif
-				}
-			} else if (solutions == 1) {
-				// -- One Root
-				if (roots[0] > 0.) {
-					tmin = roots[0];
-				} else {
-					//-- Only Root is negative or zero
-				}
-			} else if (solutions == 0) {
-				// -- No Real Roots
-			} else {
-				throw runtime_error("In TUCNGeoBBox, TimeFromInsideAlongParabola - number of quadratic eqn roots is not between 0 and 2");
-			}
+			// -- Find the smallest, non-zero root
+			Double_t tmin = TUCNGeoBBox::SmallestInsideTime(solutions, &roots[0], onBoundary);
 			
-			if (tmin > 0.0 && t == 0.0) {
+			if (tmin > 0.0 && tfinal == 0.0) {
 				// -- If the current overall smallest time to any boundary is zero, initialise it to the first non-zero time to a boundary
-				t = tmin;
-			} else if (tmin > 0.0 && tmin < t) {
-				// -- Check if this time, the smallest, non-zero time to the current boundary, is smaller than the current overall smallest time to any boundary
-				t = tmin;
+				tfinal = tmin;
+			} else if (tmin > 0.0 && tmin < tfinal) {
+				// -- Check if this time is smaller than the current overall smallest time to any boundary
+				tfinal = tmin;
 			}
 		}
 	}	
 	
 	// -- Analyse the final value for the time to nearest boundary from inside
-	if (t > 0.) { 
+	if (tfinal > 0.) { 
 		#ifdef VERBOSE_MODE		
-			cout << "TimeFromInsideAlongParabola - time to nearest boundary: " << t << endl; 
+			cout << "TimeFromInsideAlongParabola - time to nearest boundary: " << tfinal << endl; 
 		#endif
-		return t;
-	} else if (t == 0.) {
-		throw runtime_error("In TUCNGeoBBox, TimeFromInsideAlongParabola - Calculation error - no time to boundary found"); 
-		return 0;
+		return tfinal;
 	} else {
-		throw runtime_error("In TUCNGeoBBox, TimeFromInsideAlongParabola - Calculation error - time to boundary is negative");
+		cout << "Error in TUCNGeoBBox, TimeFromInsideAlongParabola - no time to boundary is found!" << endl;
 		return 0;
 	}
 }
 
 //_____________________________________________________________________________
 Double_t TUCNGeoBBox::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, 
-																		const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Double_t /*stepmax*/)
+											const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Bool_t onBoundary)
 {
 	// This method calculates the time of all possible intersections of the particle's future
 	// path with all possible boundaries of the current shape.
 	// Method then compares the times found and returns the smallest, non-zero value. 
-		
-	// ----------------------------------------------------------------------
-	// -- For efficiency COULD calculate the distance along straight line to surface. If this distance is greater than the proposed stepmax, then just return Big()
-	// -- This is yet to be implemented successfully
-	Double_t newpt[3];
 	
-   // -- Determining minimum distances to all boundaries from point
-	for (Int_t i=0; i<3; i++) newpt[i] = point[i] - origin[i];
-
+	#ifdef VERBOSE_MODE		
+	cout << "TUCNGeoBBox::TimeFromInsideAlongParabolaS" << endl;
+	#endif
+	// -- Determine the local point in case the box origin is not as the local centre (ie: 0,0,0)
+	// -- (Not sure of why this would ever be the case, but ROOT does allow you to set the origin...)
+	Double_t localpt[3];
+	for (Int_t i=0; i<3; i++) localpt[i] = point[i] - origin[i];
+	
 	// ----------------------------------------------------------------------
 	
 	// -- Calculate actual time to boundary
-	Double_t t = 0.; // The smallest time to reach ANY boundary;
+	Double_t tfinal = 0.; // The smallest time to reach ANY boundary;
 	Double_t boundary[3] = {dx, dy, dz}; // Store the coordinates of the box boundaries
 		
 	#ifdef VERBOSE_MODE		
-		cout << "TimeFromInsideAlongParabola - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
-		cout << "TimeFromInsideAlongParabola - (Local) point - +X: " << newpt[0] << "  +Y: " << newpt[1] << "  +Z: " << newpt[2] << endl;
-		cout << "TimeFromInsideAlongParabola - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
-		cout << "TimeFromInsideAlongParabola - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
+		cout << "TimeFromInsideAlongParabolaS - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
+		cout << "TimeFromInsideAlongParabolaS - Origin - X: " << origin[0] << "\t" << "Y: " << origin[1] << "\t" <<  "Z: " << origin[2] << endl;
+		cout << "TimeFromInsideAlongParabolaS - (Local) point - +X: " << localpt[0] << "  +Y: " << localpt[1] << "  +Z: " << localpt[2] << endl;
+		cout << "TimeFromInsideAlongParabolaS - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
+		cout << "TimeFromInsideAlongParabolaS - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
 	#endif
 			
 	// ----------------------------------------------------------------------	
@@ -232,14 +194,28 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabolaS(const Double_t* point, const 
 	for (Int_t i=0; i<3; i++) {
 		// -- Loop over +/- fDX,fDY,fDZ boundaries
 		for (Int_t j=0; j<2; j++) {
-			// -- Define storage for the smallest non-zero root to the CURRENT boundary
-			Double_t tmin = 0.0;
-			
 			// -- Define the constants in the quadratic equation, a, b, c - see note book for details
 			Double_t params[3] = {0., 0., 0.};
 			params[0] = 0.5*field[i];
 			params[1] = velocity[i]; 
-			params[2] = newpt[i] - (TMath::Power(-1,j)*boundary[i]);
+			params[2] = localpt[i] - (TMath::Power(-1,j)*boundary[i]);
+			
+			// Sometimes a,b or c (usually c) can be extremely small but non-zero, due to the fact that
+			// we are usually sitting on a boundary and c measures the distance to the current boundary.
+			if (TMath::Abs(params[0]) < TGeoShape::Tolerance()) {
+				// a = 0 if the field component in this direction is zero
+				params[0] = 0.;
+			}
+			if (TMath::Abs(params[1]) < TGeoShape::Tolerance()) {
+				// b = 0 if the velocity component in this direction is zero (i.e it wont hit the boundary anyway)
+				params[1] = 0.;
+			}
+			// We are usually sitting on a boundary so c will occasionally be within a few ~E-10 of zero.
+			// Therefore if c is less than 1E-9, and the onBoundary flag is set to TRUE, then we assume that
+			// we are on this boundary and set c = 0 to signify this. 
+			if (TMath::Abs(params[2]) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+				params[2] = 0.;
+			}
 			
 			// -- Solve equation for potential roots
 			Double_t roots[2] = {0., 0.};
@@ -250,112 +226,49 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabolaS(const Double_t* point, const 
 				cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
 			#endif
 			
-			// -- Determing number of roots, and select the smallest, real, non-zero value. 
-			if (solutions == 2) {
-				// -- Two roots
-				if (roots[0] > 0. && roots[1] > 0.) {
-					// If both are positive - determine which of two positive roots is the smaller
-					if (roots[0] < roots[1]) {
-						tmin = roots[0];
-					} else {
-						tmin = roots[1];
-					}
-				} else if (roots[0] > 0.) {
-					tmin = roots[0];
-				} else if (roots[1] > 0.) {
-					tmin = roots[1];
-				} else {
-					#ifdef VERBOSE_MODE		
-						cout << "TimeFromInsideAlongParabola - Both roots are negative or zero." << endl; 
-					#endif
-				}
-			} else if (solutions == 1) {
-				// -- One Root
-				if (roots[0] > 0.) {
-					tmin = roots[0];
-				} else {
-					//-- Only Root is negative or zero
-				}
-			} else if (solutions == 0) {
-				// -- No Real Roots
-			} else {
-				throw runtime_error("In TUCNGeoBBox, TimeFromInsideAlongParabola - number of quadratic eqn roots is not between 0 and 2");
-			}
+			// -- Find the smallest, non-zero root
+			Double_t tmin = TUCNGeoBBox::SmallestInsideTime(solutions, &roots[0], onBoundary);
 			
-			if (tmin > 0.0 && t == 0.0) {
+			if (tmin > 0.0 && tfinal == 0.0) {
 				// -- If the current overall smallest time to any boundary is zero, initialise it to the first non-zero time to a boundary
-				t = tmin;
-			} else if (tmin > 0.0 && tmin < t) {
-				// -- Check if this time, the smallest, non-zero time to the current boundary, is smaller than the current overall smallest time to any boundary
-				t = tmin;
+				tfinal = tmin;
+			} else if (tmin > 0.0 && tmin < tfinal) {
+				// -- Check if this time is smaller than the current overall smallest time to any boundary
+				tfinal = tmin;
 			}
 		}
 	}	
 
 	// -- Analyse the final value for the time to nearest boundary from inside
-	if (t > 0.) { 
+	if (tfinal > 0.) { 
 		#ifdef VERBOSE_MODE		
-			cout << "TimeFromInsideAlongParabola - Time to nearest boundary: " <<  t << endl; 
+			cout << "TimeFromInsideAlongParabola - time to nearest boundary: " << tfinal << endl; 
 		#endif
-		return t;
-	} else if (t == 0.) {
-		throw runtime_error("In TUCNGeoBBox, TimeFromInsideAlongParabola - Calculation error - no time to boundary found"); 
-		return 0;
+		return tfinal;
 	} else {
-		throw runtime_error("In TUCNGeoBBox, TimeFromInsideAlongParabola - Calculation error - time to boundary is negative");
+		cout << "Error in TUCNGeoBBox, TimeFromInsideAlongParabola - no time to boundary is found!" << endl;
 		return 0;
 	}
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax) const
+Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
 {
-	// This method calculates the time of all possible intersections of the particle's future path with all possible boundaries of the current shape.
-	// Method then compares the times found and checks that the corresponding point of intersection with each boundary plane actually corresponds to a point
-	// on the box. From these valid solutions, the method	returns the smallest, non-zero value.
+	// This method calculates the time of all possible intersections of the particle's future path
+	// with all possible boundaries of the current shape.
+	// Method then compares the times found and checks that the corresponding point of intersection
+	// with each boundary plane actually corresponds to a point  on the box. From these valid solutions,
+	// the method	returns the smallest, non-zero value.
 	
 	#ifdef VERBOSE_MODE		
 		cout << "TUCNGeoBBox::TimeFromOutsideAlongParabola" << endl;
 	#endif
-	// ----------------------------------------------------------------------
-	// -- For efficiency calculate the safety distance along straight line to surface. If this distance is greater than the proposed stepmax, then just return Big()
-	// -- This code is from root's DistanceFrom... methods.
-	Bool_t in = kTRUE;
-   Double_t saf[3], par[3], newpt[3];
+	
+   // -- Determine the local point in case the box origin is not as the local centre (ie: 0,0,0)
+	// -- (Not sure of why this would ever be the case, but ROOT does allow you to set the origin...)
+	Double_t localpt[3];
+	for (Int_t i=0; i<3; i++) localpt[i] = point[i] - fOrigin[i];
 
-	// compute distance between point and boundaries. compare with stepsize
-	for (Int_t i=0; i<3; i++) newpt[i] = point[i] - fOrigin[i];
-   par[0] = fDX;
-   par[1] = fDY;
-   par[2] = fDZ;
-   for (Int_t i=0; i<3; i++) {
-		saf[i] = TMath::Abs(newpt[i]) - par[i];       // Get min. distance safety to boundary
-      if (saf[i] >= stepmax) {
-			#ifdef VERBOSE_MODE		
-				cout << "TimeFromOutsideAlongParabola - Safety > Step. Returning TGeoShape::Big()" << endl;
-			#endif
-			return TGeoShape::Big();  // If this safety is greater than the stepsize then just return Big()
-      }
-		if (in && saf[i] > 0) in = kFALSE;				  // 
-   }
-
-/*   if (iact<3 && safe) {  // iact > 3 - compute only the distance to exiting, ignoring anything else
-      // compute safe distance
-      if (in) {
-         *safe = 0.0;
-      } else {   
-         *safe = saf[0]; 
-         if (saf[1] > *safe) *safe = saf[1];
-         if (saf[2] > *safe) *safe = saf[2];     // Store the largest safety?
-      }   
-      if (iact==0) return TGeoShape::Big();      // iact = 0 - compute only the safety distance and fill it at the location given by SAFE
-      if (iact==1 && stepmax<*safe) return TGeoShape::Big(); 
-		// iact = 1  - a proposed STEP is supplied. The safe distance is computed first. 
-		// If this is bigger than STEP then the proposed step is approved and returned by the method 
-		// since it does not cross the shape boundaries. Otherwise, the distance to exiting the shape is 
-		// computed and returned.
-   }
-*/
 	// ----------------------------------------------------------------------
 	// -- Compute actual time to reach boundary
 	Double_t tfinal = 0.; // The smallest time to reach any boundary;
@@ -363,7 +276,8 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(const Double_t* point, const 
 	
 	#ifdef VERBOSE_MODE		
 		cout << "TimeFromOutsideAlongParabola - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
-		cout << "TimeFromOutsideAlongParabola - (Local) point - +X: " << newpt[0] << "  +Y: " << newpt[1] << "  +Z: " << newpt[2] << endl;
+		cout << "TimeFromOutsideAlongParabola - Origin - +X: " << fOrigin[0] << "\t" << "+Y: " << fOrigin[1] << "\t" <<  "+Z: " << fOrigin[2] << endl;
+		cout << "TimeFromOutsideAlongParabola - (Local) point - +X: " << localpt[0] << "  +Y: " << localpt[1] << "  +Z: " << localpt[2] << endl;
 		cout << "TimeFromOutsideAlongParabola - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
 		cout << "TimeFromOutsideAlongParabola - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
 	#endif
@@ -376,16 +290,29 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(const Double_t* point, const 
 	for (Int_t i=0; i<3; i++) {
 		// -- Loop over +/- fDX,fDY,fDZ boundaries
 		for (Int_t j=0; j<2; j++) {
-			
-			// -- Define storage for the smallest non-zero root to the CURRENT boundary
-			Double_t tmin = 0.0;
-
 			// -- Define the constants in the quadratic equation, a, b, c - see note book for details
 			Double_t params[3] = {0., 0., 0.};
 			params[0] = 0.5*field[i];
 			params[1] = velocity[i]; 
-			params[2] = newpt[i] - (TMath::Power(-1,j)*boundary[i]);
-
+			params[2] = localpt[i] - (TMath::Power(-1,j)*boundary[i]);
+			
+			// Sometimes a,b or c (usually c) can be extremely small but non-zero, due to the fact that
+			// we are usually sitting on a boundary and c measures the distance to the current boundary.
+			if (TMath::Abs(params[0]) < TGeoShape::Tolerance()) {
+				// a = 0 if the field component in this direction is zero
+				params[0] = 0.;
+			}
+			if (TMath::Abs(params[1]) < TGeoShape::Tolerance()) {
+				// b = 0 if the velocity component in this direction is zero (i.e it wont hit the boundary anyway)
+				params[1] = 0.;
+			}
+			// We are usually sitting on a boundary so c will occasionally be within a few ~E-10 of zero.
+			// Therefore if c is less than 1E-9, and the onBoundary flag is set to TRUE, then we assume that
+			// we are on this boundary and set c = 0 to signify this. 
+			if (TMath::Abs(params[2]) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+				params[2] = 0.;
+			}
+			
 			// -- Solve equation for potential roots
 			Double_t roots[2] = {0., 0.};
 			Int_t solutions = TUCNPolynomial::Instance()->QuadraticRootFinder(&params[0], &roots[0]);
@@ -395,45 +322,14 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(const Double_t* point, const 
 				cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
 			#endif
 
-			// -- Determing number of roots, and select the smallest, real, non-zero value. 
-			if (solutions == 2) {
-				// -- Two roots
-				// -- Check first root to see if it is positive and corresponds to a point actually on the surface of the box
-				if (roots[0] > 0. && IsNextPointOnBox(point, velocity, field, boundary, roots[0]) == kTRUE) {
-					tmin = roots[0];
-				}
-				// -- Check the second root for the same criteria.
-				if (roots[1] > 0. && IsNextPointOnBox(point, velocity, field, boundary, roots[1]) == kTRUE) {
-					if (tmin == 0.) {
-						// -- If the first root wasn't a valid solution, then just set tmin to the second root. 
-						tmin = roots[1];
-					} else if (tmin > 0. && roots[1] < tmin) {
-						// -- If both roots are valid, then compare the two roots and pick the smallest value. 
-						tmin = roots[1];
-					} else {
-						#ifdef VERBOSE_MODE		
-							cout << "TimeFromOutsideAlongParabola - Both roots are negative, zero or invalid" << endl; 
-						#endif
-					}
-				}
-			} else if (solutions == 1) {
-				// -- One Root
-				if (roots[0] > 0. && IsNextPointOnBox(point, velocity, field, boundary, roots[0]) == kTRUE) {
-					tmin = roots[0];
-				} else {
-					//-- Only Root is negative or zero
-				}
-			} else if (solutions == 0) {
-				// -- No Real Roots
-			} else {
-				throw runtime_error("In TUCNGeoBBox, TimeFromOutsideAlongParabola - number of quadratic eqn roots is not between 0 and 2");
-			}
+			// -- Find the smallest, non-zero root
+			Double_t tmin = TUCNGeoBBox::SmallestOutsideTime(solutions, &roots[0], onBoundary, point, velocity, field, &boundary[0]);
 		
 			if (tmin > 0.0 && tfinal == 0.0) {
 				// -- If the current overall smallest time to any boundary is zero, initialise it to the first non-zero time to a boundary
 				tfinal = tmin;
 			} else if (tmin > 0.0 && tmin < tfinal) {
-				// -- Check if this time, the smallest, non-zero time to the current boundary, is smaller than the current overall smallest time to any boundary
+				// -- Check if this time is smaller than the current overall smallest time to any boundary
 				tfinal = tmin;
 			}
 		}
@@ -451,61 +347,36 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(const Double_t* point, const 
 		#endif
 		return TGeoShape::Big();
 	} else {
-		throw runtime_error("In TUCNGeoBBox, TimeFromOutsideAlongParabola - Calculation error - time to boundary is negative");
+		cout << "Error In TUCNGeoBBox, TimeFromOutsideAlongParabola - Calculation error - time to boundary is negative" << endl;
+		return 0;
 	}
-	return 0.;
 }
 
 //_____________________________________________________________________________
 Double_t TUCNGeoBBox::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, 
-																		const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Double_t stepmax) 
+											const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Bool_t onBoundary) 
 {
 	// This method calculates the time of all possible intersections of the particle's future path
 	// with all possible boundaries of the current shape. Method then compares the times found and
 	// checks that the corresponding point of intersection with each boundary plane actually corresponds
 	// to a point on the box. From these valid solutions, the method	returns the smallest, non-zero value.
 		
-	// ----------------------------------------------------------------------
-	// For efficiency calculate the safety distance along straight line to surface. If this distance
-	// is greater than the proposed stepmax, then just return Big().
-	// This code is from root's DistanceFrom... methods.
-	Bool_t in = kTRUE;
-   Double_t saf[3], par[3], newpt[3];
-
-	// compute distance between point and boundaries. compare with stepsize
-	for (Int_t i=0; i<3; i++) newpt[i] = point[i] - origin[i];
-   par[0] = dx;
-   par[1] = dy;
-   par[2] = dz;
-   for (Int_t i=0; i<3; i++) {
-		saf[i] = TMath::Abs(newpt[i]) - par[i];       // Get min. distance safety to boundary
-      if (saf[i] >= stepmax) {
-			#ifdef VERBOSE_MODE		
-				cout << "TimeFromOutsideAlongParabola - Safety > Step. Returning TGeoShape::Big()" << endl;
-			#endif
-			return TGeoShape::Big();  // If this safety is greater than the stepsize then just return Big()
-      }
-		if (in && saf[i] > 0) in = kFALSE;				  // 
-   }
-
-	if (in) {
-		#ifdef VERBOSE_MODE
-			cout << "In TUCNGeoBBox::TimeFromOutsideAlongParabola - particle actually inside bounding box" << endl;
-		#endif
-		return 0.0;
-	}	
+	// -- Determine the local point in case the box origin is not as the local centre (ie: 0,0,0)
+	// -- (Not sure of why this would ever be the case, but ROOT does allow you to set the origin...)
+	Double_t localpt[3];
+	for (Int_t i=0; i<3; i++) localpt[i] = point[i] - origin[i];
 	
-
 	// ----------------------------------------------------------------------
 	// -- Calculate the actual time to the boundary
 	Double_t tfinal = 0.; // The smallest time to reach any boundary;
 	Double_t boundary[3] = {dx, dy, dz}; // Store the coordinates of the box boundaries
 	
 	#ifdef VERBOSE_MODE		
-		cout << "TimeFromOutsideAlongParabola - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
-		cout << "TimeFromOutsideAlongParabola - (Local) point - +X: " << newpt[0] << "  +Y: " << newpt[1] << "  +Z: " << newpt[2] << endl;
-		cout << "TimeFromOutsideAlongParabola - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
-		cout << "TimeFromOutsideAlongParabola - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
+		cout << "TimeFromOutsideAlongParabolaS - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
+		cout << "TimeFromOutsideAlongParabolaS - Origin - X: " << origin[0] << "\t" << "Y: " << origin[1] << "\t" <<  "Z: " << origin[2] << endl;
+		cout << "TimeFromOutsideAlongParabolaS - (Local) point - +X: " << localpt[0] << "  +Y: " << localpt[1] << "  +Z: " << localpt[2] << endl;
+		cout << "TimeFromOutsideAlongParabolaS - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
+		cout << "TimeFromOutsideAlongParabolaS - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
 	#endif
 	
 	// ----------------------------------------------------------------------	
@@ -516,14 +387,28 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabolaS(const Double_t* point, const
 	for (Int_t i=0; i<3; i++) {
 		// -- Loop over +/- fDX,fDY,fDZ boundaries
 		for (Int_t j=0; j<2; j++) {
-			// -- Define storage for the smallest non-zero root to the CURRENT boundary
-			Double_t tmin = 0.0;
-			
 			// -- Define the constants in the quadratic equation, a, b, c - see note book for details
 			Double_t params[3] = {0., 0., 0.};
 			params[0] = 0.5*field[i];
 			params[1] = velocity[i]; 
-			params[2] = newpt[i] - (TMath::Power(-1,j)*boundary[i]);
+			params[2] = localpt[i] - (TMath::Power(-1,j)*boundary[i]);
+			
+			// Sometimes a,b or c (usually c) can be extremely small but non-zero, due to the fact that
+			// we are usually sitting on a boundary and c measures the distance to the current boundary.
+			if (TMath::Abs(params[0]) < TGeoShape::Tolerance()) {
+				// a = 0 if the field component in this direction is zero
+				params[0] = 0.;
+			}
+			if (TMath::Abs(params[1]) < TGeoShape::Tolerance()) {
+				// b = 0 if the velocity component in this direction is zero (i.e it wont hit the boundary anyway)
+				params[1] = 0.;
+			}
+			// We are usually sitting on a boundary so c will occasionally be within a few ~E-10 of zero.
+			// Therefore if c is less than 1E-9, and the onBoundary flag is set to TRUE, then we assume that
+			// we are on this boundary and set c = 0 to signify this. 
+			if (TMath::Abs(params[2]) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+				params[2] = 0.;
+			}
 			
 			// -- Solve equation for potential roots
 			Double_t roots[2] = {0., 0.};
@@ -534,39 +419,8 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabolaS(const Double_t* point, const
 				cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
 			#endif
 			
-			// -- Determing number of roots, and select the smallest, real, non-zero value. 
-			if (solutions == 2) {
-				// -- Two roots
-				// -- Check first root to see if it is positive and corresponds to a point actually on the surface of the box
-				if (roots[0] > 0. && IsNextPointOnBox(point, velocity, field, boundary, roots[0]) == kTRUE) {
-					tmin = roots[0];
-				}
-				// -- Check the second root for the same criteria.
-				if (roots[1] > 0. && IsNextPointOnBox(point, velocity, field, boundary, roots[1]) == kTRUE) {
-					if (tmin == 0.) {
-						// -- If the first root wasn't a valid solution, then just set tmin to the second root. 
-						tmin = roots[1];
-					} else if (tmin > 0. && roots[1] < tmin) {
-						// -- If both roots are valid, then compare the two roots and pick the smallest value. 
-						tmin = roots[1];
-					} else {
-						#ifdef VERBOSE_MODE		
-							cout << "TimeFromOutsideAlongParabola - Both roots are negative, zero or invalid" << endl; 
-						#endif
-					}
-				}
-			} else if (solutions == 1) {
-				// -- One Root
-				if (roots[0] > 0. && IsNextPointOnBox(point, velocity, field, boundary, roots[0]) == kTRUE) {
-					tmin = roots[0];
-				} else {
-					//-- Only Root is negative or zero
-				}
-			} else if (solutions == 0) {
-				// -- No Real Roots
-			} else {
-				throw runtime_error("In TUCNGeoBBox, TimeFromOutsideAlongParabola - number of quadratic eqn roots is not between 0 and 2");
-			}
+			// -- Find the smallest, non-zero root
+			Double_t tmin = TUCNGeoBBox::SmallestOutsideTime(solutions, &roots[0], onBoundary, point, velocity, field, &boundary[0]);
 			
 			if (tmin > 0.0 && tfinal == 0.0) {
 				// -- If the current overall smallest time to any boundary is zero, initialise it to the first non-zero time to a boundary
@@ -582,7 +436,7 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabolaS(const Double_t* point, const
 	// -- Analyse the final value of the shortest time to hit the boundary from outside
 	if (tfinal > 0.) { 
 		#ifdef VERBOSE_MODE		
-			cout << "TGeoBBox: TimeFromOutsideAlongParabola - Final Time to nearest boundary: " <<  tfinal << endl; 
+			cout << "TimeFromOutsideAlongParabola - Time to nearest boundary: " << tfinal << endl; 
 		#endif
 		return tfinal;
 	} else if (tfinal == 0.) {
@@ -591,9 +445,9 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabolaS(const Double_t* point, const
 		#endif
 		return TGeoShape::Big();
 	} else {
-		throw runtime_error("In TUCNGeoBBox, TimeFromOutsideAlongParabola - Calculation error - time to boundary is negative");
+		cout << "Error In TUCNGeoBBox, TimeFromOutsideAlongParabola - Calculation error - time to boundary is negative" << endl;
+		return 0;
 	}
-	return 0.0;
 }
 
 //_____________________________________________________________________________
@@ -629,4 +483,165 @@ Bool_t TUCNGeoBBox::IsNextPointOnBox(const Double_t* point, const Double_t* velo
 		cout << "IsNextPointOnBox - Point on surface of box. Return true" << endl;
 	#endif
 	return kTRUE;	
+}
+
+//_____________________________________________________________________________
+Double_t TUCNGeoBBox::SmallestInsideTime(const Int_t solutions, Double_t* roots, const Bool_t onBoundary)
+{
+	// -- Determining number of roots, and select the smallest, real, non-zero value. 
+	
+	// First check if we are sitting on a boundary
+	if (onBoundary == kTRUE) {
+		// If on boundary, we must be vigilant as one of the roots, representing the time to the boundary we are
+		// sitting on, should be zero, or very close to zero.
+		// If one is very very small, we need to set it to zero, to ensure that the larger root, indicating the correct
+		// time to the next boundary is chosen.
+		// If both are very very small, then we need to be wary. This could mean we are on a boundary, but also in the
+		// corner of a box, where the next boundary is very very close by. 
+		if (solutions == 2) {
+			if (TMath::Abs(roots[0]) < 1.E-8 && TMath::Abs(roots[1]) < 1.E-8) {
+				cout << "SmallestInsideTime - Two roots are both very small" << endl;
+				cout << "Root 1: " << roots[0] << "\t" << "Root 2: " << roots[1] << endl;
+				throw runtime_error("Two very small roots encountered. Unsure how to proceed.");
+			}
+			for (Int_t i = 0; i < 2; i++) {
+				if (TMath::Abs(roots[i]) < 1.E-8) { 
+					cout << "SmallestInsideTime - Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
+					roots[i] = 0.0;
+				}
+			}
+		} else if (solutions == 1) {
+			// Need to be careful here. One solution is zero, which should/may be because we are sitting
+			// on a boundary and this has been computed correctly by the RootFinder. 
+			// It could also be because in this direction, the field is zero, and therefore we are moving along a straight line
+			// and if we are coming from inside the box, there will only be one intersection. (Coming from outside would still
+			// produce two intersections in this case).
+			// We could also be very very close to another boundary, say if we are sitting right in the corner of a box.
+			// In any case, we have a single solution which should be correct and not need setting to zero.
+			if (TMath::Abs(roots[0]) < 1.E-8) cout << "SmallestInsideTime - Single Root found to be < 1.E-8 : " << roots[0] << endl;
+		} else {
+			// Nothing to be done - both roots should be zero anyway - no solutions found
+		}
+	}	
+	
+	Double_t tmin = 0.0;
+	// Now detemine the smallest, non-zero root.
+	if (solutions == 2) {
+		// -- Two roots
+		if (roots[0] > 0. && roots[1] > 0.) {
+			// If both are positive - determine which of two positive roots is the smaller
+			if (roots[0] < roots[1]) {
+				tmin = roots[0];
+			} else {
+				tmin = roots[1];
+			}
+		} else if (roots[0] > 0.) {
+			tmin = roots[0];
+		} else if (roots[1] > 0.) {
+			tmin = roots[1];
+		} else {
+			cout << "SmallestInsideTime - Both roots are negative or zero" << endl; 
+			return 0;
+		}
+	} else if (solutions == 1) {
+		// -- One Root
+		if (roots[0] > 0.) {
+			tmin = roots[0];
+		} else {
+			//-- Only Root is negative or zero
+			cout << "SmallestInsideTime - Only root is nagative or zero" << endl;
+			return 0;
+		}
+	} else {
+		// -- No Real Roots
+		cout << "SmallestInsideTime - No real roots - Cannot cross boundary" << endl;
+		return 0;
+	}
+	// Return the smallest time found
+	return tmin;
+}
+
+//_____________________________________________________________________________
+Double_t TUCNGeoBBox::SmallestOutsideTime(const Int_t solutions, Double_t* roots, const Bool_t onBoundary, const Double_t* point, 
+											const Double_t* velocity, const Double_t* field, const Double_t* boundary)
+{
+	// -- Determing number of roots, and select the smallest, real, non-zero value. 
+	
+	// First check if we are sitting on a boundary
+	if (onBoundary == kTRUE) {
+		// If on boundary, we must be vigilant as one of the roots, representing the time to the boundary we are
+		// sitting on, should be zero, or very close to zero.
+		// If one is very very small, we need to set it to zero, to ensure that the larger root, indicating the correct
+		// time to the next boundary is chosen.
+		// If both are very very small, then we need to be wary. This could mean we are on a boundary, but also in the
+		// corner of a box, where the next boundary is very very close by. 
+		if (solutions == 2) {
+			if (TMath::Abs(roots[0]) < 1.E-8 && TMath::Abs(roots[1]) < 1.E-8) {
+				cout << "SmallestOutsideTime - Two roots are both very small" << endl;
+				cout << "Root 1: " << roots[0] << "\t" << "Root 2: " << roots[1] << endl;
+				throw runtime_error("Two very small roots encountered. Unsure how to proceed.");
+			}
+			for (Int_t i = 0; i < 2; i++) {
+				if (TMath::Abs(roots[i]) < 1.E-8) {
+					cout << "SmallestOutsideTime - Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
+					roots[i] = 0.0;
+				}
+			}
+		} else if (solutions == 1) {
+			// Need to be careful here. One solution is zero, which should/may be because we are sitting
+			// on a boundary and this has been computed correctly by the RootFinder. 
+			// It could also be because in this direction, the field is zero, and therefore we are moving along a straight line
+			// and if we are coming from inside the box, there will only be one intersection. (Coming from outside would still
+			// produce two intersections in this case).
+			// We could also be very very close to another boundary, say if we are sitting right in the corner of a box.
+			// In any case, we have a single solution which should be correct and not need setting to zero.
+			if (TMath::Abs(roots[0]) < 1.E-8) cout << "SmallestOutsideTime - Single Root found to be < 1.E-8 : " << roots[0] << endl;
+		} else {
+			// Nothing to be done - both roots should be zero anyway - no solutions found
+		}
+	}
+	
+	Double_t tmin = 0.0;
+	// Now detemine the smallest, non-zero root.
+	if (solutions == 2) {
+		// -- Two roots
+		// -- Check first root to see if it is positive and corresponds to a point actually on the surface of the box
+		if (roots[0] > 0. && IsNextPointOnBox(point, velocity, field, boundary, roots[0]) == kTRUE) {
+			tmin = roots[0];
+		}
+		// -- Check the second root for the same criteria.
+		if (roots[1] > 0. && IsNextPointOnBox(point, velocity, field, boundary, roots[1]) == kTRUE) {
+			if (tmin == 0.) {
+				// -- If the first root wasn't a valid solution, then just set tmin to the second root. 
+				tmin = roots[1];
+			} else if (tmin > 0. && roots[1] < tmin) {
+				// -- If both roots are valid, then compare the two roots and pick the smallest value. 
+				tmin = roots[1];
+			} else {
+				#ifdef VERBOSE_MODE		
+					cout << "SmallestOutsideTime - Both roots are negative, zero or invalid" << endl; 
+				#endif
+				return 0;
+			}
+		}
+	} else if (solutions == 1) {
+		// -- One Root
+		if (roots[0] > 0. && IsNextPointOnBox(point, velocity, field, boundary, roots[0]) == kTRUE) {
+			tmin = roots[0];
+		} else {
+			//-- Only Root is negative or zero
+			#ifdef VERBOSE_MODE		
+				cout << "SmallestOutsideTime - Only root is negative, zero or invalid" << endl; 
+			#endif
+			return 0;
+		}
+	} else {
+		// -- No Real Roots
+		#ifdef VERBOSE_MODE		
+			cout << "SmallestOutsideTime - No solutions" << endl; 
+		#endif
+		return 0;
+	}
+	// Return the smallest time found
+	return tmin;
 }

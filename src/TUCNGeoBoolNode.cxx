@@ -601,7 +601,7 @@ void TUCNGeoUnion::Sizeof3D() const
 
 //_____________________________________________________________________________
 Double_t TUCNGeoUnion::TimeFromOutsideAlongParabola(const Double_t* /*point*/, const Double_t* /*velocity*/, const Double_t* /*field*/,
-                                 const Double_t /*stepmax*/) const
+                                 const Double_t /*stepTime*/, const Bool_t /*onBoundary*/) const
 {
 // Compute the time from outside point to this composite shape along parabola.
 // Check if the bounding box is crossed within the requested distance
@@ -611,7 +611,7 @@ Double_t TUCNGeoUnion::TimeFromOutsideAlongParabola(const Double_t* /*point*/, c
 
 //_____________________________________________________________________________
 Double_t TUCNGeoUnion::TimeFromInsideAlongParabola(const Double_t* /*point*/, const Double_t* /*velocity*/, const Double_t* /*field*/,
-                                 const Double_t /*stepmax*/) const
+                                 const Double_t /*stepTime*/, const Bool_t /*onBoundary*/) const
 {
 // Compute time from inside point to outside of this composite shape along parabola.
 	Error("TimeFromInsideAlongParabola","Subtractions have not been implemented yet!");
@@ -914,7 +914,7 @@ void TUCNGeoSubtraction::Sizeof3D() const
 
 //_____________________________________________________________________________
 Double_t TUCNGeoSubtraction::TimeFromOutsideAlongParabola(const Double_t* /*point*/, const Double_t* /*velocity*/, const Double_t* /*field*/,
-                                 const Double_t /*stepmax*/) const
+                                 const Double_t /*stepTime*/, const Bool_t /*onBoundary*/) const
 {
 // Compute the time from outside point to this composite shape along parabola.
 // Check if the bounding box is crossed within the requested distance
@@ -924,7 +924,7 @@ Double_t TUCNGeoSubtraction::TimeFromOutsideAlongParabola(const Double_t* /*poin
 
 //_____________________________________________________________________________
 Double_t TUCNGeoSubtraction::TimeFromInsideAlongParabola(const Double_t* /*point*/, const Double_t* /*velocity*/, const Double_t* /*field*/,
-                                 const Double_t /*stepmax*/) const
+                                 const Double_t /*stepTime*/, const Bool_t /*onBoundary*/) const
 {
 // Compute time from inside point to outside of this composite shape along parabola.
 	Error("TimeFromInsideAlongParabola","Subtractions have not been implemented yet!");
@@ -1311,11 +1311,11 @@ void TUCNGeoIntersection::Sizeof3D() const
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoIntersection::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax) const
+Double_t TUCNGeoIntersection::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 // Compute the time from outside point to this composite shape along parabola.
 // Check if the bounding box is crossed within the requested distance
-   
+	Info("TimeFromOutsideAlongParabola","Start");
    TUCNGeoBoolNode *node = (TUCNGeoBoolNode*)this;
    Double_t leftPoint[3], rightPoint[3], masterPoint[3], leftVelocity[3], rightVelocity[3], leftField[3], rightField[3];
    // Store the initial position in masterPoint for later use
@@ -1333,59 +1333,79 @@ Double_t TUCNGeoIntersection::TimeFromOutsideAlongParabola(const Double_t* point
 	// Determine which shape (if either) contains the point
 	Bool_t inleft = fLeft->Contains(leftPoint);
    Bool_t inright = fRight->Contains(rightPoint);
-   node->SetSelected(0);
+   Info("TimeFromOutsideAlongParabola","Is Point in %s Node? : ",fLeft->GetName(),inleft);
+   Info("TimeFromOutsideAlongParabola","Is Point in %s Node? : ",fRight->GetName(),inright);	
+	node->SetSelected(0);
    Double_t timeFromInside = 0.0;
-   if (inleft && inright) return timeFromInside;
-
+   if (inleft && inright) {
+	   Info("TimeFromOutsideAlongParabola","Particle in Both. Returning: %f",timeFromInside);
+		return timeFromInside;
+	}
    while (1) {
       leftTime = rightTime = 0.0;
       if (!inleft)  {
-         leftTime = static_cast<TUCNGeoBBox*>(fLeft)->TimeFromOutsideAlongParabola(leftPoint,leftVelocity,leftField,stepmax);
+		  	Info("TimeFromOutsideAlongParabola","Point is not in Left node: %s. Finding Time FromOutside.",fLeft->GetName());
+			leftTime = static_cast<TUCNGeoBBox*>(fLeft)->TimeFromOutsideAlongParabola(leftPoint,leftVelocity,leftField,stepTime,onBoundary);
          if (leftTime > 1E20) return TGeoShape::Big();
       }
       if (!inright) {  
-         rightTime = static_cast<TUCNGeoBBox*>(fRight)->TimeFromOutsideAlongParabola(rightPoint,rightVelocity,rightField,stepmax);
+         Info("TimeFromOutsideAlongParabola","Point is not in Right node: %s. Finding Time FromOutside.",fRight->GetName());
+		  	rightTime = static_cast<TUCNGeoBBox*>(fRight)->TimeFromOutsideAlongParabola(rightPoint,rightVelocity,rightField,stepTime,onBoundary);
          if (rightTime > 1E20) return TGeoShape::Big();
       }
 
       if (leftTime > rightTime) {
+         Info("TimeFromOutsideAlongParabola","LeftTime: %f > RightTime: %f.",leftTime, rightTime);
          // propagate to left shape
          timeFromInside += leftTime;
-         node->SetSelected(1);
+         Info("TimeFromOutsideAlongParabola","TimeFromInside: %f.",timeFromInside);
+			node->SetSelected(1);
          inleft = kTRUE;
          for (i=0; i<3; i++) {
             // moving under gravity
             masterPoint[i] += leftTime*velocity[i] + 0.5*field[i]*leftTime*leftTime;
          }
+		  	Info("TimeFromOutsideAlongParabola","Propagate point by LeftTime: X: %f, Y: %f, Z: %f",masterPoint[0],masterPoint[1],masterPoint[2]);
          fRightMat->MasterToLocal(masterPoint,rightPoint);
          // check if propagated point is inside right shape
          inright = fRight->Contains(rightPoint);
-         if (inright) return timeFromInside;
-         // here inleft=true, inright=false         
+         Info("TimeFromOutsideAlongParabola","Is new point in Right? : %i",inright);
+			if (inright) {
+				Info("TimeFromOutsideAlongParabola","Returning TimeFromInside: %f.",timeFromInside);
+				return timeFromInside;
+			}// here inleft=true, inright=false         
       } else {
+         Info("TimeFromOutsideAlongParabola","RightTime: %f > LeftTime: %f.",rightTime, leftTime);
          // propagate to right shape
          timeFromInside += rightTime;
+         Info("TimeFromOutsideAlongParabola","TimeFromInside: %f.",timeFromInside);
          node->SetSelected(2);
          inright = kTRUE;
          for (i=0; i<3; i++) {
             // moving under gravity
             masterPoint[i] += rightTime*velocity[i] + 0.5*field[i]*rightTime*rightTime;
          }
-         fLeftMat->MasterToLocal(masterPoint,leftPoint);
+         Info("TimeFromOutsideAlongParabola","Propagate point by LeftTime: X: %f, Y: %f, Z: %f",masterPoint[0],masterPoint[1],masterPoint[2]);
+		  	fLeftMat->MasterToLocal(masterPoint,leftPoint);
          // check if propagated point is inside left shape
          inleft = fLeft->Contains(leftPoint);
-         if (inleft) return timeFromInside;
-         // here inleft=false, inright=true
+         Info("TimeFromOutsideAlongParabola","Is new point in Left? : %i",inleft);
+         if (inleft) {
+				Info("TimeFromOutsideAlongParabola","Returning TimeFromInside: %f.",timeFromInside);
+	         return timeFromInside;
+         }
+			// here inleft=false, inright=true
       }            
    }   
    return timeFromInside;
 }   
 
 //_____________________________________________________________________________
-Double_t TUCNGeoIntersection::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax) const
+Double_t TUCNGeoIntersection::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 // -- Compute time from inside point to outside of this composite shape along parabola.
-  	// Compute the time to each of the shapes involved in the intersection
+  	Info("TimeFromInsideAlongParabola","Start");
+	// Compute the time to each of the shapes involved in the intersection
    TUCNGeoBoolNode *node = (TUCNGeoBoolNode*)this;
    Double_t leftPoint[3], rightPoint[3], leftVelocity[3], rightVelocity[3], leftField[3], rightField[3];
    Double_t leftTime, rightTime, timeFromInside=0.;
@@ -1393,19 +1413,26 @@ Double_t TUCNGeoIntersection::TimeFromInsideAlongParabola(const Double_t* point,
    fLeftMat->MasterToLocal(point, &leftPoint[0]);
    fLeftMat->MasterToLocalVect(velocity, &leftVelocity[0]);
    fLeftMat->MasterToLocalVect(field, &leftField[0]);
-   leftTime = static_cast<TUCNGeoBBox*>(fLeft)->TimeFromInsideAlongParabola(&leftPoint[0], &leftVelocity[0], &leftField[0], stepmax);
-   // Calculate the time to the boundary of the shape on the right branch
+   Info("TimeFromInsideAlongParabola","Finding Time from Inside to Left Node, %s.",fLeft->GetName());
+	leftTime = static_cast<TUCNGeoBBox*>(fLeft)->TimeFromInsideAlongParabola(&leftPoint[0], &leftVelocity[0], &leftField[0], stepTime, onBoundary);
+   Info("TimeFromInsideAlongParabola","Time from Inside to Left Node, %s: %f",fLeft->GetName(),leftTime);
+	// Calculate the time to the boundary of the shape on the right branch
    fRightMat->MasterToLocal(point, &rightPoint[0]);
    fRightMat->MasterToLocalVect(velocity, &rightVelocity[0]);
    fRightMat->MasterToLocalVect(field, &rightField[0]);
-   rightTime = static_cast<TUCNGeoBBox*>(fRight)->TimeFromInsideAlongParabola(&rightPoint[0], &rightVelocity[0], &rightField[0], stepmax);
-   // Work out which time is the shortest
+   Info("TimeFromInsideAlongParabola","Finding Time from Inside to Right Node, %s.",fRight->GetName());
+   rightTime = static_cast<TUCNGeoBBox*>(fRight)->TimeFromInsideAlongParabola(&rightPoint[0], &rightVelocity[0], &rightField[0], stepTime, onBoundary);
+   Info("TimeFromInsideAlongParabola","Time from Inside to Right Node, %s: %f",fRight->GetName(),rightTime);
+	// Work out which time is the shortest
    if (leftTime < rightTime) {
-      timeFromInside = leftTime;
+      Info("TimeFromInsideAlongParabola","LeftTime < RightTime");
+	   timeFromInside = leftTime;
       node->SetSelected(1);
    } else {
+      Info("TimeFromInsideAlongParabola","RightTime < LeftTime");
       timeFromInside = rightTime;
       node->SetSelected(2);
    }      
-   return timeFromInside;
+   Info("TimeFromInsideAlongParabola","TimeFromInside: ", timeFromInside);
+	return timeFromInside;
 }
