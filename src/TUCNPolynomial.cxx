@@ -7,7 +7,8 @@
 
 #include "TMath.h"
 #include "TGeoShape.h"
-
+#include "TGeoManager.h"
+#include "TVirtualGeoTrack.h"
 #include "TUCNPolynomial.h"
 #include "Units.h"
 
@@ -460,7 +461,10 @@ Int_t TUCNPolynomial::AnalyticQuarticAlgorithm(const Double_t a3, const Double_t
 	if (TMath::Abs(WSquared) < TGeoShape::Tolerance()) {
 		WSquared = 0.0;
 	}
-	assert(WSquared >= 0.0);	
+	
+	if (WSquared < 0.0) {
+		cout << "TrackId: " << gGeoManager->GetCurrentTrack()->GetId() << "\t" << "WSquared: " << WSquared << endl;
+	}	
 	
 	Double_t W = TMath::Sqrt(WSquared);
 	#ifdef VERBOSE_MODE
