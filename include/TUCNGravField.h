@@ -24,7 +24,6 @@ protected:
 	static TUCNGravField    *fgInstance;  
 	
 	// -- constructors
-   TUCNGravField();
    TUCNGravField(const TUCNGravField&);
 	TUCNGravField& operator=(const TUCNGravField&); 
    
@@ -32,13 +31,12 @@ private:
 	
 	TVector3 						fGlobalFieldVector;
 	static const Double_t 		fGravAcceleration = 9.80665; //*m/(s*s);
-	TUCNGeoManager*				fUCNGeometry;
-	
-	void SetUCNGeometry(TUCNGeoManager *geom) {fUCNGeometry = geom;}
 	
 public:
 	
-	static TUCNGravField* Instance(TUCNGeoManager *geom);
+   TUCNGravField();
+
+	static TUCNGravField* Instance();
 	   
 	// -- destructor
    virtual ~TUCNGravField();

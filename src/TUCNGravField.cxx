@@ -1,6 +1,13 @@
 // TUCNGravField
 // Author: Matthew Raso-Barnett  22/05/2009
 
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+// 	Field is initialised with a field direction pointing downwards 	  //
+// 	along the z-axis with respect to the global cooradinate system. 	  //
+//                                      											  //
+////////////////////////////////////////////////////////////////////////////
+
 #include "TVector3.h"
 
 #include "TUCNGravField.h"
@@ -13,7 +20,7 @@ const Double_t 	TUCNGravField::fGravAcceleration; // Initialised in header, defi
 
 //_____________________________________________________________________________
 TUCNGravField::TUCNGravField()
-				  :fGlobalFieldVector()
+				  :fGlobalFieldVector(0.,0.,-1.0)
 {
 // Default constructor.
 	Info("TUCNGravField", "Constructor");
@@ -45,11 +52,10 @@ TUCNGravField &TUCNGravField::operator=(const TUCNGravField&)
 }
 
 //_____________________________________________________________________________
-TUCNGravField* TUCNGravField::Instance(TUCNGeoManager *geom) 
+TUCNGravField* TUCNGravField::Instance() 
 {
 // Return pointer to singleton.   
    if (!fgInstance) fgInstance = new TUCNGravField();
-   fgInstance->SetUCNGeometry(geom);
 	return fgInstance;
 }   
 

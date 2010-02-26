@@ -58,7 +58,7 @@ TUCNGeoManager::~TUCNGeoManager()
 {
 // Destructor
 	Info("TUCNGeoManager", "Destructor");	
-	if (fGravField) delete TUCNGravField::Instance(this);
+	if (fGravField) delete TUCNGravField::Instance();
 	if (fParticleCloud) delete fParticleCloud;
 	delete TUCNParabola::Instance();
 }
@@ -289,7 +289,7 @@ TUCNGravField*	TUCNGeoManager::AddGravField(Double_t nx, Double_t ny, Double_t n
 {
 // Create an instance of the Gravitational Field and set its direction vector
 	if (fGravField == NULL) {
-		fGravField = TUCNGravField::Instance(this);
+		fGravField = TUCNGravField::Instance();
 	} else {
 		Warning("AddGravField", "Field has already been created. Returning original field.");
 		return fGravField;
