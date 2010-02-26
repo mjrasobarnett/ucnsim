@@ -8,6 +8,7 @@ Int_t VerticalTubeParaMagField()
 	// Loading useful libraries (if they aren't already loaded)
 	gSystem->Load("libPhysics");
 	gSystem->Load("libGeom");
+	gSystem->Load("libGeomPainter");
 	gSystem->Load("libEG");
 	gSystem->Load("libUCN");
 	
