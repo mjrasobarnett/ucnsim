@@ -34,6 +34,8 @@ ClassImp(TUCNGeoManager)
 	Info("TUCNGeoManager", "Dummy Constructor");
 	fGravity = kFALSE;
 	fMagFields = NULL;
+	fSourceVolume = NULL;
+	fSourceMatrix = NULL;
 }
 
 //_____________________________________________________________________________
@@ -44,6 +46,8 @@ TUCNGeoManager::TUCNGeoManager(const char *name, const char *title)
 	Info("TUCNGeoManager","UCNGeometry %s, %s created", this->GetName(), this->GetTitle());
 	fGravity = kFALSE;
 	fMagFields = new TObjArray(5);
+	fSourceVolume = NULL;
+	fSourceMatrix = NULL;
 }
 
 //_____________________________________________________________________________
@@ -54,6 +58,8 @@ TUCNGeoManager& TUCNGeoManager::operator=(const TUCNGeoManager& gm)
       TGeoManager::operator=(gm);
 		fGravity = gm.fGravity;
 		fMagFields = gm.fMagFields;
+		fSourceVolume = gm.fSourceVolume;
+		fSourceMatrix = gm.fSourceMatrix;
 	}
    return *this;
 }
@@ -62,7 +68,9 @@ TUCNGeoManager& TUCNGeoManager::operator=(const TUCNGeoManager& gm)
 TUCNGeoManager::TUCNGeoManager(const TUCNGeoManager& gm) 
 					:TGeoManager(gm),
 					 fGravity(gm.fGravity),
-					 fMagFields(gm.fMagFields)
+					 fMagFields(gm.fMagFields),
+					 fSourceVolume(gm.fSourceVolume),
+					 fSourceMatrix(gm.fSourceMatrix)
 {
 // Copy Constructor
 }
