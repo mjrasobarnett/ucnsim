@@ -12,7 +12,6 @@
 #include "TUCNFieldManager.h"
 #include "TUCNGeoManager.h"
 #include "TUCNGeoBuilder.h"
-#include "TUCNGeoNavigator.h"
 #include "TUCNGeoMaterial.h"
 #include "TUCNGravField.h"
 #include "TUCNParticle.h"
@@ -463,12 +462,6 @@ Bool_t TUCNExperiment::Initialise()
 	///////////////////////////////////////////////////////////////////////////////////////
 	// Create the GeoManager
 	new TGeoManager("GeoManager", "The Geometry Manager");
-	// Create the UCNNavigator and initialise in the UCNManager
-	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(this->GeoManager());
-	Int_t navigatorIndex = this->GeoManager()->AddNavigator(navigator);
-	this->GeoManager()->SetCurrentNavigator(navigatorIndex);
-	// This must be done so that the manager defaults to our navigator. Otherwise it will create a new defualt navigator
-	// that is not of type UCNNavigator.
 	cout << "-------------------------------------------" << endl;
 	cout << "Building Geometry..." << endl;
 	cout << "-------------------------------------------" << endl;	

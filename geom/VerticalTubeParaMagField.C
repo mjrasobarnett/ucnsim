@@ -16,10 +16,7 @@ Int_t VerticalTubeParaMagField()
 	TUCNGeoManager* geoManager = new TUCNGeoManager("GeoManager", "Geometry Manager");
 	// Create the UCNNavigator and initialise in the UCNManager
 	Info("TUCNRun", "Creating a new Navigator...");
-	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(geoManager);
-	Int_t navigatorIndex = geoManager->AddNavigator(navigator);
-	geoManager->SetCurrentNavigator(navigatorIndex);
-	
+
 	// -------------------------------------
 	// BUILDING GEOMETRY
 	cerr << "Building Geometry..." << endl;
