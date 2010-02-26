@@ -1171,33 +1171,32 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* field)
 			particle->Lost(kTRUE);
 		} else {
 			// -- PARTICLE ON SURFACE OF BOUNDARY
+			TGeoNode* boundaryNode = this->GetCurrentNode();
 			#ifdef VERBOSE_MODE	
 				cout << "------------------- BOUNCE ----------------------" << endl;
-				cout << "Current Node: " << this->GetCurrentNode()->GetName() << endl;
+				cout << "Current Node: " << boundaryNode->GetName() << endl;
+				cout << "On Boundary? " << this->IsUCNOnBoundary() << endl;
 			#endif	
 			// -- Make a Bounce
 			this->Bounce(track);
-			// -- Cross Boundary and Locate
-			if (this->IsUCNStepEntering() == kTRUE) {
-				#ifdef VERBOSE_MODE	
-					cout << "Search Upwards - Step entering a volume so we must step back out" << endl;
-					cout << this->GetCurrentNode()->GetVolume()->GetNextNodeIndex() << endl;
-				#endif
-				this->CrossBoundaryAndLocate(kFALSE, this->GetCurrentNode()); 	
-					
-			} else {
-				#ifdef VERBOSE_MODE
-					cout << "Search Downwards - Step exited a volume so we must re-enter" << endl;
-					cout << this->GetCurrentNode()->GetVolume()->GetNextNodeIndex() << endl;
-				#endif
-				this->CrossBoundaryAndLocate(kTRUE, this->GetCurrentNode());
-			}
+
+			// -- cd back to the saved node before we made the step -- stored in 'path'. 
+			this->cd(path);
 			this->UpdateTrack(track);
+
+			TGeoNode* finalNode = this->GetCurrentNode();
 			#ifdef VERBOSE_MODE	
 				cout << "-------------------------------------------------" << endl;
-				cout << "Final Node: " << this->GetCurrentNode()->GetName() << endl;
+				cout << "Final Node: " << finalNode->GetName() << endl;
+				cout << "On Boundary? " << this->IsUCNOnBoundary() << endl;
 				cout << "-------------------------------------------------" << endl << endl;
 			#endif
+
+			// -- Check if the particle is still registered as being on the boundary
+			if (finalNode == boundaryNode) {
+				cout << "Initial Node: " << boundaryNode->GetName() << "\t" << "Final Node: " << finalNode->GetName() << endl;
+				return kFALSE;
+			}
 		}
 	}
 	return kTRUE;
