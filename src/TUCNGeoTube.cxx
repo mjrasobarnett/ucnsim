@@ -1061,7 +1061,7 @@ Double_t TUCNGeoTube::TimeFromInsideAlongParabola(Double_t* point, Double_t* vel
 {
 	// Compute time from inside point to surface of the tube
 	#ifdef VERBOSE_MODE				
-		Info("TimeFromInsideAlongParabola", "Start");
+		cout << "TimeFromInsideAlongParabola - Start" << endl;
 	#endif
 	if (iact<3 && safe) {
 	   *safe = Safety(point, kTRUE);
@@ -1069,7 +1069,7 @@ Double_t TUCNGeoTube::TimeFromInsideAlongParabola(Double_t* point, Double_t* vel
 	   if ((iact==1) && (*safe>stepmax)) return TGeoShape::Big();
 	}
 	#ifdef VERBOSE_MODE				
-		Info("TimeFromInsideAlongParabola", "Calling TimeFromInsideAlongParabolaS");
+		cout << "TimeFromInsideAlongParabola - Calling TimeFromInsideAlongParabolaS" << endl;
 	#endif
 	// compute time to surface
 	return TimeFromInsideAlongParabolaS(point, velocity, field, fRmin, fRmax, fDz);
@@ -1359,7 +1359,7 @@ Double_t TUCNGeoTube::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 	// Boundary safe algorithm.
 	// first localize point w.r.t tube
 	#ifdef VERBOSE_MODE				
-		Info("TimeFromOutsideAlongParabola", "Start");
+		cout << "TimeFromOutsideAlongParabola - Start" << endl;
 	#endif
 	if (iact<3 && safe) {
       *safe = Safety(point, kFALSE);
@@ -1367,13 +1367,13 @@ Double_t TUCNGeoTube::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
       if ((iact==1) && (stepmax<=*safe)) return TGeoShape::Big();
    }
 	#ifdef VERBOSE_MODE				
-		Info("TimeFromOutsideAlongParabola", "Check if Bounding box is within maximum step distance");
+		cout << "TimeFromOutsideAlongParabola - Check if Bounding box is within maximum step distance" << endl;
 	#endif
 	// Check if the bounding box is crossed within the requested distance
    Double_t tBox = TUCNGeoBBox::TimeFromOutsideAlongParabola(point, velocity, field, fDX, fDY, fDZ, fOrigin, stepmax);
 	Double_t sBox = TUCNParabola::Instance()->ArcLength(velocity, field, tBox);
    #ifdef VERBOSE_MODE				
-		Info("TimeFromOutsideAlongParabola", "Distance to Box: %f   -   Max Step Distance: %f", sBox, stepmax);
+		cout << "TimeFromOutsideAlongParabola - Distance to Box: " << sBox << "\t" << "Max Step Distance: " << stepmax << endl;
 	#endif
 	if (sBox>=stepmax) return TGeoShape::Big();
    // find time to shape
