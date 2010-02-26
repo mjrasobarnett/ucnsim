@@ -181,26 +181,15 @@ Int_t TUCNPolynomial::CubicRootFinder(const Double_t* params, Double_t* roots)
 	// Solves cubic equation for a polynomial of form ax^3 + bx^2 + cx + d = 0
 	
 	// -- 1. First get cubic into the standard form: x^3 + a2*x^2 + a1*x + a0 = 0   --  see notes
-	// Define parameters and check they are within tolerance values
+	// Define parameters in a more readable form
 	Double_t a = params[0], b = params[1], c = params[2], d = params[3];
-	if (TMath::Abs(a) < TGeoShape::Tolerance()) {
-		a = 0.;
-	}
-	if (TMath::Abs(b) < TGeoShape::Tolerance()) {
-		b = 0.;
-	}
-	if (TMath::Abs(c) < TGeoShape::Tolerance()) {
-		c = 0.;
-	}
-	if (TMath::Abs(d) < TGeoShape::Tolerance()) {
-		d = 0.;
-	}
-	assert(a != 0.0); // Check that we actually have a cubic equation
+	// Check that we actually have a cubic equation
+	assert(a != 0.0); 
 	#ifdef VERBOSE_MODE		
 		cout << "CubicRootFinder - Input Params -  a: " << a << "\t" << "b: " << b << "\t" << "c: " << c << "\t" << "d: " << d << endl;
 	#endif
 	
-	// If d = 0, then one of the solutions must be zero (since we can then factor a t out of each term), and so we actually have a quadratic
+	// If d = 0, then one of the solutions must be zero (since we can then factor a 't' out of each term), and so we actually have a quadratic
 	// equation. Set the third root of the "roots" storage to zero and pass the remaining parameters to the quadratic root finder. 
 	if (d == 0.0) {
 		#ifdef VERBOSE_MODE		
@@ -237,34 +226,15 @@ Int_t TUCNPolynomial::QuarticRootFinder(const Double_t* params, Double_t* roots)
 	
 	// -- Step 1. First get quartic into the standard form: x^4 + a3*x^3 + a2*x^2 + a1*x + a0 = 0   --  see notes
 	
-	// Define parameters and check they are within tolerance values
+	// Define parameters in a more read-able form
 	Double_t a = params[0], b = params[1], c = params[2], d = params[3], e = params[4];
-	if (TMath::Abs(a) < TGeoShape::Tolerance()) {
-		a = 0.;
-	}
-	if (TMath::Abs(b) < TGeoShape::Tolerance()) {
-		b = 0.;
-	}
-	if (TMath::Abs(c) < TGeoShape::Tolerance()) {
-		c = 0.;
-	}
-	if (TMath::Abs(d) < TGeoShape::Tolerance()) {
-		d = 0.;
-	}
-	if (TMath::Abs(e) < 10.*TGeoShape::Tolerance()) {
-		#ifdef VERBOSE_MODE
-			cout << "e < Tolerance: " << e << endl;
-		#endif
-		e = 0.;
-	}
-	assert(a != 0.0); // Check that we actually have a quartic equation
+	// Check that we actually have a quartic equation
+	assert(a != 0.0); 
 	#ifdef VERBOSE_MODE		
 		cout << "QuarticRootFinder - a: " << a << "\t" << "b: " << b << "\t" << "c: " << c << "\t" << "d: " << d << "\t" << "e: " << e << endl;
 	#endif
-	
-//	if (e > 0.0) cout << "\t" << "e: " << e << endl;
-	
-	// If e = 0, then one of the solutions must be zero (since we can then factor a t out of each term), and so we actually have a cubic
+		
+	// If e = 0, then one of the solutions must be zero (since we can then factor a 't' out of each term), and so we actually have a cubic
 	// equation. Set the final root of the "roots" storage to zero and pass the remaining parameters to the cubic root finder. 
 	if (e == 0.0) {
 		#ifdef VERBOSE_MODE		
@@ -398,13 +368,6 @@ Int_t TUCNPolynomial::AnalyticCubicAlgorithm(const Double_t p, const Double_t q,
 	}
 	// -- Ensure that the number of solutions we got matches that predicted by polynomial discriminant. Errors here mean a faulty algorithm
 	assert(expectedSolutions == realSolutions);
-	// -- Ensure solutions are within tolerance
-	for(Int_t i=0; i < realSolutions; i++) {
-		if (TMath::Abs(roots[i]) < TGeoShape::Tolerance()) {
-			cout << "Cubic Solution < Tolerance --- Root/1.E-10: " << roots[i]/TGeoShape::Tolerance() << endl;
-			roots[i] = 0.0;
-		}
-	}
 	return realSolutions;
 }
 
@@ -441,18 +404,21 @@ Int_t TUCNPolynomial::AnalyticQuarticAlgorithm(const Double_t a3, const Double_t
 	
 	// Calculate W 
 	Double_t WSquared = ((0.25*a3*a3) - a2) + cubicSolution;
-	#ifdef VERBOSE_MODE
+	
+	if (TMath::Abs(WSquared) < TGeoShape::Tolerance()) {
+		cout << "TrackId: " << gGeoManager->GetCurrentTrack()->GetId() << "\t" << "WSquared: " << WSquared << endl;
 		cout << "a3: " << a3 << "\t" << "0.25*a3*a3: " << (0.25*a3*a3) << "\t" << "a2: " << a2 << "\t" << "cubicSolution: " << cubicSolution << endl;
 		cout << "(0.25*a3*a3) - a2: " << (0.25*a3*a3) - a2 << endl;
 		cout << "(0.25*a3*a3) - a2 + cubicSolution: " << (0.25*a3*a3) - a2 + cubicSolution << endl;
-	#endif
-	
-	if (TMath::Abs(WSquared) < TGeoShape::Tolerance()) {
 		WSquared = 0.0;
 	}
 	
 	if (WSquared < 0.0) {
 		cout << "TrackId: " << gGeoManager->GetCurrentTrack()->GetId() << "\t" << "WSquared: " << WSquared << endl;
+		cout << "a3: " << a3 << "\t" << "0.25*a3*a3: " << (0.25*a3*a3) << "\t" << "a2: " << a2 << "\t" << "cubicSolution: " << cubicSolution << endl;
+		cout << "(0.25*a3*a3) - a2: " << (0.25*a3*a3) - a2 << endl;
+		cout << "(0.25*a3*a3) - a2 + cubicSolution: " << (0.25*a3*a3) - a2 + cubicSolution << endl;
+		assert(WSquared > 0.0);
 	}	
 	
 	Double_t W = TMath::Sqrt(WSquared);
@@ -531,21 +497,12 @@ Int_t TUCNPolynomial::AnalyticQuarticAlgorithm(const Double_t a3, const Double_t
 	}
 	
 //	assert(quarticSolutions > 0);
+	
 	// Update roots storage with the solutions found
 	for (Int_t i = 0; i < quarticSolutions; i++) {		
-		roots[i] = solutions[i];
-		
-		// Ensure solution is within tolerance
-		// WARNING:: This is a bit of a fudge here! - During testing the value of this tolerance was important as occasionally a root was returned with
-		// a value of ~2.E-10. This caused the neutron to escape, and therefore I fudged it by reducing the tolerance to 1.E-9.This is a sign that 
-		// numerically I have overlooked something, but I have yet to spot where.
-		// UPDATE:: This doesn't work, as if the number of steps, or time of propagation is increased, eventually the particle will still escape. There seems
-		// to be plenty of occasions where we have 1.E-9, -8, -7.... solutions. 
-//		if (TMath::Abs(roots[i]) < TGeoShape::Tolerance()) {
-//			cout << "Quartic solution < tolerance --- Root: " << i << "\t" << roots[i] << "\t" << a3 << "\t" << W << "\t" << U << endl;
-//			roots[i] = 0.0; 
-//		}
+		roots[i] = solutions[i];		
 	}
+	
 	#ifdef VERBOSE_MODE
 		cout << "QuarticRootFinder - W: " << W << "\t" << "U: " << U << "\t" << "V: " << V << endl;
 		cout << "QuarticRootFinder - No. of Real Solutions: " << quarticSolutions << endl;
