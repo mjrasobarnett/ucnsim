@@ -56,9 +56,9 @@ TUCNData::~TUCNData(void)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNData::LoadGeometry(TString filename)
+Bool_t TUCNData::LoadGeometry(TString /*filename*/)
 {	
-	TString ucngeom = gSystem->Getenv("UCN_GEOM");
+/*	TString ucngeom = gSystem->Getenv("UCN_GEOM");
 	if ( ucngeom.Length() == 0 ) {
 		cerr << "Could not find environment variable UCN_GEOM" << endl;
 		return 1;
@@ -80,7 +80,7 @@ Bool_t TUCNData::LoadGeometry(TString filename)
 	myManager->SetVisOption(0);
 	return kTRUE;
 
-/*	
+
 	TFile * file = new TFile(filename,"READ");
 	if ( (TUCNGeoManager*)file->Get("UCNGeom") == NULL )  {
 		return kFALSE;
@@ -89,6 +89,7 @@ Bool_t TUCNData::LoadGeometry(TString filename)
 		return kTRUE;
 		}
 */
+	return kFALSE;
 }
 
 //_____________________________________________________________________________
