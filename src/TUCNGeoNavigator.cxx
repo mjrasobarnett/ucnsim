@@ -972,7 +972,7 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNFieldManager* fie
 	}
 	
 	// -- Update track/particle properties
-	this->UpdateTrack(track, this->GetStepTime());
+	this->UpdateTrack(track, this->GetStepTime(), gravField);
 	///////////////////////////////////////////////////////////////////////////////////////
 	
 	#ifdef VERBOSE_MODE	
@@ -1041,7 +1041,7 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNFieldManager* fie
 
 			// -- cd back to the saved node before we made the step -- stored in 'path'. 
 			this->cd(path);
-			this->UpdateTrack(track);
+			this->UpdateTrack(track); // Passing default arguments here as we are only changing the direction from bouncing
 
 			TGeoNode* finalNode = this->GetCurrentNode();
 			#ifdef VERBOSE_MODE	
