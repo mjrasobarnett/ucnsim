@@ -349,7 +349,7 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 		
 		// -- Make a step
 		if (!(this->MakeStep(track, gravField, magField))) {
-			Error("PropagateTrack","Error in Step Number %i. Step Failed to complete.", stepNumber);
+			Error("PropagateTrack","Error in Step Number %i. Step Failed to complete. \n", stepNumber);
 			return kFALSE;	
 		} 
 		// -- Determine Particle destination
@@ -1753,6 +1753,11 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		cout << "-----------------------------" << endl << endl;
 	#endif	
 	
+	cout << "Is Same Location: " << gGeoManager->GetCurrentNavigator()->IsSameLocation(particle->Vx(), particle->Vy(),particle->Vz()) << endl;
+	gGeoManager->GetCurrentNavigator()->FindNode();
+	cout << "Final Volume (Updated): "    << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
+	
+	
 	// -- Get the current material we are in to determine what to do next
 	TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetMedium()->GetMaterial());
 	// -- Get the normal vector to the boundary
@@ -1822,9 +1827,11 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 	
 	// -- Check that the current point is where we say it is (ie: in the path we just cd() to)
 	if (gGeoManager->GetCurrentNavigator()->IsSameLocation(particle->Vx(), particle->Vy(),particle->Vz()) == kFALSE) {
-		Error("MakeStep","AFTER STEP: Particle is not in the correct volume!");
-		cout << "TrackId: " << gGeoManager->GetCurrentTrack()->GetId() << "\t";
-		cout << "Current Volume: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
+		Error("MakeStep","AFTER STEP: Particle %i is not in the correct volume!", gGeoManager->GetCurrentTrack()->GetId());
+		cout << "Current Volume (as recorded): " << gGeoManager->GetCurrentNavigator()->GetCurrentNode()->GetName() << endl;
+		gGeoManager->GetCurrentNavigator()->FindNode();
+		cout << "Real Volume: " << gGeoManager->GetCurrentNavigator()->GetCurrentNode()->GetName() << endl;
+		cout << "Safety: " << gGeoManager->GetCurrentNavigator()->Safety() << endl;
 		return kFALSE;
 	}
 	
@@ -1894,6 +1901,7 @@ Bool_t TUCNRun::Bounce(TVirtualGeoTrack* track, const Double_t* normal, TUCNGeoM
 	
 	// Check if the normal vector is actually pointing in the wrong direction 
 	// (wrong means pointing along the direction of the track, rather than in the opposite direction)
+	// This will actually be the case nearly all (if not all) of the time, because of the way ROOT calculates the normal
 	Double_t dotProduct = dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2];
 	if (dotProduct > 0.) {
 		// If so, reflect the normal to get the correct direction
