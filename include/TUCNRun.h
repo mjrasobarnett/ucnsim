@@ -27,9 +27,6 @@ class TUCNParticle;
 class TUCNRun : public TNamed 
 {
 	protected:
-		TUCNRun(const TUCNRun&); 
-	 	TUCNRun& operator=(const TUCNRun&);
-
 		TUCNData*				fData;
 		
 		Int_t						fNeutrons;
@@ -40,9 +37,12 @@ class TUCNRun : public TNamed
 		Int_t 					fBoundaryLossCounter;
 		Int_t 					fDetectedCounter;
 		Int_t						fDecayedCounter;
+		
 	public:
 		// -- constructors
 		TUCNRun();
+		TUCNRun(const TUCNRun&); 
+	 	TUCNRun& operator=(const TUCNRun&);
 		TUCNRun(const char *name, const char *title);
 		// -- destructor
 		virtual ~TUCNRun();
@@ -59,8 +59,8 @@ class TUCNRun : public TNamed
 		TVirtualGeoTrack*		GetTrack(Int_t trackID);
 		TUCNParticle*			GetParticle(Int_t particleID);
 		
-		Bool_t					PropagateTracks(TUCNFieldManager* fieldManager);
-		Bool_t 					Propagate(TVirtualGeoTrack* track, TUCNFieldManager* fieldManager);
+		Bool_t					Propagate(TUCNFieldManager* fieldManager);
+		Bool_t 					PropagateTrack(TVirtualGeoTrack* track, TUCNFieldManager* fieldManager);
 		
 		Bool_t					Export(TString& outputFile);
 		

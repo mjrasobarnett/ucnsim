@@ -54,9 +54,9 @@ TUCNExperiment::TUCNExperiment()
 	// Create the UCNNavigator and initialise in the UCNManager
 	// This must be done so that the manager defaults to our navigator. Otherwise it will create a new defualt navigator
 	// that is not of type UCNNavigator.
-	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(geoManager);
-	Int_t navigatorIndex = geoManager->AddNavigator(navigator);
-	geoManager->SetCurrentNavigator(navigatorIndex);fConfigFile = new TUCNConfigFile(configFileName);
+	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(this->GeoManager());
+	Int_t navigatorIndex = this->GeoManager()->AddNavigator(navigator);
+	this->GeoManager()->SetCurrentNavigator(navigatorIndex);
 	// Initialise remaining data members
 	fConfigFile = 0;
 	fFieldManager = 0;
@@ -76,9 +76,9 @@ TUCNExperiment::TUCNExperiment(std::string configFileName)
 	// Create the UCNNavigator and initialise in the UCNManager
 	// This must be done so that the manager defaults to our navigator. Otherwise it will create a new defualt navigator
 	// that is not of type UCNNavigator.
-	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(geoManager);
-	Int_t navigatorIndex = geoManager->AddNavigator(navigator);
-	geoManager->SetCurrentNavigator(navigatorIndex);
+	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(this->GeoManager());
+	Int_t navigatorIndex = this->GeoManager()->AddNavigator(navigator);
+	this->GeoManager()->SetCurrentNavigator(navigatorIndex);
 	// Initialise remaining data members
 	fConfigFile = new TUCNConfigFile(configFileName);
 	fFieldManager = new TUCNFieldManager();
@@ -562,17 +562,17 @@ Bool_t TUCNExperiment::Run()
 		cout << endl << endl << "-------------------------------------------" << endl;
 		cout << "Creating New Run, Name: " << name << " Title: " << title << endl;
 		cout << "-------------------------------------------" << endl;
-		TUCNRun* theRun = new TUCNRun(name, title);
+		TUCNRun theRun(name, title);
 		
 		// Initialise the Run
-		if (!(theRun->Initialise(this->ConfigFile()))) {
-			Error("Run","Run: %s failed to initialise properly.", theRun->GetName());
+		if (!(theRun.Initialise(this->ConfigFile()))) {
+			Error("Run","Run: %s failed to initialise properly.", theRun.GetName());
 			return kFALSE;
 		}
 		
 		// Create Particles/Tracks
-		if (!(this->GenerateParticles(theRun))) {
-			Error("Run","Could not create particles for Run: %s.", theRun->GetName());
+		if (!(this->GenerateParticles(&theRun))) {
+			Error("Run","Could not create particles for Run: %s.", theRun.GetName());
 			return kFALSE;
 		}
 		
@@ -580,8 +580,8 @@ Bool_t TUCNExperiment::Run()
 		
 		
 		// Write the Run data to outputFile
-		if (!(theRun->Export(outputFile))) {
-			Error("Run","Could not write Run, %s, out to File.", theRun->GetName());
+		if (!(theRun.Export(outputFile))) {
+			Error("Run","Could not write Run, %s, out to File.", theRun.GetName());
 			return kFALSE;
 		}
 		
@@ -594,4 +594,29 @@ Bool_t TUCNExperiment::Run()
 	return kTRUE;
 }
 
-
+//______________________________________________________________________________
+Bool_t TUCNExperiment::Export()
+{
+// -- Export Experiment to File
+	TString outputFile = this->ConfigFile()->GetString("OutputFile","I/O");
+	cout << "-------------------------------------------" << endl;
+	cout << "Writing " << this->GetName() << " out to File: " << outputFile << endl;
+	if (!(outputFile.Contains(".root"))) {
+		Error("Export", "OutputFile is not a ROOT filename");
+		return kFALSE;
+	} else {
+		//Save geometry as a root file
+		TFile *f = TFile::Open(outputFile,"update");
+		if (!f || f->IsZombie()) {
+		   Error("Export","Cannot open file");
+		   return kFALSE;
+		}
+		char keyname[256];
+		strcpy(keyname,this->GetName());
+		this->Write(keyname);
+		delete f;
+		cout << keyname << " was successfully written to file" << endl;
+		cout << "-------------------------------------------" << endl;
+	}
+	return kTRUE;
+}

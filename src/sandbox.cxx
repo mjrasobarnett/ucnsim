@@ -90,59 +90,23 @@ Int_t main(Int_t argc,Char_t **argv)
 		cerr << "Experiment failed to run. Program aborting." << endl;
 		return EXIT_FAILURE;
 	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- Export to File
+	///////////////////////////////////////////////////////////////////////////////////////
+	if (!(experiment->Export())) {
+		cerr << "Experiment failed to write to File. Program aborting." << endl;
+		return EXIT_FAILURE;
+	}
+	
 //	navigator->DiffuseCoefficient(0.1);
-	
-/*	for (Int_t runNumber = 0; runNumber < numberOfRuns; runNumber++) {
-		totalEnergy = 0.57*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
-		
-		TUCNRun* run = runManager->GetRun(runNumber);
-		cout << "Run number: " << runNumber << "\t" << "called: " << run->GetName() << endl;
-		cout << "totalEnergy: " << totalEnergy << endl;
-		
-		run->Initialise(particles, totalEnergy, runTime, maxStepTime, geoManager, gravField);
-	
-		// -- Propagate the tracks according to the run parameters
-		run->PropagateTracks(fieldManager);	
-	
-		cout << "-------------------------------------------" << endl;
-		cout << "Propagation Results: " << endl;
-		cout << "Total Particles: " << gGeoManager->GetNtracks() << endl;
-		cout << "Number Detected: " << run->Detected() << endl;
-		cout << "Number Lost To Boundary: " << run->LostToBoundary() << endl;
-		cout << "Number Decayed: " << run->Decayed() << endl;
-		cout << "-------------------------------------------" << endl;
 
-		gGeoManager->ClearTracks();
-		
-		cout << "End of run" << endl << endl;
-	}
-	
-	TString outputData = "data/magfield-0.01Diff-0.5-noloss.root";
-	cerr << "Writing out data to file: " << outputData << endl;
-	TFile* outputFile = new TFile(outputData,"RECREATE");
-	if ( !outputFile->IsOpen() ) {
-		cerr << "Could not open output file " << endl;
-		cerr << "Exiting..." << endl;
-		exit(-1);
-	}
-	
-	runManager->Write();
-	fieldManager->Write();
-	outputFile->ls();
-	outputFile->Close();
-	
-	TString outputGeom = "geom/magfieldgeom.root";
-	cerr << "Writing out geometry to file: " << outputGeom << endl;
-	gGeoManager->Export(outputGeom);
-	
-	
 //	benchmark.Stop("UCNSim");
 //	benchmark.Show("UCNSim");
-*/	
 //	theApp->Run();
+
 	cout << endl << endl << "END OF SIMULATION" << endl << endl << endl;
-	delete experiment;
-		
+	delete experiment;		
 	return EXIT_SUCCESS;
 }
 

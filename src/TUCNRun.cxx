@@ -158,7 +158,7 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::PropagateTracks(TUCNFieldManager* fieldManager)
+Bool_t TUCNRun::Propagate(TUCNFieldManager* fieldManager)
 {
 // -- Propagate all tracks stored in the GeoManager for a set period of time
 	Int_t numberOfTracks = gGeoManager->GetNtracks();
@@ -170,7 +170,7 @@ Bool_t TUCNRun::PropagateTracks(TUCNFieldManager* fieldManager)
 		TVirtualGeoTrack* track = gGeoManager->GetTrack(trackid);
 		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
 		// Propagate track
-		Bool_t propagated = this->Propagate(track, fieldManager);
+		Bool_t propagated = this->PropagateTrack(track, fieldManager);
 		if (!propagated) lostTracks.push_back(trackid);
 		// Add Track to data tree
 		fData->AddParticle(particle);
@@ -188,11 +188,18 @@ Bool_t TUCNRun::PropagateTracks(TUCNFieldManager* fieldManager)
 		cout << "-------------------------------------------" << endl;
 	}
 	
+	cout << "-------------------------------------------" << endl;
+	cout << "Propagation Results: " << endl;
+	cout << "Total Particles: " << this->Neutrons() << endl;
+	cout << "Number Detected: " << this->Detected() << endl;
+	cout << "Number Lost To Boundary: " << this->LostToBoundary() << endl;
+	cout << "Number Decayed: " << this->Decayed() << endl;
+	cout << "-------------------------------------------" << endl;
 	return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::Propagate(TVirtualGeoTrack* track, TUCNFieldManager* fieldManager)
+Bool_t TUCNRun::PropagateTrack(TVirtualGeoTrack* track, TUCNFieldManager* fieldManager)
 {
 	// Propagate track through geometry until it is either stopped or the runTime has been reached
 	// Track passed MUST REFERENCE A TUCNPARTICLE as its particle type. UNITS:: runTime, stepTime in Seconds

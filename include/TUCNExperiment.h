@@ -62,7 +62,7 @@ public:
 	// -- methods
 	Bool_t					Initialise();
 	Bool_t					Run();
-	
+	Bool_t					Export();
 	
    ClassDef(TUCNExperiment, 1)      
 };
