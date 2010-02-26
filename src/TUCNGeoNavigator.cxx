@@ -1339,8 +1339,14 @@ Bool_t TUCNGeoNavigator::DiffuseBounce(Double_t* dir, const Double_t* norm)
 	// Correct method for UCN physics though is to weight these angles towards the poles by adding an extra cos(theta)
 	// derivation of how to pick these angles is in notes
 	Double_t phi = gRandom->Uniform(0.0, 1.0)*2*TMath::Pi();
-	Double_t u = gRandom->Uniform(0.0, 0.5);		
-	Double_t theta = TMath::ACos(TMath::Sqrt(1.0 - 2*u)); // We ignore the negative sqrt term, since we are only interested in theta between 0 and pi/2 
+	
+	// We do not want the full range of theta from 0 to pi/2 however. An angle of pi/2 would imply moving iff the boundary exactly parallel to
+	// the current surface.Therefore we should restrict theta to a slightly smaller proportion of angles - letting u be between
+	// 0 and 0.499, ensures theta between 0 and ~89 degrees. 
+	Double_t u = gRandom->Uniform(0.0, 0.499);
+	// We ignore the negative sqrt term when selecting theta, since we are only interested in theta between 0 and pi/2 
+	// (negative root provides the pi/2 to pi branch) 
+	Double_t theta = TMath::ACos(TMath::Sqrt(1.0 - 2*u)); 
 	
 	// Calculate local normal vector	
 	Double_t lnorm[3] = {0.,0.,0.};
