@@ -41,39 +41,39 @@ const Int_t 		TUCNGeoNavigator::fgMaxSteps;
 
 //_____________________________________________________________________________
 TUCNGeoNavigator::TUCNGeoNavigator()
-              	  :TGeoNavigator(),
-						fUCNNextNode(0),
-						fStepTime(1.),
-						fUCNIsStepEntering(kFALSE),
-	               fUCNIsStepExiting(kFALSE),
-						fUCNIsOutside(kFALSE),
-						fUCNIsOnBoundary(kFALSE),
-						fLostCounter(0),
-						fDetectedCounter(0),
-						fDecayedCounter(0)
+              	  :TGeoNavigator()
+						
 {
 // dummy constructor
 	Info("TUCNGeoNavigator", "Dummy Constructor");
+	fUCNNextNode = 0;
+	fStepTime = 1.0;
+	fUCNIsStepEntering = kFALSE;
+	fUCNIsStepExiting = kFALSE;
+	fUCNIsOutside = kFALSE;
+	fUCNIsOnBoundary = kFALSE;
+	fDiffuseCoefficient = 0.0;
+	for (Int_t i=0; i<3; i++) {
+		fUCNNormal[i] = 0.;
+	}
 }
 
 //_____________________________________________________________________________
 TUCNGeoNavigator::TUCNGeoNavigator(TGeoManager* geom)
-              	  :TGeoNavigator(geom),
-						fUCNNextNode(0),
-						fStepTime(1.),
-						fUCNIsStepEntering(kFALSE),
-	               fUCNIsStepExiting(kFALSE),
-						fUCNIsOutside(kFALSE),
-						fUCNIsOnBoundary(kFALSE),
-						fLostCounter(0),
-						fDetectedCounter(0),
-						fDecayedCounter(0)
+              	  :TGeoNavigator(geom)
 {
 // Default constructor.
 	Info("TUCNGeoNavigator", "Constructor");
+	fUCNNextNode = 0;
+	fStepTime = 1.0;
+	fUCNIsStepEntering = kFALSE;
+	fUCNIsStepExiting = kFALSE;
+	fUCNIsOutside = kFALSE;
+	fUCNIsOnBoundary = kFALSE;
+	fDiffuseCoefficient = 0.0;
 	for (Int_t i=0; i<3; i++) {
-      fUCNNormal[i] = 0.;
-   }
+		fUCNNormal[i] = 0.;
+	}
 }      
 
 //_____________________________________________________________________________
@@ -85,15 +85,13 @@ TUCNGeoNavigator::TUCNGeoNavigator(const TUCNGeoNavigator& gn)
 	               fUCNIsStepExiting(gn.fUCNIsStepExiting),
 						fUCNIsOutside(gn.fUCNIsOutside),
 						fUCNIsOnBoundary(gn.fUCNIsOnBoundary),
-						fLostCounter(gn.fLostCounter),
-						fDetectedCounter(gn.fDetectedCounter),
-						fDecayedCounter(gn.fDecayedCounter)
+						fDiffuseCoefficient(gn.fDiffuseCoefficient)
 {
 // Copy constructor.
 	Info("TUCNGeoNavigator", "Copy Constructor");
 	for (Int_t i=0; i<3; i++) {
-      fUCNNormal[i] = gn.fUCNNormal[i];
-   }
+		fUCNNormal[i] = gn.fUCNNormal[i];
+	}
 }      
 
 //_____________________________________________________________________________
@@ -108,14 +106,12 @@ TUCNGeoNavigator& TUCNGeoNavigator::operator=(const TUCNGeoNavigator& gn)
 		fUCNIsStepExiting = gn.fUCNIsStepExiting;
 		fUCNIsOutside = gn.fUCNIsOutside;
 		fUCNIsOnBoundary = gn.fUCNIsOnBoundary;
-		fLostCounter = gn.fLostCounter;
-		fDetectedCounter = gn.fDetectedCounter;
-		fDecayedCounter = gn.fDecayedCounter;
+		fDiffuseCoefficient = gn.fDiffuseCoefficient;
 		for (Int_t i=0; i<3; i++) {
-	      fUCNNormal[i] = gn.fUCNNormal[i];
-	   }
-   }
-   return *this;   
+			fUCNNormal[i] = gn.fUCNNormal[i];
+		}
+	}
+	return *this;   
 }
 
 
@@ -124,7 +120,6 @@ TUCNGeoNavigator::~TUCNGeoNavigator()
 {
 // Destructor.
    Info("TUCNGeoNavigator", "Destructor");
-	fUCNNextNode = NULL;
 }
 
 //_____________________________________________________________________________
@@ -1177,7 +1172,7 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravFi
 				cout << "On Boundary? " << this->IsUCNOnBoundary() << endl;
 			#endif	
 			// -- Make a Bounce
-			this->Bounce(track, normal);
+			this->Bounce(track, normal, currentMaterial);
 
 			// -- cd back to the saved node before we made the step -- stored in 'path'. 
 			this->cd(path);
@@ -1252,7 +1247,7 @@ void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track, const Double_t timeI
 
 
 //_____________________________________________________________________________
-Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track, const Double_t* normal)
+Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track, const Double_t* normal, TUCNGeoMaterial* wallMaterial)
 {
 	// -- Get particle
 	TUCNParticle* ucnparticle = static_cast<TUCNParticle*>(track->GetParticle());
@@ -1274,7 +1269,8 @@ Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track, const Double_t* normal)
 	}
 		
 	// -- Calculate Probability of diffuse reflection
-	Double_t diffuseProbability = ucnparticle->DiffuseProbability(); // Need to add some kind of law to determine probability
+	Double_t fermiPotential = wallMaterial->FermiPotential();
+	Double_t diffuseProbability = ucnparticle->DiffuseProbability(fDiffuseCoefficient, normal, fermiPotential);
 	
 	// Determine Reflection Type 
 	Double_t prob = gRandom->Uniform(0.0,1.0);

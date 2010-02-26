@@ -16,7 +16,6 @@ using namespace std;
 ClassImp(TUCNParticle) 
 
 const Int_t 	TUCNParticle::fgNeutronPDGCode;  //Static Const
-const Double_t TUCNParticle::fgDiffuseProb;
 
 //______________________________________________________________________________
 TUCNParticle::TUCNParticle()
@@ -107,7 +106,7 @@ Bool_t TUCNParticle::WillDecay(Double_t timeInterval)
 //______________________________________________________________________________
 Double_t TUCNParticle::Dir() const
 {
-// Returns x direction
+// Returns direction mag (1?)
 	Double_t dirX = this->DirX();
 	Double_t dirY = this->DirY();
 	Double_t dirZ = this->DirZ();
@@ -244,3 +243,16 @@ Bool_t TUCNParticle::IsLostToWall(TUCNGeoMaterial* wall, const Double_t* normal)
 		return kFALSE;
 	}
 }
+
+//______________________________________________________________________________
+Double_t	TUCNParticle::DiffuseProbability(const Double_t diffuseCoeff, const Double_t* normal, const Double_t fermiPotential) const
+{
+	// Calculate the probability of making a diffuse bounce - according to formula (from Mike P) prob ~ diffuseCoeff*(Eperp/V)
+	Double_t cosTheta = TMath::Abs(this->DirX()*normal[0] + this->DirY()*normal[1] + this->DirZ()*normal[2]);
+	Double_t energyPerp = this->Energy()*cosTheta*cosTheta;
+	Double_t diffProb = diffuseCoeff*energyPerp/fermiPotential;
+	assert(diffProb <= 1.0 && diffProb >= 0.0);
+	//return diffProb;
+	return diffuseCoeff;
+}
+

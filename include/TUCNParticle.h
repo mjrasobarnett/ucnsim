@@ -19,7 +19,6 @@ class TUCNParticle :  public TParticle
 
 private:
 	static const Int_t 		fgNeutronPDGCode = 2112;
-	static const Double_t	fgDiffuseProb = 0.1;
 	
 	Bool_t 					fDecayed;
 	Bool_t 					fLostToBoundary;
@@ -53,10 +52,7 @@ public:
 	Int_t						DiffuseBounces()								{return fDiffuseBounces;}
 	
 	Bool_t					IsLostToWall(TUCNGeoMaterial* wall, const Double_t* normal) const;
-	
-//	void						DiffuseProbability(Double_t prob) 		{fDiffuseProb = prob;}
-	Double_t					DiffuseProbability() const 				{return fgDiffuseProb;}
-	
+	Double_t					DiffuseProbability(const Double_t diffuseCoeff, const Double_t* normal, const Double_t fermiPotential) const;
 	Bool_t					WillDecay(Double_t timeInterval);
 	
 	Bool_t					LostToBoundary() const						{return fLostToBoundary;}

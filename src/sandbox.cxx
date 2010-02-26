@@ -62,7 +62,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	// Create the UCNGeoManager
 	TUCNGeoManager* geoManager = new TUCNGeoManager("UCNGeoManager", "UCNGeometry Manager");
 	// Create the UCNNavigator and initialise in the UCNManager
-	TGeoNavigator* navigator = new TUCNGeoNavigator(gGeoManager);
+	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(gGeoManager);
 	Int_t navigatorIndex = gGeoManager->AddNavigator(navigator);
 	gGeoManager->SetCurrentNavigator(navigatorIndex);
 	
@@ -89,6 +89,9 @@ Int_t main(Int_t argc,Char_t **argv)
 	Double_t runTime = 10000.*Units::s;
 	Double_t maxStepTime = 1.00*Units::s;
 	Int_t particles = 1000;
+	Double_t diffCoeff = 0.1;
+	navigator->DiffuseCoefficient(diffCoeff);
+	
 	Double_t V = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->FermiPotential();
 	Double_t f = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->Eta();
 	Double_t totalEnergy = 0;
@@ -96,7 +99,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	
 	
 	for (Int_t runNumber = 0; runNumber < numberOfRuns; runNumber++) {
-		totalEnergy = 0.5*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
+		totalEnergy = 0.1*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
 		
 		TUCNRun* run = runManager->GetRun(runNumber);
 		cout << "Run number: " << runNumber << "\t" << "called: " << run->GetName() << endl;

@@ -16,6 +16,7 @@
 class TUCNParticle;
 class TUCNGravField;
 class TUCNGeoManager;
+class TUCNGeoMaterial;
 class TGeoManager;
 class TGeoNode;
 class TGeoVolume;
@@ -39,12 +40,10 @@ protected:
 	
 	Bool_t 							fUCNIsStepEntering;
 	Bool_t 							fUCNIsStepExiting;
-	Bool_t                		fUCNIsOutside;        //! flag that current point is outside geometry
-   Bool_t                		fUCNIsOnBoundary;     //! flag that current point is on some boundary	
+	Bool_t							fUCNIsOutside;        //! flag that current point is outside geometry
+	Bool_t							fUCNIsOnBoundary;     //! flag that current point is on some boundary	
 	
-	Int_t 					 		fLostCounter;
-	Int_t 					 		fDetectedCounter;
-	Int_t						 		fDecayedCounter;
+	Double_t 						fDiffuseCoefficient;
 	
 public:
 	// -- constructors
@@ -79,16 +78,15 @@ public:
 	
 	Bool_t						MakeStep(TVirtualGeoTrack* track, TUCNGravField* field);
 	
-	Bool_t 						Bounce(TVirtualGeoTrack* track, const Double_t* normal);
+	Bool_t 						Bounce(TVirtualGeoTrack* track, const Double_t* normal, TUCNGeoMaterial* wallMaterial);
 	Bool_t 						SpecularBounce(Double_t* dir, const Double_t* norm);
 	Bool_t 						DiffuseBounce(Double_t* dir, const Double_t* norm);
 	void							UpdateTrack(TVirtualGeoTrack* track, Double_t timeInterval=0., TUCNGravField* gravField=0);
 	
-	Int_t 						GetNumberLost() const {return fLostCounter;}
-	Int_t 						GetNumberDetected() const {return fDetectedCounter;}
-	Int_t 						GetNumberDecayed() const {return fDecayedCounter;}
-		
-   ClassDef(TUCNGeoNavigator, 1)          // UCN geometry manager
+	void							DiffuseCoefficient(Double_t diffCoeff) {fDiffuseCoefficient = diffCoeff;}
+	Double_t						DiffuseCoefficient() {return fDiffuseCoefficient;}
+	
+   ClassDef(TUCNGeoNavigator, 1)          // UCN geometry navigator
 };
 
 #endif
