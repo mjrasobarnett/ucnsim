@@ -943,7 +943,6 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 
 	Int_t stepNumber;
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-	TUCNMagField* magField = static_cast<TUCNGeoManager*>(gGeoManager)->GetMagField("Parabolic magnetic field");
 	
 	#ifdef VERBOSE_MODE				
 		cout << "PropagateForSetTime - Starting Run - Max time (seconds): " <<  runTime << endl;

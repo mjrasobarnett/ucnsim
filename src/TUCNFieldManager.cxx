@@ -7,7 +7,8 @@
 #include "TObjArray.h"
 #include "TUCNGravField.h"
 #include "TUCNMagField.h"
-
+#include "TUCNUniformMagField.h"
+#include "TUCNParabolicMagField.h"
 #include "TUCNFieldManager.h"
 
 #include "Units.h"
@@ -27,7 +28,7 @@ TUCNFieldManager::TUCNFieldManager()
 {
 // -- Default constructor
    Info("TUCNFieldManager", "Constructor");
-	fMagFields = new TObjArray();
+	fMagField = 0;
 	fGravField = 0;
 	
 } 
@@ -35,7 +36,7 @@ TUCNFieldManager::TUCNFieldManager()
 //_____________________________________________________________________________
 TUCNFieldManager::TUCNFieldManager(const TUCNFieldManager& other)
 					  :TNamed(other),
-						fMagFields(other.fMagFields),
+						fMagField(other.fMagField),
 						fGravField(other.fGravField)
 {
 // -- Copy Constructor
@@ -49,7 +50,7 @@ TUCNFieldManager& TUCNFieldManager::operator=(const TUCNFieldManager& other)
 // --assignment operator
 	if(this!=&other) {
       TNamed::operator=(other);
-		fMagFields = other.fMagFields;
+		fMagField = other.fMagField;
 		fGravField = other.fGravField;
 	}
    return *this;
@@ -60,7 +61,7 @@ TUCNFieldManager::~TUCNFieldManager()
 { 
 // -- Destructor
 	Info("TUCNFieldManager", "Destructor");
-	if (fMagFields) {fMagFields->Delete(); delete fMagFields;}
+	if (fMagField)  delete fMagField;
 	if (fGravField) delete fGravField;
 }
 
@@ -77,4 +78,32 @@ TUCNGravField* TUCNFieldManager::AddGravField()
 		cerr << "Field: " << fGravField->GetName() << " created." << endl;
 	}
 	return fGravField;
+}
+
+//______________________________________________________________________________
+TUCNMagField* TUCNFieldManager::AddUniformMagField(const Double_t Bx, const Double_t By, const Double_t Bz)
+{
+	if (fMagField) {
+		cerr << "Field: " << fMagField->GetName() << " already exists. Deleting this field before adding new field..." << endl;
+		delete fMagField;
+		fMagField = 0;
+	}
+	
+	const char* name = "UniformMagField";
+	fMagField = new TUCNUniformMagField(name, Bx, By, Bz);
+	return fMagField;
+}
+
+//______________________________________________________________________________
+TUCNMagField* TUCNFieldManager::AddParabolicMagField(const Double_t maxB, const Double_t alpha, const Double_t maxR)
+{
+	if (fMagField) {
+		cerr << "Field: " << fMagField->GetName() << " already exists. Deleting this field before adding new field..." << endl;
+		delete fMagField;
+		fMagField = 0;
+	}
+	
+	const char* name = "ParabolicMagField";
+	fMagField = new TUCNParabolicMagField(name, maxB, alpha, maxR);
+	return fMagField;
 }

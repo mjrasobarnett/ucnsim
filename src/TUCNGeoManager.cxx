@@ -34,7 +34,6 @@ ClassImp(TUCNGeoManager)
 {
 // Default Constructor
 	Info("TUCNGeoManager", "Dummy Constructor");
-	fMagFields = new TObjArray(2);
 	fSourceVolumeIndex = -1;
 	fSourceMatrixIndex = -1;
 }
@@ -45,7 +44,6 @@ TUCNGeoManager::TUCNGeoManager(const char *name, const char *title)
 {
 // Constructor
 	Info("TUCNGeoManager","UCNGeometry %s, %s created", this->GetName(), this->GetTitle());
-	fMagFields = new TObjArray(2);
 	fSourceVolumeIndex = -1;
 	fSourceMatrixIndex = -1;
 }
@@ -56,7 +54,6 @@ TUCNGeoManager& TUCNGeoManager::operator=(const TUCNGeoManager& gm)
 // --assignment operator
 	if(this!=&gm) {
       TGeoManager::operator=(gm);
-		fMagFields = gm.fMagFields;
 		fSourceVolumeIndex = gm.fSourceVolumeIndex;
 		fSourceMatrixIndex = gm.fSourceMatrixIndex;
 	}
@@ -66,7 +63,6 @@ TUCNGeoManager& TUCNGeoManager::operator=(const TUCNGeoManager& gm)
 //_____________________________________________________________________________
 TUCNGeoManager::TUCNGeoManager(const TUCNGeoManager& gm) 
 					:TGeoManager(gm),
-					 fMagFields(gm.fMagFields),
 					 fSourceVolumeIndex(gm.fSourceVolumeIndex),
 					 fSourceMatrixIndex(gm.fSourceMatrixIndex)
 {
@@ -81,31 +77,7 @@ TUCNGeoManager::~TUCNGeoManager()
 //	for (Int_t i = 0; i < this->GetNtracks(); i++) {
 //		this->GetTrack(i)->GetParticle()->Delete();
 //	}	
-//	if (fMagFields) {fMagFields->Delete(); delete fMagFields;}
 //	delete TUCNParabola::Instance();
-}
-
-//_____________________________________________________________________________
-Int_t TUCNGeoManager::AddMagField(TUCNMagField *field)
-{
-// Add a mag field to the list. Returns index of the field in list.
-   Info("AddMagField", "AddMagField");
-	Int_t index = -1;
-   if (!field) return -1;
-   TObjArray* fields = this->GetListOfMagFields();
-	index = fields->GetEntriesFast();
-   fields->AddAtAndExpand(field,index);
-	return index;
-}
-
-//_____________________________________________________________________________
-TUCNMagField* TUCNGeoManager::GetMagField(const char* name) const
-{
-// Search for a named mag field. All trailing blanks stripped.
-	TString sname = name;
-   sname = sname.Strip();
-   TUCNMagField* field = static_cast<TUCNMagField*>(this->GetListOfMagFields()->FindObject(sname.Data()));
-   return field;
 }
 
 //_____________________________________________________________________________

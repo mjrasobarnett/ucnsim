@@ -12,28 +12,35 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 class TUCNGravField;
+class TUCNMagField;
 
 class TUCNFieldManager : public TNamed 
 {
-
 protected:
-	TObjArray*			fMagFields;
+	TUCNMagField*		fMagField;
 	TUCNGravField*		fGravField;
 	
 public:
 	// -- constructors
-   TUCNFieldManager();
-   TUCNFieldManager(const TUCNFieldManager&); 
+	TUCNFieldManager();
+	TUCNFieldManager(const TUCNFieldManager&); 
 	TUCNFieldManager& operator=(const TUCNFieldManager&);
 	
 	// -- destructor
 	virtual ~TUCNFieldManager();
-
-	// -- methods
-	TUCNGravField*			AddGravField();
-	TUCNGravField* 		GetGravField() {return fGravField;}
 	
-   ClassDef(TUCNFieldManager, 1)      
+	// -- methods
+	
+	// Grav Fields
+	TUCNGravField*				AddGravField();
+	TUCNGravField*				GravField() const {return fGravField;}
+	
+	// Mag Fields
+	TUCNMagField*				AddUniformMagField(const Double_t Bx, const Double_t By, const Double_t Bz);
+	TUCNMagField*				AddParabolicMagField(const Double_t maxB, const Double_t alpha, const Double_t maxR);
+	TUCNMagField*				MagField() const {return fMagField;};
+	
+	ClassDef(TUCNFieldManager,1)
 };
 
 #endif

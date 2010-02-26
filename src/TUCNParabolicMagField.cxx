@@ -16,21 +16,21 @@ TUCNParabolicMagField::TUCNParabolicMagField()
 } 
 
 //_____________________________________________________________________________
-TUCNParabolicMagField::TUCNParabolicMagField(const char *name, Double_t parabolicGradient, Double_t maxB, Double_t fieldRadius)
+TUCNParabolicMagField::TUCNParabolicMagField(const char *name, Double_t maxB, Double_t parabolicGradient, Double_t fieldRadius)
 							 :TUCNMagField(name)
 {
 // Default constructor.
 	Info("TUCNParabolicMagField", "Constructor");
-	fParabolicGradient = parabolicGradient;
 	fBMax = maxB;
+	fParabolicGradient = parabolicGradient;
 	fFieldRadius = fieldRadius;
 } 
 
 //_____________________________________________________________________________
 TUCNParabolicMagField::TUCNParabolicMagField(const TUCNParabolicMagField& mf)
 							 :TUCNMagField(mf),
-							  fParabolicGradient(mf.fParabolicGradient),
 							  fBMax(mf.fBMax),
+							  fParabolicGradient(mf.fParabolicGradient),
 							  fFieldRadius(mf.fFieldRadius)
 {
 // Copy constructor.
@@ -42,8 +42,8 @@ TUCNParabolicMagField &TUCNParabolicMagField::operator=(const TUCNParabolicMagFi
 // Assignment.
    if(this != &mf) {
 		TUCNMagField::operator=(mf);
-		fParabolicGradient = mf.fParabolicGradient;
 		fBMax = mf.fBMax;
+		fParabolicGradient = mf.fParabolicGradient;
 		fFieldRadius = mf.fFieldRadius;
 	}
 	return *this;

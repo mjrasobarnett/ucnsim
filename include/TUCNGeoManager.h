@@ -9,7 +9,6 @@
 #endif
 
 #include "TUCNGeoNavigator.h"
-#include "TUCNMagField.h"
 #include "TGeoVolume.h"
 #include "TGeoMatrix.h"
 
@@ -23,7 +22,6 @@ class TUCNGeoManager : public TGeoManager
 {
 	
 protected:
-	TObjArray*					fMagFields;	
 	Int_t 						fSourceVolumeIndex;
 	Int_t							fSourceMatrixIndex;
 	
@@ -39,11 +37,6 @@ public:
    virtual ~TUCNGeoManager();
 	
 	// -- methods
-	
-	// Mag Fields
-	Int_t							AddMagField(TUCNMagField *field);
-	TObjArray*					GetListOfMagFields() const       {return fMagFields;}
-	TUCNMagField*				GetMagField(const char* name) const;
 	
 	// Source Volume
 	void							SetSourceVolume(TGeoVolume* sourceVolume);

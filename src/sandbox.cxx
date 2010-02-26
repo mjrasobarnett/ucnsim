@@ -66,14 +66,13 @@ Int_t main(Int_t argc,Char_t **argv)
 	
 	BuildGeometry(geoManager);
 	
-	cout << static_cast<TUCNGeoManager*>(gGeoManager)->GetSourceVolume()->GetName() << endl;
-	cout << static_cast<TUCNGeoManager*>(gGeoManager)->GetSourceMatrix()->GetName() << endl;
-	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Field Creation
 	///////////////////////////////////////////////////////////////////////////////////////
 	TUCNFieldManager* fieldManager = new TUCNFieldManager();
 	TUCNGravField* gravField =	fieldManager->AddGravField();
+	Double_t maxB = 1.0, alpha = 0.1, maxR = 0.235;
+	TUCNMagField* magField = fieldManager->AddParabolicMagField(maxB, alpha, maxR);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Run Simulation
