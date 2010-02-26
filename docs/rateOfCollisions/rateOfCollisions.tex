@@ -1,0 +1,202 @@
+%  Created by Matthew Rásó-Barnett on 2009-08-10	
+\documentclass[11pt,a4paper,oneside]{article}
+
+% Setup for fullpage use - Reduces the margins at the sides
+\usepackage{fullpage}
+
+% -------------------------------------
+
+% More symbols
+\usepackage{amssymb}
+\usepackage[intlimits]{amsmath}
+\usepackage{latexsym}
+
+\usepackage[parfill]{parskip}  % Activate to begin paragraphs with an empty line
+\usepackage{epstopdf}
+\usepackage{mathrsfs} % mathrsfs is for producing the curly H for Hilbert space
+\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it} % This is to define another curly type of font called with \mathpzc{ }
+\usepackage{dsfont} % For identity symbol
+
+\usepackage[pdftex]{graphicx}
+\usepackage[usenames,dvipsnames]{color}
+
+% -------------------------------------
+
+% For Source code, use the listings environment
+\usepackage{listings}
+\usepackage{courier}
+\lstset{
+	language=C,
+	basicstyle=\scriptsize\ttfamily, 
+	numberstyle=\tiny,          
+	numbersep=5pt,              
+	tabsize=2,                  
+	extendedchars=true,         
+	breaklines=true,            
+	keywordstyle=\color{red},
+	stringstyle=\color{white}\ttfamily, 
+	showspaces=false,           
+	showtabs=false,             
+	xleftmargin=17pt,
+	framexleftmargin=17pt,
+	framexrightmargin=5pt,
+	framexbottommargin=4pt,
+	%backgroundcolor=\color{lightgray},
+	showstringspaces=false,          
+	keywordstyle=\color{blue},
+	commentstyle=\color{OliveGreen},
+	stringstyle=\color{red},
+	numbers=left,
+	numberstyle=\tiny,
+	numbersep=5pt,
+	breaklines=true,
+	emph={label}
+}
+\lstloadlanguages{% Check Dokumentation for further languages ...
+	%C
+	C++
+	%XML
+	%HTML
+	%Java
+}
+%\DeclareCaptionFont{blue}{\color{blue}} 
+%\captionsetup[lstlisting]{singlelinecheck=false, labelfont={blue}, textfont={blue}}
+\usepackage{caption}
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFormat{listing}{\colorbox[cmyk]{0.43, 0.35, 0.35,0.01}{\parbox{\textwidth}{\hspace{15pt}#1#2#3}}}
+\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white, singlelinecheck=false, margin=0pt, font={bf,scriptsize}}
+
+% -------------------------------------
+
+% For Floats
+\usepackage{float}
+
+% New float for source code examples
+\floatstyle{plain} 
+\newfloat{sourcecode}{!htb}{}{}
+\floatname{sourcecode} 
+
+% Multipart figures
+\usepackage{subfig}
+
+% -------------------------------------
+
+\DeclareGraphicsExtensions{.pdf, .jpg, .png}
+
+\begin{document}
+
+\section*{Calculating the Rate of Loss at the Boundary}
+
+To calculate the rate of loss of neutrons from the boundary, we need to know the rate of neutrons colliding with the surface of the volume per unit time, per unit surface area. 
+
+For neutrons in the UCN energy regime, their interactions are such that they can effectively be modelled as an isotropic, UCN `gas', since they effectively do not interact with each other or the liquid helium medium that surrounds them. In this case, the classical results from kinetic theory for the motions of molecules in a ideal gas can be applied to UCN in certain cases with some success. 
+
+Consider first, the one-dimensional case from classical kinetic theory. 
+
+Imagine a portion of the wall of surface area $A$, and a neutron which hits the surface with velocity in the x-direction, $v_{x}$. In a time $\Delta t$ the molecule will travel a distance $v_{x} \Delta t$ in the positive x-direction, if $v_{x}$ is positive. The neutron will hit the wall if the distance to the wall is less than this distance $v_{x} \Delta t$, so there is a volume, $A v_{x} \Delta t$, in which any neutron with velocity $v_{x}$ in the positive x-direction will hit the wall. 
+
+Now the number density of neutrons in this volume, is just $N/V$, assuming the neutrons are uniformly distributed, which is usually the case (except near the source or detector!), so this small volume contains, 
+
+\begin{equation}
+	\mbox{Number of particles within reach of the wall} = \frac{N}{V}Av_{x}\Delta t
+\end{equation} 
+
+neutrons. The number of these neutrons with velocity $v_{x}$, is the number of neutrons within this slab of volume, multiplied by the number with velocity $v_{x}$, which is usually given by the Maxwell-Boltzmann distribution, $f(v_{x})$,
+
+\begin{equation}
+\mbox{Number of neutrons in slab with velocity } v_{x} = \frac{N}{V}Av_{x}\Delta t f(v_{x})\mathrm{d}v_{x}
+\end{equation}
+
+The total number of collisions is then just the integrating this expression over the positive velocities, 
+
+\begin{equation}
+\frac{N}{V}A\Delta t \int_{0}^{\infty} v_{x}f(v_{x})\mathrm{d}v_{x} = \frac{N}{V}A\Delta t . \, \frac{1}{2}\left( \int_{-\infty}^{\infty} |v_{x}|f(v_{x})\mathrm{d}v_{x} \right) = \frac{N}{V}A\Delta t \frac{\langle |v_{x}| \rangle}{2}
+\end{equation}
+
+where we have used the fact that $|v_{x}|f(v_{x})$ is an even function of $v_{x}$ (i.e: $f(v_{x}) \propto v_{x}^{2}e^{-v^{2}_{x}}$), and used the definition of the average of the absolute value of $v_{x}$,
+
+\begin{equation}
+\langle |v_{x}| \rangle \equiv \int_{-\infty}^{\infty} |v_{x}|f(v_{x})\mathrm{d}v_{x}
+\end{equation}
+
+Therefore, the number of collisions per unit time, per unit area, is obtained by dividing the above total number of collistions, by the area of the collision surface, $A$ and by the time interval $\Delta t$, 
+
+\begin{equation}
+\mbox{Number of collisions per unit time \& area} = \frac{1}{2}\frac{N}{V} \langle |v_{x}| \rangle
+\label{eqn:numbercollisionsperunitareatime}
+\end{equation}
+
+Now, the typical form of the one-dimensional maxwell-boltzmann distribution is, 
+
+\begin{equation}
+f(v_{i}) = \sqrt{\frac{m}{2\pi k T}} e^{-\frac{mv_{i}^{2}}{2kT}}
+\end{equation}
+
+If we evaluate the integral defined above for $\langle |v_{x}| \rangle$, we get,
+
+\begin{eqnarray*}
+\langle |v_{x}| \rangle &\equiv& \int_{-\infty}^{\infty} |v_{x}|f(v_{x})\mathrm{d}v_{x} \\
+&=& 2\int_{0}^{\infty} v_{x} \sqrt{\frac{m}{2\pi k T}} e^{-\frac{mv_{i}^{2}}{2kT}}  dv_{x} \\
+\end{eqnarray*}
+
+which can be solved using the substitution $\frac{mv_{x}^{2}}{2kT} = u$, 
+
+\begin{eqnarray*}
+\langle |v_{x}| \rangle &\Rightarrow& \sqrt{\frac{2kT}{\pi m}} \int_{0}^{\infty} e^{-u} du \\
+&=& \sqrt{\frac{2kT}{\pi m}} -\left[e^{-\infty} - e^{0}\right] \\
+&=& \sqrt{\frac{2kT}{\pi m}}
+\end{eqnarray*}
+
+Now we would like to generalise this result to three dimensions, for which the maxwell-boltzmann distribution becomes, 
+
+\begin{equation}
+f(v) = 4\pi \left(\frac{m}{2\pi k T}\right)^{\frac{3}{2}} v^{2} e^{-\frac{mv^{2}}{2kT}}
+\end{equation}
+
+where here, $v = \sqrt{v_{x}^{2} + v_{y}^{2} + v_{z}^{2}}$.
+
+Analogous to the case for $v_{x}$ above, we can calculate the average speed, 
+
+\begin{equation}
+\langle v \rangle \equiv \int_{0}^{\infty} vf(v) dv =  4\pi \left(\frac{m}{2\pi k T}\right)^{\frac{3}{2}} \int_{0}^{\infty} v^{3} e^{-\frac{mv^{2}}{2kT}} dv
+\end{equation}
+
+which can be solved analytically as well, (although requires a bit more work!). The general result is, 
+
+\begin{equation}
+\int_{0}^{\infty} x^{3} e^{-ax^{2}} dx = \frac{1}{2a^{2}}
+\end{equation}
+
+therefore, 
+
+\begin{eqnarray*}
+\langle v \rangle &=& 4\pi \left(\frac{m}{2\pi k T}\right)^{\frac{3}{2}} \times \frac{1}{2(\frac{m}{2kT})^{2}} \\
+&=& 8\pi \left(\frac{m}{2\pi k T}\right)^{\frac{3}{2}}\left( \frac{kT}{m} \right)^{2} \\
+&=& \sqrt{\frac{8kT}{\pi m}} \\
+&=& 2 \langle |v_{x}| \rangle 
+\end{eqnarray*}
+
+where in the last step we used the result from above, 
+
+\begin{equation}
+\langle |v_{x}| \rangle = \sqrt{\frac{2kT}{\pi m}} = \frac{1}{2}\sqrt{\frac{8kT}{\pi m}}
+\end{equation}
+
+Thus, we can finally go back to equation \ref{eqn:numbercollisionsperunitareatime}, and write, 
+
+\begin{eqnarray*}
+\mbox{Number of collisions per unit time \& area} &=& \frac{1}{2}\frac{N}{V} \langle |v_{x}| \rangle \\
+&=& \frac{1}{4}\frac{N}{V}\langle v \rangle
+\end{eqnarray*}
+
+Finally now, we can calculate the rate of loss, $\Gamma$, at a particular boundary with surface area $A$, :
+
+\begin{equation}
+\Gamma = \frac{1}{4}\frac{N}{V}A\langle v \rangle \times \bar{\mu}(E)
+\end{equation}
+
+where, we have introduced $\bar{\mu}(E)$, which is the probability of loss at a boundary, averaged over all angles of incidence. The derivation for this is given in another section. 
+
+
+
+\end{document}
