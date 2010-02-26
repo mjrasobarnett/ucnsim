@@ -50,7 +50,6 @@ TUCNGeoNavigator::TUCNGeoNavigator()
 						fLostCounter(0),
 						fDetectedCounter(0),
 						fDecayedCounter(0)
-						
 {
 // dummy constructor
 	Info("TUCNGeoNavigator", "Dummy Constructor");
@@ -985,7 +984,7 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 		// Has lost flag been set?
 		if (particle->Lost() == kTRUE) {
 			fLostCounter++;
-			break; // -- End Propagtion Loop
+			return kFALSE; // -- End Propagtion Loop
 		// Has detected flag been set?
 		} else if (particle->Detected() == kTRUE) {
 			fDetectedCounter++;
@@ -1063,7 +1062,7 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Int_t ste
 		// Has lost flag been set?
 		if (particle->Lost() == kTRUE) {
 			fLostCounter++;
-			break; // -- End Propagtion Loop
+			return kFALSE; // -- End Propagtion Loop
 		// Has detected flag been set?
 		} else if (particle->Detected() == kTRUE) {
 			fDetectedCounter++;

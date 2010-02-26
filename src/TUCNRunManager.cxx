@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <vector>
 
 #include "TUCNRunManager.h"
 
@@ -249,6 +250,9 @@ Bool_t TUCNRunManager::PropagateAllTracks(Double_t runTime, Double_t maxStepTime
 {
 // -- Propagate all tracks stored in the GeoManager for a set period of time
 	Int_t numberOfTracks = fManager->GetNtracks();
+	// Container to store Ids of lost tracks;
+	vector<Int_t> lostTracks;
+
 	for (Int_t trackid = 0; trackid < numberOfTracks; trackid++) {
 		// Get Track from list
 		TVirtualGeoTrack* track = fManager->GetTrack(trackid);
@@ -259,13 +263,21 @@ Bool_t TUCNRunManager::PropagateAllTracks(Double_t runTime, Double_t maxStepTime
 		fManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
 			particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
 		// Propagate track
-		static_cast<TUCNGeoNavigator*>(fManager->GetCurrentNavigator())->PropagateTrack(track, runTime, maxStepTime);
+		Bool_t propagated = static_cast<TUCNGeoNavigator*>(fManager->GetCurrentNavigator())->PropagateTrack(track, runTime, maxStepTime);
+		if (!propagated) lostTracks.push_back(trackid);
 		// Add Track to data tree
 //		fData->AddParticle(particle);
 //		fData->AddTrack(track);
 		// Reset Track to release memory
 		track->ResetTrack();
 //		cout << "test" << trackid << endl;
+	}
+	
+	if (lostTracks.size() != 0) {
+		cout << "Lost Tracks:" << endl;
+		for (Int_t i = 0; i < lostTracks.size(); i++) {
+			cout << lostTracks[i] << endl;
+		}
 	}
 	
 	return kTRUE;
@@ -276,6 +288,9 @@ Bool_t TUCNRunManager::PropagateAllTracks(Int_t steps, Double_t maxStepTime)
 {
 // -- Propagate all tracks stored in the GeoManager for a set number of steps
 	Int_t numberOfTracks = fManager->GetNtracks();
+	// Container to store Ids of lost tracks;
+	vector<Int_t> lostTracks;
+
 	for (Int_t trackid = 0; trackid < numberOfTracks; trackid++) {
 		// Get Track from list
 		TVirtualGeoTrack* track = fManager->GetTrack(trackid);
@@ -286,11 +301,19 @@ Bool_t TUCNRunManager::PropagateAllTracks(Int_t steps, Double_t maxStepTime)
 		fManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
 			particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
 		// Propagate track
-		static_cast<TUCNGeoNavigator*>(fManager->GetCurrentNavigator())->PropagateTrack(track, steps, maxStepTime);
+		Bool_t propagated = static_cast<TUCNGeoNavigator*>(fManager->GetCurrentNavigator())->PropagateTrack(track, steps, maxStepTime);
+		if (!propagated) lostTracks.push_back(trackid);
 		// Add Track to data tree
 //		fData->AddParticle(particle);
 		// Reset Track to release memory
 		track->ResetTrack();
+	}
+	
+	if (lostTracks.size() != 0) {
+		cout << "Lost Tracks:" << endl;
+		for (Int_t i = 0; i < lostTracks.size(); i++) {
+			cout << lostTracks[i] << endl;
+		}
 	}
 	
 	return kTRUE;

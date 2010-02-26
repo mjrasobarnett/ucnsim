@@ -76,6 +76,12 @@ Int_t ucnstandalone() {
 	TGeoVolume* box   = geoManager->MakeUCNBox("box",boundary, boxX, boxY, boxZ);
 	TGeoVolume* innerBox  = geoManager->MakeUCNBox("innerbox",vacuum, boxX-0.01, boxY-0.01, boxZ-0.01);
 	
+	// -- Make a GeoTube object via the UCNGeoManager
+	Double_t rMin = 0.0, rMax = 0.11, length = 0.91; 
+	TGeoVolume* tube   = geoManager->MakeUCNTube("tube",boundary, rMin, rMax, length);
+	TGeoVolume* innerTube  = geoManager->MakeUCNTube("innerTube",vacuum, rMin, rMax-0.01, length-0.01);
+	
+	
 	// -- Define the transformation of the volume
 	TGeoRotation r1,r2; 
 	r1.SetAngles(0,0,0);          //rotation defined by Euler angles 
@@ -87,9 +93,12 @@ Int_t ucnstandalone() {
 	TGeoHMatrix hm = c1 * c2;        // composition is done via TGeoHMatrix class 
 	TGeoHMatrix *matrix = new TGeoHMatrix(hm);
 	
+	TGeoVolume* volume = box;
+	TGeoVolume* innerVolume = innerBox;
+	
 	// -- Create the nodes	
-	box->AddNode(innerBox,1);
-	chamber->AddNode(box,1, matrix);
+	volume->AddNode(innerVolume,1);
+	chamber->AddNode(volume,1, matrix);
 	
 	cout << "Top Volume Nodes: " << chamber->GetNodes()->GetEntriesFast() << endl;
 	cout << "Manager - No. of Volumes: " << geoManager->GetListOfVolumes()->GetEntriesFast() << endl;
@@ -108,14 +117,15 @@ Int_t ucnstandalone() {
 	runManager->TurnGravityOn();
 
 	// -- Load / Define the parameters of the Run
-	Double_t runTime = 10.*Units::s;
-	Double_t maxStepTime = 0.01*Units::s;
+	Double_t runTime = 100.*Units::s;
+	Double_t maxStepTime = 0.10*Units::s;
 	Int_t particles = 50000;
 	Double_t totalEnergy = 200*Units::neV;
 	
 	// Generating mono-energetic particles inside the source volume
 	cout << "Generating " << particles << " particles..."	<< endl;
-	runManager->GenerateMonoEnergeticParticles(innerBox, matrix, particles, totalEnergy);
+	runManager->GenerateMonoEnergeticParticles(innerVolume, matrix, particles, totalEnergy);
+	cout << "Particle's created. Preparing to Propagate..." << endl;
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// WRITE OUT DATA
@@ -146,6 +156,13 @@ Int_t ucnstandalone() {
 	// -- Propagate the tracks according to the run parameters
 	runManager->PropagateAllTracks(runTime, maxStepTime);	
 	
+	cout << "-------------------------------------------" << endl;
+	cout << "Propagation Results: " << endl;
+	cout << "Total Particles: " << geoManager->GetNtracks() << endl;
+	cout << "Number Detected: " << geoManager->GetNumberDetected() << endl;
+	cout << "Number Lost: " << geoManager->GetNumberLost() << endl;
+	cout << "Number Decayed: " << geoManager->GetNumberDecayed() << endl;
+	cout << "-------------------------------------------" << endl;
 	
 	for (Int_t id = 0; id < tracks; id++) {
 		// Get each Track
@@ -164,13 +181,16 @@ Int_t ucnstandalone() {
 	geoManager->SetVisLevel(4);
 	geoManager->SetVisOption(0);
 	
-//	TPolyMarker3D FinalPoints(particles, 1);
-//	for (Int_t i = 0; i < particles; i++) {
-//		FinalPoints.SetPoint(i, particleCloud->GetParticle(i)->Vx(), particleCloud->GetParticle(i)->Vy(), particleCloud->GetParticle(i)->Vz());
-//	}
-//	FinalPoints.SetMarkerColor(2);
-//	FinalPoints.SetMarkerStyle(6);
-//	FinalPoints.Draw();
+	TPolyMarker3D FinalPoints(particles, 1);
+	for (Int_t id = 0; id < tracks; id++) {
+		// Get each Track
+		TVirtualGeoTrack* track = geoManager->GetTrack(id);
+		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+		FinalPoints.SetPoint(id, particle->Vx(), particle->Vy(), particle->Vz());
+	}
+	FinalPoints.SetMarkerColor(2);
+	FinalPoints.SetMarkerStyle(6);
+	FinalPoints.Draw();
 				
 #ifndef __CINT__
 	theApp->Run();
