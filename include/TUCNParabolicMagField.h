@@ -13,6 +13,8 @@
 // TUCNParabolicMagField                                                    //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+class TUCNParticle;
+class TUCNGravField;
 
 class TUCNParabolicMagField : public TUCNMagField
 {
@@ -32,6 +34,8 @@ public:
    
 	virtual void Field(const Double_t* pos, Double_t* field);
 	virtual Double_t FieldStrength(const Double_t* pos) const;
+	virtual Double_t IntegratedField(const Double_t stepTime, const TUCNParticle* initialState, const TUCNGravField* gravField=0) const;
+	
 	
    ClassDef(TUCNParabolicMagField, 1)              // parabolic mag field class
 };

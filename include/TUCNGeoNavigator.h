@@ -17,6 +17,7 @@ class TUCNParticle;
 class TUCNGravField;
 class TUCNGeoManager;
 class TUCNGeoMaterial;
+class TUCNFieldManager;
 class TGeoManager;
 class TGeoNode;
 class TGeoVolume;
@@ -76,7 +77,7 @@ public:
 //	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Double_t runTime, const Double_t maxStepTime, TUCNGravField* gravField=0);
 //	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Int_t steps, const Double_t maxStepTime, TUCNGravField* gravField=0);
 	
-	Bool_t						MakeStep(TVirtualGeoTrack* track, TUCNGravField* field);
+	Bool_t						MakeStep(TVirtualGeoTrack* track, TUCNFieldManager* fieldManager);
 	
 	Bool_t 						Bounce(TVirtualGeoTrack* track, const Double_t* normal, TUCNGeoMaterial* wallMaterial);
 	Bool_t 						SpecularBounce(Double_t* dir, const Double_t* norm);

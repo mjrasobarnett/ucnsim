@@ -53,8 +53,8 @@ class TUCNRun : public TNamed
 		TGeoTrack*				GetTrack(Int_t trackID);
 		TUCNParticle*			GetParticle(Int_t particleID);
 		
-		Bool_t					PropagateTracks(TUCNGravField* gravField);
-		Bool_t 					Propagate(TVirtualGeoTrack* track, TUCNGravField* gravField);
+		Bool_t					PropagateTracks(TUCNFieldManager* fieldManager);
+		Bool_t 					Propagate(TVirtualGeoTrack* track, TUCNFieldManager* fieldManager);
 		
 		void						WriteOutData(TFile* file);
 		

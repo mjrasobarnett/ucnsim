@@ -9,6 +9,7 @@
 
 #include "TUCNGeoManager.h"
 #include "TUCNGeoNavigator.h"
+#include "TUCNFieldManager.h"
 #include "TUCNGravField.h"
 #include "TUCNParticle.h"
 
@@ -279,7 +280,7 @@ Bool_t TUCNRun::GenerateMonoEnergeticParticles(TUCNGeoManager* geoManager, TUCNG
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::PropagateTracks(TUCNGravField* gravField)
+Bool_t TUCNRun::PropagateTracks(TUCNFieldManager* fieldManager)
 {
 // -- Propagate all tracks stored in the GeoManager for a set period of time
 	Int_t numberOfTracks = gGeoManager->GetNtracks();
@@ -291,7 +292,7 @@ Bool_t TUCNRun::PropagateTracks(TUCNGravField* gravField)
 		TVirtualGeoTrack* track = gGeoManager->GetTrack(trackid);
 		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
 		// Propagate track
-		Bool_t propagated = this->Propagate(track, gravField);
+		Bool_t propagated = this->Propagate(track, fieldManager);
 		if (!propagated) lostTracks.push_back(trackid);
 		// Add Track to data tree
 		fData->AddParticle(particle);
@@ -313,7 +314,7 @@ Bool_t TUCNRun::PropagateTracks(TUCNGravField* gravField)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::Propagate(TVirtualGeoTrack* track, TUCNGravField* gravField)
+Bool_t TUCNRun::Propagate(TVirtualGeoTrack* track, TUCNFieldManager* fieldManager)
 {
 	// Propagate track through geometry until it is either stopped or the runTime has been reached
 	// Track passed MUST REFERENCE A TUCNPARTICLE as its particle type. UNITS:: runTime, stepTime in Seconds
@@ -352,11 +353,8 @@ Bool_t TUCNRun::Propagate(TVirtualGeoTrack* track, TUCNGravField* gravField)
 		navigator->DetermineNextStepTime(particle, fMaxStepTime, fRunTime);
 		
 		// -- Make a step
-		Bool_t stepSuccess = navigator->MakeStep(track, gravField);
+		Bool_t stepSuccess = navigator->MakeStep(track, fieldManager);
 		assert(stepSuccess == kTRUE);
-		
-		// -- Sample Field
-		//particle->SampleMagField(magField, stepNumber);
 		
 		// -- Determine Particle destination
 		// Has lost flag been set?

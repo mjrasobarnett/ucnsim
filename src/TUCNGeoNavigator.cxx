@@ -23,6 +23,7 @@
 #include "TUCNParticle.h"
 #include "TUCNParabola.h"
 #include "TUCNMagField.h"
+#include "TUCNFieldManager.h"
 #include "Units.h"
 
 #include "TUCNGeoNavigator.h"
@@ -1068,10 +1069,14 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Int_t ste
 */
 
 //_____________________________________________________________________________
-Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField)
+Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNFieldManager* fieldManager)
 {
 	// -- Find time to reach next boundary and step along parabola
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+	
+	// -- Get the Fields
+	TUCNGravField* gravField = fieldManager->GravField();
+	TUCNMagField* magField = fieldManager->MagField();
 	
 	// -- Save Path to current node - we will want to return to this in the event we make a bounce
 	const char* path = this->GetPath();
@@ -1127,6 +1132,12 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravFi
 		cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
 		cout << "-----------------------------" << endl << endl;
 	#endif	
+	
+	// -- Sample Magnetic Field if there is one	
+	if (magField) {
+		Double_t integratedField = magField->IntegratedField(this->GetStepTime(), particle, gravField);
+//		cout << integratedField/this->GetStepTime() << endl;
+	}
 	
 	// -- Get the current material we are in to determine what to do next
 	TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(this->GetCurrentNode()->GetMedium()->GetMaterial());

@@ -99,7 +99,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	
 	
 	for (Int_t runNumber = 0; runNumber < numberOfRuns; runNumber++) {
-		totalEnergy = 0.1*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
+		totalEnergy = 0.6*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
 		
 		TUCNRun* run = runManager->GetRun(runNumber);
 		cout << "Run number: " << runNumber << "\t" << "called: " << run->GetName() << endl;
@@ -108,7 +108,7 @@ Int_t main(Int_t argc,Char_t **argv)
 		run->Initialise(particles, totalEnergy, runTime, maxStepTime, geoManager, gravField);
 	
 		// -- Propagate the tracks according to the run parameters
-		run->PropagateTracks(gravField);	
+		run->PropagateTracks(fieldManager);	
 	
 		cout << "-------------------------------------------" << endl;
 		cout << "Propagation Results: " << endl;
@@ -137,7 +137,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	outputFile->ls();
 	outputFile->Close();
 	
-	TString outputGeom = "data/geom.root";
+	TString outputGeom = "geom/magfieldgeom.root";
 	cerr << "Writing out geometry to file: " << outputGeom << endl;
 	gGeoManager->Export(outputGeom);
 	

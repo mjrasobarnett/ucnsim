@@ -13,6 +13,8 @@
 // TUCNUniformMagField                                                    //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+class TUCNParticle;
+class TUCNGravField;
 
 class TUCNUniformMagField : public TUCNMagField
 {
@@ -30,6 +32,7 @@ public:
    
 	virtual void Field(const Double_t* pos, Double_t* field);
 	virtual Double_t FieldStrength(const Double_t* pos) const;
+	virtual Double_t IntegratedField(const Double_t stepTime, const TUCNParticle* initialState, const TUCNGravField* gravField=0) const;
 	
    ClassDef(TUCNUniformMagField, 1)              // uniform mag field class
 };
