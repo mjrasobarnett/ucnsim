@@ -26,7 +26,6 @@
 #include "TUCNGeoMaterial.h"
 #include "TUCNParticleCloud.h"
 #include "TUCNParticle.h"
-#include "TUCNExperiment.h"
 #include "Constants.h"
 #include "Units.h"
 
@@ -51,8 +50,6 @@ Int_t ucnstandalone() {
 	// -- Create a UCNGeoManager
 	TUCNGeoManager* myManager = new TUCNGeoManager("TestUCNGeoManager", "Derived class from TGeoManager");
 	
-	TUCNExperiment* experiment = new TUCNExperiment();
-		
 	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0,0);
 	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0,0);
 	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0,0);
