@@ -4,6 +4,7 @@
 #include <string>
 #include <cassert>
 #include <cstdlib>
+#include <vector>
 #include <stdio.h> // sprintf
 
 #include "TCanvas.h"
@@ -29,15 +30,18 @@
 #include "TParticlePDG.h"
 #include "TGeoMatrix.h"
 #include "TPolyMarker3D.h"
+#include "TVectorD.h"
 
 #include "include/Constants.h"
 #include "include/Units.h"
 #include "include/FitSuite.h"
 
+using std::vector;
+
 Double_t gTotalEnergy = 0.0*Units::neV;
 
-Bool_t DrawInitialPositions(const char* fileName, TGeoManager* geoManager);
-Bool_t DrawFinalPositions(const char* fileName, TGeoManager* geoManager);
+Bool_t DrawInitialAndFinalPositions(const char* fileName, TGeoManager* geoManager);
+Bool_t DrawInitialAndFinalDirections(const char* fileName, TGeoManager* geoManager); 
 Bool_t DrawNeutronHeightDistribution(const char* fileName);
 Double_t densityf(Double_t* x, Double_t* par); 
 
@@ -46,15 +50,15 @@ Int_t buildtest_plot(const char* fileName) {
 	// -- Import Geometry
 	TGeoManager* geoManager = TGeoManager::Import(fileName);
 	
-	DrawInitialPositions(fileName, geoManager);
-	DrawFinalPositions(fileName, geoManager);
+	DrawInitialAndFinalPositions(fileName, geoManager);
+	DrawInitialAndFinalDirections(fileName, geoManager);
 	DrawNeutronHeightDistribution(fileName);
 	
 	return 0;
 }
 
 // -------------------------------------------------------------------------------------- 
-Bool_t DrawInitialPositions(const char* fileName, TGeoManager* geoManager) 
+Bool_t DrawInitialAndFinalPositions(const char* fileName, TGeoManager* geoManager) 
 {
 	// -- Open File
 	TFile *file = 0;
@@ -63,27 +67,42 @@ Bool_t DrawInitialPositions(const char* fileName, TGeoManager* geoManager)
 	   cerr << "Cannot open file: " << fileName << endl;
 	   return 0;
 	}
-	// -- Extract Initial Positions in TPolyMarker3D
-	const char* positions = "NeutronInitialPositions;1";
+	// -- Extract Initial and Final Positions in TPolyMarker3D
+	const char* initialFileName = "NeutronInitialPositions;1";
+	const char* finalFileName = "NeutronFinalPositions;1";
 	TPolyMarker3D* initialPositions = new TPolyMarker3D();
-	file->GetObject(positions, initialPositions);
+	TPolyMarker3D* finalPositions = new TPolyMarker3D();
+	file->GetObject(initialFileName, initialPositions);
 	if (initialPositions == NULL) {
-		cerr << "Could not find TPolyMarker3D: " << positions << endl;
+		cerr << "Could not find TPolyMarker3D: " << initialFileName << endl;
 		return kFALSE;
 	}
-	// -- Draw Points
-	TCanvas *canvas = new TCanvas("InitialPositionsCanvas","Neutron Initial Positions",60,0,400,400);
-	canvas->cd();
+	file->GetObject(finalFileName, finalPositions);
+	if (finalPositions == NULL) {
+		cerr << "Could not find TPolyMarker3D: " << finalFileName << endl;
+		return kFALSE;
+	}
+	
+	// -- Draw Initial Points
+	TCanvas *canvas = new TCanvas("InitialAndFinalPositionsCanvas","Neutron Initial and Final Positions",60,0,400,400);
+	canvas->Divide(2,1);
+	canvas->cd(1);
 	geoManager->GetTopVolume()->Draw();
 	geoManager->SetVisLevel(4);
 	geoManager->SetVisOption(0);
 	initialPositions->Draw();
+	// -- Draw Final Points
+	canvas->cd(2);
+	geoManager->GetTopVolume()->Draw();
+	geoManager->SetVisLevel(4);
+	geoManager->SetVisOption(0);
+	finalPositions->Draw();
 	
 	return kTRUE;
 }
 
 // -------------------------------------------------------------------------------------- 
-Bool_t DrawFinalPositions(const char* fileName, TGeoManager* geoManager) 
+Bool_t DrawInitialAndFinalDirections(const char* fileName, TGeoManager* geoManager) 
 {
 	// -- Open File
 	TFile *file = 0;
@@ -92,21 +111,34 @@ Bool_t DrawFinalPositions(const char* fileName, TGeoManager* geoManager)
 	   cerr << "Cannot open file: " << fileName << endl;
 	   return 0;
 	}
-	// -- Extract Final Positions in TPolyMarker3D
-	const char* positions = "NeutronFinalPositions;1";
-	TPolyMarker3D* finalPositions = new TPolyMarker3D();
-	file->GetObject(positions, finalPositions);
-	if (finalPositions == NULL) {
-		cerr << "Could not find TPolyMarker3D: " << positions << endl;
+	// -- Extract Histogram Objects
+	const char* initialThetaHistName = "InitialThetaHist;1";
+	const char* initialPhiHistName = "InitialPhiHist;1";
+	const char* finalThetaHistName = "FinalThetaHist;1";
+	const char* finalPhiHistName = "FinalPhiHist;1";
+	TH1F* initialThetaHist = new TH1F();
+	TH1F* initialPhiHist = new TH1F();
+	TH1F* finalThetaHist = new TH1F();
+	TH1F* finalPhiHist = new TH1F();
+   file->GetObject(initialThetaHistName, initialThetaHist);
+	file->GetObject(initialPhiHistName, initialPhiHist);
+   file->GetObject(finalThetaHistName, finalThetaHist);
+   file->GetObject(finalPhiHistName, finalPhiHist);
+	if (initialThetaHist == NULL || initialPhiHist == NULL || finalThetaHist == NULL || finalPhiHist == NULL) {
+		cerr << "Could not find required histogram" << endl;
 		return kFALSE;
 	}
-	// -- Draw Points
-	TCanvas * canvas = new TCanvas("FinalPositionsCanvas","Neutron Final Positions",500,0,400,400);
-	canvas->cd();
-	geoManager->GetTopVolume()->Draw();
-	geoManager->SetVisLevel(4);
-	geoManager->SetVisOption(0);
-	finalPositions->Draw();
+	// -- Draw Histograms
+	TCanvas *canvas = new TCanvas("InitialAndFinalDirections","Neutron Initial and Final Directions",60,0,800,800);
+	canvas->Divide(2,2);
+	canvas->cd(1);
+	initialThetaHist->Draw();
+	canvas->cd(2);
+	initialPhiHist->Draw();
+	canvas->cd(3);
+	finalThetaHist->Draw();
+	canvas->cd(4);
+	finalPhiHist->Draw();
 	
 	return kTRUE;
 }
@@ -159,25 +191,27 @@ Bool_t DrawNeutronHeightDistribution(const char* fileName)
 	analyticNeutronDensity->SetParameter(0, 240);
 	analyticNeutronDensity->SetLineColor(kRed);
 
-	histogram->SetLineColor(kBlack);
-	histogram->SetXTitle("Height from bottom of Tube (m)");
-	histogram->SetYTitle("Number of Neutrons");
 	histogram->Fit("AnalyticNeutronDensity", "R");
 	histogram->Draw("E1");
 
 	// -------------------------------------------------------------------------------------- 
 	// -- Plot difference between bin content and fitted distribution of above histogram
 	histcanvas->cd(2);	
-	static const Int_t n = histogram->GetNbinsX();
-  	Double_t ex[n], ey[n], x[n], y[n]; 
-  	for (Int_t i=1; i< n; i++) { 
-		x[i] = histogram->GetBinCenter(i); 
-		y[i] = histogram->GetBinContent(i) - analyticNeutronDensity->Eval(x[i]);
-		ex[i] = 0.;
-		ey[i] = histogram->GetBinError(i);
+	Int_t numberOfPoints = histogram->GetNbinsX();
+	const Int_t arrayStorage = 10000;
+	Double_t ex[arrayStorage];
+	Double_t ey[arrayStorage];
+	Double_t x[arrayStorage];
+	Double_t y[arrayStorage];
+	 
+	for (Int_t i = 1; i < numberOfPoints; i++) { 
+		x[i] = (histogram->GetBinCenter(i)); 
+		y[i] = (histogram->GetBinContent(i) - analyticNeutronDensity->Eval(x[i]));
+		ex[i] = (0.);
+		ey[i] = (histogram->GetBinError(i));
 	} 
   	// create graph 
-  	TGraphErrors* residuals  = new TGraphErrors(n,x,y,ex,ey); 
+  	TGraphErrors* residuals  = new TGraphErrors(numberOfPoints, x, y, ex, ey); 
 	residuals->SetTitle("Residuals");
 	residuals->Draw("AC*");
 	

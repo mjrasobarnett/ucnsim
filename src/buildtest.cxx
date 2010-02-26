@@ -56,6 +56,7 @@ using std::cerr;
 using std::string;
 
 Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& runName);
+Bool_t PlotInitialAndFinalAngularDistribution(const TString& dataFileName, const TString& runName); 
 Bool_t PlotFinalHeightDistribution(const TString& dataFileName);
 Bool_t PlotLossFunction(const TString& dataFileName);
 Bool_t PlotAvgMagField(const TString& dataFileName);
@@ -120,6 +121,7 @@ Int_t main(Int_t argc,Char_t ** argv)
 	cout << "-------------------------------------------" << endl << endl;
 	
 	PlotInitialAndFinalPositions(dataFile, "Run1;1");
+	PlotInitialAndFinalAngularDistribution(dataFile, "Run1;1");
 	PlotFinalHeightDistribution(dataFile);
 	PlotLossFunction(dataFile);
 	PlotAvgMagField(dataFile);
@@ -140,16 +142,15 @@ Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& 
 	cout << "-------------------------------------------" << endl;
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Open File
-	TFile *f = 0;
-	f = TFile::Open(dataFileName, "update");
-	if (!f || f->IsZombie()) {
+	TFile *file = 0;
+	file = TFile::Open(dataFileName, "update");
+	if (!file || file->IsZombie()) {
 	   cerr << "Cannot open file: " << dataFileName << endl;
 	   return 0;
 	}
 	// -- Extract Run Object
-//	const char* name = "Run1;1";
 	TUCNRun* run = new TUCNRun();
-   f->GetObject(static_cast<const char*>(runName), run);
+   file->GetObject(static_cast<const char*>(runName), run);
 	if (run == NULL) {
 		cerr << "Could not find run: " << runName << endl;
 		return kFALSE;
@@ -185,7 +186,63 @@ Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& 
 	delete run;
 	delete initialPoints; 
 	delete finalPoints;
-	delete f;
+	delete file;
+	
+	return kTRUE;
+}
+
+// -------------------------------------------------------------------------------------- 
+Bool_t PlotInitialAndFinalAngularDistribution(const TString& dataFileName, const TString& runName) 
+{
+// -- Create a Histogram object to store the angular distribution (as in, their initial and final directions about the origin). 
+	cout << "-------------------------------------------" << endl;
+	cout << "DrawInitialAndFinalAngularDistribution" <<  endl;
+	cout << "-------------------------------------------" << endl;
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- Open File
+	TFile *file = 0;
+	file = TFile::Open(dataFileName, "update");
+	if (!file || file->IsZombie()) {
+	   cerr << "Cannot open file: " << dataFileName << endl;
+	   return 0;
+	}
+	// -- Extract Run Object
+	TUCNRun* run = new TUCNRun();
+   file->GetObject(static_cast<const char*>(runName), run);
+	if (run == NULL) {
+		cerr << "Could not find run: " << runName << endl;
+		return kFALSE;
+	}
+	// -- Plot the Initial and Final Directions
+	Int_t nbins = 50;
+	TH1F* initialThetaHist = new TH1F("InitialThetaHist","Initial Direction: Theta component, Units of Pi", nbins, 0.0, 1.0);
+	TH1F* initialPhiHist = new TH1F("InitialPhiHist","Initial Direction: Phi component, Units of Pi", nbins, 0.0, 2.0);
+	TH1F* finalThetaHist = new TH1F("FinalThetaHist","Final Direction: Theta component, Units of Pi", nbins, 0.0, 1.0);
+	TH1F* finalPhiHist = new TH1F("FinalPhiHist","Final Direction: Phi component, Units of Pi", nbins, 0.0, 2.0);
+	// Axis Titles
+	initialThetaHist->SetXTitle("Height from bottom of Tube (m)");
+	initialThetaHist->SetYTitle("Number of Neutrons");
+	
+	for (Int_t i = 0; i < run->Neutrons(); i++) {
+		TUCNParticle* initialParticle = run->GetInitialParticle(i);
+		TUCNParticle* finalParticle = run->GetParticle(i);
+		initialThetaHist->Fill(initialParticle->Theta()/TMath::Pi());
+		initialPhiHist->Fill(initialParticle->Phi()/TMath::Pi());
+		finalThetaHist->Fill(finalParticle->Theta()/TMath::Pi());
+		finalPhiHist->Fill(finalParticle->Phi()/TMath::Pi());
+	}
+	// -- Write the points to the File
+	initialThetaHist->Write();
+	initialPhiHist->Write();
+	finalThetaHist->Write();
+	finalPhiHist->Write();
+	
+	delete initialThetaHist;
+	delete initialPhiHist;
+	delete finalThetaHist;
+	delete finalPhiHist;
+	delete run;
+	delete file;
 	
 	return kTRUE;
 }
@@ -238,8 +295,12 @@ Bool_t PlotFinalHeightDistribution(const TString& dataFileName)
 	}
 	Double_t tubeheight = 2.0*dynamic_cast<TUCNGeoTube*>(tube->GetShape())->GetDz();
 	
-	// Fill Histogram
+	// Create and Fill Histogram
 	TH1F* histogram = new TH1F("NeutronDensity","Neutron Density versus height", nbins, 0.0, tubeheight);	
+	histogram->SetLineColor(kBlack);
+	histogram->SetXTitle("Height from bottom of Tube (m)");
+	histogram->SetYTitle("Number of Neutrons");
+	
 	for (Int_t i = 0; i < run->Neutrons(); i++) {
 		// Get each Track
 		TUCNParticle* particle = run->GetParticle(i);
@@ -249,6 +310,8 @@ Bool_t PlotFinalHeightDistribution(const TString& dataFileName)
 			histogram->Fill(particle->Vz());
 		}
 	}
+	
+	// Write Histogram
 	histogram->Write();
 	
 	// Clean up
