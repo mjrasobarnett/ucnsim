@@ -9,22 +9,95 @@
 #include "../include/Units.h"
 #include "../include/Constants.h"
 
-Int_t simulation_geom();
-Int_t visualisation_geom();
+Int_t build_geom(TGeoManager* geoManager);
+Int_t draw_geom(TGeoManager* geoManager);
+
+namespace ModelParameters {
+   // -- SourceTube Segment
+   const Double_t sourceSegRMin = 0., sourceSegRMax = 31.5*Units::mm, sourceSegHalfLength = 125.*Units::mm;
+   const Double_t sourceSegAngle = 90.0;
+   const Double_t sourceSegYDisplacement = 125.*Units::mm;
+   
+   // -- Neutron Beam Area
+   const Double_t neutronBeamAreaRMin = 0., neutronBeamAreaRMax = 15.*Units::mm, neutronBeamAreaHalfLength = (13.*sourceSegHalfLength)/2.0;
+   const Double_t neutronBeamAreaAngle = 90.0;
+   const Double_t neutronBeamAreaYDisplacement = neutronBeamAreaHalfLength;
+   
+   // -- Valve Volume Entrance
+   const Double_t valveVolEntranceRMin = 0., valveVolEntranceRMax = 31.5*Units::mm, valveVolEntranceHalfLength = 46.*Units::mm;
+   const Double_t valveVolEntranceAngle = 90.0; 
+   const Double_t valveVolEntranceYDisplacement = 13.0*(2.0*sourceSegHalfLength) + valveVolEntranceHalfLength;
+   
+   // -- Valve Volume Front
+   const Double_t valveVolFrontRMin = 0., valveVolFrontRMax = 31.5*Units::mm, valveVolFrontHalfLength = 12.75.*Units::mm;
+   const Double_t valveVolFrontAngle = 90.0; 
+   const Double_t valveVolFrontYDisplacement = valveVolEntranceYDisplacement + valveVolEntranceHalfLength + valveVolFrontHalfLength;
+   
+   // -- Valve Volume
+   // Valve Volume Back
+   const Double_t valveVolBackRMin = 0., valveVolBackRMax = 36.0*Units::mm, valveVolBackHalfLength = 17.75*Units::mm;
+   const Double_t valveVolBackAngle = 90.0;
+   // Bend Entrance
+   const Double_t bendEntranceHalfX = 30.0*Units::mm, bendEntranceHalfY = 15.0*Units::mm, bendEntranceHalfZ = 55.0*Units::mm;
+   const Double_t bendEntranceAngle = 0.0;
+   const Double_t bendEntranceZDisplacement = bendEntranceHalfZ;
+   // Composite
+   const Double_t valveVolAngle = 0.0;
+   const Double_t valveVolYDisplacement = valveVolFrontYDisplacement + valveVolFrontHalfLength + valveVolBackHalfLength;
+   
+   // -- Bend
+   const Double_t bendRMin = 160.0*Units::mm, bendRMax = 220.0*Units::mm, bendHalfLength = 15.0*Units::mm;
+   const Double_t bendVolAngle = 90.0;
+   const Double_t bendVolYDisplacement = valveVolYDisplacement;
+   const Double_t bendVolXDisplacement = (bendRMin + bendRMax)/2.0;
+   const Double_t bendVolZDisplacement = 2.0*bendEntranceHalfZ;							
+   
+   // -- Detector Valve Volume
+   const Double_t detectorValveVolHalfX = 55.0*Units::mm, detectorValveVolHalfY = 30.0*Units::mm, detectorValveVolHalfZ = 30.0*Units::mm;
+   const Double_t detectorValveVolAngle = 0.0;
+   const Double_t detectorValveVolXDisplacement = bendVolXDisplacement + detectorValveVolHalfX;
+   const Double_t detectorValveVolYDisplacement = valveVolYDisplacement;
+   const Double_t detectorValveVolZDisplacement = bendVolZDisplacement + bendVolXDisplacement;
+   
+   // -- Detector Tube Top
+   const Double_t detectorTubeTopRMin = 0., detectorTubeTopRMax = 25.0*Units::mm, detectorTubeTopHalfLength = 15.75*Units::mm;
+   const Double_t detectorTubeTopAngle = 0.0;
+   const Double_t detectorTubeTopXDisplacement = detectorValveVolXDisplacement;
+   const Double_t detectorTubeTopYDisplacement = valveVolYDisplacement;
+   const Double_t detectorTubeTopZDisplacement = detectorValveVolZDisplacement + detectorValveVolHalfZ + detectorTubeTopHalfLength;
+   
+   // -- Detector Tube
+   const Double_t detectorTubeRMin = 0., detectorTubeRMax = 27.85*Units::mm, detectorTubeHalfLength = 250.75*Units::mm;
+   const Double_t detectorTubeAngle = 0.0;
+   const Double_t detectorTubeXDisplacement = detectorValveVolXDisplacement;
+   const Double_t detectorTubeYDisplacement = valveVolYDisplacement;
+   const Double_t detectorTubeZDisplacement = detectorTubeTopZDisplacement + detectorTubeTopHalfLength + detectorTubeHalfLength;
+   
+   // -- Detector
+   const Double_t detectorRMin = 0., detectorRMax = 27.85*Units::mm, detectorHalfLength = 5.*Units::mm;
+   const Double_t detectorAngle = 0.0;
+   const Double_t detectorXDisplacement = detectorValveVolXDisplacement;
+   const Double_t detectorYDisplacement = valveVolYDisplacement;
+   const Double_t detectorZDisplacement = detectorTubeZDisplacement + detectorTubeHalfLength + detectorHalfLength;
+   
+}
+
+using namespace ModelParameters;
 
 //__________________________________________________________________________
 Int_t model_cryoedm_geom()
 {
-   // Build and write to file the simulation geom
-   build_geom();
+   // Create the geoManager
+   TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
+   // Build and write to file the simulation and visualisation geoms
+   build_geom(geoManager);
+   draw_geom(geoManager);
+   
    return 0;
 }
 
 //__________________________________________________________________________
-Int_t build_geom() {
-   // Create the geoManager
-   TGeoManager* geoManager = new TGeoManager("GeoManager", "Geometry Manager");
-   
+Int_t build_geom(TGeoManager* geoManager) {
    // -------------------------------------
    // BUILDING GEOMETRY
    // Materials - Define the materials used. Leave the neutron properties to be defined on a run-by-run basis
@@ -63,64 +136,54 @@ Int_t build_geom() {
    // -- SOURCE TUBE
    // -- Source tube has 13 segments, all of which are identical (except one which has a hole in the top)
    
-   // -- Make SourceTube Segment
-   Double_t sourceSegRMin = 0., sourceSegRMax = 31.5*Units::mm, sourceSegHalfLength = 125.*Units::mm;
+   // -- Make a SourceTube Segment
    TGeoVolume *sourceSeg = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("SourceTubeSeg", vacuum, sourceSegRMin, sourceSegRMax, sourceSegHalfLength);
    sourceSeg->SetLineColor(kAzure-4);
    sourceSeg->SetLineWidth(1);
    sourceSeg->SetVisibility(kTRUE);
    sourceSeg->SetTransparency(20);
    
-   Double_t sourceAngle = 90.0;
-   Double_t segmentDisplacement = 125.*Units::mm;
+   Double_t segmentYPosition = sourceSegHalfLength;
    for (Int_t segNum = 1; segNum <= 13; segNum++) {
       // -- Define SourceTube matrix
       // Rotation seems to be applied before translation so bear that in mind when choosing which
       // coordinate to transform in translation
-      TGeoRotation segmentRot("SegmentRot",0,sourceAngle,0); // phi, theta, psi
-      TGeoTranslation segmentTra("SegmentTra",0.,segmentDisplacement,0.); // x, y, z
+      TGeoRotation segmentRot("SegmentRot",0,sourceSegAngle,0); // phi, theta, psi
+      TGeoTranslation segmentTra("SegmentTra",0.,segmentYPosition,0.); // x, y, z
       TGeoCombiTrans segmentCom(segmentTra,segmentRot);
       TGeoHMatrix segmentMat = segmentCom;
       Char_t sourceMatrixName[20];
       sprintf(sourceMatrixName, "SourceMatrix%d", segNum); 
       segmentMat.SetName(sourceMatrixName);
       chamber->AddNode(sourceSeg, segNum, new TGeoHMatrix(segmentMat));
-      segmentDisplacement += 2.*sourceSegHalfLength; // Shift next segment along by length of segment
+      segmentYPosition += 2.*sourceSegHalfLength; // Shift next segment along by length of segment 
    }
    
    // -------------------------------------
-   // -- SOURCE VALVE and BEND
+   // -- SOURCE VALVE
    // Valve entrance volume is a shorter source-tube segment-like that connects the valve volume to the source
-   Double_t valveVolEntranceRMin = 0., valveVolEntranceRMax = 31.5*Units::mm, valveVolEntranceHalfLength = 46.*Units::mm;
    TGeoVolume *valveVolEntrance = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("ValveVolEntrance", vacuum, valveVolEntranceRMin, valveVolEntranceRMax, valveVolEntranceHalfLength);
    valveVolEntrance->SetLineColor(kTeal-3);
    valveVolEntrance->SetLineWidth(1);
    valveVolEntrance->SetVisibility(kTRUE);
    valveVolEntrance->SetTransparency(20);
    // -- Define the Valve volume entrance
-   Double_t valveVolEntranceAngle = 90.0;
-   Double_t valveVolEntranceDisplacement = 13.0*2.0*sourceSegHalfLength
-               /*translates origin to the end of the source tube*/ + valveVolEntranceHalfLength;
    TGeoRotation valveVolEntranceRot("ValveVolEntranceRot",0,valveVolEntranceAngle,0); // phi, theta, psi
-   TGeoTranslation valveVolEntranceTra("ValveVolEntranceTra",0.,valveVolEntranceDisplacement,0.); // x, y, z
+   TGeoTranslation valveVolEntranceTra("ValveVolEntranceTra",0.,valveVolEntranceYDisplacement,0.); // x, y, z
    TGeoCombiTrans valveVolEntranceCom(valveVolEntranceTra,valveVolEntranceRot);
    TGeoHMatrix valveVolEntranceMat = valveVolEntranceCom;
    chamber->AddNode(valveVolEntrance, 1, new TGeoHMatrix(valveVolEntranceMat));
    
    // -------------------------------------
    // -- Valve volume front - this is what the valve press against
-   Double_t valveVolFrontRMin = 0., valveVolFrontRMax = 31.5*Units::mm, valveVolFrontHalfLength = 12.75.*Units::mm;
-   TGeoVolume *valveVolFront = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("ValveVolFront",
-                                          vacuum, valveVolFrontRMin, valveVolFrontRMax, valveVolFrontHalfLength);
+   TGeoVolume *valveVolFront = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("ValveVolFront", vacuum, valveVolFrontRMin, valveVolFrontRMax, valveVolFrontHalfLength);
    valveVolFront->SetLineColor(kTeal-4);
    valveVolFront->SetLineWidth(1);
    valveVolFront->SetVisibility(kTRUE);
    valveVolFront->SetTransparency(20);
    // -- Define the Valve volume front
-   Double_t valveVolFrontAngle = 90.0;
-   Double_t valveVolFrontDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + valveVolFrontHalfLength;
    TGeoRotation valveVolFrontRot("ValveVolFrontRot",0,valveVolFrontAngle,0); // phi, theta, psi
-   TGeoTranslation valveVolFrontTra("ValveVolFrontTra",0.,valveVolFrontDisplacement,0.); // x, y, z
+   TGeoTranslation valveVolFrontTra("ValveVolFrontTra",0.,valveVolFrontYDisplacement,0.); // x, y, z
    TGeoCombiTrans valveVolFrontCom(valveVolFrontTra,valveVolFrontRot);
    TGeoHMatrix valveVolFrontMat = valveVolFrontCom;
    chamber->AddNode(valveVolFront, 1, new TGeoHMatrix(valveVolFrontMat));
@@ -128,11 +191,8 @@ Int_t build_geom() {
    // -------------------------------------
    // -- Valve volume - this is what the valve sits in
    // -- This is joined together with the start of the bend volume to make a composite volume
-   Double_t valveVolBackRMin = 0., valveVolBackRMax = 36.0*Units::mm, valveVolBackHalfLength = 17.75*Units::mm;
-   TGeoVolume *valveVolBack = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("ValveVolBack",
-                                 vacuum, valveVolBackRMin, valveVolBackRMax, valveVolBackHalfLength);
+   TGeoVolume *valveVolBack = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("ValveVolBack", vacuum, valveVolBackRMin, valveVolBackRMax, valveVolBackHalfLength);
    // -- Define the Valve volume back
-   Double_t valveVolBackAngle = 90.0;
    TGeoRotation valveVolBackRot("ValveVolBackRot",0,valveVolBackAngle,0); // phi, theta, psi
    TGeoTranslation valveVolBackTra("ValveVolBackTra",0.,0.,0.); // x, y, z
    TGeoCombiTrans valveVolBackCom(valveVolBackTra,valveVolBackRot);
@@ -140,12 +200,10 @@ Int_t build_geom() {
    TGeoHMatrix *valveVolBackMatrix = new TGeoHMatrix(valveVolBackMat);
    valveVolBackMatrix->SetName("ValveVolBackMatrix");
    valveVolBackMatrix->RegisterYourself();
+   
    // -- BendEntrance - this is joined to the valve volume back
-   Double_t bendEntranceHalfX = 30.0*Units::mm, bendEntranceHalfY = 15.0*Units::mm, bendEntranceHalfZ = 55.0*Units::mm;
    TGeoVolume *bendEntrance = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNBox("BendEntrance", vacuum, bendEntranceHalfX, bendEntranceHalfY, bendEntranceHalfZ);
    // -- Define the Bend Entrance segment
-   Double_t bendEntranceAngle = 0.0;
-   Double_t bendEntranceZDisplacement = bendEntranceHalfZ;
    TGeoRotation bendEntranceRot("ValveVolBackRot",0,bendEntranceAngle,0); // phi, theta, psi
    TGeoTranslation bendEntranceTra("ValveVolBackTra",0.,0.,-bendEntranceZDisplacement); // x, y, z
    TGeoCombiTrans bendEntranceCom(bendEntranceTra,bendEntranceRot);
@@ -153,6 +211,7 @@ Int_t build_geom() {
    TGeoHMatrix *bendEntranceMatrix = new TGeoHMatrix(bendEntranceMat);
    bendEntranceMatrix->SetName("BendEntranceMatrix");
    bendEntranceMatrix->RegisterYourself();
+   
    // -- Create the composite Valve volume
    TUCNGeoCompositeShape *valveVolShape = new TUCNGeoCompositeShape("ValveVol","(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
    TGeoVolume * valveVol = new TGeoVolume("ValveVol",valveVolShape,vacuum);
@@ -160,8 +219,6 @@ Int_t build_geom() {
    valveVol->SetLineWidth(1);
    valveVol->SetVisibility(kTRUE);
    valveVol->SetTransparency(20);// -- Define the Valve volume transformation
-   Double_t valveVolAngle = 0.0;
-   Double_t valveVolYDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + 2.0*valveVolFrontHalfLength + valveVolBackHalfLength;
    TGeoRotation valveVolRot("ValveVolRot",0,valveVolAngle,0); // phi, theta, psi
    TGeoTranslation valveVolTra("ValveVolTra",0.,valveVolYDisplacement,0.); // x, y, z
    TGeoCombiTrans valveVolCom(valveVolTra,valveVolRot);
@@ -200,8 +257,7 @@ Int_t build_geom() {
 */ 
    
    // -------------------------------------
-   // -- Bend volume
-   Double_t bendRMin = 160.0*Units::mm, bendRMax = 220.0*Units::mm, bendHalfLength = 15.0*Units::mm;
+   // -- BEND
    TGeoVolume *circleBend = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("CircleBend", vacuum, bendRMin, bendRMax, bendHalfLength);
    TGeoVolume *bendBox = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNBox("BendBox", boundary, 2.0*bendHalfLength, bendRMax, bendRMax);
    // -- Define the transformation of bendbox
@@ -220,10 +276,6 @@ Int_t build_geom() {
    bendVol->SetVisibility(kTRUE);
    bendVol->SetTransparency(20);
    // -- Define the transformation of the bend
-   Double_t bendVolAngle = 90.0;
-   Double_t bendVolYDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + 2.0*valveVolFrontHalfLength + valveVolBackHalfLength;
-   Double_t bendVolXDisplacement = (bendRMin + bendRMax)/2.0;
-   Double_t bendVolZDisplacement = 2.0*bendEntranceHalfZ;							
    TGeoRotation bendVolRot("BendVolRot",0,bendVolAngle,0); // phi, theta, psi
    TGeoTranslation bendVolTra("BendVolTra",-bendVolXDisplacement,bendVolYDisplacement,-bendVolZDisplacement); // x, y, z
    TGeoCombiTrans bendVolCom(bendVolTra,bendVolRot);
@@ -232,17 +284,12 @@ Int_t build_geom() {
    
    // -------------------------------------
    // -- DetectorValveVol
-   Double_t detectorValveVolHalfX = 55.0*Units::mm, detectorValveVolHalfY = 30.0*Units::mm, detectorValveVolHalfZ = 30.0*Units::mm;
    TGeoVolume *detectorValveVol = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNBox("DetectorValveVol", vacuum, detectorValveVolHalfX, detectorValveVolHalfY, detectorValveVolHalfZ);
    detectorValveVol->SetLineColor(kRed+3);
    detectorValveVol->SetLineWidth(1);
    detectorValveVol->SetVisibility(kTRUE);
    detectorValveVol->SetTransparency(0);
    // -- Define the Valve volume back
-   Double_t detectorValveVolAngle = 0.0;
-   Double_t detectorValveVolXDisplacement = (bendRMin + bendRMax)/2.0 + detectorValveVolHalfX;
-   Double_t detectorValveVolYDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + 2.0*valveVolFrontHalfLength + valveVolBackHalfLength;
-   Double_t detectorValveVolZDisplacement = 2.0*bendEntranceHalfZ + (bendRMin + bendRMax)/2.0;
    TGeoRotation detectorValveVolRot("DetectorValveVolXDisplacementRot",0,detectorValveVolAngle,0); // phi, theta, psi
    TGeoTranslation detectorValveVolTra("DetectorValveVolXDisplacementTra", -detectorValveVolXDisplacement, detectorValveVolYDisplacement, -detectorValveVolZDisplacement);
    TGeoCombiTrans detectorValveVolCom(detectorValveVolTra,detectorValveVolRot);
@@ -270,7 +317,6 @@ Int_t build_geom() {
 */ 
    // -------------------------------------
    // -- DetectorTubeTop - Entrance into the detector tube
-   Double_t detectorTubeTopRMin = 0., detectorTubeTopRMax = 25.0*Units::mm, detectorTubeTopHalfLength = 15.75*Units::mm;
    TGeoVolume *detectorTubeTop = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("DetectorTubeTop", 
                                  vacuum, detectorTubeTopRMin, detectorTubeTopRMax, detectorTubeTopHalfLength);
    detectorTubeTop->SetLineColor(kOrange+1);
@@ -278,65 +324,38 @@ Int_t build_geom() {
    detectorTubeTop->SetVisibility(kTRUE);
    detectorTubeTop->SetTransparency(20);
    // -- Define the Valve volume back
-   Double_t detectorTubeTopAngle = 0.0;
-   Double_t detectorTubeTopYDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + 
-                                           2.0*valveVolFrontHalfLength + valveVolBackHalfLength;
-   Double_t detectorTubeTopXDisplacement = (bendRMin + bendRMax)/2.0 + detectorValveVolHalfX;
-   Double_t detectorTubeTopZDisplacement = 2.0*bendEntranceHalfZ + (bendRMin + bendRMax)/2.0
-                                          + detectorValveVolHalfZ + detectorTubeTopHalfLength;
-   TGeoRotation detectorTubeTopRot("DetectorTubeTopRot",0,detectorTubeTopAngle,0); // phi, theta, psi
-   TGeoTranslation detectorTubeTopTra("DetectorTubeTopTra", -detectorTubeTopXDisplacement, detectorTubeTopYDisplacement,
-                                       -detectorTubeTopZDisplacement);
+   TGeoRotation detectorTubeTopRot("DetectorTubeTopRot",0,detectorTubeTopAngle,0);
+   TGeoTranslation detectorTubeTopTra("DetectorTubeTopTra", -detectorTubeTopXDisplacement, detectorTubeTopYDisplacement, -detectorTubeTopZDisplacement);
    TGeoCombiTrans detectorTubeTopCom(detectorTubeTopTra,detectorTubeTopRot);
-   TGeoHMatrix detectorTubeTopMat = detectorTubeTopCom;
-   
+   TGeoHMatrix detectorTubeTopMat = detectorTubeTopCom; 
    chamber->AddNode(detectorTubeTop, 1, new TGeoHMatrix(detectorTubeTopMat));
    
    // -------------------------------------
    // -- DetectorTube
-   Double_t detectorTubeRMin = 0., detectorTubeRMax = 27.85*Units::mm, detectorTubeHalfLength = 250.75*Units::mm;
-   TGeoVolume *detectorTube = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("DetectorTube", 
-                                          vacuum, detectorTubeRMin, detectorTubeRMax, detectorTubeHalfLength);
+   TGeoVolume *detectorTube = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("DetectorTube", vacuum, detectorTubeRMin, detectorTubeRMax, detectorTubeHalfLength);
    detectorTube->SetLineColor(kOrange+1);
    detectorTube->SetLineWidth(1);
    detectorTube->SetVisibility(kTRUE);
    detectorTube->SetTransparency(20);
    // -- Define the Valve volume back
-   Double_t detectorTubeAngle = 0.0;
-   Double_t detectorTubeYDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + 
-                                        2.0*valveVolFrontHalfLength + valveVolBackHalfLength;
-   Double_t detectorTubeXDisplacement = (bendRMin + bendRMax)/2.0 + detectorValveVolHalfX;
-   Double_t detectorTubeZDisplacement = 2.0*bendEntranceHalfZ + (bendRMin + bendRMax)/2.0 + detectorValveVolHalfZ +
-                                        2.0*detectorTubeTopHalfLength + detectorTubeHalfLength;
-   TGeoRotation detectorTubeRot("DetectorTubeRot",0,detectorTubeAngle,0); // phi, theta, psi
+   TGeoRotation detectorTubeRot("DetectorTubeRot",0,detectorTubeAngle,0);
    TGeoTranslation detectorTubeTra("DetectorTubeTra", -detectorTubeXDisplacement, detectorTubeYDisplacement, -detectorTubeZDisplacement);
    TGeoCombiTrans detectorTubeCom(detectorTubeTra,detectorTubeRot);
    TGeoHMatrix detectorTubeMat = detectorTubeCom;
-   
    chamber->AddNode(detectorTube, 1, new TGeoHMatrix(detectorTubeMat));
    
    // -------------------------------------
    // -- Detector
-   Double_t detectorRMin = 0., detectorRMax = 27.85*Units::mm, detectorHalfLength = 5.*Units::mm;
-   TGeoVolume *detector = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("Detector", 
-                                 detectorMedium, detectorRMin, detectorRMax, detectorHalfLength);
+   TGeoVolume *detector = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("Detector", detectorMedium, detectorRMin, detectorRMax, detectorHalfLength);
    detector->SetLineColor(kGray+3);
    detector->SetLineWidth(1);
    detector->SetVisibility(kTRUE);
    detector->SetTransparency(0);
    // -- Define the Valve volume back
-   Double_t detectorAngle = 0.0;
-   Double_t detectorYDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + 
-                                    2.0*valveVolFrontHalfLength + valveVolBackHalfLength;
-   Double_t detectorXDisplacement = (bendRMin + bendRMax)/2.0 + detectorValveVolHalfX;
-   Double_t detectorZDisplacement = 2.0*bendEntranceHalfZ + (bendRMin + bendRMax)/2.0 + detectorValveVolHalfZ +
-                                    2.0*detectorTubeTopHalfLength + 2.0*detectorTubeHalfLength + detectorHalfLength;
-   TGeoRotation detectorRot("DetectorRot",0,detectorTubeAngle,0); // phi, theta, psi
-   TGeoTranslation detectorTra("DetectorTra",
-            -detectorXDisplacement,detectorYDisplacement,-detectorZDisplacement); // x, y, z
+   TGeoRotation detectorRot("DetectorRot",0,detectorTubeAngle,0);
+   TGeoTranslation detectorTra("DetectorTra", -detectorXDisplacement,detectorYDisplacement,-detectorZDisplacement);
    TGeoCombiTrans detectorCom(detectorTra,detectorRot);
    TGeoHMatrix detectorMat = detectorCom;
-   
    chamber->AddNode(detector, 1, new TGeoHMatrix(detectorMat));
    
    // -------------------------------------
@@ -355,12 +374,22 @@ Int_t build_geom() {
    // -- problems in TGeoPainter. The geometry that is left becomes the visualisation geometry used for drawing
    
    // -- First replace the composite shapes in the geometry
-   TGeoCompositeShape *valveVolShapeVis = new TGeoCompositeShape("ValveVolVis",
-                                       "(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
+   TGeoCompositeShape *valveVolShapeVis = new TGeoCompositeShape("ValveVolVis",                                    "(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
    TGeoCompositeShape* bendShapeVis = new TGeoCompositeShape("BendShapeVis","(CircleBend * BendBox:BendBoxMatrix)");
    valveVol->SetShape(valveVolShapeVis);
    bendVol->SetShape(bendShapeVis);
    
+   // -------------------------------------
+   // -- Write out visualisation geometry to file
+   const char *fileName = "geom/model_cryoedm_vis.root";
+   cerr << "Visualisation Geometry Built... Writing to file: " << fileName << endl;
+   geoManager->Export(fileName);
+   
+   return 0;
+}
+
+//__________________________________________________________________________
+Int_t draw_geom(TGeoManager* geoManager) {
    // -------------------------------------
    // -- Draw the vis-geometry in OpenGLViewer
    TCanvas* canvas = new TCanvas("GeomCanvas","Canvas for visualisation of EDM Geom",60,40,600,600);
@@ -392,12 +421,6 @@ Int_t build_geom() {
    // Int_t axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const Double_t referencePos[3]
    glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
    glViewer->UpdateScene();
-   
-   // -------------------------------------
-   // -- Write out visualisation geometry to file
-   const char *fileName = "geom/model_cryoedm_vis.root";
-   cerr << "Visualisation Geometry Built... Writing to file: " << fileName << endl;
-   geoManager->Export(fileName);
-   
    return 0;
 }
+
