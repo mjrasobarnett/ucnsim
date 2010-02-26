@@ -19,6 +19,7 @@ TUCNConfigFile::TUCNConfigFile()
 {
 	Info("ConfigFile", "Dummy Constructor");
 }
+
 //_____________________________________________________________________________
 TUCNConfigFile::TUCNConfigFile(string filename)
 {
@@ -39,6 +40,31 @@ TUCNConfigFile::TUCNConfigFile(string filename)
   }
   
   /// Otherwise, we are blank! Nothing more needs to be done....
+}
+
+//_____________________________________________________________________________
+TUCNConfigFile::TUCNConfigFile(TUCNConfigFile& other)
+					:TObject(other),
+					 fStore(other.fStore)
+{
+  	Info("ConfigFile", "Copy Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNConfigFile& TUCNConfigFile::operator=(const TUCNConfigFile& other)
+{
+  	Info("ConfigFile", "Assignment");
+	if (this!=&other) {
+		TObject::operator=(other);
+		fStore = other.fStore;
+	}
+	return *this;
+}
+
+//_____________________________________________________________________________
+TUCNConfigFile::~TUCNConfigFile()
+{
+  	Info("ConfigFile", "Destructor");
 }
 
 //_____________________________________________________________________________
