@@ -50,7 +50,7 @@
 
 ClassImp(TUCNGeoBoolNode)
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoBoolNode::TUCNGeoBoolNode()
 {
 // Default constructor
@@ -60,7 +60,7 @@ TUCNGeoBoolNode::TUCNGeoBoolNode()
    fRightMat = 0;
    fSelected = 0;
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoBoolNode::TUCNGeoBoolNode(const char *expr1, const char *expr2)
 {
 // Constructor called by TUCNGeoCompositeShape providing 2 subexpressions for the 2 branches.
@@ -77,7 +77,7 @@ TUCNGeoBoolNode::TUCNGeoBoolNode(const char *expr1, const char *expr2)
    }
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoBoolNode::TUCNGeoBoolNode(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, TGeoMatrix *rmat)
 {
 // Constructor providing left and right shapes and matrices (in the Boolean operation).
@@ -100,13 +100,13 @@ TUCNGeoBoolNode::TUCNGeoBoolNode(TGeoShape *left, TGeoShape *right, TGeoMatrix *
    }   
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoBoolNode::~TUCNGeoBoolNode()
 {
 // Destructor.
 // --- deletion of components handled by TGeoManager class.
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Bool_t TUCNGeoBoolNode::MakeBranch(const char *expr, Bool_t left)
 {
 // Expands the boolean expression either on left or right branch, creating
@@ -175,7 +175,7 @@ Bool_t TUCNGeoBoolNode::MakeBranch(const char *expr, Bool_t left)
    }
    return kTRUE;                  
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoBoolNode::Paint(Option_t * option)
 {
 // Special schema for feeding the 3D buffers to the painter client.
@@ -240,7 +240,7 @@ void TUCNGeoBoolNode::SavePrimitive(ostream &out, Option_t *option /*= ""*/)
       fRightMat->SavePrimitive(out,option);
    }      
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoBoolNode::Sizeof3D() const
 {
 // Register size of this 3D object
@@ -249,14 +249,14 @@ void TUCNGeoBoolNode::Sizeof3D() const
 }
 
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+//_____________________________________________________________________________
+//_____________________________________________________________________________
+//_____________________________________________________________________________
 
 ClassImp(TUCNGeoUnion)
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoUnion::Paint(Option_t *option)
 {
 // Paint method.
@@ -272,19 +272,19 @@ void TUCNGeoUnion::Paint(Option_t *option)
    TUCNGeoBoolNode::Paint(option);
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoUnion::TUCNGeoUnion()
 {
 // Default constructor
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoUnion::TUCNGeoUnion(const char *expr1, const char *expr2)
           :TUCNGeoBoolNode(expr1, expr2)
 {
 // Constructor
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoUnion::TUCNGeoUnion(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, TGeoMatrix *rmat)
           :TUCNGeoBoolNode(left,right,lmat,rmat)
 {
@@ -294,13 +294,13 @@ TUCNGeoUnion::TUCNGeoUnion(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, 
    }
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoUnion::~TUCNGeoUnion()
 {
 // Destructor
 // --- deletion of components handled by TGeoManager class.
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoUnion::ComputeBBox(Double_t &dx, Double_t &dy, Double_t &dz, Double_t *origin)
 {
 // Compute bounding box corresponding to a union of two shapes.
@@ -339,7 +339,7 @@ void TUCNGeoUnion::ComputeBBox(Double_t &dx, Double_t &dy, Double_t &dz, Double_
    dz = 0.5*(zmax-zmin);
    origin[2] = 0.5*(zmin+zmax);
 }   
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Bool_t TUCNGeoUnion::Contains(Double_t *point) const
 {
 // Find if a union of two shapes contains a given point
@@ -407,13 +407,13 @@ void TUCNGeoUnion::ComputeNormal(Double_t *point, Double_t *dir, Double_t *norm)
    ComputeNormal(local,dir,norm);   
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Int_t TUCNGeoUnion::DistanceToPrimitive(Int_t /*px*/, Int_t /*py*/)
 {
 // Compute minimum distance to shape vertices.
    return 9999;
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Double_t TUCNGeoUnion::DistFromInside(Double_t *point, Double_t *dir, Int_t iact,
                               Double_t step, Double_t *safe) const
 {
@@ -504,7 +504,7 @@ Double_t TUCNGeoUnion::DistFromInside(Double_t *point, Double_t *dir, Int_t iact
    }      
    return snxt;
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Double_t TUCNGeoUnion::DistFromOutside(Double_t *point, Double_t *dir, Int_t iact,
                               Double_t step, Double_t *safe) const
 {
@@ -533,19 +533,19 @@ Double_t TUCNGeoUnion::DistFromOutside(Double_t *point, Double_t *dir, Int_t iac
    }      
    return snxt;
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Int_t TUCNGeoUnion::GetNpoints() const
 {
 // Returns number of vertices for the composite shape described by this union.
    return 0;
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoUnion::SetPoints(Double_t * /*points*/) const
 {
 // Fill buffer with shape vertices.
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Double_t TUCNGeoUnion::Safety(Double_t *point, Bool_t in) const
 {
 // Compute safety distance for a union node;
@@ -578,26 +578,43 @@ void TUCNGeoUnion::SavePrimitive(ostream &out, Option_t *option /*= ""*/)
    else                         out << "0);" << endl;
 }   
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoUnion::SetPoints(Float_t * /*points*/) const
 {
 // Fill buffer with shape vertices.
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoUnion::Sizeof3D() const
 {
 // Register 3D size of this shape.
    TUCNGeoBoolNode::Sizeof3D();
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+Double_t TUCNGeoUnion::TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
+                                 Double_t stepmax, Int_t iact, Double_t *safe) const
+{
+// Compute the time from outside point to this composite shape along parabola.
+// Check if the bounding box is crossed within the requested distance
+   return TGeoShape::Big();
+}   
+
+//_____________________________________________________________________________
+Double_t TUCNGeoUnion::TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
+                                 Double_t stepmax, Int_t iact, Double_t *safe) const
+{
+// Compute time from inside point to outside of this composite shape along parabola.
+   return TGeoShape::Big();
+}
+
+//_____________________________________________________________________________
+//_____________________________________________________________________________
+//_____________________________________________________________________________
+//_____________________________________________________________________________
 
 ClassImp(TUCNGeoSubtraction)
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoSubtraction::Paint(Option_t *option)
 {
 // Paint method.
@@ -613,20 +630,20 @@ void TUCNGeoSubtraction::Paint(Option_t *option)
    TUCNGeoBoolNode::Paint(option);
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoSubtraction::TUCNGeoSubtraction()
 {
 // Default constructor
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoSubtraction::TUCNGeoSubtraction(const char *expr1, const char *expr2)
           :TUCNGeoBoolNode(expr1, expr2)
 {
 // Constructor
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoSubtraction::TUCNGeoSubtraction(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, TGeoMatrix *rmat)
                 :TUCNGeoBoolNode(left,right,lmat,rmat)
 {
@@ -636,14 +653,14 @@ TUCNGeoSubtraction::TUCNGeoSubtraction(TGeoShape *left, TGeoShape *right, TGeoMa
    }
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoSubtraction::~TUCNGeoSubtraction()
 {
 // Destructor
 // --- deletion of components handled by TGeoManager class.
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoSubtraction::ComputeBBox(Double_t &dx, Double_t &dy, Double_t &dz, Double_t *origin)
 {
 // Compute bounding box corresponding to a subtraction of two shapes.
@@ -721,7 +738,7 @@ void TUCNGeoSubtraction::ComputeNormal(Double_t *point, Double_t *dir, Double_t 
    ComputeNormal(local,dir,norm);
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Bool_t TUCNGeoSubtraction::Contains(Double_t *point) const
 {
 // Find if a subtraction of two shapes contains a given point
@@ -736,13 +753,13 @@ Bool_t TUCNGeoSubtraction::Contains(Double_t *point) const
    if (!inside) node->SetSelected(2);
    return inside;
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Int_t TUCNGeoSubtraction::DistanceToPrimitive(Int_t /*px*/, Int_t /*py*/)
 {
 // Compute minimum distance to shape vertices
    return 9999;
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Double_t TUCNGeoSubtraction::DistFromInside(Double_t *point, Double_t *dir, Int_t iact,
                               Double_t step, Double_t *safe) const
 {
@@ -771,7 +788,7 @@ Double_t TUCNGeoSubtraction::DistFromInside(Double_t *point, Double_t *dir, Int_
    }      
    return snxt;
 }   
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Double_t TUCNGeoSubtraction::DistFromOutside(Double_t *point, Double_t *dir, Int_t iact,
                               Double_t step, Double_t *safe) const
 {
@@ -826,13 +843,13 @@ Double_t TUCNGeoSubtraction::DistFromOutside(Double_t *point, Double_t *dir, Int
       inside = kTRUE;
    }
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Int_t TUCNGeoSubtraction::GetNpoints() const
 {
 // Returns number of vertices for the composite shape described by this subtraction.
    return 0;
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Double_t TUCNGeoSubtraction::Safety(Double_t *point, Bool_t in) const
 {
 // Compute safety distance for a union node;
@@ -863,32 +880,48 @@ void TUCNGeoSubtraction::SavePrimitive(ostream &out, Option_t *option /*= ""*/)
    if (!fRightMat->IsIdentity()) out << fRightMat->GetPointerName() << ");" << endl;
    else                         out << "0);" << endl;
 }   
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoSubtraction::SetPoints(Double_t * /*points*/) const
 {
 // Fill buffer with shape vertices.
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoSubtraction::SetPoints(Float_t * /*points*/) const
 {
 // Fill buffer with shape vertices.
 }
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoSubtraction::Sizeof3D() const
 {
 // Register 3D size of this shape.
    TUCNGeoBoolNode::Sizeof3D();
 }
 
+//_____________________________________________________________________________
+Double_t TUCNGeoSubtraction::TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
+                                 Double_t stepmax, Int_t iact, Double_t *safe) const
+{
+// Compute the time from outside point to this composite shape along parabola.
+// Check if the bounding box is crossed within the requested distance
+   return TGeoShape::Big();
+}   
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+Double_t TUCNGeoSubtraction::TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
+                                 Double_t stepmax, Int_t iact, Double_t *safe) const
+{
+// Compute time from inside point to outside of this composite shape along parabola.
+   return TGeoShape::Big();
+}
+
+//_____________________________________________________________________________
+//_____________________________________________________________________________
+//_____________________________________________________________________________
+//_____________________________________________________________________________
 
 ClassImp(TUCNGeoIntersection)
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoIntersection::Paint(Option_t *option)
 {
 // Paint method.
@@ -904,20 +937,20 @@ void TUCNGeoIntersection::Paint(Option_t *option)
    TUCNGeoBoolNode::Paint(option);
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoIntersection::TUCNGeoIntersection()
 {
 // Default constructor
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoIntersection::TUCNGeoIntersection(const char *expr1, const char *expr2)
           :TUCNGeoBoolNode(expr1, expr2)
 {
 // Constructor
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoIntersection::TUCNGeoIntersection(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, TGeoMatrix *rmat)
                  :TUCNGeoBoolNode(left,right,lmat,rmat)
 {
@@ -927,14 +960,14 @@ TUCNGeoIntersection::TUCNGeoIntersection(TGeoShape *left, TGeoShape *right, TGeo
    if (hs1 && hs2) Fatal("ctor", "cannot intersect two half-spaces: %s * %s", left->GetName(), right->GetName());
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 TUCNGeoIntersection::~TUCNGeoIntersection()
 {
 // Destructor
 // --- deletion of components handled by TGeoManager class.
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 void TUCNGeoIntersection::ComputeBBox(Double_t &dx, Double_t &dy, Double_t &dz, Double_t *origin)
 {
 // Compute bounding box corresponding to a intersection of two shapes.
@@ -1082,7 +1115,7 @@ void TUCNGeoIntersection::ComputeNormal(Double_t *point, Double_t *dir, Double_t
    ComputeNormal(local,dir,norm);   
 }
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Bool_t TUCNGeoIntersection::Contains(Double_t *point) const
 {
 // Find if a intersection of two shapes contains a given point
@@ -1094,13 +1127,15 @@ Bool_t TUCNGeoIntersection::Contains(Double_t *point) const
    inside = fRight->Contains(&local[0]);
    return inside;
 }
-//-----------------------------------------------------------------------------
+
+//_____________________________________________________________________________
 Int_t TUCNGeoIntersection::DistanceToPrimitive(Int_t /*px*/, Int_t /*py*/)
 {
 // Compute minimum distance to shape vertices
    return 9999;
 }
-//-----------------------------------------------------------------------------
+
+//_____________________________________________________________________________
 Double_t TUCNGeoIntersection::DistFromInside(Double_t *point, Double_t *dir, Int_t iact,
                               Double_t step, Double_t *safe) const
 {
@@ -1129,7 +1164,8 @@ Double_t TUCNGeoIntersection::DistFromInside(Double_t *point, Double_t *dir, Int
    }      
    return snxt;
 }   
-//-----------------------------------------------------------------------------
+
+//_____________________________________________________________________________
 Double_t TUCNGeoIntersection::DistFromOutside(Double_t *point, Double_t *dir, Int_t iact,
                               Double_t step, Double_t *safe) const
 {
@@ -1194,13 +1230,14 @@ Double_t TUCNGeoIntersection::DistFromOutside(Double_t *point, Double_t *dir, In
    return snext;
 }      
 
-//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
 Int_t TUCNGeoIntersection::GetNpoints() const
 {
 // Returns number of vertices for the composite shape described by this intersection.
    return 0;
 }
-//-----------------------------------------------------------------------------
+
+//_____________________________________________________________________________
 Double_t TUCNGeoIntersection::Safety(Double_t *point, Bool_t in) const
 {
 // Compute safety distance for a union node;
@@ -1218,6 +1255,7 @@ Double_t TUCNGeoIntersection::Safety(Double_t *point, Bool_t in) const
    if (in2)        return saf1;
    return TMath::Max(saf1,saf2);
 }   
+
 //_____________________________________________________________________________
 void TUCNGeoIntersection::SavePrimitive(ostream &out, Option_t *option /*= ""*/)
 {
@@ -1231,21 +1269,39 @@ void TUCNGeoIntersection::SavePrimitive(ostream &out, Option_t *option /*= ""*/)
    if (!fRightMat->IsIdentity()) out << fRightMat->GetPointerName() << ");" << endl;
    else                         out << "0);" << endl;
 }   
-//-----------------------------------------------------------------------------
+
+//_____________________________________________________________________________
 void TUCNGeoIntersection::SetPoints(Double_t * /*points*/) const
 {
 // Fill buffer with shape vertices.
 }
-//-----------------------------------------------------------------------------
+
+//_____________________________________________________________________________
 void TUCNGeoIntersection::SetPoints(Float_t * /*points*/) const
 {
 // Fill buffer with shape vertices.
 }
-//-----------------------------------------------------------------------------
+
+//_____________________________________________________________________________
 void TUCNGeoIntersection::Sizeof3D() const
 {
 // Register 3D size of this shape.
    TUCNGeoBoolNode::Sizeof3D();
 }
 
+//_____________________________________________________________________________
+Double_t TUCNGeoIntersection::TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
+                                 Double_t stepmax, Int_t iact, Double_t *safe) const
+{
+// Compute the time from outside point to this composite shape along parabola.
+// Check if the bounding box is crossed within the requested distance
+   return TGeoShape::Big();
+}   
 
+//_____________________________________________________________________________
+Double_t TUCNGeoIntersection::TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
+                                 Double_t stepmax, Int_t iact, Double_t *safe) const
+{
+// Compute time from inside point to outside of this composite shape along parabola.
+   return TGeoShape::Big();
+}

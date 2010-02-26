@@ -76,12 +76,12 @@ public:
    virtual void          SetPoints(Float_t *points) const;
    virtual void          Sizeof3D() const;
 
-	// methods
-//	virtual Double_t		TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, 
-//																			Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
-//	virtual Double_t		TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, 
-//																			Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
-		
+   // methods
+   virtual Double_t     TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
+                                    Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
+   virtual Double_t     TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field,
+                                    Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
+	
    ClassDef(TUCNGeoCompositeShape, 1)         // boolean composite shape
 };
 
