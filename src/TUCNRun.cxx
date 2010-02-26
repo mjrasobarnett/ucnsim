@@ -265,18 +265,23 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 		geoManager->SetCurrentTrack(track);
 		// Store the random number seed in particle
 		static_cast<TUCNParticle*>(track->GetParticle())->SetInitialSeed(gRandom->GetSeed());
-		// Add Initial Particle State to data tree
-		this->AddInitialParticle(static_cast<TUCNParticle*>(track->GetParticle()));
+		// Copy initial state
+		TUCNParticle initialParticle = *static_cast<TUCNParticle*>(track->GetParticle());
 		// Propagate track
-		Bool_t propagated = this->PropagateTrack(geoManager, fieldManager);
-		if (!propagated) {
-			lostTracks.push_back(trackid);
+		Bool_t propagated = this->PropagateTrack(geoManager, fieldManager);	
+		// Check if we propagated correctly or not
+		if (propagated) {
+			// Add Initial Particle State to data tree
+			this->AddInitialParticle(&initialParticle);
 			// Add Final Particle State to data tree
 			this->AddParticle(static_cast<TUCNParticle*>(track->GetParticle()));
+		} else {
+			lostTracks.push_back(trackid);
+			// Update Track to Include the final point
+	//		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+	//		track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
 			// Add Track to the data tree
-			this->AddTrack(track);
-			// Update fNeutrons to reflect number of completed particles
-			fNeutrons = trackid + 1; 
+/*			this->AddTrack(track);
 			// Write the current track's points to file for debugging
 			TPolyMarker3D* badTrackPoints = new TPolyMarker3D(track->GetNpoints(), 1); // 1 is marker style
 			TPolyLine3D* badTrack = new TPolyLine3D();
@@ -304,11 +309,9 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 			f->Delete();
 			cout << "Track: " << track->GetId() << " was successfully written to file" << endl;
 			cout << "-------------------------------------------" << endl;
-			// Exit the loop
-			break;
+*/			// Exit the loop
+	//		break;
 		}
-		// Add Final Particle State to data tree
-		this->AddParticle(static_cast<TUCNParticle*>(track->GetParticle()));
 		// Add Track to the data tree
 //		this->AddTrack(track);
 		// Reset Track to release memory
@@ -366,7 +369,7 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 	geoManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
 		particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
 	
-		#ifdef VERBOSE_MODE				
+	#ifdef VERBOSE_MODE				
 		cout << "PropagateForSetTime - Starting Run - Max time (seconds): " <<  fRunTime << endl;
 	#endif
 	
@@ -1563,22 +1566,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		if (nextNode == initialNode) {
 			// -- If the returned node is the same as before, the matrices should match up
 			assert(nextMatrix == initialMatrix);
-		} else {
-			// -- If not, the matrices should be different (I think - if not this will become apparent quickly)
-/*			cout << "-----------------------------" << endl;
-			cout << "Initial Node: " << initialNode->GetName() << endl;
-			cout << "Initial Node Matrix: " << endl;
-			initialNode->GetMatrix()->Print();
-			cout << "Initial Matrix: " << endl;
-			initialMatrix->Print();
-			cout << "Next Node: " << nextNode->GetName() << endl;
-			cout << "Next Node Matrix: " << endl;
-			nextNode->GetMatrix()->Print();
-			cout << "Next Matrix: " << endl;
-			nextMatrix->Print();
-			cout << "-----------------------------" << endl;
-	//		assert(nextMatrix != initialMatrix);
-*/		}
+		} 
 		
 		#ifdef VERBOSE_MODE	
 			cout << endl << "------------------- AFTER STEP ----------------------" << endl;
