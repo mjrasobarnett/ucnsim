@@ -38,7 +38,7 @@ public:
 	
 	Int_t						GetNumberOfRuns() const {return fRuns->GetEntries();}
 	TUCNRun*					GetRun(Int_t index) const;
-	Int_t						AddRun();
+	void						AddRuns(Int_t numberOfRuns);
 	
 	
    ClassDef(TUCNRunManager, 1)      

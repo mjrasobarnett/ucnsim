@@ -39,18 +39,18 @@ TUCNRun::TUCNRun()
 	// Create the UCNNavigator and initialise in the UCNManager
 	Info("TUCNRun", "Creating a new Navigator...");
 	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(static_cast<TUCNGeoManager*>(gGeoManager));
-	Int_t navIndex = gGeoManager->AddNavigator(navigator);
-	gGeoManager->SetCurrentNavigator(navIndex);
+	fNavigatorIndex = gGeoManager->AddNavigator(navigator);
+	gGeoManager->SetCurrentNavigator(fNavigatorIndex);
 	
 	// Create the data object
 	fData = new TUCNData("ucndata", "ucndata");
-	
 } 
 
 //_____________________________________________________________________________
 TUCNRun::TUCNRun(const TUCNRun& run)
 		  :TObject(run),
-			fData(run.fData)
+			fData(run.fData),
+			fNavigatorIndex(run.fNavigatorIndex)
 {
 // -- Copy Constructor
 	Info("TUCNRunManager", "Copy Constructor");
@@ -63,6 +63,7 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& run)
 	if(this!=&run) {
 		TObject::operator=(run);
       fData = run.fData;
+		fNavigatorIndex = run.fNavigatorIndex;
 	}
    return *this;
 }
@@ -75,13 +76,32 @@ TUCNRun::~TUCNRun()
 	fData->Delete();
 }
 
-//______________________________________________________________________________
-Bool_t TUCNRun::GenerateMonoEnergeticParticles(TGeoVolume* sourceVolume, TGeoMatrix* matrix, Int_t totalParticles, Double_t totalEnergy)
+//_____________________________________________________________________________
+void TUCNRun::Initialise(Int_t particles, Double_t totalEnergy)
 {
+	// SetCurrentNavigator
+	gGeoManager->SetCurrentNavigator(fNavigatorIndex);
+	// Turn on gravity
+	this->TurnGravityOn();
+	// Generating mono-energetic particles inside the source volume
+	gGeoManager->GetCurrentNavigator()->Print();
+	cout << gGeoManager->GetCurrentNode() << endl;
+	cout << "Generating " << particles << " particles..."	<< endl;
+	this->GenerateMonoEnergeticParticles(particles, totalEnergy);
+	cout << "Particle's created. Preparing to Propagate..." << endl;
+}
 
-	// Warning: It does not at this time (04/06/2009) seem possible to extract the TGeoMatrix used to position a volume in the overall geometry heirarchy
-	// directly from the TGeoVolume object itself, and thus it must be given as an arguement.
-
+//______________________________________________________________________________
+Bool_t TUCNRun::GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t totalEnergy)
+{
+	// Generates a uniform distribution of particles with random directions all with the same total energy (kinetic plus potential).
+	// defined at z = 0.	
+	
+	// -- 0. Get the source volume and matrix that places it in the geometry
+	TGeoVolume* sourceVolume = static_cast<TUCNGeoManager*>(gGeoManager)->GetSourceVolume();
+	TGeoMatrix* sourceMatrix = static_cast<TUCNGeoManager*>(gGeoManager)->GetSourceMatrix();
+	assert(sourceVolume != NULL && sourceMatrix != NULL);
+	
 	// -- 1. Check for presence of field
 	// If there is a gravitational field we will need to later determine the kinetic energy from the TotalEnergy provided. 
 	Bool_t fieldPresent = kFALSE;
@@ -133,9 +153,7 @@ Bool_t TUCNRun::GenerateMonoEnergeticParticles(TGeoVolume* sourceVolume, TGeoMat
 			lpoint[1] = boxOriginY + boxWallY*gRandom->Uniform(-1.0, 1.0);
 			lpoint[2] = boxOriginZ + boxWallZ*gRandom->Uniform(-1.0, 1.0);
 			// Next transform point to the global coordinate frame
-			if (matrix != NULL) {
-				matrix->LocalToMaster(lpoint, point);
-			}
+			sourceMatrix->LocalToMaster(lpoint, point);
 			// Then test to see if this point is inside the volume
 			gGeoManager->SetCurrentPoint(point);
 			currentNode = gGeoManager->FindNode();
@@ -418,3 +436,4 @@ TUCNParticle* TUCNRun::GetParticle(Int_t particleID)
 	fData->GetTracks()->GetEntry(particleID);
 	return particle;
 }
+

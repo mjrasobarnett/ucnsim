@@ -69,110 +69,29 @@ Int_t ucnstandalone() {
 	
 	TUCNRunManager* runManager = new TUCNRunManager();
 	TUCNGeoManager* geoManager = runManager->GetGeoManager();
-	Int_t index = runManager->AddRun();
-	TUCNRun* run = runManager->GetRun(index);
 	
-	Double_t height_equivalent_units = Constants::grav_acceleration*Constants::neutron_mass;
+	Int_t numberOfRuns = 10;
+	// Need to Add the runs before we initialise the geometry (because we create the navigators with each run). 
+	// and the navigators need to be created before we close the geometry.
+	runManager->AddRuns(numberOfRuns);
 	
-	Double_t observedLifetime = 150.*Units::s;
-	Double_t fermiPotential = (0.91*Units::m)*height_equivalent_units; 
-	Double_t totalEnergy = (0.52*Units::m)*height_equivalent_units;	
-	Double_t initialVelocity = TMath::Sqrt(2*totalEnergy/Constants::neutron_mass);
-	Double_t meanFreePath = 0.16*Units::m;
+	runManager->InitialiseGeometry();
 	
-	Double_t V = fermiPotential;
-	Double_t E = totalEnergy;
-	cout << initialVelocity << endl;
-	
-	Double_t L = ((V/E)*TMath::ASin(TMath::Sqrt(E/V)) - TMath::Sqrt((V - E)/E));
-	cout << "E: " << E/Units::neV << "\t" << "V: " << V/Units::neV << "\t" << "E/V: " << E/V << "\t"<< "L: " << L << endl;
-	
-	Double_t f = meanFreePath/(initialVelocity*observedLifetime*L);
-	Double_t W = f*V;
-	cout << "f: " << f << "\t" << "W: " << W/Units::neV << endl;
-	
-	Double_t estimatedProbOfLoss = 2*f*L;
-	cout << "estimatedProbOfLoss: " << estimatedProbOfLoss << "\t" << "Av. number of collisions: " << 1./estimatedProbOfLoss << endl;
-	
-	
-	totalEnergy = 0.2*V;	
-	E = totalEnergy;
-	
-	
-	// Materials
-	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);
-	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0);
-	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", V, W);
-	
-	matTracking->IsTrackingMaterial(kTRUE);
-	matBlackHole->IsBlackHole(kTRUE);
-	
-	// -- Making Mediums
-	TGeoMedium* vacuum = new TGeoMedium("Vacuum",1, matTracking);
-	TGeoMedium* blackHole = new TGeoMedium("BlackHole",2, matBlackHole);
-	TGeoMedium* boundary = new TGeoMedium("Boundary",3, matBoundary);
-	
-	// -- Making Top Volume
- 	TGeoVolume* chamber = geoManager->MakeUCNBox("TOP",blackHole,20,20,20);
-	geoManager->SetTopVolume(chamber);
-			
-	// -- Make a GeoBBox object via the UCNGeoManager
-//	Double_t boxX = 0.11, boxY = 0.11, boxZ = 0.91; 
-//	TGeoVolume* box   = geoManager->MakeUCNBox("box",boundary, boxX, boxY, boxZ);
-//	TGeoVolume* innerBox  = geoManager->MakeUCNBox("innerbox",vacuum, boxX-0.01, boxY-0.01, boxZ-0.01);
-	
-	// -- Make a GeoTube object via the UCNGeoManager
-	Double_t rMin = 0.0, rMax = 0.236, halfLength = 0.121; 
-	TGeoVolume* tube   = geoManager->MakeUCNTube("tube",boundary, rMin, rMax, halfLength);
-	TGeoVolume* innerTube  = geoManager->MakeUCNTube("innerTube",vacuum, rMin, rMax-0.001, halfLength-0.001);
-	
-	
-	// -- Define the transformation of the volume
-	TGeoRotation r1,r2; 
-	r1.SetAngles(0,0,0);          //rotation defined by Euler angles 
-	r2.SetAngles(0,0,0); 	 
-	TGeoTranslation t1(0.,0.,0.); 
-	TGeoTranslation t2(0.,0.,0.); 
-	TGeoCombiTrans c1(t1,r1); 
-	TGeoCombiTrans c2(t2,r2); 
-	TGeoHMatrix hm = c1 * c2;        // composition is done via TGeoHMatrix class 
-	TGeoHMatrix *matrix = new TGeoHMatrix(hm);
-	
-	TGeoVolume* volume = tube;
-	TGeoVolume* innerVolume = innerTube;
-	
-	// -- Create the nodes	
-	volume->AddNode(innerVolume,1);
-	chamber->AddNode(volume,1, matrix);
-	
-	cout << "Top Volume Nodes: " << chamber->GetNodes()->GetEntriesFast() << endl;
-	cout << "Manager - No. of Volumes: " << geoManager->GetListOfVolumes()->GetEntriesFast() << endl;
-	cout << "Manager - No. of Shapes: " << geoManager->GetListOfShapes()->GetEntriesFast() << endl;
-	cout << "Manager - No. of Nodes: " << geoManager->GetListOfNodes()->GetEntriesFast() << endl;
-		
-	// -- Arrange and close geometry
-   geoManager->CloseGeometry();
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Run Simulation
-	Double_t runTime = 800.*Units::s;
+	Double_t runTime = 5000.*Units::s;
 	Double_t maxStepTime = 1.00*Units::s;
 	Int_t particles = 1000;
+	Double_t V = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->FermiPotential();
+	Double_t f = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->Eta();
 	
-	run->TurnGravityOn();
+	Double_t totalEnergy = 0.2*V;
+	Double_t E = totalEnergy;
 	
-	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Mag Field
-	TUCNUniformMagField* magfield = new TUCNUniformMagField("Uniform magnetic field", 0.0,1.0,1.0);
+	TUCNRun* run = runManager->GetRun(0);
 	
-	geoManager->AddMagField(magfield);
-	TUCNMagField* testfield = geoManager->GetMagField("Uniform magnetic field");
-	cout << testfield << "\t" << magfield << endl;
-	
-	// Generating mono-energetic particles inside the source volume
-	cout << "Generating " << particles << " particles..."	<< endl;
-	run->GenerateMonoEnergeticParticles(innerVolume, matrix, particles, totalEnergy);
-	cout << "Particle's created. Preparing to Propagate..." << endl;
+	run->Initialise(particles, totalEnergy);
 	
 	// -- Propagate the tracks according to the run parameters
 	run->PropagateAllTracks(runTime, maxStepTime);	
@@ -216,7 +135,7 @@ Int_t ucnstandalone() {
 	// Plot Histogram
 	TH1F * Histogram1 = new TH1F("Histogram1","Neutron Density versus height", nbins, 0.0, maxlength);	
 	TH1F * Histogram2 = new TH1F("Histogram2","Avg Field Sampled by Neutron", nbins/5, 0.0, 2.);	
-	TH1F * Histogram3a = new TH1F("Histogram3a","Number of collisions before loss", nbins, 0.0, 50000);	
+	TH1F * Histogram3a = new TH1F("Histogram3a","Number of collisions before loss", nbins, 0.0, 10000);	
 	TH1F * Histogram3b = new TH1F("Histogram3b","Lifetime of neutron", nbins, 0.0, runTime);	
 	TH1F * Histogram3c = new TH1F("Histogram3c","Percentage Diffuse", nbins, 0.0, 0.2);	
 	TH1F * Histogram3d = new TH1F("Histogram3d","Percentage Specular", nbins, 0.8, 1.);	

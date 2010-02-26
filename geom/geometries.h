@@ -299,16 +299,16 @@ void CreateGeometry_v5(Double_t V, Double_t W)
 	gGeoManager->SetTopVolume(chamber);
 				
 	// -- Make a GeoTube object via the UCNGeoManager
-	Double_t rMin = 0.0, rMax = 0.236, halfLength = 0.121; 
-	TGeoVolume* tube   = static_cast<TUCNGeoManager*>(gGeoManager)->MakeUCNTube("tube",boundary, rMin, rMax, halfLength);
-	TGeoVolume* innerTube  = static_cast<TUCNGeoManager*>(gGeoManager)->MakeUCNTube("innerTube",vacuum, rMin, rMax-0.001, halfLength-0.001);
+	Double_t rMin = 0.0, rMax = 0.236, length = 0.121; 
+	TGeoVolume* tube   = static_cast<TUCNGeoManager*>(gGeoManager)->MakeUCNTube("tube",boundary, rMin, rMax, length/2.);
+	TGeoVolume* innerTube  = static_cast<TUCNGeoManager*>(gGeoManager)->MakeUCNTube("innerTube",vacuum, rMin, rMax-0.001, (length-0.001)/2.);
 	
 	
 	// -- Define the transformation of the volume
 	TGeoRotation r1,r2; 
 	r1.SetAngles(0,0,0);          //rotation defined by Euler angles 
 	r2.SetAngles(0,0,0); 	 
-	TGeoTranslation t1(0.,0.,0.); 
+	TGeoTranslation t1(0.,0.,length/2.); 
 	TGeoTranslation t2(0.,0.,0.); 
 	TGeoCombiTrans c1(t1,r1); 
 	TGeoCombiTrans c2(t2,r2); 

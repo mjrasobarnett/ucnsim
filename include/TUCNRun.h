@@ -24,17 +24,20 @@ class TUCNRun : public TObject
 	 	TUCNRun& operator=(const TUCNRun&);
 
 		TUCNData*				fData;
-
+		Int_t						fNavigatorIndex;
+		
 	public:
 		// -- constructors
 	   TUCNRun();
-		
+	   
 		// -- destructor
 		virtual ~TUCNRun();
 		
+		void						Initialise(Int_t particles, Double_t totalEnergy);
+		
 		void 						DrawParticles(TCanvas* canvas, TPolyMarker3D* points);
 		void						DrawTrack(TCanvas* canvas, Int_t trackID);
-		Bool_t 					GenerateMonoEnergeticParticles(TGeoVolume* sourceVolume, TGeoMatrix* matrix, Int_t totalParticles, Double_t totalEnergy);
+		Bool_t 					GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t totalEnergy);
 		TGeoTrack*				GetTrack(Int_t trackID);
 		TUCNParticle*			GetParticle(Int_t particleID);
 		Bool_t 					PropagateAllTracks(Double_t runTime, Double_t maxStepTime);

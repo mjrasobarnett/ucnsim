@@ -112,10 +112,11 @@ TUCNRun* TUCNRunManager::GetRun(Int_t index) const
 }
 
 //______________________________________________________________________________
-Int_t TUCNRunManager::AddRun()
+void TUCNRunManager::AddRuns(Int_t numberOfRuns)
 {
-	Int_t index = this->GetNumberOfRuns();
-	TUCNRun* newRun = new TUCNRun();
-   fRuns->AddAtAndExpand(newRun , index);
-   return index;
+	for(Int_t i = 0; i < numberOfRuns; i++) {
+		Int_t index = this->GetNumberOfRuns();
+		TUCNRun* newRun = new TUCNRun();
+	   fRuns->AddAtAndExpand(newRun , index);
+	}
 }
