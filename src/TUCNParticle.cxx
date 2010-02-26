@@ -21,9 +21,10 @@ TUCNParticle::TUCNParticle()
 //	-- Default constructor
 //	Info("TUCNParticle", "Default Constructor");
 	this->SetPdgCode(fgNeutronPDGCode);
-	this->Decayed(kFALSE);
-	this->Lost(kFALSE);
-	this->Detected(kFALSE);
+	fDecayed = kFALSE;
+	fLost = kFALSE;
+	fDetected = kFALSE;
+	fDistance = 0.0;
 	fBounces = 0;
 	fSpecularBounces = 0;
 	fDiffuseBounces = 0;
@@ -39,9 +40,10 @@ TUCNParticle::TUCNParticle(Double_t* pos, Double_t* mom, Double_t kineticEnergy,
 	this->SetPdgCode(fgNeutronPDGCode);
 	this->SetProductionVertex(pos[0], pos[1], pos[2], startTime);
 	this->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
-	this->Decayed(kFALSE);
-	this->Lost(kFALSE);
-	this->Detected(kFALSE);
+	fDecayed = kFALSE;
+	fLost = kFALSE;
+	fDetected = kFALSE;
+	fDistance = 0.0;
 	fBounces = 0;
 	fSpecularBounces = 0;
 	fDiffuseBounces = 0;
