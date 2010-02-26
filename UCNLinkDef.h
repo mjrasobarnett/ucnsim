@@ -24,8 +24,8 @@
 #pragma link C++ class TUCNConfigFile;
 #pragma link C++ class TUCNGeoCompositeShape;
 #pragma link C++ class TUCNGeoBoolNode;
-#pragma lind C++ class TUCNGeoUnion
-#pragma lind C++ class TUCNGeoSubtraction
-#pragma lind C++ class TUCNGeoIntersection
+#pragma link C++ class TUCNGeoUnion;
+#pragma link C++ class TUCNGeoSubtraction;
+#pragma link C++ class TUCNGeoIntersection;
 
 #endif
