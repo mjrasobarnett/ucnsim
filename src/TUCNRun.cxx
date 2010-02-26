@@ -584,7 +584,6 @@ TGeoNode* TUCNRun::FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGr
 	navigator->SetStep(TGeoShape::Big());
 
    // Initialise ROOT flags and initial nodes
-   Int_t iact = 3;
    Int_t nextDaughterIndex = -2;
 	
 	fUCNIsStepEntering = kFALSE; // flag for whether we are about to enter a new volume
@@ -1142,7 +1141,6 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 	// -- Some initialisations
 	static Int_t icount = 0;
    icount++;
-   Int_t iact = 3;
    Int_t nextindex;
    Bool_t is_assembly;
    fUCNIsStepExiting  = kFALSE;
@@ -1290,9 +1288,8 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
       icrossed = idaughter;
       fUCNIsStepEntering = kTRUE;
    }   
+
    TGeoNode *current = 0;
-   TGeoNode *dnode = 0;
-   TGeoVolume *mother = 0;
    
 	// *********************************************************************
 	// -- BRANCH 3
@@ -1412,7 +1409,7 @@ void TUCNRun::SetStepTime(Double_t stepTime)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCNMagField* magField)
+Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCNMagField* /*magField*/)
 {
 	// -- Find time to reach next boundary and step along parabola
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
@@ -1509,7 +1506,30 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		// -- Update track/particle properties
 		this->UpdateTrack(track, this->GetStepTime(), gravField);
 		///////////////////////////////////////////////////////////////////////////////////////
-
+		
+		// -- Get the returned Node and Matrix
+		nextNode = navigator->GetCurrentNode();
+		nextMatrix = navigator->GetCurrentMatrix();
+		
+		// -- If we are in the same node as before, then we have not crossed any boundary
+		if (nextNode == initialNode) {
+			// -- If the returned node is the same as before, the matrices should match up
+			assert(nextMatrix == initialMatrix);
+		} else {
+			// -- If not, the matrices should be different (I think - if not this will become apparent quickly)
+			cout << "Initial Node: " << initialNode->GetName() << endl;
+			cout << "Initial Node Matrix: " << endl;
+			initialNode->GetMatrix()->Print();
+			cout << "Initial Matrix: " << endl;
+			initialMatrix->Print();
+			cout << "Next Node: " << nextNode->GetName() << endl;
+			cout << "Next Node Matrix: " << endl;
+			nextNode->GetMatrix()->Print();
+			cout << "Next Matrix: " << endl;
+			nextMatrix->Print();
+	//		assert(nextMatrix != initialMatrix);
+		}
+		
 		#ifdef VERBOSE_MODE	
 			cout << endl << "------------------- AFTER STEP ----------------------" << endl;
 			cout << "Steptime (s): " << this->GetStepTime() << "\t" << "Stepsize: " << navigator->GetStep() << endl;
@@ -1529,18 +1549,6 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			
 		// -- Now we need to determine where we have ended up, and to examine whether
 		// -- the current volume is the point's true container
-		
-		// -- Get the returned Node and Matrix
-		nextNode = navigator->GetCurrentNode();
-		nextMatrix = navigator->GetCurrentMatrix();
-		
-		if (nextNode == initialNode) {
-			// -- If the returned node is the same as before, the matrices should match up
-			assert(nextMatrix == initialMatrix);
-		} else {
-			// -- If not, the matrices should be different (I think - if not this will become apparent quickly)
-			assert(nextMatrix != initialMatrix);
-		}
 		
 		// -- Get the current coordinates
 		currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
@@ -1699,9 +1707,10 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 				cout << "Local Point: ";
 				cout << "X:" << finalLocalPoint[0] << "\t" << "Y:" << finalLocalPoint[1] << "\t" << "Z:" << finalLocalPoint[2] << endl;
 				cout << "Current Volume Contains Local Point: " << finalNode->GetVolume()->GetShape()->Contains(finalLocalPoint) << endl;
-
+				
 				// Now, we know that the point is not in the volume that it should be, and that volume may not actually contain the point.
 				// Either way, we will now make a microstep back along the way we came (since the direction has been reversed)
+				cout << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
 				Double_t point[3] = {particle->Vx(), particle->Vy(), particle->Vz()};
 				point[0] += particle->VelocityX()*TGeoShape::Tolerance(); 
 			   point[1] += particle->VelocityY()*TGeoShape::Tolerance(); 
@@ -1718,6 +1727,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 					cout << "Find Node Result: "    << navigator->FindNode()->GetName() << endl;
 					return kFALSE;
 				}
+				cout << "Particle is now correctly located in: " << navigator->GetCurrentNode()->GetName() << endl;
 			}
 			// End of Bounce. We should have returned to the original node, and guarenteed that the current point is located within it.
 		}
