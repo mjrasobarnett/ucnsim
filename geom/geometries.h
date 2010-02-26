@@ -18,10 +18,10 @@ TGeoNode* CreateGeometry_v1(TUCNGeoManager* myManager)
 	// usual properties of materials can be set, but at the moment are not current required for navigation. In
 	// the future expect to set the material element type, scattering length (or effective potential) and other
 	// quantities. 
-   	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0,0);
-	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0,0);
-	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0,0);
-   	TUCNGeoMaterial* matDetector  = new TUCNGeoMaterial("Detector Material", 0,0,0);
+   TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);
+	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0);
+	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0);
+   TUCNGeoMaterial* matDetector  = new TUCNGeoMaterial("Detector Material", 0,0);
 
 	matTracking->IsTrackingMaterial(kTRUE);
 	matBlackHole->IsBlackHole(kTRUE);
@@ -114,9 +114,9 @@ TGeoNode* CreateGeometry_v1(TUCNGeoManager* myManager)
 
 TGeoNode* CreateGeometry_v2(TUCNGeoManager* myManager) {
 	// -- Making Materials
-   TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0,0);
-	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0,0);
-	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0,0);
+   TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);
+	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0);
+	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0);
    
 	matTracking->IsTrackingMaterial(kTRUE);
 	matBlackHole->IsBlackHole(kTRUE);
@@ -171,9 +171,9 @@ TGeoNode* CreateGeometry_v2(TUCNGeoManager* myManager) {
 
 TGeoNode* CreateGeometry_v3(TUCNGeoManager* myManager) {
 	// -- Making Materials
-   TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0,0);
-	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0,0);
-	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0,0);
+   TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);
+	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0);
+	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0);
    
 	matTracking->IsTrackingMaterial(kTRUE);
 	matBlackHole->IsBlackHole(kTRUE);
@@ -234,10 +234,10 @@ TGeoNode* CreateGeometry_v4(TUCNGeoManager* myManager)
 	// usual properties of materials can be set, but at the moment are not current required for navigation. In
 	// the future expect to set the material element type, scattering length (or effective potential) and other
 	// quantities. 
-	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0,0);
-	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0,0);
-	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0,0);
-//	TUCNGeoMaterial* matDetector  = new TUCNGeoMaterial("Detector Material", 0,0,0);
+	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);
+	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0);
+	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0);
+//   TUCNGeoMaterial* matDetector  = new TUCNGeoMaterial("Detector Material", 0,0);
 
 	matTracking->IsTrackingMaterial(kTRUE);
 	matBlackHole->IsBlackHole(kTRUE);

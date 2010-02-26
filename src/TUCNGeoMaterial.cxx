@@ -1,5 +1,6 @@
 // TUCNGeoMaterial
 // Author: Matthew Raso-Barnett  22/05/2009
+#include <cassert>
 
 #include "TGeoMaterial.h"
 
@@ -13,7 +14,9 @@ TUCNGeoMaterial::TUCNGeoMaterial()
              	 :TGeoMaterial()
 {
 // Default constructor
-	Info("TUCNGeoMaterial", "Default Constructor");
+	Info("TUCNGeoMaterial", "Dummy Constructor");
+	fFermiPotential = 0.;
+	fWPotential = 0.;
 	this->ScatteringLength(0.);
 	this->TotalLossCrossSection(0.);
 	this->IsBlackHole(kFALSE);
@@ -23,11 +26,13 @@ TUCNGeoMaterial::TUCNGeoMaterial()
 }
 
 //_____________________________________________________________________________
-TUCNGeoMaterial::TUCNGeoMaterial(const char *name)
+TUCNGeoMaterial::TUCNGeoMaterial(const char *name, Double_t fermiPotential, Double_t wPotential)
              	 :TGeoMaterial(name)         
 {
 // constructor
 	Info("TUCNGeoMaterial", "Constructor");
+	fFermiPotential = fermiPotential;
+	fWPotential = wPotential;
 	this->ScatteringLength(0.);
 	this->TotalLossCrossSection(0.);
 	this->IsBlackHole(kFALSE);
@@ -37,36 +42,10 @@ TUCNGeoMaterial::TUCNGeoMaterial(const char *name)
 }
 
 //_____________________________________________________________________________
-TUCNGeoMaterial::TUCNGeoMaterial(const char *name, Double_t a, Double_t z, Double_t rho, Double_t radlen, Double_t intlen)
-             	 :TGeoMaterial(name, a, z, rho, radlen, intlen)
-{
-// constructor
-	Info("TUCNGeoMaterial", "Constructor");
-	this->ScatteringLength(0.);
-	this->TotalLossCrossSection(0.);
-	this->IsBlackHole(kFALSE);
-	this->IsTrackingMaterial(kFALSE);
-	this->IsDetectorMaterial(kFALSE);
-	this->DetectionEfficiency(1.);  
-}
-
-//_____________________________________________________________________________
-TUCNGeoMaterial::TUCNGeoMaterial(const char *name, TGeoElement *elem, Double_t rho)
-             	 :TGeoMaterial(name, elem, rho)
-{
-// constructor
-	Info("TUCNGeoMaterial", "Constructor");
-	this->ScatteringLength(0.);
-	this->TotalLossCrossSection(0.);
-	this->IsBlackHole(kFALSE);
-	this->IsTrackingMaterial(kFALSE);
-	this->IsDetectorMaterial(kFALSE); 
-	this->DetectionEfficiency(1.); 
-}
-
-//_____________________________________________________________________________
 TUCNGeoMaterial::TUCNGeoMaterial(const TUCNGeoMaterial& gm)
              	 :TGeoMaterial(gm),
+					  fFermiPotential(gm.fFermiPotential),
+					  fWPotential(gm.fWPotential),
 					  fScatteringLength(gm.fScatteringLength),
 					  fTotalLossCrossSection(gm.fTotalLossCrossSection),
 					  fIsBlackHole(gm.fIsBlackHole),
@@ -86,6 +65,8 @@ TUCNGeoMaterial& TUCNGeoMaterial::operator=(const TUCNGeoMaterial& gm)
 
    if(this!=&gm) {
       TGeoMaterial::operator=(gm);
+		fFermiPotential = gm.fFermiPotential;
+		fWPotential = gm.fWPotential;
 		fScatteringLength = gm.fScatteringLength;
 		fTotalLossCrossSection = gm.fTotalLossCrossSection;
 		fIsBlackHole = gm.fIsBlackHole;
@@ -102,3 +83,11 @@ TUCNGeoMaterial::~TUCNGeoMaterial()
 // Destructor
 	Info("TUCNGeoMaterial", "Destructor");  
 }
+
+//_____________________________________________________________________________
+Double_t TUCNGeoMaterial::Eta() const
+{
+	assert(fFermiPotential != 0.0 && fWPotential != 0.0);
+	return (fWPotential/fFermiPotential);
+}
+

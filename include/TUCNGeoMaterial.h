@@ -19,7 +19,10 @@ class TUCNGeoMaterial : public TGeoMaterial
 private:
 	
 protected:
+	Double_t					fFermiPotential;
+	Double_t					fWPotential;
 	Double_t 				fScatteringLength;
+	
 	Double_t 				fTotalLossCrossSection;
 	
 	Bool_t					fIsBlackHole;
@@ -34,10 +37,7 @@ public:
 	
 	// -- constructors
    TUCNGeoMaterial();
-   TUCNGeoMaterial(const char *name);
-   TUCNGeoMaterial(const char *name, Double_t a, Double_t z, 
-                Double_t rho, Double_t radlen=0, Double_t intlen=0);
-   TUCNGeoMaterial(const char *name, TGeoElement *elem, Double_t rho);
+   TUCNGeoMaterial(const char *name, Double_t fermiPotential, Double_t wPotential);
    
 	// -- destructor
    virtual ~TUCNGeoMaterial();
@@ -47,6 +47,10 @@ public:
 	Double_t 				ScatteringLength() const 							{return fScatteringLength;}
 	void						TotalLossCrossSection(Double_t crossSection) {fTotalLossCrossSection = crossSection;}
 	Double_t 				TotalLossCrossSection() const 					{return fTotalLossCrossSection;}
+	void						FermiPotential(Double_t fermiPotential)		{fFermiPotential = fermiPotential;}
+	Double_t 				FermiPotential() const 								{return fFermiPotential;}
+	
+	Double_t 				Eta() const ;
 	
 	void						IsBlackHole(Bool_t isBlackHole) 					{fIsBlackHole = isBlackHole;}
 	Bool_t					IsBlackHole() const 									{return fIsBlackHole;}
