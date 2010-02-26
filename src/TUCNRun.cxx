@@ -1406,12 +1406,6 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 		TGeoNode* finalNode = gGeoManager->GetCurrentNavigator()->CrossBoundaryAndLocate(kFALSE, skip);
 		#ifdef VERBOSE_MODE		
       	cout << "FNBASAP - Final Node: " << finalNode->GetName() << endl;
-			cout << "Final Matrix: " << endl;
-			finalNode->GetMatrix()->Print();
-			Double_t finalPoint[3] = {0.,0.,0.};
-			finalNode->GetMatrix()->MasterToLocal(currentPoint, &finalPoint[0]);
-			cout << "Final Local X: " << finalPoint[0] << "\t" << "Y: " << finalPoint[1] << "\t" << "Z: " << finalPoint[2] << endl;
-			cout << "Final Volume Contains Point: " << finalNode->GetVolume()->Contains(finalPoint) << endl;
 			cout << "---------------------------------------" << endl;
 		#endif
 		return finalNode;
@@ -1550,7 +1544,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		
 		// -- Update track/particle properties
 		this->UpdateTrack(track, this->GetStepTime(), gravField);
-		///////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////
 		
 		// -- Get the returned Node and Matrix
 		nextNode = navigator->GetCurrentNode();
@@ -1562,6 +1556,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			assert(nextMatrix == initialMatrix);
 		} else {
 			// -- If not, the matrices should be different (I think - if not this will become apparent quickly)
+			cout << "-----------------------------" << endl;
 			cout << "Initial Node: " << initialNode->GetName() << endl;
 			cout << "Initial Node Matrix: " << endl;
 			initialNode->GetMatrix()->Print();
@@ -1572,6 +1567,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			nextNode->GetMatrix()->Print();
 			cout << "Next Matrix: " << endl;
 			nextMatrix->Print();
+			cout << "-----------------------------" << endl;
 	//		assert(nextMatrix != initialMatrix);
 		}
 		

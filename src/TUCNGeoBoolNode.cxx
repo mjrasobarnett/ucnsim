@@ -1441,6 +1441,6 @@ Double_t TUCNGeoIntersection::TimeFromInsideAlongParabola(const Double_t* point,
       timeFromInside = rightTime;
       node->SetSelected(2);
    }      
-   Info("TimeFromInsideAlongParabola","TimeFromInside: ", timeFromInside);
+   Info("TimeFromInsideAlongParabola","TimeFromInside: %f", timeFromInside);
 	return timeFromInside;
 }
