@@ -280,41 +280,6 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* co
 	return kTRUE;
 }
 
-//______________________________________________________________________________
-Bool_t TUCNExperiment::CreateRuns(TUCNConfigFile* configFile)
-{
-	// Extract the number of runs from the configFile and initialise each run with extracted run parameters
-	Int_t numberOfRuns = configFile->GetInt("NumberOfRuns","Runs");
-	if (numberOfRuns < 1) {
-		Error("CreateRuns", "Number of Runs is less than 1!");
-		return kFALSE;
-	} else {
-		// Create each run and initialise
-		for(Int_t i = 1; i <= numberOfRuns; i++) {
-			Char_t name[10], title[20];
-			sprintf(name,"Run%d",i); 
-			sprintf(title,"Run no:%d",i);
-			Info("CreateRuns", "Run Name: %s,  Title: %s", name, title);
-			TUCNRun* newRun = new TUCNRun(name, title);
-			newRun->Initialise(configFile);
-//			this->RunContainer()->Add(newRun);
-		}
-	}
-	return kTRUE;
-}
-
-//_____________________________________________________________________________
-void	TUCNExperiment::WriteToFile(TFile* file)
-{
-	assert(file->IsOpen());
-	cout << "Writing data to file: " << file->GetName() << endl;
-	this->GeoManager()->Write();
-	this->Write();
-	//this->RunContainer()->Write();
-	file->Close();
-	cout << "WriteOutData completed" << endl;
-}
-
 //_____________________________________________________________________________
 Bool_t TUCNExperiment::ClearTracks()
 {
@@ -531,7 +496,7 @@ Bool_t TUCNExperiment::Initialise()
 	///////////////////////////////////////////////////////////////////////////////////////
 	Int_t numberOfRuns = this->ConfigFile()->GetInt("NumberOfRuns","Runs");
 	if (numberOfRuns < 1) {
-		Error("CreateRuns", "Number of Runs is less than 1!");
+		Error("Initialise", "Number of Runs is less than 1!");
 		return kFALSE;
 	} else {
 		fNumberOfRuns = numberOfRuns;
@@ -608,10 +573,10 @@ Bool_t TUCNExperiment::Export()
 	cout << "-------------------------------------------" << endl;
 	cout << "Writing " << this->GetName() << " out to File: " << outputFile << endl;
 	if (!(outputFile.Contains(".root"))) {
-		Error("Export", "OutputFile is not a ROOT filename");
+		Error("Export", "OutputFile specified is not a ROOT file");
 		return kFALSE;
 	} else {
-		//Save geometry as a root file
+		// Save geometry as a root file
 		TFile *f = TFile::Open(outputFile,"update");
 		if (!f || f->IsZombie()) {
 		   Error("Export","Cannot open file");
@@ -620,9 +585,11 @@ Bool_t TUCNExperiment::Export()
 		char keyname[256];
 		strcpy(keyname,this->GetName());
 		this->Write(keyname);
-		delete f;
 		cout << keyname << " was successfully written to file" << endl;
 		cout << "-------------------------------------------" << endl;
+		f->ls(); // List the contents of the file
+		cout << "-------------------------------------------" << endl;
+		delete f;
 	}
 	return kTRUE;
 }

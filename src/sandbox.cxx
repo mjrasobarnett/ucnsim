@@ -53,10 +53,6 @@ using std::endl;
 using std::cerr;
 using std::string;
 
-Bool_t BuildGeometry(TUCNGeoManager* geoManager, TUCNConfigFile& configFile);
-Double_t ReadFermiPotential(TUCNConfigFile& configFile);
-
-
 Int_t main(Int_t argc,Char_t **argv)
 {
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -70,9 +66,6 @@ Int_t main(Int_t argc,Char_t **argv)
 		cerr << "sandbox <configFile.txt>" << endl;
 		return -1;
 	}
-	
-	
-//	TRint* theApp = new TRint("UCNSimApp", &argc, argv);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Initialise Simulation
@@ -100,7 +93,6 @@ Int_t main(Int_t argc,Char_t **argv)
 	}
 	
 //	navigator->DiffuseCoefficient(0.1);
-
 //	benchmark.Stop("UCNSim");
 //	benchmark.Show("UCNSim");
 //	theApp->Run();

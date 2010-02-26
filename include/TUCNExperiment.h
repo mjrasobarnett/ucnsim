@@ -44,10 +44,9 @@ protected:
 	TGeoVolume*					MakeUCNBox(const char *name, TGeoMedium *medium, Double_t dx, Double_t dy, Double_t dz);
  	TGeoVolume*					MakeUCNTube(const char *name, TGeoMedium *medium, Double_t rmin, Double_t rmax, Double_t dz);
 	
-	Bool_t						CreateRuns(TUCNConfigFile* configFile);
+	// Particle & Track Management
 	Bool_t 						GenerateParticles(TUCNRun* run);
 	Bool_t						ClearTracks();
-	void							WriteToFile(TFile* file);
 	
 public:
 	// -- constructors
