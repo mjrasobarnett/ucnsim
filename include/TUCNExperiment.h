@@ -47,7 +47,7 @@ protected:
 	
 	Bool_t						CreateRuns(TUCNConfigFile* configFile);
 	Bool_t 						GenerateParticles(TUCNRun* run);
-	
+	Bool_t						ClearTracks();
 	void							WriteToFile(TFile* file);
 	
 public:

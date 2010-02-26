@@ -117,7 +117,7 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 {
 	// Initialise the Run
 	cout << "-------------------------------------------" << endl;
-	cout << "Initialising Run: " << this->GetName() << endl;
+	cout << "Initialising: " << this->GetName() << endl;
 	cout << "-------------------------------------------" << endl;
 	// Reset the Navigator
 	gGeoManager->GetCurrentNavigator()->ResetAll();
@@ -306,12 +306,29 @@ void	TUCNRun::DrawTrack(TCanvas* canvas, Int_t trackID)
 }
 
 //_____________________________________________________________________________
-void	TUCNRun::WriteOutData(TFile* file)
+Bool_t TUCNRun::Export(TString& outputFile)
 {
-	assert(file->IsOpen());
-	cout << "Writing data to file: " << file->GetName() << endl;
-	fData->Write();
-	cout << "WriteOutData completed" << endl;		
+// -- Export this run to file
+	cout << "-------------------------------------------" << endl;
+	cout << "Writing " << this->GetName() << " out to File: " << outputFile << endl;
+	if (!(outputFile.Contains(".root"))) {
+		Error("Export", "OutputFile is not a ROOT filename");
+		return kFALSE;
+	} else {
+		//Save geometry as a root file
+		TFile *f = TFile::Open(outputFile,"update");
+		if (!f || f->IsZombie()) {
+		   Error("Export","Cannot open file");
+		   return kFALSE;
+		}
+		char keyname[256];
+		strcpy(keyname,this->GetName());
+		this->Write(keyname);
+		delete f;
+		cout << "Run: " << keyname << " was successfully written to file" << endl;
+		cout << "-------------------------------------------" << endl;
+	}
+	return kTRUE;
 }
 
 //_____________________________________________________________________________

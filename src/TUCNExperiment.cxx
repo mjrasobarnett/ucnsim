@@ -308,6 +308,25 @@ void	TUCNExperiment::WriteToFile(TFile* file)
 	cout << "WriteOutData completed" << endl;
 }
 
+//_____________________________________________________________________________
+Bool_t TUCNExperiment::ClearTracks()
+{
+	// Wipe the GeoManager of all tracks stored, and also delete the particles held by these Tracks
+	// Why aren't ROOT TParticles owned by the track anyway!!??
+	cout << "-------------------------------------------" << endl;
+	cout << "Cleaning up all Tracks and Particles from the current Run." << endl;
+	// -- First Delete all the TParticles stored by the tracks
+	for (Int_t trackID = 0; trackID < this->GeoManager()->GetNtracks(); trackID++) {
+		TObject* particle = this->GeoManager()->GetTrack(trackID)->GetParticle();
+		if (particle != NULL) {delete particle; particle = 0;}
+	}
+	// -- Finally Clear out all the tracks from the Manager
+	this->GeoManager()->ClearTracks();
+	cout << "Tracks and Particles of current Run have been successfully deleted." << endl;
+	cout << "-------------------------------------------" << endl;
+	return kTRUE;
+}
+
 //______________________________________________________________________________
 Bool_t TUCNExperiment::GenerateParticles(TUCNRun* run)
 {
@@ -315,7 +334,6 @@ Bool_t TUCNExperiment::GenerateParticles(TUCNRun* run)
 	// (kinetic plus potential) defined at z = 0.	
 	cout << "-------------------------------------------" << endl;
 	cout << "Generating Particles for Run: " << run->GetName() << endl;
-	cout << "-------------------------------------------" << endl;
 	Int_t neutrons = run->Neutrons();
 	Double_t totalEnergy = run->TotalEnergy();
 	
@@ -464,7 +482,6 @@ Bool_t TUCNExperiment::GenerateParticles(TUCNRun* run)
 		// Add initial point to track
 		track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
 	}
-	cout << "-------------------------------------------" << endl;
 	cout << "Successfully generated " << this->GeoManager()->GetNtracks() << " particles." << endl;
 	cout << "-------------------------------------------" << endl;	
 	return kTRUE;
@@ -535,7 +552,9 @@ Bool_t TUCNExperiment::Run()
 		Char_t name[10], title[20];
 		sprintf(name,"Run%d",runNumber); 
 		sprintf(title,"Run no:%d",runNumber);
-		Info("Run", "Run: %s, created. Title: %s", name, title);
+		cout << endl << endl << "-------------------------------------------" << endl;
+		cout << "Creating New Run, Name: " << name << " Title: " << title << endl;
+		cout << "-------------------------------------------" << endl;
 		TUCNRun* theRun = new TUCNRun(name, title);
 		
 		// Initialise the Run
@@ -552,10 +571,18 @@ Bool_t TUCNExperiment::Run()
 		
 		// Propagate the Run
 		
+		
 		// Write the Run data to outputFile
+		if (!(theRun->Export(outputFile))) {
+			Error("Run","Could not write Run, %s, out to File.", theRun->GetName());
+			return kFALSE;
+		}
 		
 		// Tidy up
-		
+		if (!(this->ClearTracks())) {
+			Error("Run","Could not clean up current tracks/particles completely.");
+			return kFALSE;
+		}
 	}
 	return kTRUE;
 }

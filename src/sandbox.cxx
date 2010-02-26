@@ -140,7 +140,7 @@ Int_t main(Int_t argc,Char_t **argv)
 //	benchmark.Show("UCNSim");
 */	
 //	theApp->Run();
-	
+	cout << endl << endl << "END OF SIMULATION" << endl << endl << endl;
 	delete experiment;
 		
 	return EXIT_SUCCESS;

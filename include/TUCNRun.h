@@ -62,7 +62,7 @@ class TUCNRun : public TNamed
 		Bool_t					PropagateTracks(TUCNFieldManager* fieldManager);
 		Bool_t 					Propagate(TVirtualGeoTrack* track, TUCNFieldManager* fieldManager);
 		
-		void						WriteOutData(TFile* file);
+		Bool_t					Export(TString& outputFile);
 		
 		Int_t 					Detected() const {return fDetectedCounter;}
 		Int_t 					LostToBoundary() const {return fBoundaryLossCounter;}
