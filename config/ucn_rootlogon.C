@@ -16,6 +16,12 @@
  	if ( gSystem->Load("libEG.so") == 0 ) {
 	    cout << "Successfully loaded libEG.so" << endl;
 	}
+	if ( gSystem->Load("libMathCore.so") == 0 ) {
+	    cout << "Successfully loaded libMathCore.so" << endl;
+	}
+	if ( gSystem->Load("libMathMore.so") == 0 ) {
+	    cout << "Successfully loaded libMathCore.so" << endl;
+	}
 	TString ucnsim = gSystem->Getenv("UCNSIM");
 	if ( ucnsim.Length() == 0 ) {
 		cerr << "-------------------------------------" << endl;

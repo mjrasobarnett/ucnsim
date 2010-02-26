@@ -9,6 +9,9 @@
 #include "TGeoShape.h"
 #include "TGeoManager.h"
 #include "TVirtualGeoTrack.h"
+
+#include "Math/Polynomial.h"
+
 #include "TUCNPolynomial.h"
 #include "Units.h"
 
@@ -200,7 +203,7 @@ Int_t TUCNPolynomial::CubicRootFinder(const Double_t* params, Double_t* roots)
 		return this->QuadraticRootFinder(quadraticParams, roots);
 	}
 	
-	// Define the constants of the standard form
+/*	// Define the constants of the standard form
 	Double_t a2 = b/a, a1 = c/a, a0 = d/a; 
 	#ifdef VERBOSE_MODE		
 		cout << "CubicRootFinder - Eliminate leading coefficient -  a2: " << a2 << "\t" << "a1: " << a1 << "\t" << "a0: " << a0 << endl;
@@ -215,7 +218,20 @@ Int_t TUCNPolynomial::CubicRootFinder(const Double_t* params, Double_t* roots)
 		cout << "CubicRootFinder - Vieta's Form -  p: " << p << "\t" << "q: " << q << endl;
 	#endif	
 	// -- Choose Algorithm to use
-	return this->AnalyticCubicAlgorithm(p, q, a2, &roots[0]);
+	Int_t solutions = this->AnalyticCubicAlgorithm(p, q, a2, &roots[0]);
+*/	
+	ROOT::Math::Polynomial cubic(a,b,c,d);
+	std::vector<Double_t> realroots = cubic.FindRealRoots();
+	cout << "---------------------------" << endl;
+	cout << "ROOT::MATHMORE::Solver" << endl;
+	cout << "No. of Roots: " << realroots.size() << endl;
+	for (UInt_t i = 0; i < realroots.size(); i++) {
+		cout << i << "\t" << realroots[i] << "\t";
+		roots[i] = realroots[i];
+	}
+	cout << endl << "---------------------------" << endl;
+	
+	return realroots.size();
 }
 
 //_____________________________________________________________________________
@@ -245,13 +261,27 @@ Int_t TUCNPolynomial::QuarticRootFinder(const Double_t* params, Double_t* roots)
 		return this->CubicRootFinder(cubicParams, roots);
 	}
 	
-	// Define the constants of the standard form
+/*	// Define the constants of the standard form
 	const Double_t a3 = b/a;
 	const Double_t a2 = c/a;
 	const Double_t a1 = d/a;
 	const Double_t a0 = e/a;
 	
-	return this->AnalyticQuarticAlgorithm(a3, a2, a1, a0, roots);
+	Int_t solutions = this->AnalyticQuarticAlgorithm(a3, a2, a1, a0, roots);
+*/
+	ROOT::Math::Polynomial quartic(a,b,c,d,e);
+	std::vector<Double_t> realroots = quartic.FindRealRoots();
+	cout << "---------------------------" << endl;
+	cout << "ROOT::MATHMORE::Solver" << endl;
+	cout << "No. of Roots: " << realroots.size() << endl;
+	for (UInt_t i = 0; i < realroots.size(); i++) {
+		cout << i << "\t" << realroots[i] << "\t";
+		roots[i] = realroots[i];
+	}
+	cout << endl << "---------------------------" << endl;
+	
+	return realroots.size();
+	
 }
 
 //_____________________________________________________________________________
@@ -404,20 +434,14 @@ Int_t TUCNPolynomial::AnalyticQuarticAlgorithm(const Double_t a3, const Double_t
 	
 	// Calculate W 
 	Double_t WSquared = ((0.25*a3*a3) - a2) + cubicSolution;
-	
-	if (TMath::Abs(WSquared) < TGeoShape::Tolerance()) {
-		cout << "TrackId: " << gGeoManager->GetCurrentTrack()->GetId() << "\t" << "WSquared: " << WSquared << endl;
+	#ifdef VERBOSE_MODE
 		cout << "a3: " << a3 << "\t" << "0.25*a3*a3: " << (0.25*a3*a3) << "\t" << "a2: " << a2 << "\t" << "cubicSolution: " << cubicSolution << endl;
 		cout << "(0.25*a3*a3) - a2: " << (0.25*a3*a3) - a2 << endl;
 		cout << "(0.25*a3*a3) - a2 + cubicSolution: " << (0.25*a3*a3) - a2 + cubicSolution << endl;
-		WSquared = 0.0;
-	}
+	#endif
 	
 	if (WSquared < 0.0) {
 		cout << "TrackId: " << gGeoManager->GetCurrentTrack()->GetId() << "\t" << "WSquared: " << WSquared << endl;
-		cout << "a3: " << a3 << "\t" << "0.25*a3*a3: " << (0.25*a3*a3) << "\t" << "a2: " << a2 << "\t" << "cubicSolution: " << cubicSolution << endl;
-		cout << "(0.25*a3*a3) - a2: " << (0.25*a3*a3) - a2 << endl;
-		cout << "(0.25*a3*a3) - a2 + cubicSolution: " << (0.25*a3*a3) - a2 + cubicSolution << endl;
 		assert(WSquared > 0.0);
 	}	
 	
