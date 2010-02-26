@@ -432,14 +432,6 @@ Bool_t PlotAvgMagField(const TString& dataFileName)
 	   cerr << "Cannot open file: " << dataFileName << endl;
 	   return 0;
 	}
-	// -- Extract Run Object
-	const char* runName = "Run11;1";
-	TUCNRun* run = new TUCNRun();
-   file->GetObject(runName, run);
-	if (run == NULL) {
-		cerr << "Could not find run: " << runName << endl;
-		return kFALSE;
-	}
 	// -- Extract Experiment Object
 	const char* expName = "Experiment;1";
 	TUCNExperiment* experiment = new TUCNExperiment();
@@ -448,31 +440,57 @@ Bool_t PlotAvgMagField(const TString& dataFileName)
 		cerr << "Could not find object: " << expName << endl;
 		return kFALSE;
 	}
+	// -- Extract Run Object
+	const char* noLossesRunName = "Run11;1";
+	TUCNRun* noLossesRun = new TUCNRun();
+   file->GetObject(noLossesRunName, noLossesRun);
+	if (noLossesRun == NULL) {
+		cerr << "Could not find run: " << noLossesRunName << endl;
+		return kFALSE;
+	}
+	// -- Extract Run Object
+	const char* lossesRunName = "Run12;1";
+	TUCNRun* lossesRun = new TUCNRun();
+   file->GetObject(lossesRunName, lossesRun);
+	if (lossesRun == NULL) {
+		cerr << "Could not find run: " << lossesRunName << endl;
+		return kFALSE;
+	}
 	
 	// -- Get Run Parameters
-	Int_t particles = run->Neutrons();
 	Int_t nbins = 100;
 	Double_t fieldMax = 1.0;
 	Double_t fieldMin = 0.9;
-	TH1F *histogram = new TH1F("CollisionsBeforeLoss","Number of collisions before loss", nbins, fieldMin, fieldMax);
+	TH1F *noLossesHistogram = new TH1F("VolumeAveragedFieldNoLosses","VolumeAveragedField: No Neutron losses", nbins, fieldMin, fieldMax);
+	TH1F *lossesHistogram = new TH1F("VolumeAveragedFieldLosses","VolumeAveragedField: Neutron Losses at Boundary", nbins, fieldMin, fieldMax);
 	
-	for (Int_t j = 0; j < particles; j++) {
-		// Get each Track
-		TUCNParticle* particle = run->GetParticle(j);
-		if (particle->LostToBoundary()) { 
-			continue; 
-		} else {
-			histogram->Fill(particle->AvgMagField());
+	// Loop over the surviving neutrons
+	for (Int_t j = 0; j < noLossesRun->Neutrons(); j++) {
+		TUCNParticle* noLossesParticle = noLossesRun->GetParticle(j);
+		if (noLossesParticle->LostToBoundary() == kFALSE) { 
+			noLossesHistogram->Fill(noLossesParticle->AvgMagField());
+		}
+		
+	}
+
+	// Loop over the surviving neutrons
+	for (Int_t j = 0; j < lossesRun->Neutrons(); j++) {
+		TUCNParticle* lossesParticle = lossesRun->GetParticle(j);
+		if (lossesParticle->LostToBoundary() == kFALSE) {
+			lossesHistogram->Fill(lossesParticle->AvgMagField());
 		}
 	}
 
 	// Write out Histogram
-	histogram->Write();
+	noLossesHistogram->Write();
+	lossesHistogram->Write();
 	
 	// Clean Up
-	delete run;
+	delete noLossesRun;
+	delete lossesRun;
 	delete experiment;
-	delete histogram;
+	delete noLossesHistogram;
+	delete lossesHistogram;
 	delete file;
 
 	return kTRUE;

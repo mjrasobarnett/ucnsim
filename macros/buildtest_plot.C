@@ -44,6 +44,7 @@ Bool_t DrawInitialAndFinalPositions(const char* fileName, TGeoManager* geoManage
 Bool_t DrawInitialAndFinalDirections(const char* fileName, TGeoManager* geoManager); 
 Bool_t DrawNeutronHeightDistribution(const char* fileName);
 Bool_t DrawLossFunction(const char* fileName);
+Bool_t DrawVolumeAveragedMagField(const char* fileName);
 
 Double_t densityf(Double_t* x, Double_t* par);
 Double_t lossFunc(Double_t* x, Double_t* par);
@@ -60,6 +61,7 @@ Int_t buildtest_plot(const char* fileName) {
 	DrawInitialAndFinalDirections(fileName, geoManager);
 	DrawNeutronHeightDistribution(fileName);
 	DrawLossFunction(fileName);
+	DrawVolumeAveragedMagField(fileName);
 	
 	return 0;
 }
@@ -258,6 +260,47 @@ Bool_t DrawLossFunction(const char* fileName)
 	
 	return kTRUE;
 }
+
+// -------------------------------------------------------------------------------------- 
+Bool_t DrawVolumeAveragedMagField(const char* fileName)
+{
+// -- Read in the Histograms for the Volume-Averaged Mag field from file and draw.
+// -- Should be two histograms in the file - one for the field when neutron losses at boundary are present,
+// -- one for when they are not. 	
+	// -- Open File
+	TFile *file = 0;
+	file = TFile::Open(fileName, "read");
+	if (!file || file->IsZombie()) {
+	   cerr << "Cannot open file: " << fileName << endl;
+	   return 0;
+	}
+	// -- Extract Histogram of the no losses case
+	const char* noLossesHistName = "VolumeAveragedFieldNoLosses;1";
+	TH1F *noLossesHistogram = new TH1F();
+   file->GetObject(noLossesHistName, noLossesHistogram);
+	if (noLossesHistogram == NULL) {
+		cerr << "Could not find required histogram: " << noLossesHistName << endl;
+		return kFALSE;
+	}
+	// -- Extract Histogram of case with losses
+	const char* lossesHistName = "VolumeAveragedFieldLosses;1";
+	TH1F *lossesHistogram = new TH1F();
+   file->GetObject(lossesHistName, lossesHistogram);
+	if (lossesHistogram == NULL) {
+		cerr << "Could not find required histogram: " << lossesHistName << endl;
+		return kFALSE;
+	}
+	// -- Draw Histograms
+	TCanvas* canvas = new TCanvas("VolumeAveragedFieldCanvas","Volume Averaged Field",60,0,600,600);
+	canvas->Divide(1,2);
+	canvas->cd(1);
+	noLossesHistogram->Draw("");
+	canvas->cd(2);
+	lossesHistogram->Draw("");
+	
+	return kTRUE;
+}
+
 
 // -------------------------------------------------------------------------------------- 
 Double_t densityf(Double_t* x, Double_t* par)
