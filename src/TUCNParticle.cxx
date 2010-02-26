@@ -211,9 +211,12 @@ Double_t TUCNParticle::Mass_GeV_c2() const
 Bool_t TUCNParticle::IsLostToWall(TUCNGeoMaterial* wall, const Double_t* normal) const
 {
 // Calculate whether particle will be absorbed/upscattered by the wall
-	return kFALSE;
 	Double_t fermiPotential = wall->FermiPotential();
 	Double_t eta = wall->Eta();
+	if (eta == 0.0) {
+		// No wall losses implemented
+		return kFALSE;
+	}
 //	cout << "Material: " << wall->GetName() << "\t" << "eta: " << eta << "\t" <<  "fermiPotential: " << fermiPotential << "\t" << endl;
 //	cout << "nx: " << this->DirX() << "\t" << "ny: " << this->DirY() << "\t" << "nz: " << this->DirZ() << endl;
 //	cout << "normx: " << normal[0] << "\t" << "normy: " << normal[1] << "\t" << "normz: " << normal[2] << endl;	
