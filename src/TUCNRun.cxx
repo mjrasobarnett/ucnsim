@@ -1557,8 +1557,8 @@ Bool_t TUCNRun::DiffuseBounce(Double_t* dir, const Double_t* norm)
 	#ifdef VERBOSE_MODE	
 		cout << "----------------------------" << endl;
 		cout << "Diffuse Bounce" << endl;
-		cout << "BEFORE - nx: " << dir[0] << "\t" << "nx: " << dir[1] << "\t" << "nx: " << dir[2] << endl;
-		cout << "normx: " << norm[0] << "\t" << "normx: " << norm[1] << "\t" << "normx: " << norm[2] << endl;
+		cout << "BEFORE - nx: " << dir[0] << "\t" << "ny: " << dir[1] << "\t" << "nz: " << dir[2] << endl;
+		cout << "normx: " << norm[0] << "\t" << "normy: " << norm[1] << "\t" << "normz: " << norm[2] << endl;
 	#endif	
 	
 	// First we need to pick random angles to choose the orientation of our diffuse direction vector. 
@@ -1587,6 +1587,8 @@ Bool_t TUCNRun::DiffuseBounce(Double_t* dir, const Double_t* norm)
 	if (TMath::Abs(upAxis.Dot(localNorm)) > fgTolerance) {
 		upAxis.SetXYZ(1.,0.,0.);
 		if (TMath::Abs(upAxis.Dot(localNorm)) > fgTolerance) {
+			cout << "Axis X: " << upAxis.X() << "\t" <<  "Y: " << upAxis.Y() << "\t" <<   "Z: " << upAxis.Z() << endl;
+			cout << "LocalNorm X: " << localNorm.X() << "\t" <<  "Y: " << localNorm.Y() << "\t" <<   "Z: " << localNorm.Z() << endl;
 			throw runtime_error("In TUCNRun::DiffuseBounce - Could not find an axis perpendicular to normal. Normal is parallel to z and x axes!!!");
 		}
 	}
