@@ -20,9 +20,8 @@ class TUCNRunManager : public TNamed
 
 protected:
 	TUCNRunManager(const TUCNRunManager&); 
- 	TUCNRunManager& operator=(const TUCNRunManager&);
-	
-	TUCNGeoManager*				fManager;
+	TUCNRunManager& operator=(const TUCNRunManager&);
+
 	TObjArray*						fRuns;
 	
 public:
@@ -33,9 +32,7 @@ public:
 	virtual ~TUCNRunManager();
 
 	// -- methods
-	TUCNGeoManager* 		GetGeoManager() const {return fManager;} 
 	void						InitialiseGeometry();
-	
 	Int_t						GetNumberOfRuns() const {return fRuns->GetEntries();}
 	TUCNRun*					GetRun(Int_t index) const;
 	void						CreateRuns(Int_t numberOfRuns);

@@ -41,14 +41,12 @@ TUCNRunManager::TUCNRunManager()
 {
 // -- Default constructor
    Info("TUCNRunManager", "Constructor");
-	fManager = new TUCNGeoManager("GeoManager", "Geometry Manager");
 	fRuns = new TObjArray();
 } 
 
 //_____________________________________________________________________________
 TUCNRunManager::TUCNRunManager(const TUCNRunManager& runm)
 					:TNamed(runm),
-					 fManager(runm.fManager),
 					 fRuns(runm.fRuns)
 {
 // -- Copy Constructor
@@ -61,7 +59,6 @@ TUCNRunManager& TUCNRunManager::operator=(const TUCNRunManager& runm)
 // --assignment operator
 	if(this!=&runm) {
       TNamed::operator=(runm);
-		fManager = runm.fManager;
 		fRuns = runm.fRuns;
 	}
    return *this;
@@ -72,7 +69,6 @@ TUCNRunManager::~TUCNRunManager()
 { 
 // -- Destructor
 	Info("TUCNRunManager", "Destructor");
-	if (fManager) fManager->Delete();
 	if (fRuns) fRuns->Delete();
 }
 
@@ -105,7 +101,7 @@ void TUCNRunManager::InitialiseGeometry()
 	// -- Define Mag Field
 //	TUCNUniformMagField* magField = new TUCNUniformMagField("Uniform magnetic field", 0.0,1.0,1.0);
 	TUCNParabolicMagField* magField = new TUCNParabolicMagField("Parabolic magnetic field",0.1,1.0,0.235);
-	fManager->AddMagField(magField);
+	static_cast<TUCNGeoManager*>(gGeoManager)->AddMagField(magField);
 }
 
 //______________________________________________________________________________
@@ -121,6 +117,7 @@ void TUCNRunManager::CreateRuns(Int_t numberOfRuns)
 		Char_t name[10], title[20];
 		sprintf(name,"run%d",i); 
 		sprintf(title,"Run no:%d",i);
+		cerr << "Creating Run: " << name << "\t" << "Title: " << title << endl;
 		Int_t index = this->GetNumberOfRuns();
 		TUCNRun* newRun = new TUCNRun(name, title);
 	   fRuns->AddAtAndExpand(newRun , index);
@@ -132,6 +129,7 @@ void	TUCNRunManager::WriteToFile(TFile* file)
 {
 	assert(file->IsOpen());
 	cout << "Writing data to file: " << file->GetName() << endl;
+	gGeoManager->Write();
 	this->Write();
 	//fRuns->Write();
 	file->Close();

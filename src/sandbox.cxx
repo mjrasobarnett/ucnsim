@@ -66,7 +66,7 @@ Int_t ucnstandalone() {
 	// -- Geometry Creation
 	
 	TUCNRunManager* runManager = new TUCNRunManager();
-	TUCNGeoManager* geoManager = runManager->GetGeoManager();
+	TUCNGeoManager* geoManager = new TUCNGeoManager("GeoManager", "Geometry Manager");
 	
 	Int_t numberOfRuns = 1;
 	// Need to Add the runs before we initialise the geometry (because we create the navigators with each run). 

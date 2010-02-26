@@ -56,18 +56,31 @@ Int_t main(Int_t argc,Char_t **argv)
 	while ((key=(TKey*)next())) {
 		printf("key: %s points to an object of class: %s at %i , with cycle number: %i \n", key->GetName(), key->GetClassName(),key->GetSeekKey(),key->GetCycle());
 	}
+	
 	// Get the RunManager From the File
+	TUCNGeoManager* geoManager = 0;
+	file->GetObject("GeoManager;1", geoManager);
+	
+	file->ls();
+	
+	
 	TUCNRunManager* runManager = 0;
 	file->GetObject("RunManager;1", runManager);
-		
+	
+	gGeoManager->Print();
+	
+	file->ls();
+	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// Draw Final Positions 
 	TCanvas * canvas1 = new TCanvas("canvas1", "Final Particle Positions", 800, 10, 600, 600);
-	TPolyMarker3D* finalPoints = new TPolyMarker3D(runManager->GetGeoManager()->GetNtracks(), 1);
+	TPolyMarker3D* finalPoints = new TPolyMarker3D(gGeoManager->GetNtracks(), 1);
 	runManager->GetRun(0)->DrawParticles(canvas1, finalPoints);
 
 	cout << "RunManager: " << runManager << endl;
-	cout << "GeoManager: " << runManager->GetGeoManager() << endl;
+	cout << "GeoManager: " << gGeoManager << endl;
+	
+	file->ls();
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 /*	// -- FITTING 
@@ -259,6 +272,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	lossf->GetYaxis()->SetTitle("Loss Probability");
 	
 	theApp->Run();
+	
 	return 0;
 }	
 
