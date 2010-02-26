@@ -33,6 +33,7 @@ TUCNParticle::TUCNParticle()
 	fDiffuseBounces = 0;
 	fAvgMagField = 0.0;
 	fFieldPointsSampled = 0;
+	fInitialSeed = 0;
 }
 
 
@@ -54,6 +55,7 @@ TUCNParticle::TUCNParticle(Double_t* pos, Double_t* mom, Double_t kineticEnergy,
 	fDiffuseBounces = 0;
 	fAvgMagField = 0.0;
 	fFieldPointsSampled = 0;
+	fInitialSeed = 0;
 }
 
 //_____________________________________________________________________________
@@ -67,7 +69,8 @@ TUCNParticle::TUCNParticle(const TUCNParticle& part)
 				  fSpecularBounces(part.fSpecularBounces),
 				  fDiffuseBounces(part.fDiffuseBounces),
 				  fAvgMagField(part.fAvgMagField),
-				  fFieldPointsSampled(part.fFieldPointsSampled)
+				  fFieldPointsSampled(part.fFieldPointsSampled),
+				  fInitialSeed(part.fInitialSeed)
 {
 // -- Copy Constructor
 	Info("TUCNParticle", "Copy Constructor");
@@ -88,6 +91,7 @@ TUCNParticle& TUCNParticle::operator=(const TUCNParticle& part)
 		fDiffuseBounces = part.fDiffuseBounces;
 		fAvgMagField = part.fAvgMagField;
 		fFieldPointsSampled = part.fFieldPointsSampled;
+		fInitialSeed = part.fInitialSeed;
 	}
 	return *this;
 }

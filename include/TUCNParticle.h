@@ -35,6 +35,8 @@ private:
 	Double_t						fAvgMagField;
 	Int_t							fFieldPointsSampled;
 	
+	Int_t							fInitialSeed;
+	
 public:
 	// -- constructors
    TUCNParticle();
@@ -81,6 +83,9 @@ public:
 	
 	void						SampleMagField(const Double_t integratedField, const Double_t stepTime);
 	Double_t					AvgMagField() const {return fAvgMagField;}
+	
+	void						SetInitialSeed(const Int_t seed) {fInitialSeed = seed;}
+	Int_t						GetInitialSeed() const {return fInitialSeed;}
 	
    ClassDef(TUCNParticle,1)   // Ultra-Cold Neutron
 };
