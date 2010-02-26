@@ -1323,8 +1323,8 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 	currentDir[2] = currentVelocity[2]/velocityMag;
 	gGeoManager->GetCurrentNavigator()->SetCurrentDirection(currentDir);
 	
-	gGeoManager->GetCurrentNavigator()->SetStep(gGeoManager->GetCurrentNavigator()->GetStep() + extra);
-	this->SetStepTime(this->GetStepTime() + extra);
+	gGeoManager->GetCurrentNavigator()->SetStep(gGeoManager->GetCurrentNavigator()->GetStep());
+	this->SetStepTime(this->GetStepTime());
 	
 	// *********************************************************************
 	// -- BRANCH 4
