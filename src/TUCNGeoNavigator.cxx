@@ -983,7 +983,7 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 		assert(stepSuccess == kTRUE);
 		
 		// -- Sample Field
-		particle->SampleMagField(magField, stepNumber);
+//		particle->SampleMagField(magField, stepNumber);
 		
 		// -- Determine Particle destination
 		// Has lost flag been set?
@@ -1151,10 +1151,12 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* field)
 	
 	// -- Get the current material we are in to determine what to do next
 	TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(this->GetCurrentNode()->GetMedium()->GetMaterial());
-	
 	// -- Determine what to do if we are on a boundary
 	// -- Is Track on the surface of a boundary?
 	if (currentMaterial->IsTrackingMaterial() == kFALSE) {
+		#ifdef VERBOSE_MODE	
+			cout << "On Boundary - Deciding what action to take..." << endl;
+		#endif
 		// -- Are we on the surface of a detector?
 		if (currentMaterial->IsDetectorMaterial() == kTRUE) {
 			// -- Was particle detected?

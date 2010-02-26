@@ -32,8 +32,7 @@ public:
 	virtual ~TUCNRunManager();
 
 	// -- methods
-	void						InitialiseGeometry();
-	Int_t						GetNumberOfRuns() const {return fRuns->GetEntries();}
+	Int_t						NumberOfRuns() const {return fRuns->GetEntries();}
 	TUCNRun*					GetRun(Int_t index) const;
 	void						CreateRuns(Int_t numberOfRuns);
 	void						WriteToFile(TFile* file);
