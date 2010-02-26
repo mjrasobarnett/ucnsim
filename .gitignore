@@ -5,3 +5,6 @@ bin/*
 UCNDict.*
 *.txt
 *.root
+*.log
+*.aux
+*.gz
