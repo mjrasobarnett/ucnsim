@@ -113,9 +113,10 @@ class TUCNRun : public TNamed
 		// Track Propagation methods
 		TGeoNode*					FindNextDaughterBoundaryAlongParabola(Double_t* point, Double_t* velocity, 
 																								Double_t* field, Int_t &idaughter, Bool_t compmatrix=kFALSE);
-	 	TGeoNode*					FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track, TUCNGravField* field,
-	 																							Double_t stepTime, Bool_t compsafe=kFALSE);
-
+		TGeoNode*					FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track, TUCNGravField* field,
+																								Double_t stepTime, Bool_t compsafe=kFALSE);
+		TGeoNode*					FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGravField* field, Double_t stepTime);
+		
 		Double_t                DetermineNextStepTime(TUCNParticle* particle, const Double_t maxStepTime, const Double_t runTime=0.);
 		Double_t 					GetStepTime() const {return fStepTime;}
 		void							SetStepTime(Double_t stepTime); 

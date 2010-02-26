@@ -507,6 +507,12 @@ Double_t* TUCNRun::FindUCNNormal()
 }
 
 //_____________________________________________________________________________
+TGeoNode* TUCNRun::FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGravField* field, Double_t stepTime)
+{
+	return 0;
+}
+
+//_____________________________________________________________________________
 TGeoNode* TUCNRun::FindNextDaughterBoundaryAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, Int_t &idaughter, Bool_t compmatrix)
 {
 // Computes as fStep the distance to next daughter of the current volume. 
