@@ -46,6 +46,7 @@ Bool_t DrawInitialAndFinalPositions(const char* fileName, TGeoManager* geoManage
 Bool_t DrawInitialAndFinalDirections(const char* fileName, TGeoManager* geoManager); 
 Bool_t DrawBadTrack(const char* badTrackFileName, TGeoManager* geoManager); 
 
+// -------------------------------------------------------------------------------------- 
 Int_t plot_finalpositions(const char* geomFileName, const char* dataFileName, const char* badTrackFileName = 0) {
 	
 	// -- Import Geometry

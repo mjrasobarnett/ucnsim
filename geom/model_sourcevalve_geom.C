@@ -63,7 +63,7 @@ Int_t simulation_geom() {
    Double_t valveVolEntranceRMin = 0., valveVolEntranceRMax = 31.5*Units::mm, valveVolEntranceHalfLength = 46.*Units::mm;
    TGeoVolume *valveVolEntrance = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("ValveVolEntrance", 
    											vacuum, valveVolEntranceRMin, valveVolEntranceRMax, valveVolEntranceHalfLength);
-   valveVolEntrance->SetLineColor(kTeal-3);
+   valveVolEntrance->SetLineColor(kBlue-3);
    valveVolEntrance->SetLineWidth(1);
    valveVolEntrance->SetVisibility(kTRUE);
    valveVolEntrance->SetTransparency(20);
@@ -74,6 +74,7 @@ Int_t simulation_geom() {
    TGeoTranslation valveVolEntranceTra("ValveVolEntranceTra",0.,valveVolEntranceDisplacement,0.); // x, y, z
    TGeoCombiTrans valveVolEntranceCom(valveVolEntranceTra,valveVolEntranceRot);
    TGeoHMatrix valveVolEntranceMat = valveVolEntranceCom;
+   valveVolEntranceMat.SetName("ValveVolEntranceMat");
    chamber->AddNode(valveVolEntrance, 1, new TGeoHMatrix(valveVolEntranceMat));
    
    // -------------------------------------
@@ -81,7 +82,7 @@ Int_t simulation_geom() {
    Double_t valveVolFrontRMin = 0., valveVolFrontRMax = 31.5*Units::mm, valveVolFrontHalfLength = 12.75.*Units::mm;
    TGeoVolume *valveVolFront = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("ValveVolFront", 
    											vacuum, valveVolFrontRMin, valveVolFrontRMax, valveVolFrontHalfLength);
-   valveVolFront->SetLineColor(kTeal-4);
+   valveVolFront->SetLineColor(kTeal-8);
    valveVolFront->SetLineWidth(1);
    valveVolFront->SetVisibility(kTRUE);
    valveVolFront->SetTransparency(20);
@@ -117,17 +118,17 @@ Int_t simulation_geom() {
    // -- Define the Bend Entrance segment
    Double_t bendEntranceAngle = 0.0;
    Double_t bendEntranceZDisplacement = bendEntranceHalfZ;
-   TGeoRotation bendEntranceRot("ValveVolBackRot",0,bendEntranceAngle,0); // phi, theta, psi
-   TGeoTranslation bendEntranceTra("ValveVolBackTra",0.,0.,-bendEntranceZDisplacement); // x, y, z
+   TGeoRotation bendEntranceRot("BendEntranceRot",0,bendEntranceAngle,0); // phi, theta, psi
+   TGeoTranslation bendEntranceTra("BendEntranceTra",0.,0.,-bendEntranceZDisplacement); // x, y, z
    TGeoCombiTrans bendEntranceCom(bendEntranceTra,bendEntranceRot);
    TGeoHMatrix bendEntranceMat = bendEntranceCom;
    TGeoHMatrix *bendEntranceMatrix = new TGeoHMatrix(bendEntranceMat);
    bendEntranceMatrix->SetName("BendEntranceMatrix");
    bendEntranceMatrix->RegisterYourself();
    // -- Create the composite Valve volume
-   TUCNGeoCompositeShape *valveVolShape = new TUCNGeoCompositeShape("ValveVol","((BendEntrance:BendEntranceMatrix - ValveVolBack:ValveVolBackMatrix) + ValveVolBack:ValveVolBackMatrix)");
+   TUCNGeoCompositeShape *valveVolShape = new TUCNGeoCompositeShape("ValveVol","(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
    TGeoVolume * valveVol = new TGeoVolume("ValveVol",valveVolShape,vacuum);
-   valveVol->SetLineColor(kTeal-5);
+   valveVol->SetLineColor(kYellow-5);
    valveVol->SetLineWidth(1);
    valveVol->SetVisibility(kTRUE);
    valveVol->SetTransparency(20);// -- Define the Valve volume transformation
@@ -198,7 +199,7 @@ Int_t visualisation_geom() {
    Double_t valveVolEntranceRMin = 0., valveVolEntranceRMax = 31.5*Units::mm, valveVolEntranceHalfLength = 46.*Units::mm;
    TGeoVolume *valveVolEntrance = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("ValveVolEntrance", 
    											vacuum, valveVolEntranceRMin, valveVolEntranceRMax, valveVolEntranceHalfLength);
-   valveVolEntrance->SetLineColor(kTeal-3);
+   valveVolEntrance->SetLineColor(kBlue-3);
    valveVolEntrance->SetLineWidth(1);
    valveVolEntrance->SetVisibility(kTRUE);
    valveVolEntrance->SetTransparency(20);
@@ -209,14 +210,15 @@ Int_t visualisation_geom() {
    TGeoTranslation valveVolEntranceTra("ValveVolEntranceTra",0.,valveVolEntranceDisplacement,0.); // x, y, z
    TGeoCombiTrans valveVolEntranceCom(valveVolEntranceTra,valveVolEntranceRot);
    TGeoHMatrix valveVolEntranceMat = valveVolEntranceCom;
+   valveVolEntranceMat.SetName("ValveVolEntranceMat");
    chamber->AddNode(valveVolEntrance, 1, new TGeoHMatrix(valveVolEntranceMat));
-
+   
    // -------------------------------------
    // -- Valve volume front - this is what the valve press against
    Double_t valveVolFrontRMin = 0., valveVolFrontRMax = 31.5*Units::mm, valveVolFrontHalfLength = 12.75.*Units::mm;
    TGeoVolume *valveVolFront = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("ValveVolFront", 
    											vacuum, valveVolFrontRMin, valveVolFrontRMax, valveVolFrontHalfLength);
-   valveVolFront->SetLineColor(kTeal-4);
+   valveVolFront->SetLineColor(kTeal-8);
    valveVolFront->SetLineWidth(1);
    valveVolFront->SetVisibility(kTRUE);
    valveVolFront->SetTransparency(20);
@@ -228,7 +230,7 @@ Int_t visualisation_geom() {
    TGeoCombiTrans valveVolFrontCom(valveVolFrontTra,valveVolFrontRot);
    TGeoHMatrix valveVolFrontMat = valveVolFrontCom;
    chamber->AddNode(valveVolFront, 1, new TGeoHMatrix(valveVolFrontMat));
-
+   
    // -------------------------------------
    // -- Valve volume - this is what the valve sits in
    // -- This is joined together with the start of the bend volume to make a composite volume
@@ -252,17 +254,17 @@ Int_t visualisation_geom() {
    // -- Define the Bend Entrance segment
    Double_t bendEntranceAngle = 0.0;
    Double_t bendEntranceZDisplacement = bendEntranceHalfZ;
-   TGeoRotation bendEntranceRot("ValveVolBackRot",0,bendEntranceAngle,0); // phi, theta, psi
-   TGeoTranslation bendEntranceTra("ValveVolBackTra",0.,0.,-bendEntranceZDisplacement); // x, y, z
+   TGeoRotation bendEntranceRot("BendEntranceRot",0,bendEntranceAngle,0); // phi, theta, psi
+   TGeoTranslation bendEntranceTra("BendEntranceTra",0.,0.,-bendEntranceZDisplacement); // x, y, z
    TGeoCombiTrans bendEntranceCom(bendEntranceTra,bendEntranceRot);
    TGeoHMatrix bendEntranceMat = bendEntranceCom;
    TGeoHMatrix *bendEntranceMatrix = new TGeoHMatrix(bendEntranceMat);
    bendEntranceMatrix->SetName("BendEntranceMatrix");
    bendEntranceMatrix->RegisterYourself();
    // -- Create the composite Valve volume
-   TGeoCompositeShape *valveVolShape = new TGeoCompositeShape("ValveVol","((BendEntrance:BendEntranceMatrix - ValveVolBack:ValveVolBackMatrix) + ValveVolBack:ValveVolBackMatrix)");
+   TGeoCompositeShape *valveVolShape = new TGeoCompositeShape("ValveVol","(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
    TGeoVolume * valveVol = new TGeoVolume("ValveVol",valveVolShape,vacuum);
-   valveVol->SetLineColor(kTeal-5);
+   valveVol->SetLineColor(kYellow-5);
    valveVol->SetLineWidth(1);
    valveVol->SetVisibility(kTRUE);
    valveVol->SetTransparency(20);// -- Define the Valve volume transformation

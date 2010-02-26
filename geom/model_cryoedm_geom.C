@@ -147,8 +147,8 @@ Int_t simulation_geom() {
 	// -- Define the Bend Entrance segment
 	Double_t bendEntranceAngle = 0.0;
 	Double_t bendEntranceZDisplacement = bendEntranceHalfZ;
-	TGeoRotation bendEntranceRot("ValveVolBackRot",0,bendEntranceAngle,0); // phi, theta, psi
-	TGeoTranslation bendEntranceTra("ValveVolBackTra",0.,0.,-bendEntranceZDisplacement); // x, y, z
+	TGeoRotation bendEntranceRot("BendEntranceRot",0,bendEntranceAngle,0); // phi, theta, psi
+	TGeoTranslation bendEntranceTra("BendEntranceTra",0.,0.,-bendEntranceZDisplacement); // x, y, z
 	TGeoCombiTrans bendEntranceCom(bendEntranceTra,bendEntranceRot);
 	TGeoHMatrix bendEntranceMat = bendEntranceCom;
 	TGeoHMatrix *bendEntranceMatrix = new TGeoHMatrix(bendEntranceMat);
