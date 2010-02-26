@@ -1610,6 +1610,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		Double_t tempLocalPoint[3] = {0.,0.,0.};
 		initialMatrix->MasterToLocal(currentGlobalPoint,&tempLocalPoint[0]);
 		cout << "X:" << tempLocalPoint[0] << "\t" << "Y:" << tempLocalPoint[1] << "\t" << "Z:" << tempLocalPoint[2] << endl;
+		cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(tempLocalPoint[0]*tempLocalPoint[0] + tempLocalPoint[1]*tempLocalPoint[1]) << endl;
 		cout << "Initial Node Contains Current Point: " << initialNode->GetVolume()->GetShape()->Contains(tempLocalPoint) << endl;
 		cout << "-----------------------------" << endl;
 		cout << "Initial is Parent of Final: " << (nextNode->GetMotherVolume() == initialNode->GetVolume() ? 1 : 0) << endl;
@@ -1641,16 +1642,37 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			
 			// At this point we know that the point is contained by the current volume, but therefore, there must be a
 			// daughter volume that contains the point as well. 
-			
 			// If we are sitting right on the boundary, so that the current point is still contained by the initialnode
 			// Lets try making a tiny step along our current path, so that we are within the current volume
-			Double_t point[3] = {particle->Vx(), particle->Vy(), particle->Vz()};
-			point[0] += particle->VelocityX()*TGeoShape::Tolerance(); 
-		   point[1] += particle->VelocityY()*TGeoShape::Tolerance(); 
-		   point[2] += particle->VelocityZ()*TGeoShape::Tolerance();
+			cout << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
+			Double_t point[3] = {navigator->GetCurrentPoint()[0], navigator->GetCurrentPoint()[1], navigator->GetCurrentPoint()[2]};
+			// To do this we shall use the normal vector of the current boundary
+			Double_t dir[3] = {navigator->GetCurrentDirection()[0], navigator->GetCurrentDirection()[1], navigator->GetCurrentDirection()[2]};
+			// -- Get the normal vector to the boundary
+			Double_t* normal = this->FindUCNNormal();
+			Double_t norm[3] = {normal[0], normal[1], normal[2]};
+			// Check if the normal vector is pointing along or against our current path
+			Double_t dotProduct = dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2];
+			if (dotProduct < 0.) {
+				// Normal is pointing in the opposite direction to our current track so reflect the normal to get the correct direction
+				norm[0] = -norm[0];
+				norm[1] = -norm[1];
+				norm[2] = -norm[2];
+			}
+			cout << "Normal To Boundary aligned with Current Direction: " << endl;
+			cout << "X:" << norm[0] << "\t" << "Y:" << norm[1] << "\t" << "Z:" << norm[2] << endl;
+			point[0] += norm[0]*TGeoShape::Tolerance(); 
+		   point[1] += norm[1]*TGeoShape::Tolerance(); 
+		   point[2] += norm[2]*TGeoShape::Tolerance();
+			// Update point in the navigator
 			navigator->SetCurrentPoint(point);
 			currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
-			
+			cout << "Global Point after micro-step: ";
+			cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
+			initialMatrix->MasterToLocal(currentGlobalPoint,&nextLocalPoint[0]);
+			cout << "Point Local to initial volume after micro-step: ";
+			cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
+			cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(nextLocalPoint[0]*nextLocalPoint[0] + nextLocalPoint[1]*nextLocalPoint[1]) << endl;
 			if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
 				Error("MakeStep","2. Next Point is STILL not contained in Current Node, according to Navigator::IsSameLocation");
 				cout << "Current Node: " << nextNode->GetName() << endl;
@@ -1660,6 +1682,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 				cout << "Find Node Result: "    << navigator->FindNode()->GetName() << endl;
 				return kFALSE;
 			}
+			cout << "Particle is now correctly located in: " << navigator->GetCurrentNode()->GetName() << endl;
 		}
 	// -- We should now have propagated our point by some stepsize and be inside the correct volume 
 	}
@@ -1672,7 +1695,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 
 	// -- Get the current material we are in to determine what to do next
 	TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(navigator->GetCurrentVolume()->GetMedium()->GetMaterial());
-
+	
 	// -- Get the normal vector to the boundary
 	Double_t* normal = 0;
 	if (gravField) {
@@ -1680,7 +1703,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 	} else {
 		normal = navigator->FindNormal();
 	}
-	
+		
 	// -- Determine what to do if we are on a boundary
 	// -- Is Track on the surface of a boundary?
 	if (currentMaterial->IsTrackingMaterial() == kFALSE) {
@@ -1756,13 +1779,31 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 				// Now, we know that the point is not in the volume that it should be, and that volume may not actually contain the point.
 				// Either way, we will now make a microstep back along the way we came (since the direction has been reversed)
 				cout << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
-				Double_t point[3] = {particle->Vx(), particle->Vy(), particle->Vz()};
-				point[0] += particle->VelocityX()*TGeoShape::Tolerance(); 
-			   point[1] += particle->VelocityY()*TGeoShape::Tolerance(); 
-			   point[2] += particle->VelocityZ()*TGeoShape::Tolerance();
+				Double_t point[3] = {navigator->GetCurrentPoint()[0], navigator->GetCurrentPoint()[1], navigator->GetCurrentPoint()[2]};
+				// To do this we shall use the normal vector of the current boundary
+				Double_t dir[3] = {navigator->GetCurrentDirection()[0], navigator->GetCurrentDirection()[1], navigator->GetCurrentDirection()[2]};
+				Double_t norm[3] = {normal[0], normal[1], normal[2]};
+				// Check if the normal vector is pointing along or against our current path
+				Double_t dotProduct = dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2];
+				if (dotProduct < 0.) {
+					// Normal is pointing in the opposite direction to our current track so reflect the normal to get the correct direction
+					norm[0] = -norm[0];
+					norm[1] = -norm[1];
+					norm[2] = -norm[2];
+				}
+				cout << "Normal To Boundary aligned with Current Direction: " << endl;
+				cout << "X:" << norm[0] << "\t" << "Y:" << norm[1] << "\t" << "Z:" << norm[2] << endl;
+				point[0] += norm[0]*2.0*TGeoShape::Tolerance(); 
+			   point[1] += norm[1]*2.0*TGeoShape::Tolerance(); 
+			   point[2] += norm[2]*2.0*TGeoShape::Tolerance();
+				// Update point in the navigator
 				navigator->SetCurrentPoint(point);
 				currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
-
+				cout << "Global Point after micro-step: ";
+				cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
+				navigator->GetCurrentMatrix()->MasterToLocal(currentGlobalPoint,&nextLocalPoint[0]);
+				cout << "Local Point after micro-step: ";
+				cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
 				if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
 					Error("MakeStep","3. Final Point is STILL not contained in Current Node, according to Navigator::IsSameLocation");
 					cout << "Current Node: " << finalNode->GetName() << endl;
