@@ -1559,9 +1559,15 @@ Double_t TUCNGeoTube::InsideTimeToRBoundary(const Double_t* point, const Double_
 	// Now if the onBoundary flag is set, and our current radius is within 1E-9 of the boundary,
 	// we will put this down to being the case of sitting on this boundary, and therefore set e = 0;
 	if (TMath::Abs(rCurrent - rBoundary) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+		#ifdef VERBOSE_MODE				
+			cout << "InsideTimeToRBoundary - Rounding Down  e: " << e << " to zero." << endl;
+		#endif
 		e = 0.0;
 	}
 	if (TMath::Abs(e) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+		#ifdef VERBOSE_MODE				
+			cout << "InsideTimeToRBoundary - Rounding Down  e: " << e << " to zero." << endl;
+		#endif
 		e = 0.0;
 	}
 	
@@ -1571,18 +1577,30 @@ Double_t TUCNGeoTube::InsideTimeToRBoundary(const Double_t* point, const Double_
 	if (TMath::Abs(a) < TGeoShape::Tolerance()) {
 		// a = 0 if the field component in the x-y plane is zero
 		// This happens if the tube is not rotated and is aligned with the field (conventially set along the z-axis)
+		#ifdef VERBOSE_MODE				
+			cout << "InsideTimeToRBoundary - Rounding Down a: " << a << " to zero." << endl;
+		#endif
 		a = 0.;
 	}
 	if (TMath::Abs(b) < TGeoShape::Tolerance()) {
 		// b = 0 if the velocity or field component in the x-y plane is zero (i.e it wont hit the boundary anyway)
+		#ifdef VERBOSE_MODE				
+			cout << "InsideTimeToRBoundary - Rounding Down b: " << b << " to zero." << endl;
+		#endif
 		b = 0.;
 	}
 	if (TMath::Abs(c) < TGeoShape::Tolerance()) {
 		// c = 0 if the velocity and field components in the x-y plane are zero (i.e it wont hit the boundary anyway)
+		#ifdef VERBOSE_MODE				
+			cout << "InsideTimeToRBoundary - Rounding Down c: " << c << " to zero." << endl;
+		#endif
 		c = 0.;
 	}
 	if (TMath::Abs(d) < TGeoShape::Tolerance()) {
 		// d = 0 if the velocity components in the x-y plane are zero (i.e it wont hit the boundary anyway)
+		#ifdef VERBOSE_MODE				
+			cout << "InsideTimeToRBoundary - Rounding Down d: " << d << " to zero." << endl;
+		#endif
 		d = 0.;
 	}
 	

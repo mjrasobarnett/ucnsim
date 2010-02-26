@@ -1387,6 +1387,9 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
    if (icrossed == -1) {
       #ifdef VERBOSE_MODE		
 			cout << "FNBASAP - Branch 4. On Boundary. Crossing boundary and locating." << endl;
+			cout << "FNBASAP - Get Level: " << gGeoManager->GetCurrentNavigator()->GetLevel() << endl;
+			cout << "FNBASAP - Current Node: " << gGeoManager->GetCurrentNode()->GetName() << endl;
+			
 		#endif
 		skip = gGeoManager->GetCurrentNavigator()->GetCurrentNode();
       is_assembly = gGeoManager->GetCurrentNavigator()->GetCurrentNode()->GetVolume()->IsAssembly();
@@ -1405,7 +1408,7 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 		}
 		TGeoNode* finalNode = gGeoManager->GetCurrentNavigator()->CrossBoundaryAndLocate(kFALSE, skip);
 		#ifdef VERBOSE_MODE		
-      	cout << "FNBASAP - Final Node: " << finalNode->GetName() << endl;
+			cout << "FNBASAP - Final Node: " << finalNode->GetName() << endl;
 			cout << "---------------------------------------" << endl;
 		#endif
 		return finalNode;
