@@ -25,7 +25,7 @@ protected:
 	
 public:
 	TUCNUniformMagField();
-	TUCNUniformMagField(Double_t Bx, Double_t By, Double_t Bz);
+	TUCNUniformMagField(const char *name, Double_t Bx, Double_t By, Double_t Bz);
    virtual ~TUCNUniformMagField();
    
 	virtual void Field(const Double_t *pos, Double_t *field);

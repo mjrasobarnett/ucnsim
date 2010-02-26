@@ -14,8 +14,8 @@ TUCNUniformMagField::TUCNUniformMagField()
 } 
 
 //_____________________________________________________________________________
-TUCNUniformMagField::TUCNUniformMagField(Double_t Bx, Double_t By, Double_t Bz)
-						  :TUCNMagField("Uniform magnetic field")
+TUCNUniformMagField::TUCNUniformMagField(const char *name, Double_t Bx, Double_t By, Double_t Bz)
+						  :TUCNMagField(name)
 {
 // Default constructor.
 	Info("TUCNUniformMagField", "Constructor");
