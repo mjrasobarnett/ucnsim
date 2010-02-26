@@ -204,8 +204,12 @@ Bool_t TUCNExperiment::BuildGeometry(TUCNConfigFile* configFile)
 	if (sourceVolumeName == "") { Error("BuildGeometry","No SourceVolume has been specified"); return kFALSE; }
 	TString sourceMatrixName = configFile->GetString("SourceMatrix","Geometry");
 	if (sourceMatrixName == "") { Error("BuildGeometry","No SourceMatrix has been specified"); return kFALSE; }
-	this->SetSourceVolume(this->GeoManager()->FindVolumeFast(sourceVolumeName));
-	this->SetSourceMatrix(static_cast<TGeoMatrix*>(this->GeoManager()->GetListOfMatrices()->FindObject(sourceMatrixName)));
+   TGeoVolume* sourceVolume = this->GeoManager()->FindVolumeFast(sourceVolumeName);
+	if (sourceVolume == 0) { Error("BuildGeometry","No SourceVolume has been found for the name specified."); return kFALSE; }
+   TGeoMatrix* sourceMatrix = dynamic_cast<TGeoMatrix*>(this->GeoManager()->GetListOfMatrices()->FindObject(sourceMatrixName));
+	if (sourceMatrix == 0) { Error("BuildGeometry","No SourceMatrix has been found for the name specified."); return kFALSE; }
+   this->SetSourceVolume(sourceVolume);
+	this->SetSourceMatrix(sourceMatrix);
 	
 	return kTRUE;
 }
