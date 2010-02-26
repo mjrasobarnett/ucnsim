@@ -189,7 +189,43 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* co
 {
 	// -------------------------------------
 	// BUILDING GEOMETRY
+//	this->BuildVerticalTube(geoManager,configFile);
+	TString geomFileName = configFile->GetString("GeomFile","I/O");
+	TGeoManager::Import(geomFileName);
 	
+	// Read in value of FermiPotential
+	Double_t V = 0.0;
+	Double_t fermiPotentialneV  = configFile->GetFloat("FermiPotential(neV)", "Geometry")*Units::neV;
+	Double_t fermiPotentialm    = configFile->GetFloat("FermiPotential(m)", "Geometry")*Constants::height_equivalent_conversion;
+	// Determine which of these two values is zero (if any) and returning the remaining value.
+	if (fermiPotentialneV != 0.0) {
+		V = fermiPotentialneV;
+	} else if (fermiPotentialm != 0.0) {
+		V = fermiPotentialm; 
+	} else {
+		Warning("BuildGeometry","No value of the fermiPotential has been set! Aborting.");
+		return kFALSE;
+	}
+	// Check values were set
+	if (V == 0.0) {
+		cout << "Boundary Material FermiPotential, V, has not been set! Check ConfigFile and try again." << endl;
+		return kFALSE;
+	}
+	// Set boundary fermi potential
+	static_cast<TUCNGeoMaterial*>(this->GeoManager()->GetMaterial("Boundary Material"))->FermiPotential(V);
+	
+	this->SetSourceVolume(this->GeoManager()->FindVolumeFast("innerTube"));
+	this->SetSourceMatrix(static_cast<TGeoMatrix*>(this->GeoManager()->GetListOfMatrices()->FindObject("SourceMatrix")));
+	
+	this->GeoManager()->GetListOfNavigators()->Print();
+	
+	return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t TUCNExperiment::BuildVerticalTube(TGeoManager* geoManager, TUCNConfigFile* configFile)
+{
+// Build a Vertical Tube with dimensions relevant to Mike P's volume averaged magfield	
 	// Read in value of FermiPotential
 	Double_t V = 0.0;
 	Double_t fermiPotentialneV  = configFile->GetFloat("FermiPotential(neV)", "Geometry")*Units::neV;
@@ -261,6 +297,7 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* co
 	
 	// -- Arrange and close geometry
 	geoManager->CloseGeometry();
+	
 	return kTRUE;
 }
 
