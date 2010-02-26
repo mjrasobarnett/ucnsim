@@ -47,11 +47,8 @@
 using std::cout;
 using std::endl;
 
-Double_t total_energy = 200*neV;
-Double_t f = 0.000462963;
-
-Double_t lossFunc(Double_t* x, Double_t* par);
-Double_t densityf(Double_t* x, Double_t* par);
+Double_t total_energy = 200*neV;	
+Double_t densityf(Double_t*x, Double_t*par);
 
 Int_t main(Int_t argc,Char_t **argv)
 {
@@ -70,38 +67,11 @@ Int_t ucnstandalone() {
 	TUCNRunManager* runManager = new TUCNRunManager();
 	TUCNGeoManager* geoManager = runManager->GetGeoManager();
 	
-	Double_t height_equivalent_units = Constants::grav_acceleration*Constants::neutron_mass;
-	
-	Double_t observedLifetime = 150.*Units::s;
-	Double_t fermiPotential = (0.91*Units::m)*height_equivalent_units; 
-	Double_t totalEnergy = (0.52*Units::m)*height_equivalent_units;	
-	Double_t initialVelocity = TMath::Sqrt(2*totalEnergy/Constants::neutron_mass);
-	Double_t meanFreePath = 0.16*Units::m;
-	
-	Double_t V = fermiPotential;
-	Double_t E = totalEnergy;
-	cout << initialVelocity << endl;
-	
-	Double_t L = ((V/E)*TMath::ASin(TMath::Sqrt(E/V)) - TMath::Sqrt((V - E)/E));
-	cout << "E: " << E/Units::neV << "\t" << "V: " << V/Units::neV << "\t" << "E/V: " << E/V << "\t"<< "L: " << L << endl;
-	
-	Double_t f = meanFreePath/(initialVelocity*observedLifetime*L);
-	Double_t W = f*V;
-	cout << "f: " << f << "\t" << "W: " << W/Units::neV << endl;
-	
-	Double_t estimatedProbOfLoss = 2*f*L;
-	cout << "estimatedProbOfLoss: " << estimatedProbOfLoss << "\t" << "Av. number of collisions: " << 1./estimatedProbOfLoss << endl;
-	
-	
-	totalEnergy = 0.2*V;	
-	E = totalEnergy;
-	
-	
 	// Materials
-	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);
-	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0);
-	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", V, W);
-	
+	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0,0);
+	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0,0);
+	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0,0);
+
 	matTracking->IsTrackingMaterial(kTRUE);
 	matBlackHole->IsBlackHole(kTRUE);
 	
@@ -115,14 +85,14 @@ Int_t ucnstandalone() {
 	geoManager->SetTopVolume(chamber);
 			
 	// -- Make a GeoBBox object via the UCNGeoManager
-//	Double_t boxX = 0.11, boxY = 0.11, boxZ = 0.91; 
-//	TGeoVolume* box   = geoManager->MakeUCNBox("box",boundary, boxX, boxY, boxZ);
-//	TGeoVolume* innerBox  = geoManager->MakeUCNBox("innerbox",vacuum, boxX-0.01, boxY-0.01, boxZ-0.01);
+	Double_t boxX = 0.11, boxY = 0.11, boxZ = 0.91; 
+	TGeoVolume* box   = geoManager->MakeUCNBox("box",boundary, boxX, boxY, boxZ);
+	TGeoVolume* innerBox  = geoManager->MakeUCNBox("innerbox",vacuum, boxX-0.01, boxY-0.01, boxZ-0.01);
 	
 	// -- Make a GeoTube object via the UCNGeoManager
-	Double_t rMin = 0.0, rMax = 0.236, halfLength = 0.121; 
-	TGeoVolume* tube   = geoManager->MakeUCNTube("tube",boundary, rMin, rMax, halfLength);
-	TGeoVolume* innerTube  = geoManager->MakeUCNTube("innerTube",vacuum, rMin, rMax-0.001, halfLength-0.001);
+	Double_t rMin = 0.0, rMax = 0.11, length = 0.91; 
+	TGeoVolume* tube   = geoManager->MakeUCNTube("tube",boundary, rMin, rMax, length);
+	TGeoVolume* innerTube  = geoManager->MakeUCNTube("innerTube",vacuum, rMin, rMax-0.01, length-0.01);
 	
 	
 	// -- Define the transformation of the volume
@@ -130,7 +100,7 @@ Int_t ucnstandalone() {
 	r1.SetAngles(0,0,0);          //rotation defined by Euler angles 
 	r2.SetAngles(0,0,0); 	 
 	TGeoTranslation t1(0.,0.,0.); 
-	TGeoTranslation t2(0.,0.,0.); 
+	TGeoTranslation t2(0.,0.,0.9); 
 	TGeoCombiTrans c1(t1,r1); 
 	TGeoCombiTrans c2(t2,r2); 
 	TGeoHMatrix hm = c1 * c2;        // composition is done via TGeoHMatrix class 
@@ -153,12 +123,9 @@ Int_t ucnstandalone() {
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Run Simulation
-	Double_t runTime = 800.*Units::s;
-	Double_t maxStepTime = 1.00*Units::s;
-	Int_t particles = 1000;
 	
 	runManager->TurnGravityOn();
-	
+
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Mag Field
 	TUCNUniformMagField* magfield = new TUCNUniformMagField("Uniform magnetic field", 0.0,1.0,1.0);
@@ -166,6 +133,12 @@ Int_t ucnstandalone() {
 	geoManager->AddMagField(magfield);
 	TUCNMagField* testfield = geoManager->GetMagField("Uniform magnetic field");
 	cout << testfield << "\t" << magfield << endl;
+	
+	// -- Load / Define the parameters of the Run
+	Double_t runTime = 10.*Units::s;
+	Double_t maxStepTime = 1.00*Units::s;
+	Int_t particles = 1000;
+	Double_t totalEnergy = 200*Units::neV;
 	
 	// Generating mono-energetic particles inside the source volume
 	cout << "Generating " << particles << " particles..."	<< endl;
@@ -186,17 +159,17 @@ Int_t ucnstandalone() {
 	// -- Write out data to file
 	// Warning - introducing TFile here is causing program to crash on exit. Needs closer examination before we do this.
 	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Create a file to store the tracks
-//	TFile* file = new TFile("tracks_test.root","RECREATE");
-//	if ( file->IsOpen() ) {
-//		cerr << "Opened tracks.root" << endl;
-//	}
-//	else {
-//		cerr << "Could not open tracks.root" << endl;
-//		return 1;
-//	}
-//	runManager->WriteOutData(file); 
-
+/*	// -- Create a file to store the tracks
+	TFile* file = new TFile("tracks_test.root","RECREATE");
+	if ( file->IsOpen() ) {
+		cerr << "Opened tracks.root" << endl;
+	}
+	else {
+		cerr << "Could not open tracks.root" << endl;
+		return 1;
+	}
+	runManager->WriteOutData(file); 
+*/
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// Draw Final Positions 
@@ -209,15 +182,11 @@ Int_t ucnstandalone() {
 	// -- FITTING 
 	
 	Int_t nbins = 50;
-	Double_t maxlength = 0.12;
+	Double_t maxlength = 0.9;
 		
 	// Plot Histogram
-	TH1F * Histogram1 = new TH1F("Histogram1","Neutron Density versus height", nbins, 0.0, maxlength);	
+	TH1F * Histogram1 = new TH1F("Histogram1","Neutron Density versus height", nbins, 0.0, 2.*maxlength);	
 	TH1F * Histogram2 = new TH1F("Histogram2","Avg Field Sampled by Neutron", nbins/5, 0.0, 2.);	
-	TH1F * Histogram3a = new TH1F("Histogram3a","Number of collisions before loss", nbins, 0.0, 50000);	
-	TH1F * Histogram3b = new TH1F("Histogram3b","Lifetime of neutron", nbins, 0.0, runTime);	
-	TH1F * Histogram3c = new TH1F("Histogram3c","Percentage Diffuse", nbins, 0.0, 0.2);	
-	TH1F * Histogram3d = new TH1F("Histogram3d","Percentage Specular", nbins, 0.8, 1.);	
 	
 	for (Int_t i = 0; i < particles; i++) {
 		// Get each Track
@@ -225,20 +194,6 @@ Int_t ucnstandalone() {
 		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
 		Histogram1->Fill(particle->Vz());
 		Histogram2->Fill(particle->AvgMagField());
-		Histogram3a->Fill(particle->Bounces());
-		Histogram3b->Fill(particle->T());
-		
-		Double_t diffusePercentage = 0;
-		Double_t specularPercentage = 0;
-		if (particle->Bounces() != 0) {
-			diffusePercentage = static_cast<Double_t>(particle->DiffuseBounces())/particle->Bounces();
-			specularPercentage = static_cast<Double_t>(particle->SpecularBounces())/particle->Bounces();
-		} else {
-			diffusePercentage = particle->DiffuseBounces();
-			specularPercentage = particle->SpecularBounces();
-		}
-		Histogram3c->Fill(diffusePercentage);
-		Histogram3d->Fill(specularPercentage);
 	}
 	
 	// --------------------------------------------------------------------------------------
@@ -288,71 +243,6 @@ Int_t ucnstandalone() {
 	Histogram2->SetYTitle("Number of Neutrons");
 	Histogram2->Draw("");
 	
-	// -------------------------------------------------------------------------------------- 
-	// -- Plot Bounces 
-	TCanvas * histcanvas3 = new TCanvas("HistCanvas3","Number of bounces before loss",0,0,800,800);
-	histcanvas3->Divide(2,2);
-	histcanvas3->SetGrid();
-	histcanvas3->cd(1);
-	Histogram3a->SetLineColor(kBlack);
-	Histogram3a->SetXTitle("Bounces before loss");
-	Histogram3a->SetYTitle("Number of Neutrons");
-	Histogram3a->Draw("");
-	histcanvas3->cd(2);
-	Histogram3b->SetXTitle("LifeTime (s)");
-	Histogram3b->SetYTitle("Number of Neutrons");
-	Histogram3b->Draw("");
-	histcanvas3->cd(3);
-	Histogram3c->SetXTitle("Percentage of Diffuse Reflections");
-	Histogram3c->SetYTitle("Number of Neutrons");
-	Histogram3c->Draw("");
-	histcanvas3->cd(4);
-	Histogram3d->SetXTitle("Percentage of Specular Reflections");
-	Histogram3d->SetYTitle("Number of Neutrons");
-	Histogram3d->Draw("");
-	
-	Double_t mean = Histogram3a->GetMean();
-	Double_t meanerror = Histogram3a->GetMeanError();
-	cout << E/V << endl;
-	cout << mean << "\t" << meanerror << endl;
-	
-	Double_t estimatedLoss = 1./mean;
-	Double_t estimatedLossError = TMath::Sqrt((-1./(mean*mean))*(-1./(mean*mean))*meanerror*meanerror);
-	cout << estimatedLoss << "\t" << estimatedLossError << endl;
-	
-	TCanvas * histcanvas4 = new TCanvas("HistCanvas4","Loss Function",0,0,800,800);
-	histcanvas4->cd();
-	
-//	Double_t point_x[9] = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9};
-//	Double_t point_y[9] = {0.000518506, 0.000555893, 0.000542289, 0.000642828, 0.00065903, 0.000751564, 0.000830931, 0.000869, 0.00109959};	
-//	Double_t error_x[9] = {0,0,0,0,0,0,0,0,0};
-//	Double_t error_y[9] = {1.30748e-05, 1.39742e-05, 1.38661e-05, 1.70123e-05, 1.74454e-05, 2.02451e-05, 2.30679e-05, 2.47773e-05, 3.15899e-05};
-	
-	Double_t point_x[1];
-	Double_t point_y[1];	
-	Double_t error_x[1];
-	Double_t error_y[1];
-	
-	point_x[0] = E/V;
-	point_y[0] = estimatedLoss;
-	error_x[0] = 0.;
-	error_y[0] = estimatedLossError;
-	
-	TF1 *lossf = new TF1("lossf",lossFunc,0.,1.,1);
-	lossf->SetParameter(0,f);
-	lossf->GetXaxis()->SetTitle("E/V");
-	lossf->GetYaxis()->SetTitle("Loss Probability");
-	lossf->Draw();
-	
-	TGraphErrors* lossProb = new TGraphErrors(1, point_x, point_y, error_x, error_y);
-	lossProb->SetTitle("TGraphErrors Example");
-	lossProb->SetMarkerColor(4);
-	lossProb->SetMarkerSize(1);
-	lossProb->SetMarkerStyle(21);
-	lossProb->Draw("PSame");
-	
-	
-	
 	#ifndef __CINT__
 		theApp->Run();
 	#endif
@@ -363,13 +253,11 @@ Int_t ucnstandalone() {
 }
 
 // -------------------------------------------------------------------------------------- 
-Double_t densityf(Double_t* x, Double_t* par)
+Double_t densityf(Double_t*x, Double_t*par)
 {
 	Double_t value = (total_energy - (Constants::neutron_mass)*(Constants::grav_acceleration)*x[0])/total_energy;
 	assert(value >= 0.0);
 	return par[0]*sqrt(value);
 }
 
-Double_t lossFunc(Double_t* x, Double_t* par) {
-      return (2.*par[0]*((1./x[0])*TMath::ASin(TMath::Sqrt(x[0])) - TMath::Sqrt((1./x[0]) - 1.)));
-}
+
