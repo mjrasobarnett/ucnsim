@@ -909,7 +909,7 @@ TGeoNode* TUCNGeoNavigator::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrac
       nextindex = this->GetCurrentNode()->GetVolume()->GetNextNodeIndex();
    }   
 	#ifdef VERBOSE_MODE		
-		Info("FindNextBoundaryAndStepAlongParabola","Branch 4. Crossing boundary and locating.");
+		cout << "FindNextBoundaryAndStepAlongParabola - Branch 4. Crossing boundary and locating." << endl;
    #endif
 	return CrossBoundaryAndLocate(kTRUE, current);	
 }
@@ -949,13 +949,13 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 	Int_t stepNumber;
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
 
-#ifdef VERBOSE_MODE				
-	Info("PropagateForSetTime","Starting Run - Max time (seconds): %f", runTime);
-#endif
+	#ifdef VERBOSE_MODE				
+		cout << "PropagateForSetTime - Starting Run - Max time (seconds): " <<  runTime << endl;
+	#endif
 	
 	// -- Check that Particle has not been initialised inside a boundary or detector		
 	if (static_cast<TUCNGeoMaterial*>(this->GetCurrentNode()->GetMedium()->GetMaterial())->IsTrackingMaterial() == kFALSE) {
-		cout << this->GetCurrentNode()->GetMedium()->GetName() << endl;
+		cerr << "Track number " << track->GetId() << " initialised inside boundary of " << this->GetCurrentVolume()->GetName() << endl;
 		throw runtime_error("In TUCNGeoNavigator::PropagateTrack - particle initialised inside a boundary");
 	}
 	
@@ -968,7 +968,7 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 	///////////////////////////////////	
 	// -- Propagation Loop
 	///////////////////////////////////
-	for (stepNumber = 1 ; stepNumber < fgMaxSteps ; stepNumber++) {
+	for (stepNumber = 0 ; stepNumber < fgMaxSteps ; stepNumber++) {
 		
 		#ifdef VERBOSE_MODE		
 			cout << "STEP " << stepNumber << "\t" << particle->T() << " s" << "\t" << this->GetCurrentNode()->GetName() << endl;	
@@ -977,128 +977,23 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 		// -- Calculate the Next StepTime
 		this->DetermineNextStepTime(particle, maxStepTime, runTime);
 		
-		// -- Find time to reach next boundary and step along parabola
-		#ifdef VERBOSE_MODE	
-			cout << "------------------- START OF STEP ----------------------" << endl;
-			cout << "Initial Steptime (s): " << this->GetStepTime() << endl;
-			cout << "Initial Vertex (m): " << "X:" << particle->Vx() << "\t" << "Y:" << particle->Vy()  << "\t" << "Z:" << particle->Vz() << "\t" << "T:" << particle->T() << endl;
-			cout << "Initial Dir: " << "X:" << particle->DirX()  << "\t" << "Y:" << particle->DirY()  << "\t" << "Z:" << particle->DirZ() << "\t" << "Mag:" << particle->Dir() << endl;
-			cout << "Initial Vel (m/s): " << "X:" << particle->VelocityX()  << "\t" << "Y:" << particle->VelocityY()  << "\t" << "Z:" << particle->VelocityZ() << "\t" << "V:" << particle->Velocity() << endl;
-			cout << "Initial Mom (eV): " << "X:" << particle->Px()  << "\t" << "Y:" << particle->Py()  << "\t" << "Z:" << particle->Pz() << "\t" << "P:" << particle->P() << endl;
-			cout << "Initial Volume: "    << this->GetCurrentVolume()->GetName() << endl;
-			cout << "Initial Energy (neV): "    << particle->Energy() /Units::neV << endl;
-			cout << "-----------------------------" << endl;
-			cout << "Is On Boundary?  " << this->IsUCNOnBoundary() << endl;
-			cout << "Is Outside?  "     << this->IsUCNOutside() << endl;
-			cout << "Is Step Entering?  " << this->IsUCNStepEntering()  << endl;
-			cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
-			cout << "-----------------------------" << endl << endl;
-		#endif
+		// Make a step
+		Bool_t stepSuccess = this->MakeStep(track, field);
+		assert(stepSuccess == kTRUE);
 		
-		
-		if (field == NULL) {
-			this->FindNextBoundaryAndStep(this->GetStepTime());
-			this->UpdateTrack(track, this->GetStepTime());
-			// TODO: UPDATE CLASS DATA MEMBERS NOW LIKE fUCNNextNode
-			
-		} else {
-			// -- Update Particle is called by FindNext...AlongParabola so no need to repeat that here
-			this->FindNextBoundaryAndStepAlongParabola(track, field, this->GetStepTime());
-		}
-		
-			
-		#ifdef VERBOSE_MODE	
-			cout << "------------------- END OF STEP ----------------------" << endl;
-			cout << "Final Steptime (s): " << this->GetStepTime() << endl;
-			cout << "Final Vertex (m): " << "X:" << particle->Vx() << "\t" << "Y:" << particle->Vy()  << "\t" << "Z:" << particle->Vz() << "\t" << "T:" << particle->T() << endl;
-			cout << "Final Dir: " << "X:" << particle->DirX()  << "\t" << "Y:" << particle->DirY()  << "\t" << "Z:" << particle->DirZ() << "\t" << "Mag:" << particle->Dir() << endl;
-			cout << "Final Vel (m/s): " << "X:" << particle->VelocityX()  << "\t" << "Y:" << particle->VelocityY()  << "\t" << "Z:" << particle->VelocityZ() << "\t" << "V:" << particle->Velocity() << endl;
-			cout << "Final Mom (eV): " << "X:" << particle->Px()  << "\t" << "Y:" << particle->Py()  << "\t" << "Z:" << particle->Pz() << "\t" << "P:" << particle->P() << endl;
-			cout << "Final Volume: "    << this->GetCurrentVolume()->GetName() << endl;
-			cout << "Final Energy (neV): "    << particle->Energy() /Units::neV << endl;
-			cout << "-----------------------------" << endl;
-			cout << "Is On Boundary?  " << this->IsUCNOnBoundary() << endl;
-			cout << "Is Outside?  "     << this->IsUCNOutside() << endl;
-			cout << "Is Step Entering?  " << this->IsUCNStepEntering()  << endl;
-			cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
-			cout << "-----------------------------" << endl << endl;
-		#endif	
-		
-		TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(this->GetCurrentNode()->GetMedium()->GetMaterial());
-		
-		// -- Determine what to do if we are on a boundary
-		// -- Is Track on the surface of a boundary?
-		if (currentMaterial->IsTrackingMaterial() == kFALSE) {
-			// -- Are we on the surface of a detector?
-			if (currentMaterial->IsDetectorMaterial() == kTRUE) {
-				// -- Was particle detected?
-				Double_t prob = gRandom->Uniform(0.0,1.0);
-				if (prob < currentMaterial->DetectionEfficiency()) {	
-					particle->Detected(kTRUE);  // Set detected flag
-				} else {	
-				#ifdef VERBOSE_MODE	
-					cout << "------------------- BOUNCE ----------------------" << endl;
-					cout << "Current medium: " << this->GetCurrentNode()->GetMedium()->GetName() << endl;
-				#endif
-					// -- Make a Bounce
-					this->Bounce(track);	
-					// -- Cross Boundary and Locate
-					this->CrossBoundaryAndLocate(kFALSE, this->GetCurrentNode()); 	
-					this->UpdateTrack(track);
-				#ifdef VERBOSE_MODE	
-					cout << "-------------------------------------------------" << endl;
-					cout << "Final medium: " << this->GetCurrentNode()->GetMedium()->GetName() << endl;
-					cout << "-------------------------------------------------" << endl << endl;
-				#endif
-				}
-			// -- Was particle lost to boundary (absorbed/upscattered) ?
-			} else if (kFALSE) {	
-				particle->Lost(kTRUE); // Set lost flag
-			// -- Are we outside the geometry heirarchy we have built - ie: in TOP
-			} else if (currentMaterial->IsBlackHole() == kTRUE) {
-				particle->Lost(kTRUE);
-			//	throw runtime_error("In TUCNGeoNavigator::PropagateTrack - track has entered TOP/Blackhole!");
-			} else {
-				#ifdef VERBOSE_MODE	
-					cout << "------------------- BOUNCE ----------------------" << endl;
-					cout << "Current Node: " << this->GetCurrentNode()->GetName() << endl;
-				#endif	
-				// -- Make a Bounce
-				this->Bounce(track);
-				// -- Cross Boundary and Locate
-				if (this->IsUCNStepEntering() == kTRUE) {
-					#ifdef VERBOSE_MODE	
-						cout << "Search Upwards - Step entering a volume so we must step back out" << endl;
-						cout << this->GetCurrentNode()->GetVolume()->GetNextNodeIndex() << endl;
-					#endif
-					this->CrossBoundaryAndLocate(kFALSE, this->GetCurrentNode()); 	
-						
-				} else {
-					#ifdef VERBOSE_MODE
-						cout << "Search Downwards - Step exited a volume so we must re-enter" << endl;
-						cout << this->GetCurrentNode()->GetVolume()->GetNextNodeIndex() << endl;
-					#endif
-					this->CrossBoundaryAndLocate(kTRUE, this->GetCurrentNode());
-				}
-				this->UpdateTrack(track);
-				#ifdef VERBOSE_MODE	
-					cout << "-------------------------------------------------" << endl;
-					cout << "Final Node: " << this->GetCurrentNode()->GetName() << endl;
-					cout << "-------------------------------------------------" << endl << endl;
-				#endif
-			}
-		}
-		
-		// -- Determine destination
-		// -- Has lost flag been set?
+		// -- Determine Particle destination
+		// Has lost flag been set?
 		if (particle->Lost() == kTRUE) {
+			fLostCounter++;
 			break; // -- End Propagtion Loop
-		// -- Has detected flag been set?
+		// Has detected flag been set?
 		} else if (particle->Detected() == kTRUE) {
+			fDetectedCounter++;
 			break; // -- End Propagation Loop
-		// -- Has particle decayed within steptime?
+		// Has particle decayed within steptime?
 		} else if (particle->WillDecay(this->GetStepTime()) == kTRUE) {
-			particle->Decayed(kTRUE);// Set Decay Flag
+			fDecayedCounter++;
+			particle->Decayed(kTRUE); // Set Decay Flag
 			break; // -- End Propagation Loop
 		// -- Have we reached the maximum runtime?
 		} else if (particle->T() >= runTime) {
@@ -1127,10 +1022,13 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Int_t ste
 #ifdef VERBOSE_MODE				
 	Info("PropagateTrack","Starting Run - Max steps: %i", steps);
 #endif
+
+	// -- Checks
+	assert(steps > 0);
 	
 	// -- Check that Particle has not been initialised inside a boundary or detector		
 	if (static_cast<TUCNGeoMaterial*>(this->GetCurrentNode()->GetMedium()->GetMaterial())->IsTrackingMaterial() == kFALSE) {
-		cout << this->GetCurrentNode()->GetMedium()->GetName() << endl;
+		cerr << "Track number " << track->GetId() << " initialised inside boundary of " << this->GetCurrentVolume()->GetName() << endl;
 		throw runtime_error("In TUCNGeoNavigator::PropagateTrack - particle initialised inside a boundary");
 	}
 	
@@ -1154,129 +1052,26 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Int_t ste
 			cout << "STEP " << stepNumber << "\t" << particle->T() << " s" << "\t" << this->GetCurrentNode()->GetName() << endl;	
 		#endif
 		
-		// -- Define the next steptime
-		this->SetStepTime(maxStepTime);
-		
-		// -- Find time to reach next boundary and step along parabola
-		#ifdef VERBOSE_MODE	
-			cout << "------------------- START OF STEP ----------------------" << endl;
-			cout << "Initial Steptime (s): " << this->GetStepTime() << endl;
-			cout << "Initial Vertex (m): " << "X:" << particle->Vx() << "\t" << "Y:" << particle->Vy()  << "\t" << "Z:" << particle->Vz() << "\t" << "T:" << particle->T() << endl;
-			cout << "Initial Dir: " << "X:" << particle->DirX()  << "\t" << "Y:" << particle->DirY()  << "\t" << "Z:" << particle->DirZ() << "\t" << "Mag:" << particle->Dir() << endl;
-			cout << "Initial Vel (m/s): " << "X:" << particle->VelocityX()  << "\t" << "Y:" << particle->VelocityY()  << "\t" << "Z:" << particle->VelocityZ() << "\t" << "V:" << particle->Velocity() << endl;
-			cout << "Initial Mom (eV): " << "X:" << particle->Px()  << "\t" << "Y:" << particle->Py()  << "\t" << "Z:" << particle->Pz() << "\t" << "P:" << particle->P() << endl;
-			cout << "Initial Volume: "    << this->GetCurrentVolume()->GetName() << endl;
-			cout << "Initial Energy (neV): "    << particle->Energy() /Units::neV << endl;
-			cout << "-----------------------------" << endl;
-			cout << "Is On Boundary?  " << this->IsUCNOnBoundary() << endl;
-			cout << "Is Outside?  "     << this->IsUCNOutside() << endl;
-			cout << "Is Step Entering?  " << this->IsUCNStepEntering()  << endl;
-			cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
-			cout << "-----------------------------" << endl << endl;
-		#endif
-		
-		if (field == NULL) {
-			this->FindNextBoundaryAndStep(this->GetStepTime());
-			this->UpdateTrack(track, this->GetStepTime());
-			// TODO: UPDATE CLASS DATA MEMBERS NOW LIKE fUCNNextNode
-			
-		} else {
-			// -- Update Particle is called by FindNext...AlongParabola so no need to repeat that here
-			this->FindNextBoundaryAndStepAlongParabola(track, field, this->GetStepTime());
-		}
-			
-		#ifdef VERBOSE_MODE	
-			cout << "------------------- END OF STEP ----------------------" << endl;
-			cout << "Final Steptime (s): " << this->GetStepTime() << endl;
-			cout << "Final Vertex (m): " << "X:" << particle->Vx() << "\t" << "Y:" << particle->Vy()  << "\t" << "Z:" << particle->Vz() << "\t" << "T:" << particle->T() << endl;
-			cout << "Final Dir: " << "X:" << particle->DirX()  << "\t" << "Y:" << particle->DirY()  << "\t" << "Z:" << particle->DirZ() << "\t" << "Mag:" << particle->Dir() << endl;
-			cout << "Final Vel (m/s): " << "X:" << particle->VelocityX()  << "\t" << "Y:" << particle->VelocityY()  << "\t" << "Z:" << particle->VelocityZ() << "\t" << "V:" << particle->Velocity() << endl;
-			cout << "Final Mom (eV): " << "X:" << particle->Px()  << "\t" << "Y:" << particle->Py()  << "\t" << "Z:" << particle->Pz() << "\t" << "P:" << particle->P() << endl;
-			cout << "Final Volume: "    << this->GetCurrentVolume()->GetName() << endl;
-			cout << "Final Energy (neV): "    << particle->Energy() /Units::neV << endl;
-			cout << "-----------------------------" << endl;
-			cout << "Is On Boundary?  " << this->IsUCNOnBoundary() << endl;
-			cout << "Is Outside?  "     << this->IsUCNOutside() << endl;
-			cout << "Is Step Entering?  " << this->IsUCNStepEntering()  << endl;
-			cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
-			cout << "-----------------------------" << endl << endl;
-		#endif	
-		
-		TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(this->GetCurrentNode()->GetMedium()->GetMaterial());
-		
-		// -- Determine what to do if we are on a boundary
-		// -- Is Track on the surface of a boundary?
-		if (currentMaterial->IsTrackingMaterial() == kFALSE) {
-			// -- Are we on the surface of a detector?
-			if (currentMaterial->IsDetectorMaterial() == kTRUE) {
-				// -- Was particle detected?
-				Double_t prob = gRandom->Uniform(0.0,1.0);
-				if (prob < currentMaterial->DetectionEfficiency()) {	
-					particle->Detected(kTRUE);  // Set detected flag
-				} else {	
-				#ifdef VERBOSE_MODE	
-					cout << "------------------- BOUNCE ----------------------" << endl;
-					cout << "Current medium: " << this->GetCurrentNode()->GetMedium()->GetName() << endl;
-				#endif
-					// -- Make a Bounce
-					this->Bounce(track);	
-					// -- Cross Boundary and Locate
-					this->CrossBoundaryAndLocate(kFALSE, this->GetCurrentNode()); 	
-					this->UpdateTrack(track);
-				#ifdef VERBOSE_MODE	
-					cout << "-------------------------------------------------" << endl;
-					cout << "Final medium: " << this->GetCurrentNode()->GetMedium()->GetName() << endl;
-					cout << "-------------------------------------------------" << endl << endl;
-				#endif
-				}
-			// -- Was particle lost to boundary (absorbed/upscattered) ?
-			} else if (kFALSE) {	
-				particle->Lost(kTRUE); // Set lost flag
-			// -- Are we outside the geometry heirarchy we have built - ie: in TOP
-			} else if (currentMaterial->IsBlackHole() == kTRUE) {
-				particle->Lost(kTRUE);
-			//	throw runtime_error("In TUCNGeoNavigator::PropagateTrack - track has entered TOP/Blackhole!");
-			} else {
-				#ifdef VERBOSE_MODE	
-					cout << "------------------- BOUNCE ----------------------" << endl;
-					cout << "Current Node: " << this->GetCurrentNode()->GetName() << endl;
-				#endif	
-				// -- Make a Bounce
-				this->Bounce(track);
-				// -- Cross Boundary and Locate
-				if (this->IsUCNStepEntering() == kTRUE) {
-					#ifdef VERBOSE_MODE	
-						cout << "Search Upwards - Step entering a volume so we must step back out" << endl;
-						cout << this->GetCurrentNode()->GetVolume()->GetNextNodeIndex() << endl;
-					#endif
-					this->CrossBoundaryAndLocate(kFALSE, this->GetCurrentNode()); 	
-						
-				} else {
-					#ifdef VERBOSE_MODE
-						cout << "Search Downwards - Step exited a volume so we must re-enter" << endl;
-						cout << this->GetCurrentNode()->GetVolume()->GetNextNodeIndex() << endl;
-					#endif
-					this->CrossBoundaryAndLocate(kTRUE, this->GetCurrentNode());
-				}
-				this->UpdateTrack(track);
-				#ifdef VERBOSE_MODE	
-					cout << "-------------------------------------------------" << endl;
-					cout << "Final Node: " << this->GetCurrentNode()->GetName() << endl;
-					cout << "-------------------------------------------------" << endl << endl;
-				#endif
-			}
-		}
-		
-		// -- Determine destination
-		// -- Has lost flag been set?
+		// Calculate next step time
+		this->DetermineNextStepTime(particle, maxStepTime, 0.0); 
+
+		// Make a step
+		Bool_t stepSuccess = this->MakeStep(track, field);
+		assert(stepSuccess == kTRUE);
+
+		// -- Determine Particle destination
+		// Has lost flag been set?
 		if (particle->Lost() == kTRUE) {
+			fLostCounter++;
 			break; // -- End Propagtion Loop
-		// -- Has detected flag been set?
+		// Has detected flag been set?
 		} else if (particle->Detected() == kTRUE) {
+			fDetectedCounter++;
 			break; // -- End Propagation Loop
-		// -- Has particle decayed within steptime?
+		// Has particle decayed within steptime?
 		} else if (particle->WillDecay(this->GetStepTime()) == kTRUE) {
-			particle->Decayed(kTRUE);// Set Decay Flag
+			fDecayedCounter++;
+			particle->Decayed(kTRUE); // Set Decay Flag
 			break; // -- End Propagation Loop
 		}
 	// -- END OF PROPAGATION LOOP
@@ -1286,6 +1081,126 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Int_t ste
 	cout << "Time: " << particle->T() << "s" << "\t" << "Final Medium: " << this->GetCurrentNode()->GetMedium()->GetName() << "\t";
 	cout << "Bounces: " << particle->Bounces() << "\t" << "Diffuse: " << particle->DiffuseBounces() << "\t" << "Specular: " << particle->SpecularBounces() << endl;
 	
+	return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* field)
+{
+	// -- Find time to reach next boundary and step along parabola
+	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+	
+	// -- Save Path to current node - we will want to return to this in the event we make a bounce
+	const char* path = this->GetPath();
+	#ifdef VERBOSE_MODE	
+		cout << "Current PATH: " << path << endl;
+	#endif
+	
+	#ifdef VERBOSE_MODE	
+		cout << "------------------- START OF STEP ----------------------" << endl;
+		cout << "Initial Steptime (s): " << this->GetStepTime() << endl;
+		cout << "Initial Vertex (m): " << "X:" << particle->Vx() << "\t" << "Y:" << particle->Vy()  << "\t" << "Z:" << particle->Vz() << "\t" << "T:" << particle->T() << endl;
+		cout << "Initial Dir: " << "X:" << particle->DirX()  << "\t" << "Y:" << particle->DirY()  << "\t" << "Z:" << particle->DirZ() << "\t" << "Mag:" << particle->Dir() << endl;
+		cout << "Initial Vel (m/s): " << "X:" << particle->VelocityX()  << "\t" << "Y:" << particle->VelocityY()  << "\t" << "Z:" << particle->VelocityZ() << "\t" << "V:" << particle->Velocity() << endl;
+		cout << "Initial Mom (eV): " << "X:" << particle->Px()  << "\t" << "Y:" << particle->Py()  << "\t" << "Z:" << particle->Pz() << "\t" << "P:" << particle->P() << endl;
+		cout << "Initial Volume: "    << this->GetCurrentVolume()->GetName() << endl;
+		cout << "Initial Energy (neV): "    << particle->Energy() /Units::neV << endl;
+		cout << "-----------------------------" << endl;
+		cout << "Is On Boundary?  " << this->IsUCNOnBoundary() << endl;
+		cout << "Is Outside?  "     << this->IsUCNOutside() << endl;
+		cout << "Is Step Entering?  " << this->IsUCNStepEntering()  << endl;
+		cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
+		cout << "-----------------------------" << endl << endl;
+	#endif
+	
+	if (field == NULL) {
+		this->FindNextBoundaryAndStep(this->GetStepTime());
+		// TODO: UPDATE CLASS DATA MEMBERS NOW LIKE fUCNNextNode
+		
+		// - Calculate the time travelled
+		assert(particle->Velocity() > 0.0);
+		Double_t timeTravelled = this->GetStep()/particle->Velocity(); 
+		this->SetStepTime(timeTravelled);
+		
+		this->UpdateTrack(track, this->GetStepTime());
+	} else {
+		// -- Update Particle is called by FindNext...AlongParabola so no need to repeat that here
+		this->FindNextBoundaryAndStepAlongParabola(track, field, this->GetStepTime());
+	}
+		
+	#ifdef VERBOSE_MODE	
+		cout << "------------------- END OF STEP ----------------------" << endl;
+		cout << "Final Steptime (s): " << this->GetStepTime() << endl;
+		cout << "Final Vertex (m): " << "X:" << particle->Vx() << "\t" << "Y:" << particle->Vy()  << "\t" << "Z:" << particle->Vz() << "\t" << "T:" << particle->T() << endl;
+		cout << "Final Dir: " << "X:" << particle->DirX()  << "\t" << "Y:" << particle->DirY()  << "\t" << "Z:" << particle->DirZ() << "\t" << "Mag:" << particle->Dir() << endl;
+		cout << "Final Vel (m/s): " << "X:" << particle->VelocityX()  << "\t" << "Y:" << particle->VelocityY()  << "\t" << "Z:" << particle->VelocityZ() << "\t" << "V:" << particle->Velocity() << endl;
+		cout << "Final Mom (eV): " << "X:" << particle->Px()  << "\t" << "Y:" << particle->Py()  << "\t" << "Z:" << particle->Pz() << "\t" << "P:" << particle->P() << endl;
+		cout << "Final Volume: "    << this->GetCurrentVolume()->GetName() << endl;
+		cout << "Final Energy (neV): "    << particle->Energy() /Units::neV << endl;
+		cout << "-----------------------------" << endl;
+		cout << "Is On Boundary?  " << this->IsUCNOnBoundary() << endl;
+		cout << "Is Outside?  "     << this->IsUCNOutside() << endl;
+		cout << "Is Step Entering?  " << this->IsUCNStepEntering()  << endl;
+		cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
+		cout << "-----------------------------" << endl << endl;
+	#endif	
+	
+	// -- Get the current material we are in to determine what to do next
+	TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(this->GetCurrentNode()->GetMedium()->GetMaterial());
+	
+	// -- Determine what to do if we are on a boundary
+	// -- Is Track on the surface of a boundary?
+	if (currentMaterial->IsTrackingMaterial() == kFALSE) {
+		// -- Are we on the surface of a detector?
+		if (currentMaterial->IsDetectorMaterial() == kTRUE) {
+			// -- Was particle detected?
+			Double_t prob = gRandom->Uniform(0.0,1.0);
+			if (prob <= currentMaterial->DetectionEfficiency()) {	
+				// -- PARTICLE DETECTED
+				particle->Detected(kTRUE);  // Set detected flag
+			} else {	
+				// -- PARTICLE NOT-DETECTED.
+				// -- Eventually we will change this to allow particle to track inside the detector
+				cerr << "Not implemented yet" << endl;
+				return kFALSE;
+			}
+		// -- Was particle lost to boundary (absorbed/upscattered) ?
+		} else if (kFALSE /* Needs implementing still */) {	
+			particle->Lost(kTRUE); // Set lost flag
+		// -- Are we outside the geometry heirarchy we have built - ie: in TOP
+		} else if (currentMaterial->IsBlackHole() == kTRUE) {
+			particle->Lost(kTRUE);
+		} else {
+			// -- PARTICLE ON SURFACE OF BOUNDARY
+			#ifdef VERBOSE_MODE	
+				cout << "------------------- BOUNCE ----------------------" << endl;
+				cout << "Current Node: " << this->GetCurrentNode()->GetName() << endl;
+			#endif	
+			// -- Make a Bounce
+			this->Bounce(track);
+			// -- Cross Boundary and Locate
+			if (this->IsUCNStepEntering() == kTRUE) {
+				#ifdef VERBOSE_MODE	
+					cout << "Search Upwards - Step entering a volume so we must step back out" << endl;
+					cout << this->GetCurrentNode()->GetVolume()->GetNextNodeIndex() << endl;
+				#endif
+				this->CrossBoundaryAndLocate(kFALSE, this->GetCurrentNode()); 	
+					
+			} else {
+				#ifdef VERBOSE_MODE
+					cout << "Search Downwards - Step exited a volume so we must re-enter" << endl;
+					cout << this->GetCurrentNode()->GetVolume()->GetNextNodeIndex() << endl;
+				#endif
+				this->CrossBoundaryAndLocate(kTRUE, this->GetCurrentNode());
+			}
+			this->UpdateTrack(track);
+			#ifdef VERBOSE_MODE	
+				cout << "-------------------------------------------------" << endl;
+				cout << "Final Node: " << this->GetCurrentNode()->GetName() << endl;
+				cout << "-------------------------------------------------" << endl << endl;
+			#endif
+		}
+	}
 	return kTRUE;
 }
 

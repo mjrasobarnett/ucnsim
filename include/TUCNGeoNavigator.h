@@ -77,7 +77,7 @@ public:
 	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Double_t runTime, const Double_t maxStepTime);
 	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Int_t steps, const Double_t maxStepTime);
 	
-//	Bool_t						MakeStep(TVirtualGeoTrack* track, TUCNGravField* field);
+	Bool_t						MakeStep(TVirtualGeoTrack* track, TUCNGravField* field);
 	
 	Bool_t 						Bounce(TVirtualGeoTrack* track);
 	Bool_t 						SpecularBounce(Double_t* dir, const Double_t* norm);
