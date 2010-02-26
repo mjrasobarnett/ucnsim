@@ -155,7 +155,7 @@ Int_t simulation_geom() {
 	bendEntranceMatrix->SetName("BendEntranceMatrix");
 	bendEntranceMatrix->RegisterYourself();
 	// -- Create the composite Valve volume
-	TUCNGeoCompositeShape *valveVolShape = new TUCNGeoCompositeShape("ValveVol","((BendEntrance:BendEntranceMatrix - ValveVolBack:ValveVolBackMatrix) + ValveVolBack:ValveVolBackMatrix)");
+	TUCNGeoCompositeShape *valveVolShape = new TUCNGeoCompositeShape("ValveVol","(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
 	TGeoVolume * valveVol = new TGeoVolume("ValveVol",valveVolShape,vacuum);
 	valveVol->SetLineColor(kTeal-5);
 	valveVol->SetLineWidth(1);
@@ -426,8 +426,8 @@ Int_t visualisation_geom() {
 	bendEntranceMatrix->SetName("BendEntranceMatrix");
 	bendEntranceMatrix->RegisterYourself();
 	// -- Create the composite Valve volume
-	TGeoCompositeShape *valveVolShape = new TGeoCompositeShape("ValveVol","((BendEntrance:BendEntranceMatrix - ValveVolBack:ValveVolBackMatrix) + ValveVolBack:ValveVolBackMatrix)");
-	TGeoVolume * valveVol = new TGeoVolume("ValveVol",valveVolShape,vacuum);
+   TGeoCompositeShape *valveVolShape = new TGeoCompositeShape("ValveVol","(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
+   TGeoVolume * valveVol = new TGeoVolume("ValveVol",valveVolShape,vacuum);
 	valveVol->SetLineColor(kTeal-5);
 	valveVol->SetLineWidth(1);
 	valveVol->SetVisibility(kTRUE);
