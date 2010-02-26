@@ -507,9 +507,358 @@ Double_t* TUCNRun::FindUCNNormal()
 }
 
 //_____________________________________________________________________________
-TGeoNode* TUCNRun::FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGravField* field, Double_t stepTime)
+TGeoNode* TUCNRun::FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGravField* field, Double_t stepTime, Bool_t onBoundary)
 {
-	return 0;
+// Find the time it takes a particle to reach the next nearest boundary and store it fTimeStep.
+// Return the node to which this boundary belongs. If the time to the boundary is found to be
+// larger than the stepTime specified, then return the current node and set the fTimeStep to
+// the stepTime. 
+
+	// -- Get the track's particle
+	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+	// -- Get the current Navigator
+	TGeoNavigator* navigator = gGeoManager->GetCurrentNavigator();
+	
+	// -- Get the global field	
+	Double_t globalField[3] 	 = {field->Gx(), field->Gy(), field->Gz()}; 
+	Double_t globalPoint[3] 	 = {particle->Vx(), particle->Vy(), particle->Vz()};
+	Double_t globalVelocity[3]  = {particle->VelocityX(), particle->VelocityY(), particle->VelocityZ()};
+	
+	// Compute maximum stepsize
+	const Double_t stepMax = TUCNParabola::Instance()->ArcLength(globalVelocity, globalField, stepTime);
+	
+	#ifdef VERBOSE_MODE
+		cout << "FNBAP - Starting StepTime: " << this->GetStepTime() << "\t" << "Starting StepSize: " << navigator->GetStep() << endl;
+		cout << "FNBAP - Velocity: " << particle->Velocity() << endl;
+		cout << "FNBAP - Global Field: X: " << globalField[0] << "\t" << "Y: " << globalField[1] << "\t" << "Z: " << globalField[2] << endl;	
+		cout << "FNBAP - Global Point: X: " << globalPoint[0] << "\t" << "Y: " << globalPoint[1] << "\t" << "Z: " << globalPoint[2] << endl;	
+		cout << "FNBAP - Global Velocity: X: " << globalVelocity[0] << "\t" << "Y: " << globalVelocity[1] << "\t" << "Z: " << globalVelocity[2] << endl;	
+	#endif
+	
+	// Set initial step to be large
+	navigator->SetStep(TGeoShape::Big());
+
+   // Initialise ROOT flags and initial nodes
+   Int_t iact = 3;
+   Int_t nextDaughterIndex = -2;
+	
+	fUCNIsStepEntering = kFALSE; // flag for whether we are about to enter a new volume
+   fUCNIsStepExiting = kFALSE; // flag for whether we are about to exit the current volume
+   
+	Bool_t computeGlobal = kFALSE;
+   
+	fUCNIsOnBoundary = onBoundary; // flag for whether we are sitting on a boundary
+   
+	Double_t safety = 0.;
+  
+	TGeoNode *top_node = gGeoManager->GetTopNode();
+   TGeoVolume *top_volume = top_node->GetVolume();
+   
+	// -- Work out the safety distance and decide whether we need to calculate the full
+	// -- distances to boundaries, or whether we will definitely remain within the current vol
+	if (stepMax<1E29) {
+      if (stepMax <= 0) {
+			Error("FindNextBoundaryAlongParabola","StepSize proposed is negative.");
+			return 0;
+      }
+      // Try to get out easy if proposed step is within safe region
+//      if (onBoundary == kFALSE && navigator->IsSafeStep(stepMax + TGeoShape::Tolerance(), safety)) {
+//       navigator->SetStep(stepMax);
+//			this->SetStepTime(stepTime);
+//			fUCNNextNode = navigator->GetCurrentNode();
+//			return navigator->GetCurrentNode();
+//      }   
+		// Calculate the safety distance
+      safety = navigator->Safety();
+      safety = TMath::Abs(safety);
+      // Check if we are on a boundary
+		if (safety < TGeoShape::Tolerance()) fUCNIsOnBoundary = kTRUE;
+      else fUCNIsOnBoundary = kFALSE;
+      // Update stepTime / stepSize
+		navigator->SetStep(stepMax);
+		this->SetStepTime(stepTime);
+		#ifdef VERBOSE_MODE		
+			cout << "FNBAP - fTimeStep: " << this->GetStepTime() << "\t" << "fStep: " << navigator->GetStep() << endl;
+		#endif
+		// If we are within the safety distance, return the current node
+      if (stepMax + TGeoShape::Tolerance() < safety) {
+         fUCNNextNode = navigator->GetCurrentNode();
+			return navigator->GetCurrentNode();
+      }   
+   }
+	
+	// -- Initialise the storage for local coordinates and for the distance and times to boundary
+   Double_t snext = TGeoShape::Big(); // snext is the distance to the nearest boundary
+	Double_t tnext = TGeoShape::Big(); // tnext is the time to the nearest boundary
+   Double_t localPoint[3] = {0.,0.,0.};
+   Double_t localVelocity[3] = {0.,0.,0.};
+	Double_t localField[3] = {0.,0.,0.};
+	
+   // -- Compute distance and time to the closest boundary of the current node
+   // -- If point is outside (outside geometry), just check the top node
+   if (navigator->IsOutside()) {
+		Error("FindNextBoundaryAlongParabola","Point is Outside");
+		TUCNGeoBBox* topShape = static_cast<TUCNGeoBBox*>(top_volume->GetShape());
+		tnext = topShape->TimeFromInsideAlongParabola(globalPoint, globalVelocity, globalField, navigator->GetStep(), iact);
+		topShape = 0; 
+		snext = TUCNParabola::Instance()->ArcLength(globalVelocity, globalField, tnext);
+		fUCNNextNode = top_node;
+      if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
+         fUCNIsStepEntering = kTRUE;
+         navigator->SetStep(snext);
+			this->SetStepTime(tnext);
+         #ifdef VERBOSE_MODE		
+				cout << "FNBAP - fTimeStep: " << this->GetStepTime() << "\t" << "fStep: " << navigator->GetStep() << endl;
+			#endif
+			Int_t indnext = fUCNNextNode->GetVolume()->GetNextNodeIndex();
+         nextDaughterIndex = indnext;
+         while (indnext>=0) {
+            fUCNNextNode = fUCNNextNode->GetDaughter(indnext);
+            indnext = fUCNNextNode->GetVolume()->GetNextNodeIndex();
+         }
+         return fUCNNextNode;
+      }
+      return 0;
+   }
+
+	// -- Get the local coordinates
+   navigator->GetCurrentMatrix()->MasterToLocal(&globalPoint[0], &localPoint[0]);
+   navigator->GetCurrentMatrix()->MasterToLocalVect(&globalVelocity[0], &localVelocity[0]);
+   navigator->GetCurrentMatrix()->MasterToLocalVect(&globalField[0], &localField[0]);
+   TGeoVolume *currentVol = navigator->GetCurrentNode()->GetVolume();
+   
+   // -- Find time and distance to exiting current node
+	#ifdef VERBOSE_MODE		
+		cout << "FNBAP - Find distance to exit current Volume: " << currentVol->GetName() << endl;
+	#endif
+	
+	TUCNGeoBBox* currentShape = static_cast<TUCNGeoBBox*>(currentVol->GetShape());
+   tnext = currentShape->TimeFromInsideAlongParabola(localPoint, localVelocity, localField, navigator->GetStep(), iact); 
+	currentShape = 0;
+	snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
+   // -- Check if we are within the safety region
+	if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
+      fUCNNextNode = navigator->GetCurrentNode();
+      nextDaughterIndex = -1;
+      fUCNIsStepExiting  = kTRUE;
+      fUCNIsStepEntering = kFALSE;
+      navigator->SetStep(snext);
+		this->SetStepTime(tnext);
+		#ifdef VERBOSE_MODE		
+			cout << "FNBAP - fTimeStep: " << this->GetStepTime() << "\t" << "fStep: " << navigator->GetStep() << endl;
+		#endif
+		// I believe we are saying that if the step size is very small ( < 1E-6) then return the current node
+		// as we must be hitting this boundary. I am not sure about this...
+      if (navigator->GetStep() < 1E-6) return navigator->GetCurrentNode();
+   }
+	// If the current step size is reasonable, then set set next node to current node
+	fUCNNextNode = (navigator->GetStep() < 1E20) ? navigator->GetCurrentNode():0;
+	
+   // -- Find next daughter boundary for the current volume
+   Int_t idaughter = -1;
+   this->FindNextDaughterBoundaryAlongParabola(localPoint,localVelocity,localField,idaughter,computeGlobal);
+   if (idaughter >= 0) nextDaughterIndex = idaughter;
+   
+	TGeoNode *currentNode = 0;
+   TGeoNode *daughterNode = 0;
+   TGeoVolume *motherVolume = 0;
+   // if we are in an overlapping node, check also the mother(s)
+   if (navigator->GetNmany()) {
+      #ifdef VERBOSE_MODE		
+			cout << "FNBAP - In overlapping node" << endl;
+		#endif
+		Double_t motherPoint[3], motherVelocity[3], motherField[3];
+      Double_t daughterPoint[3], daughterVelocity[3], daughterField[3];
+      Int_t novlps;
+      Int_t idovlp = -1;
+      Int_t safelevel = navigator->GetSafeLevel();
+      navigator->PushPath(safelevel+1);
+      while (navigator->IsCurrentOverlapping() == kTRUE) {
+         Int_t *ovlps = navigator->GetCurrentNode()->GetOverlaps(novlps);
+         navigator->CdUp();
+         motherVolume = navigator->GetCurrentNode()->GetVolume();
+         navigator->GetCurrentMatrix()->MasterToLocal(&globalPoint[0], &motherPoint[0]);
+         navigator->GetCurrentMatrix()->MasterToLocalVect(&globalVelocity[0], &motherVelocity[0]);
+         navigator->GetCurrentMatrix()->MasterToLocalVect(&globalField[0], &motherField[0]);
+         // check distance to out
+         snext = TGeoShape::Big();
+         if (!motherVolume->IsAssembly()) {
+				TUCNGeoBBox* motherShape = static_cast<TUCNGeoBBox*>(motherVolume->GetShape());
+				tnext = motherShape->TimeFromInsideAlongParabola(motherPoint, motherVelocity, motherField, navigator->GetStep(), iact); 
+				motherShape = 0;
+				snext = TUCNParabola::Instance()->ArcLength(motherVelocity, motherField, tnext);
+         }
+			// check if distance to exit is less than the proposed stepsize
+			if (snext < navigator->GetStep() - TGeoShape::Tolerance()) {
+            fUCNIsStepExiting  = kTRUE;
+            fUCNIsStepEntering = kFALSE;
+            navigator->SetStep(snext);
+				this->SetStepTime(tnext);
+				#ifdef VERBOSE_MODE		
+					cout << "FNBAP - fTimeStep: " << this->GetStepTime() << "\t" << "fStep: " << navigator->GetStep() << endl;
+				#endif
+				fUCNNextNode = navigator->GetCurrentNode();
+            nextDaughterIndex = -3;
+            navigator->DoBackupState();
+         }
+         // check overlapping nodes
+         for (Int_t i=0; i<novlps; i++) {
+            currentNode = motherVolume->GetNode(ovlps[i]);
+            if (!currentNode->IsOverlapping()) {
+               currentNode->cd();
+               currentNode->MasterToLocal(&motherPoint[0], &daughterPoint[0]);
+               currentNode->MasterToLocalVect(&motherVelocity[0], &daughterVelocity[0]);
+               currentNode->MasterToLocalVect(&motherField[0], &daughterField[0]);
+               // Current point may be inside the other node - geometry error that we ignore
+               snext = TGeoShape::Big();
+               if (!currentNode->GetVolume()->Contains(daughterPoint)) {
+                  TUCNGeoBBox* shape = static_cast<TUCNGeoBBox*>(currentNode->GetVolume()->GetShape());
+						tnext = shape->TimeFromInsideAlongParabola(daughterPoint, daughterVelocity, daughterField, navigator->GetStep(), iact); 
+						shape = 0;
+						snext = TUCNParabola::Instance()->ArcLength(daughterVelocity, daughterField, tnext);
+					}
+               // Determine if distance to node is within current stepsize
+					if (snext < navigator->GetStep() - TGeoShape::Tolerance()) {
+                  fUCNIsStepExiting  = kTRUE;
+                  fUCNIsStepEntering = kFALSE;
+                  navigator->SetStep(snext);
+						this->SetStepTime(tnext);
+                  #ifdef VERBOSE_MODE		
+							cout << "FNBAP - fTimeStep: " << this->GetStepTime() << "\t" << "fStep: " << navigator->GetStep() << endl;
+						#endif
+						fUCNNextNode = currentNode;
+                  nextDaughterIndex = -3;
+                  navigator->CdDown(ovlps[i]);
+                  navigator->DoBackupState();
+                  navigator->CdUp();
+               }
+            } else {
+               // another many - check if point is in or out
+               currentNode->cd();
+               currentNode->MasterToLocal(&motherPoint[0], &daughterPoint[0]);
+               currentNode->MasterToLocalVect(&motherVelocity[0], &daughterVelocity[0]);
+               currentNode->MasterToLocalVect(&motherField[0], &daughterField[0]);
+               // Check if point is inside
+					if (currentNode->GetVolume()->Contains(daughterPoint)) {
+                  if (currentNode->GetVolume()->GetNdaughters()) {
+                     navigator->CdDown(ovlps[i]);
+                     fUCNIsStepEntering  = kFALSE;
+                     fUCNIsStepExiting  = kTRUE;
+                     daughterNode = this->FindNextDaughterBoundaryAlongParabola(daughterPoint,daughterVelocity,daughterField,idaughter,computeGlobal);
+                     if (daughterNode) {
+                        fUCNNextNode = daughterNode;
+                        nextDaughterIndex = -3;
+                        navigator->CdDown(idovlp);
+                        Int_t indnext = navigator->GetCurrentNode()->GetVolume()->GetNextNodeIndex();
+                        Int_t iup=0;
+                        while (indnext>=0) {
+                           navigator->CdDown(indnext);
+                           iup++;
+                           indnext = navigator->GetCurrentNode()->GetVolume()->GetNextNodeIndex();
+                        }
+                        navigator->DoBackupState();
+                        while (iup>0) {
+                           navigator->CdUp();
+                           iup--;
+                        }   
+                        navigator->CdUp();
+                     }
+                     navigator->CdUp();
+                  }   
+               } else {
+               // Point is outside   
+						TUCNGeoBBox* shape = static_cast<TUCNGeoBBox*>(currentNode->GetVolume()->GetShape());
+						tnext = shape->TimeFromInsideAlongParabola(daughterPoint, daughterVelocity, daughterField, navigator->GetStep(), iact); 
+						shape = 0;
+						snext = TUCNParabola::Instance()->ArcLength(daughterVelocity, daughterField, tnext);
+                  // Determine if distance to node is within current stepsize
+						if (snext < navigator->GetStep() - TGeoShape::Tolerance()) {
+                     fUCNIsStepExiting  = kTRUE;
+                     fUCNIsStepEntering = kFALSE;
+							navigator->SetStep(snext);
+							this->SetStepTime(tnext);
+                     #ifdef VERBOSE_MODE		
+								cout << "FNBAP - fTimeStep: " << this->GetStepTime() << "\t" << "fStep: " << navigator->GetStep() << endl;
+							#endif
+							fUCNNextNode = currentNode;
+                     nextDaughterIndex = -3;
+                     navigator->CdDown(ovlps[i]);
+                     navigator->DoBackupState();
+                     navigator->CdUp();
+                  }               
+               }  
+            }
+         }
+      }
+      
+		// Now we are in a non-overlapping node
+      if (navigator->GetNmany()) {
+      // We have overlaps up in the branch, check distance to exit
+         Int_t up = 1;
+         Int_t imother;
+         Int_t nmany = navigator->GetNmany();
+         Bool_t ovlp = kFALSE;
+         Bool_t nextovlp = kFALSE;
+         Bool_t offset = kFALSE;
+         currentNode = navigator->GetCurrentNode();
+         TGeoNode *motherNode, *mup;
+         TGeoHMatrix *matrix;
+         while (nmany) {
+            motherNode = navigator->GetMother(up);
+            mup = motherNode;
+            imother = up+1;
+            offset = kFALSE;
+            while (mup->IsOffset()) {
+               mup = navigator->GetMother(imother++);
+               offset = kTRUE;
+            }   
+            nextovlp = mup->IsOverlapping();
+            if (offset) {
+               motherNode = mup;
+               if (nextovlp) nmany -= imother-up;
+               up = imother-1;
+            } else {    
+               if (ovlp) nmany--;
+            }   
+            if (ovlp || nextovlp) {
+               matrix = navigator->GetMotherMatrix(up);
+               matrix->MasterToLocal(&globalPoint[0], &daughterPoint[0]);
+               matrix->MasterToLocalVect(&globalVelocity[0], &daughterVelocity[0]);
+               matrix->MasterToLocalVect(&globalField[0], &daughterField[0]);
+					snext = TGeoShape::Big();
+               if (!motherNode->GetVolume()->IsAssembly()) {
+               	TUCNGeoBBox* motherShape = static_cast<TUCNGeoBBox*>(motherNode->GetVolume()->GetShape());
+						tnext = motherShape->TimeFromInsideAlongParabola(daughterPoint, daughterVelocity, daughterField, navigator->GetStep(), iact); 
+						motherShape = 0;
+						snext = TUCNParabola::Instance()->ArcLength(daughterVelocity, daughterField, tnext);
+					}
+					// Determine if distance to node is within current stepsize
+					if (snext < navigator->GetStep() - TGeoShape::Tolerance()) {
+                  fUCNIsStepEntering  = kFALSE;
+                  fUCNIsStepExiting  = kTRUE;
+                  navigator->SetStep(snext);
+						this->SetStepTime(tnext);
+                  #ifdef VERBOSE_MODE		
+							cout << "FNBAP - fTimeStep: " << this->GetStepTime() << "\t" << "fStep: " << navigator->GetStep() << endl;
+						#endif
+						fUCNNextNode = motherNode;
+                  nextDaughterIndex = -3;
+                  while (up--) navigator->CdUp();
+                  navigator->DoBackupState();
+                  up = 1;
+                  currentNode = navigator->GetCurrentNode();
+                  ovlp = currentNode->IsOverlapping();
+                  continue;
+               }   
+            }   
+            currentNode = motherNode;
+            ovlp = nextovlp;
+            up++;            
+         }
+      }      
+      navigator->PopPath();
+   }
+   return fUCNNextNode;
 }
 
 //_____________________________________________________________________________
@@ -1334,8 +1683,31 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		Double_t timeTravelled = gGeoManager->GetCurrentNavigator()->GetStep()/particle->Velocity(); 
 		this->SetStepTime(timeTravelled);
 	} else {
+		
+		// -- Check whether the routine FindNextBoundaryAlongParabola returns a steptime different from
+		// -- FindNextBoundaryAndStepAlongParabola
+		const Double_t initialStepTime = this->GetStepTime();
+		const Double_t initialStep = gGeoManager->GetStep();
+		
+		this->FindNextBoundaryAlongParabola(track, gravField, this->GetStepTime(), this->IsUCNOnBoundary());
+		const Double_t firstStepTime = this->GetStepTime();
+		const Double_t firstStep = gGeoManager->GetStep();
+		
+		gGeoManager->SetStep(initialStep);
+		this->SetStepTime(initialStepTime);
+		
 		// -- Update Particle is called by FindNext...AlongParabola so no need to repeat that here
 		this->FindNextBoundaryAndStepAlongParabola(track, gravField, this->GetStepTime());
+		const Double_t finalStepTime = this->GetStepTime();
+		const Double_t finalStep = gGeoManager->GetStep();
+		
+		if (TMath::Abs(finalStep - firstStep) > 2.*TGeoShape::Tolerance()) {
+			cout << TMath::Abs(finalStep - firstStep) << endl;
+			cout << "Test Step: " << firstStep << "\t" << "Real Step: " << finalStep << endl;
+			cout << "Test StepTime: " << firstStepTime << "\t" << "Real StepTime: " << finalStepTime << endl;
+		}
+		
+			
 	}
 	
 	// -- Sample Magnetic Field if there is one	
