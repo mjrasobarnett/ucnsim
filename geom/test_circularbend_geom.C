@@ -1,10 +1,12 @@
+// A geometry to test the construction of a circular bend with square cross-section like that found in the EDM experiment
 #include "../include/Units.h"
 #include "../include/Constants.h"
 
 Int_t simulation_geom();
 Int_t visualisation_geom();
 
-Int_t circularbentguide_geom()
+//__________________________________________________________________________
+Int_t test_circularbend_geom()
 {
 	// Build and write to file the simulation geom
 	simulation_geom();
@@ -15,19 +17,8 @@ Int_t circularbentguide_geom()
 
 //__________________________________________________________________________
 Int_t simulation_geom() {
-	// -- Simple Tube example for Mike P, that includes Wall Losses and finding the average field in a parabolic mag field
-
-	// Loading useful libraries (if they aren't already loaded)
-	gSystem->Load("libPhysics");
-	gSystem->Load("libGeom");
-	gSystem->Load("libGeomPainter");
-	gSystem->Load("libEG");
-	gSystem->Load("libUCN");
-	
 	// Create the geoManager
 	TGeoManager* geoManager = new TGeoManager("GeoManager", "Geometry Manager");
-	// Create the UCNNavigator and initialise in the UCNManager
-	Info("TUCNRun", "Creating a new Navigator...");
 
 	// -------------------------------------
 	// BUILDING GEOMETRY
@@ -129,17 +120,17 @@ Int_t simulation_geom() {
 	sourceguide->SetLineColor(kBlue);
 	sourceguide->SetLineWidth(1);
 	sourceguide->SetVisibility(kTRUE);
-	sourceguide->SetTransparency(50);
+	sourceguide->SetTransparency(20);
 	
 	detectorguide->SetLineColor(kBlue);
 	detectorguide->SetLineWidth(1);
 	detectorguide->SetVisibility(kTRUE);
-	detectorguide->SetTransparency(50);
+	detectorguide->SetTransparency(20);
 	
 	bend->SetLineColor(kGreen);
 	bend->SetLineWidth(1);
 	bend->SetVisibility(kTRUE);
-	bend->SetTransparency(50);
+	bend->SetTransparency(20);
 	
 	chamber->SetLineColor(kYellow);
 	chamber->SetLineWidth(1);
@@ -147,7 +138,7 @@ Int_t simulation_geom() {
 	chamber->SetTransparency(80);
 	
 	// -- Write out geometry to file
-	const char *fileName = "geom/circularbentguide_geom.root";
+	const char *fileName = "geom/test_circularbend_geom.root";
 	cerr << "Geometry Built... Writing to file: " << fileName << endl;
 	geoManager->Export(fileName);
 	geoManager->Delete();
@@ -159,17 +150,8 @@ Int_t visualisation_geom() {
 	// -- This geometry is to be used exclusively for visualisation purposes as the current implementation
 	// -- of TUCNCompositeShape cannot be drawn due to known casting problems in TGeoPainter 
 	
-	// Loading useful libraries (if they aren't already loaded)
-	gSystem->Load("libPhysics");
-	gSystem->Load("libGeom");
-	gSystem->Load("libGeomPainter");
-	gSystem->Load("libEG");
-	gSystem->Load("libUCN");
-	
 	// Create the geoManager
 	TGeoManager* geoManager = new TGeoManager("GeoManager", "Geometry Manager");
-	// Create the UCNNavigator and initialise in the UCNManager
-	Info("TUCNRun", "Creating a new Navigator...");
 
 	// -------------------------------------
 	// BUILDING GEOMETRY
@@ -271,27 +253,64 @@ Int_t visualisation_geom() {
 	sourceguide->SetLineColor(kBlue);
 	sourceguide->SetLineWidth(1);
 	sourceguide->SetVisibility(kTRUE);
-	sourceguide->SetTransparency(50);
+	sourceguide->SetTransparency(20);
 	
 	detectorguide->SetLineColor(kBlue);
 	detectorguide->SetLineWidth(1);
 	detectorguide->SetVisibility(kTRUE);
-	detectorguide->SetTransparency(50);
+	detectorguide->SetTransparency(20);
 	
 	bend->SetLineColor(kGreen);
 	bend->SetLineWidth(1);
 	bend->SetVisibility(kTRUE);
-	bend->SetTransparency(50);
+	bend->SetTransparency(20);
 	
 	chamber->SetLineColor(kYellow);
 	chamber->SetLineWidth(1);
 	chamber->SetVisibility(kTRUE);
 	chamber->SetTransparency(80);
 	
-	// -- Write out geometry to file
-	const char *fileName = "geom/circularbentguide_visualisation.root";
+   // -------------------------------------
+   // -- Draw the geometry in OpenGLViewer
+   TCanvas* canvas = new TCanvas("GeomCanvas","Canvas for visualisation of EDM Geom",60,40,600,600);
+   canvas->cd();
+   geoManager->SetVisLevel(3); // Default draws 4 levels down volume heirarchy
+   geoManager->SetVisOption(0); // Default is 1, but 0 draws all the intermediate volumes not just the final bottom layer
+   geoManager->GetTopVolume()->Draw("ogl");
+
+   // -- Get the GLViewer so we can manipulate the camera
+   TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
+
+   // -- Select Draw style 
+   glViewer->SetStyle(TGLRnrCtx::kFill); // TGLRnrCtx::kFill, TGLRnrCtx::kOutline, TGLRnrCtx::kWireFrame
+
+   // -- Set Background colour
+   glViewer->SetClearColor(TColor::kBlack);
+
+   // -- Set Lights - turn some off if you wish
+   //	TGLLightSet* lightSet = glViewer->GetLightSet();
+   //	lightSet->SetLight(TGLLightSet::kLightLeft, kFALSE);
+
+   // -- Set Camera type
+   // kCameraPerspXOZ, kCameraPerspYOZ, kCameraPerspXOY, kCameraOrthoXOY
+   // kCameraOrthoXOZ, kCameraOrthoZOY, kCameraOrthoXnOY, kCameraOrthoXnOZ, kCameraOrthoZnOY
+   TGLViewer::ECameraType camera = 2;
+   glViewer->SetCurrentCamera(camera);
+// glViewer->CurrentCamera().SetExternalCenter(kTRUE);
+   Double_t cameraCentre[3] = {0., 0., 0.};
+   glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
+
+   // -- Draw Reference Point, Axes
+   Double_t refPoint[3] = {0.,0.,0.};
+   // Int_t axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const Double_t referencePos[3]
+   glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
+
+   glViewer->UpdateScene();
+	
+	// -------------------------------------
+   // -- Write out geometry to file
+	const char *fileName = "geom/test_circularbend_vis.root";
 	cerr << "Geometry Built... Writing to file: " << fileName << endl;
 	geoManager->Export(fileName);
-	geoManager->Delete();
 	return 0;
 }
