@@ -9,3 +9,5 @@ data/oldformat/*
 *.aux
 *.gz
 *.d
+.DS_Store
+temp/*
