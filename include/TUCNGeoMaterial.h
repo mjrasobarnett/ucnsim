@@ -49,6 +49,8 @@ public:
 	Double_t 				TotalLossCrossSection() const 					{return fTotalLossCrossSection;}
 	void						FermiPotential(Double_t fermiPotential)		{fFermiPotential = fermiPotential;}
 	Double_t 				FermiPotential() const 								{return fFermiPotential;}
+	void						WPotential(Double_t wPotential)					{fWPotential = wPotential;}
+	Double_t 				WPotential() const 									{return fWPotential;}
 	
 	Double_t 				Eta() const ;
 	
