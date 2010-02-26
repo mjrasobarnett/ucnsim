@@ -1892,14 +1892,16 @@ Bool_t TUCNRun::Bounce(TVirtualGeoTrack* track, const Double_t* normal, TUCNGeoM
 {
 	// -- Get particle
 	TUCNParticle* ucnparticle = static_cast<TUCNParticle*>(track->GetParticle());
+	// -- GetNavigator
+	TGeoNavigator* navigator = gGeoManager->GetCurrentNavigator();
 	
 	// -- Direction Vector
-	Double_t dir[3] = {(gGeoManager->GetCurrentNavigator()->GetCurrentDirection())[0], (gGeoManager->GetCurrentNavigator()->GetCurrentDirection())[1], (gGeoManager->GetCurrentNavigator()->GetCurrentDirection())[2]};
+	Double_t dir[3] = {navigator->GetCurrentDirection()[0], navigator->GetCurrentDirection()[1], navigator->GetCurrentDirection()[2]};
 	
 	// -- Normal Vector
 	Double_t norm[3] = {normal[0], normal[1], normal[2]};
 	
-	// Check if the normal vector is actually pointing in the wrong direction 
+	// Check if the normal vector is actually pointing in the wrong direction  
 	// (wrong means pointing along the direction of the track, rather than in the opposite direction)
 	// This will actually be the case nearly all (if not all) of the time, because of the way ROOT calculates the normal
 	Double_t dotProduct = dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2];
@@ -1909,7 +1911,17 @@ Bool_t TUCNRun::Bounce(TVirtualGeoTrack* track, const Double_t* normal, TUCNGeoM
 		norm[1] = -norm[1];
 		norm[2] = -norm[2];
 	}
-		
+	
+	// -- Move point back into the tracking volume along the normal direction by 2*times the tolerance
+	Double_t pos[3] = {navigator->GetCurrentPoint()[0], navigator->GetCurrentPoint()[1], navigator->GetCurrentPoint()[2]};
+	pos[0] = pos[0] + norm[0]*2.0*TGeoShape::Tolerance();
+	pos[1] = pos[1] + norm[1]*2.0*TGeoShape::Tolerance();
+	pos[2] = pos[2] + norm[2]*2.0*TGeoShape::Tolerance();
+	
+	// -- Set the new point
+	navigator->SetCurrentPoint(pos);
+
+	
 	// -- Calculate Probability of diffuse reflection
 	Double_t fermiPotential = wallMaterial->FermiPotential();
 	Double_t diffuseCoefficient = wallMaterial->RoughnessCoeff();
