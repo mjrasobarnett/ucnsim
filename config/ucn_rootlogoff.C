@@ -1,3 +1,3 @@
 {
-cout << "Bye bye" << endl;
+	cout << "Bye bye" << endl;
 }
