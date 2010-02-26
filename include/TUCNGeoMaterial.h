@@ -21,9 +21,7 @@ private:
 protected:
 	Double_t					fFermiPotential;
 	Double_t					fWPotential;
-	Double_t 				fScatteringLength;
-	
-	Double_t 				fTotalLossCrossSection;
+	Double_t					fRoughnessCoeff;
 	
 	Bool_t					fIsBlackHole;
 	Bool_t					fIsTrackingMaterial;
@@ -43,14 +41,13 @@ public:
    virtual ~TUCNGeoMaterial();
 	
 	// -- methods
-	void						ScatteringLength(Double_t scatteringLength) 	{fScatteringLength = scatteringLength;}
-	Double_t 				ScatteringLength() const 							{return fScatteringLength;}
-	void						TotalLossCrossSection(Double_t crossSection) {fTotalLossCrossSection = crossSection;}
-	Double_t 				TotalLossCrossSection() const 					{return fTotalLossCrossSection;}
 	void						FermiPotential(Double_t fermiPotential)		{fFermiPotential = fermiPotential;}
 	Double_t 				FermiPotential() const 								{return fFermiPotential;}
 	void						WPotential(Double_t wPotential)					{fWPotential = wPotential;}
 	Double_t 				WPotential() const 									{return fWPotential;}
+	void						RoughnessCoeff(Double_t roughnessCoeff)		{fRoughnessCoeff = roughnessCoeff;}
+	Double_t 				RoughnessCoeff() const 								{return fRoughnessCoeff;}
+	
 	
 	Double_t 				Eta() const ;
 	

@@ -19,8 +19,7 @@ TUCNGeoMaterial::TUCNGeoMaterial()
 	Info("TUCNGeoMaterial", "Dummy Constructor");
 	fFermiPotential = 0.;
 	fWPotential = 0.;
-	this->ScatteringLength(0.);
-	this->TotalLossCrossSection(0.);
+	fRoughnessCoeff = 0.;
 	this->IsBlackHole(kFALSE);
 	this->IsTrackingMaterial(kFALSE);
 	this->IsDetectorMaterial(kFALSE);
@@ -35,8 +34,7 @@ TUCNGeoMaterial::TUCNGeoMaterial(const char *name, Double_t fermiPotential, Doub
 	Info("TUCNGeoMaterial", "Constructor");
 	fFermiPotential = fermiPotential;
 	fWPotential = wPotential;
-	this->ScatteringLength(0.);
-	this->TotalLossCrossSection(0.);
+	fRoughnessCoeff = 0.;
 	this->IsBlackHole(kFALSE);
 	this->IsTrackingMaterial(kFALSE);
 	this->IsDetectorMaterial(kFALSE);
@@ -48,8 +46,7 @@ TUCNGeoMaterial::TUCNGeoMaterial(const TUCNGeoMaterial& gm)
              	 :TGeoMaterial(gm),
 					  fFermiPotential(gm.fFermiPotential),
 					  fWPotential(gm.fWPotential),
-					  fScatteringLength(gm.fScatteringLength),
-					  fTotalLossCrossSection(gm.fTotalLossCrossSection),
+					  fRoughnessCoeff(gm.fRoughnessCoeff),
 					  fIsBlackHole(gm.fIsBlackHole),
 					  fIsTrackingMaterial(gm.fIsTrackingMaterial),
 					  fIsDetectorMaterial(gm.fIsDetectorMaterial),
@@ -69,8 +66,7 @@ TUCNGeoMaterial& TUCNGeoMaterial::operator=(const TUCNGeoMaterial& gm)
       TGeoMaterial::operator=(gm);
 		fFermiPotential = gm.fFermiPotential;
 		fWPotential = gm.fWPotential;
-		fScatteringLength = gm.fScatteringLength;
-		fTotalLossCrossSection = gm.fTotalLossCrossSection;
+		fRoughnessCoeff = gm.fRoughnessCoeff;
 		fIsBlackHole = gm.fIsBlackHole;
 		fIsTrackingMaterial = gm.fIsTrackingMaterial;
 		fIsDetectorMaterial = gm.fIsDetectorMaterial;
