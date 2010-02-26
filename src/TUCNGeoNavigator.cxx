@@ -22,6 +22,7 @@
 #include "TUCNGravField.h"
 #include "TUCNParticle.h"
 #include "TUCNParabola.h"
+#include "TUCNMagField.h"
 #include "Units.h"
 
 #include "TUCNGeoNavigator.h"
@@ -947,7 +948,8 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 
 	Int_t stepNumber;
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-
+	TUCNMagField* magField = static_cast<TUCNGeoManager*>(gGeoManager)->GetMagField("Uniform magnetic field");
+	
 	#ifdef VERBOSE_MODE				
 		cout << "PropagateForSetTime - Starting Run - Max time (seconds): " <<  runTime << endl;
 	#endif
@@ -959,15 +961,15 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 	}
 	
 	// -- Check for presence of Grav Field
-	TUCNGravField* field = NULL;
+	TUCNGravField* gravField = NULL;
 	if(static_cast<TUCNGeoManager*>(gGeoManager)->CheckForGravity() == kTRUE) {
-		field = TUCNGravField::Instance();
+		gravField = TUCNGravField::Instance();
 	}
 	
 	///////////////////////////////////	
 	// -- Propagation Loop
 	///////////////////////////////////
-	for (stepNumber = 0 ; stepNumber < fgMaxSteps ; stepNumber++) {
+	for (stepNumber = 1 ; stepNumber < fgMaxSteps ; stepNumber++) {
 		
 		#ifdef VERBOSE_MODE		
 			cout << "STEP " << stepNumber << "\t" << particle->T() << " s" << "\t" << this->GetCurrentNode()->GetName() << endl;	
@@ -976,9 +978,12 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 		// -- Calculate the Next StepTime
 		this->DetermineNextStepTime(particle, maxStepTime, runTime);
 		
-		// Make a step
-		Bool_t stepSuccess = this->MakeStep(track, field);
+		// -- Make a step
+		Bool_t stepSuccess = this->MakeStep(track, gravField);
 		assert(stepSuccess == kTRUE);
+		
+		// -- Sample Field
+		particle->SampleMagField(magField, stepNumber);
 		
 		// -- Determine Particle destination
 		// Has lost flag been set?
@@ -1120,13 +1125,13 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* field)
 		assert(particle->Velocity() > 0.0);
 		Double_t timeTravelled = this->GetStep()/particle->Velocity(); 
 		this->SetStepTime(timeTravelled);
-		
 		this->UpdateTrack(track, this->GetStepTime());
+		
 	} else {
 		// -- Update Particle is called by FindNext...AlongParabola so no need to repeat that here
 		this->FindNextBoundaryAndStepAlongParabola(track, field, this->GetStepTime());
 	}
-		
+	
 	#ifdef VERBOSE_MODE	
 		cout << "------------------- END OF STEP ----------------------" << endl;
 		cout << "Final Steptime (s): " << this->GetStepTime() << endl;
@@ -1199,6 +1204,7 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* field)
 			}
 		}
 	}
+	
 	return kTRUE;
 }
 
@@ -1243,7 +1249,7 @@ void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track, const Double_t timeI
 	
 	// Update track
 	track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
-	
+		
 	#ifdef VERBOSE_MODE
 		cout << "UpdateTrack -- Height climbed: " << heightClimbed << "\t" << "Kinetic Energy Gained(Lost): " << -gravPotentialEnergy/Units::neV << endl;
 		cout << "UpdateTrack -- Final X: " << particle->Vx() << "\t" << "Y: " << particle->Vy() << "\t" <<  "Z: " << particle->Vz() << "\t" <<  "T: " << particle->T() << endl;

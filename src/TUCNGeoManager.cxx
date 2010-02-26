@@ -97,7 +97,6 @@ Int_t TUCNGeoManager::AddMagField(TUCNMagField *field)
 TUCNMagField* TUCNGeoManager::GetMagField(const char* name) const
 {
 // Search for a named mag field. All trailing blanks stripped.
-   Info("GetMagField", "GetMagField");
 	TString sname = name;
    sname = sname.Strip();
    TUCNMagField* field = static_cast<TUCNMagField*>(this->GetListOfMagFields()->FindObject(sname.Data()));
