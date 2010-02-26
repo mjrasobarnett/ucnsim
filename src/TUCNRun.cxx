@@ -2,6 +2,8 @@
 // Author: Matthew Raso-Barnett  08/10/2009
 
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 #include <cassert>
 #include <vector>
 #include <stdexcept>
@@ -253,6 +255,10 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 	vector<Int_t> lostTracks;
 
 	for (Int_t trackid = 0; trackid < numberOfTracks; trackid++) {
+		// Print Progress Bar to Screen
+		#ifndef VERBOSE_MODE				
+			PrintProgress(trackid, numberOfTracks);
+		#endif
 		// Get Track from list
 		TVirtualGeoTrack* track = geoManager->GetTrack(trackid);
 		// Set Current Track
@@ -2068,4 +2074,91 @@ Bool_t TUCNRun::DiffuseBounce(Double_t* dir, const Double_t* norm)
 	return kTRUE;
 }
 
+//_____________________________________________________________________________
+void TUCNRun::PrintProgress(Int_t entry, Float_t nEntriesF)
+{
+ // Written By Nick Devenish
+ Int_t nEntries = (Int_t)nEntriesF;
+ // How wide should we make the progress bar?
+ const Int_t width = 70;
+ // How long is the string for entries?
+ static Int_t countlen = -1;
+ // How long is our progress bar?
+ static Int_t barlen = -1;
+ // The entry number of the next bar entry
+ static Int_t nextbar = -1;
+ // When did we start?
+ static time_t starttime = 0;
+ // when do we next update?
+ static time_t nextupdate = 0;
+ // If we are processing the first entry, reset everything
+ if (entry <= 1)
+ {
+   // Get the new length of the entry string
+   countlen = (Int_t)TMath::Ceil(TMath::Log10(nEntries)) + 1;
+   nextbar = -1;
+   starttime = time(NULL);
+
+   barlen = width - 14 - countlen*2 - 1;
+ }
+
+ // Check here to see if we should update; otherwise, return
+ // Check to see if the bar would update
+ // or, alternatively, it is time to refresh.
+ if ((time(NULL) < nextupdate) && (entry < nextbar)) return;
+ nextupdate = time(NULL) + 10;
+
+ // Because this is used in several places, make it here
+ Float_t frac = (Float_t)entry / (Float_t)nEntries;
+
+ // Prepare the progress bar string
+ TString bar;
+ if (entry <= nEntries)
+ {
+   // Work out how many characters we are in
+   Int_t numeq = TMath::FloorNint(frac*barlen);
+
+   // Work out when the next bar will occur
+   nextbar = (Int_t)((Float_t)(numeq+1)/(Float_t)barlen*nEntries);
+   //cout << "Next bar at: " << nextbar << "        " << endl;
+   bar = TString('=', numeq);
+   bar += TString(' ', barlen - numeq);
+ } else if (entry > nEntries) {
+   // We have gone over. Oh no!
+   bar = TString('+', barlen);
+ } else if (entry < 0) {
+   // Somehow, we are below zero. Handle it nonetheless
+   bar = TString('-', barlen); 
+ }
+
+
+ // Prepare the ETA
+ Float_t elapsed_time = (Float_t)(time(NULL) - starttime);
+ Float_t time_left = -60;
+ if (frac > 1e-6) {
+   time_left = (elapsed_time / frac) - elapsed_time;
+ }
+ Int_t mins, seconds;
+ mins    = (Int_t)TMath::Floor(time_left / 60.0f);
+ seconds = (Int_t)TMath::Floor(time_left - (Float_t)(mins*60.0f));
+ // TString ETA;
+ std::ostringstream ETA;
+
+ ETA << "ETA ";
+ if ((mins < 0 || seconds < 0) || (mins == 0 && seconds == 0)) {
+   ETA << "--:--";
+ } else {
+   ETA << std::setfill('0') << std::setw(2) << mins << ":" << std::setw(2) << seconds;
+ }
+
+ cout << " Progress: [" << bar << "] "
+      << std::setw(countlen) << entry << "/" << nEntries
+      << " " << ETA.str()
+      << '\r'
+      << std::flush;
+ // Move to the next line, if this is the final entry!
+ if (entry == nEntries) {
+   cout << endl;
+ }
+}
 

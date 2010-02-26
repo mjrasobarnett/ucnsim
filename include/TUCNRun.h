@@ -128,6 +128,7 @@ class TUCNRun : public TNamed
 		Bool_t 						DiffuseBounce(Double_t* dir, const Double_t* norm);
 		void							UpdateParticle(TUCNParticle* particle, const Double_t timeInterval=0., const TUCNGravField* gravField=0);
 		
+		void							PrintProgress(Int_t entry, Float_t nEntriesF);
 
 	ClassDef(TUCNRun, 1)      
 };
