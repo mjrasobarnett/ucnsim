@@ -7,7 +7,7 @@
 #include "TNamed.h"
 
 #include "TUCNGeoManager.h"
-#include "TUCNData.h"
+//#include "TUCNData.h"
 
 #include "TCanvas.h"
 #include "TFile.h"
@@ -28,7 +28,7 @@ protected:
  	TUCNRunManager& operator=(const TUCNRunManager&);
 	
 	TUCNGeoManager*				fManager;
-	TUCNData*						fData;
+//	TUCNData*						fData;
 			
 public:
 	// -- constructors
@@ -50,11 +50,11 @@ public:
 	Bool_t 					PropagateAllTracks(Int_t steps, Double_t maxStepTime);
 	Bool_t 					PropagateTrack(Double_t runTime, Double_t maxStepTime, Int_t trackIndex = 0);
 	Bool_t 					PropagateTrack(Int_t steps, Double_t maxStepTime, Int_t trackIndex = 0);
-	void 						DrawParticles(TCanvas* canvas, TPolyMarker3D* points);
-	void						DrawTrack(TCanvas* canvas, TVirtualGeoTrack* track);
+//	void 						DrawParticles(TCanvas* canvas, TPolyMarker3D* points);
+//	void						DrawTrack(TCanvas* canvas, TVirtualGeoTrack* track);
 	
-	void						WriteOutData(TFile* file);
-	TGeoTrack* 				GetTrack(Int_t trackID);
+//	void						WriteOutData(TFile* file);
+//	TGeoTrack* 				GetTrack(Int_t trackID);
 	
 	
 	

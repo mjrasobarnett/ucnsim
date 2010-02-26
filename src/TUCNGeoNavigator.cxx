@@ -115,7 +115,9 @@ Double_t* TUCNGeoNavigator::FindUCNNormal()
 // is close enough to the boundary. Works only after calling FindNextBoundaryAndStepAlongParabola.
 // This method must be used exclusively instead of TGeoNavigator::FindNormal when gravity is present.
 
-	if (fUCNGeometry->GetGravField() == NULL) return this->FindNormal(); // If there is no gravity use method FindNormal
+	// If there is no gravity use method FindNormal
+	if (static_cast<TUCNGeoManager*>(gGeoManager)->CheckForGravity() == kFALSE) return this->FindNormal(); 
+	
 	if (!fUCNNextNode) return 0;
    Double_t local[3];
    Double_t ldir[3];
@@ -350,7 +352,7 @@ TGeoNode* TUCNGeoNavigator::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrac
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
 	
 	// -- Get the global field
-	if (fUCNGeometry->GetGravField() == NULL) {
+	if (static_cast<TUCNGeoManager*>(gGeoManager)->CheckForGravity() == kFALSE) {
 		throw runtime_error("In TUCNGeoNavigator::FindNextBoundaryAndStepAlongParabola - Grav Field has not been set");
 	}
 	
@@ -928,8 +930,11 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 		throw runtime_error("In TUCNGeoNavigator::PropagateTrack - particle initialised inside a boundary");
 	}
 	
-	// -- Get the Grav Field
-	TUCNGravField* field = fUCNGeometry->GetGravField();
+	// -- Check for presence of Grav Field
+	TUCNGravField* field = NULL;
+	if(static_cast<TUCNGeoManager*>(gGeoManager)->CheckForGravity() == kTRUE) {
+		field = TUCNGravField::Instance();
+	}
 	
 	///////////////////////////////////	
 	// -- Propagation Loop
@@ -1101,8 +1106,11 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Int_t ste
 		throw runtime_error("In TUCNGeoNavigator::PropagateTrack - particle initialised inside a boundary");
 	}
 	
-	// -- Get the Grav Field
-	TUCNGravField* field = fUCNGeometry->GetGravField();
+	// -- Check for presence of Grav Field
+	TUCNGravField* field = NULL;
+	if(static_cast<TUCNGeoManager*>(gGeoManager)->CheckForGravity() == kTRUE) {
+		field = TUCNGravField::Instance();
+	}
 	
 	if (steps <= 0) {
 		Error("PropagateTrack", "No. of Steps must be greater than or equal to 1");
@@ -1266,16 +1274,16 @@ void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track, Double_t timeInterva
 	
 	const Double_t* pos = this->GetCurrentPoint();
 	const Double_t* dir = this->GetCurrentDirection(); 
-	const TUCNGravField* field = fUCNGeometry->GetGravField();
 	
 	Double_t heightClimbed = 0.0;
 	Double_t gravPotentialEnergy = 0.0;
 	
-	if (field != NULL) {
+	if (static_cast<TUCNGeoManager*>(gGeoManager)->CheckForGravity() == kTRUE) {
 		// Determine the height of our particle in the global coordinate system of TOP.
 		// Take the dot product of the point vector with the field direction unit vector to get the height of this point in the gravitational field.
 		// This assumes a convention that 'height' is measured along an axis that INCREASES in the opposite direction to the field direction vector
 		// (which is usually 'downwards')
+		TUCNGravField* field = TUCNGravField::Instance();
 		heightClimbed = -1.0*((pos[0] - particle->Vx())*field->Nx() + (pos[1] - particle->Vy())*field->Ny() + (pos[2] - particle->Vz())*field->Nz());
 		gravPotentialEnergy = particle->Mass_GeV_c2()*field->GravAcceleration()*heightClimbed;
 	}

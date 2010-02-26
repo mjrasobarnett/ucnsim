@@ -23,9 +23,13 @@
 #include "TUCNGeoNavigator.h"
 #include "TUCNGeoBuilder.h"
 #include "TUCNGeoBBox.h"
+#include "TUCNGeoTube.h"
 #include "TUCNGeoMaterial.h"
-#include "TUCNParticleCloud.h"
+#include "TUCNGravField.h"
 #include "TUCNParticle.h"
+#include "TUCNRunManager.h"
+
+
 #include "Constants.h"
 #include "Units.h"
 
@@ -44,35 +48,33 @@ Int_t ucnstandalone() {
 	gSystem->Load("libUCN");
 #endif
 	
-	TBenchmark benchmark;
-	benchmark.Start("UCN Simulation");
-		
-	// -- Create a UCNGeoManager
-	TUCNGeoManager* myManager = new TUCNGeoManager("TestUCNGeoManager", "Derived class from TGeoManager");
 	
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- Create a Run Manager
+	TUCNRunManager* runManager = new TUCNRunManager();
+	TUCNGeoManager* geoManager = runManager->GetGeoManager();
+	
+	// Materials
 	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0,0);
 	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0,0);
 	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0,0);
-   	TUCNGeoMaterial* matDetector  = new TUCNGeoMaterial("Detector Material", 0,0,0);
 
 	matTracking->IsTrackingMaterial(kTRUE);
 	matBlackHole->IsBlackHole(kTRUE);
-	matDetector->IsDetectorMaterial(kTRUE);
 	
 	// -- Making Mediums
 	TGeoMedium* vacuum = new TGeoMedium("Vacuum",1, matTracking);
 	TGeoMedium* blackHole = new TGeoMedium("BlackHole",2, matBlackHole);
 	TGeoMedium* boundary = new TGeoMedium("Boundary",3, matBoundary);
-	TGeoMedium* detectorMedium = new TGeoMedium("DetectorBoundary",4, matDetector);
 	
 	// -- Making Top Volume
- 	TGeoVolume* chamber = myManager->MakeBox("TOP",blackHole,20,20,20);
-	myManager->SetTopVolume(chamber);
+ 	TGeoVolume* chamber = geoManager->MakeBox("TOP",blackHole,20,20,20);
+	geoManager->SetTopVolume(chamber);
 			
 	// -- Make a GeoBBox object via the UCNGeoManager
 	Double_t boxX = 0.11, boxY = 0.11, boxZ = 0.91; 
-	TGeoVolume* box   = myManager->MakeBox("box",boundary, boxX, boxY, boxZ);
-	TGeoVolume* innerBox  = myManager->MakeBox("innerbox",vacuum, boxX-0.01, boxY-0.01, boxZ-0.01);
+	TGeoVolume* box   = geoManager->MakeUCNBox("box",boundary, boxX, boxY, boxZ);
+	TGeoVolume* innerBox  = geoManager->MakeUCNBox("innerbox",vacuum, boxX-0.01, boxY-0.01, boxZ-0.01);
 	
 	// -- Define the transformation of the volume
 	TGeoRotation r1,r2; 
@@ -90,44 +92,85 @@ Int_t ucnstandalone() {
 	chamber->AddNode(box,1, matrix);
 	
 	cout << "Top Volume Nodes: " << chamber->GetNodes()->GetEntriesFast() << endl;
-	cout << "Manager - No. of Volumes: " << myManager->GetListOfVolumes()->GetEntriesFast() << endl;
-	cout << "Manager - No. of Shapes: " << myManager->GetListOfShapes()->GetEntriesFast() << endl;
-	cout << "Manager - No. of Nodes: " << myManager->GetListOfNodes()->GetEntriesFast() << endl;
+	cout << "Manager - No. of Volumes: " << geoManager->GetListOfVolumes()->GetEntriesFast() << endl;
+	cout << "Manager - No. of Shapes: " << geoManager->GetListOfShapes()->GetEntriesFast() << endl;
+	cout << "Manager - No. of Nodes: " << geoManager->GetListOfNodes()->GetEntriesFast() << endl;
 		
 	// -- Arrange and close geometry
-    myManager->CloseGeometry();
-	myManager->GetTopVolume()->Draw();
-	myManager->SetVisLevel(4);
-	myManager->SetVisOption(0);
-//	myManager->SetTopVisible();
+   geoManager->CloseGeometry();
+	geoManager->GetTopVolume()->Draw();
+	geoManager->SetVisLevel(4);
+	geoManager->SetVisOption(0);
 	
-	// -- Make a Grav Field
-	Double_t fieldDir[3] = {0., 0., -1.};
-	myManager->AddGravField(fieldDir[0], fieldDir[1], fieldDir[2]);
+	///////////////////////////////////////////////////////////////////////////////////////
+	
+	// -- Include/Don't include gravity
+	runManager->TurnGravityOn();
 
-	// -- Create Particle Cloud
-	Double_t totalEnergy = 200*Units::neV;
-	UInt_t particles = 50000;
-	TUCNParticleCloud* particleCloud = myManager->AddParticleCloud();
-//	myManager->RandomPoints(myUCNTube);
-	particleCloud->UniformMonoEnergeticDistribution(particles, totalEnergy, innerBox, matrix);
-			
-	// Create Tracks
-	myManager->MakeTracks(myManager->GetParticleCloud());
-
-	// Propagate Tracks
-	Double_t runtime = 10.*Units::s;
+	// -- Load / Define the parameters of the Run
+	Double_t runTime = 10.*Units::s;
 	Double_t maxStepTime = 0.01*Units::s;
-	myManager->PropagateTracks(runtime, maxStepTime, kTRUE, kFALSE);
-			
-	// Draw Points
-	TPolyMarker3D FinalPoints(particles, 1);
-	for (Int_t i = 0; i < particleCloud->GetListOfParticles()->GetEntriesFast(); i++) {
-		FinalPoints.SetPoint(i, particleCloud->GetParticle(i)->Vx(), particleCloud->GetParticle(i)->Vy(), particleCloud->GetParticle(i)->Vz());
+	Int_t particles = 50000;
+	Double_t totalEnergy = 200*Units::neV;
+	
+	// Generating mono-energetic particles inside the source volume
+	cout << "Generating " << particles << " particles..."	<< endl;
+	runManager->GenerateMonoEnergeticParticles(innerBox, matrix, particles, totalEnergy);
+	
+	///////////////////////////////////////////////////////////////////////////////////////
+	// WRITE OUT DATA
+	ofstream initialout("initialdata.txt");
+	ofstream finalout("finaldata.txt");
+	// --------------------------------------------------------------------------------------
+	initialout << "Number" << "\t" << "Neutron Time" << "\t" << "Neutron Energy" << "\t";
+	initialout << "X Position" << "\t" << "Y Position" << "\t" << "Z Position" << "\t" << "PX" << "\t" << "PY" << "\t" << "PZ" << "\t";
+	initialout << "Detected" << "\t" << "Decayed" << "\t" << "Lost" << "\t" << endl;
+	// --------------------------------------------------------------------------------------
+	finalout << "Number" << "\t" << "Neutron Time" << "\t" << "Neutron Energy" << "\t";
+	finalout << "X Position" << "\t" << "Y Position" << "\t" << "Z Position" << "\t" << "PX" << "\t" << "PY" << "\t" << "PZ" << "\t";
+	finalout << "Detected" << "\t" << "Decayed" << "\t" << "Lost" << "\t" << endl;
+	
+	Int_t tracks = geoManager->GetNtracks();
+
+	for (Int_t id = 0; id < tracks; id++) {
+		// Get each Track
+		TVirtualGeoTrack* track = geoManager->GetTrack(id);
+		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+		// Write out the initial particle data
+		initialout << id << "\t" << particle->T() /Units::s << "\t" << particle->Energy() /Units::neV << "\t";
+		initialout << particle->Vx() /Units::m << "\t" << particle->Vy() /Units::m << "\t" << particle->Vz() /Units::m << "\t";
+		initialout << particle->Px() /Units::eV << "\t" << particle->Py() /Units::eV << "\t" << particle->Pz() /Units::eV << "\t";
+		initialout << particle->Detected() << "\t" << particle->Decayed() << "\t" << particle->Lost() << "\t" << endl;
 	}
-	FinalPoints.SetMarkerColor(2);
-	FinalPoints.SetMarkerStyle(6);
-	FinalPoints.Draw();
+	
+	// -- Propagate the tracks according to the run parameters
+	runManager->PropagateAllTracks(runTime, maxStepTime);	
+	
+	
+	for (Int_t id = 0; id < tracks; id++) {
+		// Get each Track
+		TVirtualGeoTrack* track = geoManager->GetTrack(id);
+		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+		// Write out the initial particle data
+		finalout << id << "\t" << particle->T() /Units::s << "\t" << particle->Energy() /Units::neV << "\t";
+		finalout << particle->Vx() /Units::m << "\t" << particle->Vy() /Units::m << "\t" << particle->Vz() /Units::m << "\t";
+		finalout << particle->Px() /Units::eV << "\t" << particle->Py() /Units::eV << "\t" << particle->Pz() /Units::eV << "\t";
+		finalout << particle->Detected() << "\t" << particle->Decayed() << "\t" << particle->Lost() << "\t" << endl;
+	}
+	///////////////////////////////////////////////////////////////////////////////////////
+	
+	// Draw Points
+	geoManager->GetTopVolume()->Draw();
+	geoManager->SetVisLevel(4);
+	geoManager->SetVisOption(0);
+	
+//	TPolyMarker3D FinalPoints(particles, 1);
+//	for (Int_t i = 0; i < particles; i++) {
+//		FinalPoints.SetPoint(i, particleCloud->GetParticle(i)->Vx(), particleCloud->GetParticle(i)->Vy(), particleCloud->GetParticle(i)->Vz());
+//	}
+//	FinalPoints.SetMarkerColor(2);
+//	FinalPoints.SetMarkerStyle(6);
+//	FinalPoints.Draw();
 				
 #ifndef __CINT__
 	theApp->Run();

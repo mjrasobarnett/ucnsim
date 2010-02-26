@@ -3,7 +3,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-//#pragma link C++ class TUCNRunManager;
+#pragma link C++ class TUCNRunManager;
 #pragma link C++ class TUCNGeoManager;
 #pragma link C++ class TUCNGeoNavigator;
 #pragma link C++ class TUCNGeoBuilder;
@@ -18,6 +18,6 @@
 #pragma link C++ class TUCNParabola;
 #pragma link C++ class TUCNPolynomial;
 //#pragma link C++ class TUCNData;
-#pragma link C++ class TUCNParticleCloud;
+//#pragma link C++ class TUCNParticleCloud;
 
 #endif
