@@ -81,16 +81,16 @@ Bool_t DrawInitialAndFinalPositions(const char* fileName, TGeoManager* geoManage
 	}
 	
 	// -- Draw Initial Points
-	TCanvas *canvas = new TCanvas("InitialAndFinalPositionsCanvas","Neutron Initial and Final Positions",60,0,400,400);
-	canvas->Divide(2,1);
-	canvas->cd(1);
-	geoManager->GetTopVolume()->Draw();
+	TCanvas *canvas1 = new TCanvas("InitialPositionsCanvas","Neutron Initial Positions",60,0,400,400);
+	canvas1->cd();
+//	geoManager->GetVolume("SourceGuide")->Draw();
 	geoManager->SetVisLevel(4);
 	geoManager->SetVisOption(0);
 	initialPositions->Draw();
 	// -- Draw Final Points
-	canvas->cd(2);
-	geoManager->GetTopVolume()->Draw();
+	TCanvas *canvas2 = new TCanvas("FinalPositionsCanvas","Neutron Final Positions",460,0,400,400);
+	canvas2->cd();
+//	geoManager->GetTopVolume()->Draw();
 	geoManager->SetVisLevel(4);
 	geoManager->SetVisOption(0);
 	finalPositions->Draw();
