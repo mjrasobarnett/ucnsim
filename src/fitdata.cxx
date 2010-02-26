@@ -51,7 +51,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	// Start 'the app' -- this is so we are able to enter into a ROOT session after the program has run, instead of just quitting. Useful to play with histograms.
 	TRint *theApp = new TRint("FittingApp", &argc, argv);
 	
-	// -- Read the geometry into memory
+/*	// -- Read the geometry into memory
 	cout << "-------------------------------------------" << endl;
 	cerr << "Reading Geometry from " << geomFile << endl;
 	cout << "-------------------------------------------" << endl;
@@ -92,7 +92,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	// Draw Final Positions 
 //	TCanvas * canvas1 = new TCanvas("canvas1", "Final Particle Positions", 800, 10, 600, 600);
 //	PlotFinalPositions(canvas1, experiment);
-	
+*/	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- FITTING 
 /*	Int_t nbins = 50;
@@ -299,8 +299,8 @@ Int_t main(Int_t argc,Char_t **argv)
 		Histogram->Draw("E1");
 		
 	}
-	theApp->Run();
-*/	
+*/	theApp->Run();
+	
 	return 0;
 }	
 
@@ -320,9 +320,9 @@ Double_t lossFunc(Double_t* x, Double_t* /*par*/) {
 }
 
 // -------------------------------------------------------------------------------------- 
-void	PlotFinalPositions(TCanvas* canvas, TUCNExperiment* experiment) {
-	// Take canvas, divide into segments proportional to number of runs. Then plot final positions onto canvas.
-/*	Int_t nRuns = experiment->NumberOfRuns();
+void	PlotFinalPositions(TCanvas* /*canvas*/, TUCNExperiment* /*experiment*/) {
+/*	// Take canvas, divide into segments proportional to number of runs. Then plot final positions onto canvas.
+	Int_t nRuns = experiment->NumberOfRuns();
 	// If more than one run, divide the canvas appropriately
 	if (nRuns != 1) 	canvas->Divide((nRuns%2 == 0 ? nRuns/2:(nRuns/2+1)),2);
 	// Draw the final positions of the particles on the canvas

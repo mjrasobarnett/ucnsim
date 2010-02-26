@@ -33,10 +33,10 @@ namespace FitSuite
 {
 //	Bool_t LoadFile(const TString& configFileName);
 	
-	Bool_t PlotFinalPositions(TFile* f);
+/*	Bool_t PlotFinalPositions(TFile* f);
 	
 	
-/*	//______________________________________________________________________________
+	//______________________________________________________________________________
 	Bool_t LoadFile(const string& configFileName, TFile* dataFile) {
 		// Read in config file
 		TUCNConfigFile ConfigFile(configFileName);
@@ -58,13 +58,13 @@ namespace FitSuite
 			}
 		}
 	}
-*/	
+	
 	//______________________________________________________________________________
 	Bool_t DisplayFinalPositions(TFile* f) {
 		cout << "Display Final Positions" << endl;
 		return kTRUE;
 	}
-	
+*/	
 	
 	
 }
