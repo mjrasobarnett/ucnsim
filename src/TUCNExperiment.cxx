@@ -49,6 +49,15 @@ TUCNExperiment::TUCNExperiment()
 {
 // -- Default constructor
    Info("TUCNExperiment", "Dummy Constructor");
+	// Create the GeoManager
+	new TGeoManager("GeoManager", "The Geometry Manager");
+	// Create the UCNNavigator and initialise in the UCNManager
+	// This must be done so that the manager defaults to our navigator. Otherwise it will create a new defualt navigator
+	// that is not of type UCNNavigator.
+	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(geoManager);
+	Int_t navigatorIndex = geoManager->AddNavigator(navigator);
+	geoManager->SetCurrentNavigator(navigatorIndex);fConfigFile = new TUCNConfigFile(configFileName);
+	// Initialise remaining data members
 	fConfigFile = 0;
 	fFieldManager = 0;
 	fNumberOfRuns = 0;
@@ -62,7 +71,15 @@ TUCNExperiment::TUCNExperiment(std::string configFileName)
 {
 // -- Default constructor
    Info("TUCNExperiment", "Constructor");
+	// Create the GeoManager
 	new TGeoManager("GeoManager", "The Geometry Manager");
+	// Create the UCNNavigator and initialise in the UCNManager
+	// This must be done so that the manager defaults to our navigator. Otherwise it will create a new defualt navigator
+	// that is not of type UCNNavigator.
+	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(geoManager);
+	Int_t navigatorIndex = geoManager->AddNavigator(navigator);
+	geoManager->SetCurrentNavigator(navigatorIndex);
+	// Initialise remaining data members
 	fConfigFile = new TUCNConfigFile(configFileName);
 	fFieldManager = new TUCNFieldManager();
 	fNumberOfRuns = 0;
@@ -188,13 +205,6 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* co
 {
 	// -------------------------------------
 	// BUILDING GEOMETRY
-	
-	// Create the UCNNavigator and initialise in the UCNManager
-	// This must be done so that the manager defaults to our navigator. Otherwise it will create a new defualt navigator
-	// that is not of type UCNNavigator.
-	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(geoManager);
-	Int_t navigatorIndex = geoManager->AddNavigator(navigator);
-	geoManager->SetCurrentNavigator(navigatorIndex);
 	
 	// Read in value of FermiPotential
 	Double_t V = 0.0;
