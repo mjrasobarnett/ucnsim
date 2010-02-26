@@ -1240,7 +1240,8 @@ void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track, const Double_t timeI
 	// Update particle
 	particle->SetProductionVertex(pos[0], pos[1], pos[2], particle->T() + timeInterval);
 	particle->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
-
+	particle->IncreaseDistance(this->GetStep()); // Increase the distance travelled stored in the particle
+	
 	// Update track
 	track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
 	
@@ -1374,7 +1375,8 @@ Bool_t TUCNGeoNavigator::DiffuseBounce(Double_t* dir, const Double_t* norm)
 	// Rotate normal vector about perpendicular axis by angle theta. Using Rodrigues' formula derived in notes. 
 	TVector3 rotatedNorm(0.,0.,0.);
 	{
-		TVector3 term2 = localNorm - (localNorm.Dot(perpAxis))*perpAxis; // name term2 and term3 just refer to the terms as they appear in the Rodrigues' formula
+		// name term2 and term3 just refer to the terms as they appear in the Rodrigues' formula
+		TVector3 term2 = localNorm - (localNorm.Dot(perpAxis))*perpAxis; 
 		TVector3 term3 = perpAxis.Cross(localNorm);
 		rotatedNorm = localNorm + (TMath::Cos(theta) - 1.0)*term2 + TMath::Sin(theta)*term3;
 	}
