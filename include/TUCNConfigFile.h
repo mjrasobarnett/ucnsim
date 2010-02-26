@@ -4,6 +4,7 @@
 #define TUCNCONFIGFILE_H
 
 #include "TObject.h"
+#include <map>
 
 class TUCNConfigFile : public TObject {
 	public:

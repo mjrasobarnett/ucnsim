@@ -210,8 +210,8 @@ bool TUCNConfigFile::GetBool(string key, string section, bool defaultval)
   if (value.size() == 0) return defaultval;
   
   // Now try to work out what it is
-  if (value == "True" || value == "true") return true;
-  if (value == "False" || value == "false") return false;
+  if (value == "True" || value == "true" || value == "TRUE") return true;
+  if (value == "False" || value == "false" || value == "FALSE") return false;
   
   // Try to convert to an integer, and see if it is non-zero
   istringstream iss (value);
