@@ -7,6 +7,8 @@
 #include "Units.h"
 
 #include "TUCNParticle.h"
+#include "TUCNGeoMaterial.h"
+#include "TRandom.h"
 #include "TParticlePDG.h"
 
 using namespace std;
@@ -198,4 +200,28 @@ Double_t TUCNParticle::SampleMagField(const TUCNMagField* magfield, const Int_t 
 	assert(stepNumber != 0);
 	this->AvgMagField(totalField/stepNumber);
 	return this->AvgMagField();
+}
+
+//______________________________________________________________________________
+Bool_t TUCNParticle::IsLostToWall(TUCNGeoMaterial* wall, const Double_t* normal) const
+{
+// Calculate whether particle will be absorbed/upscattered by the wall
+	Double_t fermiPotential = wall->FermiPotential();
+	Double_t eta = wall->Eta();
+//	cout << "Material: " << wall->GetName() << "\t" << "eta: " << eta << "\t" <<  "fermiPotential: " << fermiPotential << "\t" << endl;
+//	cout << "nx: " << this->DirX() << "\t" << "ny: " << this->DirY() << "\t" << "nz: " << this->DirZ() << endl;
+//	cout << "normx: " << normal[0] << "\t" << "normy: " << normal[1] << "\t" << "normz: " << normal[2] << endl;	
+	// Take dot product of two unit vectors - normal and direction vector - to give the angle between them
+	Double_t cosTheta = TMath::Abs(this->DirX()*normal[0] + this->DirY()*normal[1] + this->DirZ()*normal[2]);
+	Double_t energyPerp = this->Energy()*cosTheta*cosTheta;
+	Double_t lossProb = 2.*eta*(TMath::Sqrt(energyPerp/(fermiPotential - energyPerp)));
+//	cout << "Loss Prob: " << lossProb << "\t" << "EnergyPerp: " << energyPerp/Units::neV << "\t" <<  "cosTheta: " << cosTheta << "\t" << endl;
+	// roll dice to see whether particle is lost
+	Double_t diceRoll = gRandom->Uniform(0.0, 1.0);
+	if (diceRoll <= lossProb) {
+//		cout << "DiceRoll: " << diceRoll << "\t" << "LossProb: " << lossProb << endl;
+		return kTRUE;
+	} else {
+		return kFALSE;
+	}
 }

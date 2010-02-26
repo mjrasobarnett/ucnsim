@@ -7,7 +7,7 @@
 
 #include "TParticle.h"
 #include "TUCNMagField.h"
-
+#include "TUCNGeoMaterial.h"
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
 // 						TUCNParticle 													  //
@@ -51,6 +51,8 @@ public:
 	Int_t						Bounces()										{return fBounces;}
 	Int_t						SpecularBounces()								{return fSpecularBounces;}
 	Int_t						DiffuseBounces()								{return fDiffuseBounces;}
+	
+	Bool_t					IsLostToWall(TUCNGeoMaterial* wall, const Double_t* normal) const;
 	
 //	void						DiffuseProbability(Double_t prob) 		{fDiffuseProb = prob;}
 	Double_t					DiffuseProbability() const 				{return fgDiffuseProb;}
