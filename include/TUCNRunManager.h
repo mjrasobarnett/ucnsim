@@ -4,42 +4,60 @@
 #ifndef ROOT_TUCNRunManager
 #define ROOT_TUCNRunManager
 
+#include "TNamed.h"
+
+#include "TUCNGeoManager.h"
+#include "TUCNData.h"
+
+#include "TCanvas.h"
+#include "TFile.h"
+#include "TPolyMarker3D.h"
+
+
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
 // 						TUCNRunManager													  //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-class TUCNRunManager  
+class TUCNRunManager : public TNamed 
 {
 
 protected:
 	TUCNRunManager(const TUCNRunManager&); 
  	TUCNRunManager& operator=(const TUCNRunManager&);
 	
-private:
-		
+	TUCNGeoManager*				fManager;
+	TUCNData*						fData;
+			
 public:
 	// -- constructors
    TUCNRunManager();
-   TUCNRunManager(TUCNRunManager* geom);
    
 	// -- destructor
 	virtual ~TUCNRunManager();
 
 	// -- methods
-	Double_t                DetermineNextStepTime(TUCNParticle* particle, const Double_t runTime);
-	Double_t 					GetStepTime() const {return fStepTime;}
-	void							SetStepTime(Double_t stepTime); 
-		
-	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Double_t runTime, const Double_t maxStepTime);
-	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Int_t steps, const Double_t maxStepTime);
+	TUCNGeoManager* 		GetGeoManager() { return fManager; } 
 	
-	Bool_t 						Bounce(TVirtualGeoTrack* track);
-	Bool_t 						SpecularBounce(Double_t* dir, const Double_t* norm);
-	Bool_t 						DiffuseBounce(Double_t* dir, const Double_t* norm);
-	void							UpdateTrack(TVirtualGeoTrack* track, Double_t timeInterval=0.);
-
+	TGeoNode*				CreateGeometry();
+	
+	void						TurnGravityOn() { fManager->SetGravity(kTRUE); }
+			
+	Bool_t 					GenerateMonoEnergeticParticles(TGeoVolume* sourceVolume, TGeoMatrix* matrix, Int_t totalParticles, Double_t totalEnergy);
+	
+	Bool_t 					PropagateAllTracks(Double_t runTime, Double_t maxStepTime);
+	Bool_t 					PropagateAllTracks(Int_t steps, Double_t maxStepTime);
+	Bool_t 					PropagateTrack(Double_t runTime, Double_t maxStepTime, Int_t trackIndex = 0);
+	Bool_t 					PropagateTrack(Int_t steps, Double_t maxStepTime, Int_t trackIndex = 0);
+	void 						DrawParticles(TCanvas* canvas, TPolyMarker3D* points);
+	void						DrawTrack(TCanvas* canvas, TVirtualGeoTrack* track);
+	
+	void						WriteOutData(TFile* file);
+	TGeoTrack* 				GetTrack(Int_t trackID);
+	
+	
+	
    ClassDef(TUCNRunManager, 1)      
 };
 
