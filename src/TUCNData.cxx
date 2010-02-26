@@ -67,6 +67,20 @@ TUCNData::~TUCNData(void)
 }
 
 //_____________________________________________________________________________
+Bool_t TUCNData::ChecksOut()
+{
+// -- Perform a check out routine, to ensure data is consistent
+	Int_t initialParticles = this->GetInitialParticlesTree()->GetEntries();
+	Int_t finalParticles = this->GetFinalParticlesTree()->GetEntries();
+	if (initialParticles != finalParticles) {
+		Error("ChecksOut", "Number of initial particle states does not match number of final states!");
+		return kFALSE;
+	} 
+	Info("ChecksOut","Number of Initial States: %i. Number of Final States: %i.",initialParticles,finalParticles);
+	return kTRUE;
+}
+
+//_____________________________________________________________________________
 Bool_t TUCNData::AddTrack(TGeoTrack* track)
 {
 	// Add the Track to the the Track Tree

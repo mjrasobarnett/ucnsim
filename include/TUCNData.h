@@ -27,6 +27,8 @@ class TUCNData : public TNamed {
 		TUCNData(const char *name, const char *title);
 		virtual ~TUCNData(void);
 		
+		Bool_t					ChecksOut();
+		
 		// Storage of Tracks and Particles
 		Bool_t					AddTrack(TGeoTrack* track);
 		Bool_t					AddInitialParticleState(TUCNParticle* particle);
