@@ -1373,7 +1373,7 @@ Double_t TUCNGeoTube::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 		cout << "TimeFromOutsideAlongParabola - Check if Bounding box is within maximum step distance" << endl;
 	#endif
 	// Check if the bounding box is crossed within the requested distance
-   Double_t tBox = TUCNGeoBBox::TimeFromOutsideAlongParabola(point, velocity, field, fDX, fDY, fDZ, fOrigin, stepmax);
+   Double_t tBox = TUCNGeoBBox::TimeFromOutsideAlongParabolaS(point, velocity, field, fDX, fDY, fDZ, fOrigin, stepmax);
 	Double_t sBox = TUCNParabola::Instance()->ArcLength(velocity, field, tBox);
    #ifdef VERBOSE_MODE				
 		cout << "TimeFromOutsideAlongParabola - Distance to Box: " << sBox << "\t" << "Max Step Distance: " << stepmax << endl;

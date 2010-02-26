@@ -73,19 +73,20 @@ class TUCNGeoTube : public TUCNGeoBBox
 	   virtual void          SetPoints(Float_t *points) const;
 	   virtual void          SetSegsAndPols(TBuffer3D &buff) const;
 	   virtual void          Sizeof3D() const;
-		
-		// -- new methods
-		
-		virtual Double_t 		TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, 
-																				Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
-		static  Double_t 		TimeFromInsideAlongParabolaS(Double_t* point, Double_t* velocity, Double_t* field, Double_t rmin, Double_t rmax, Double_t dz);
-		virtual Double_t 		TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, 
-																				Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
-		static  Double_t 		TimeFromOutsideAlongParabolaS(Double_t* point, Double_t* velocity, Double_t* field, Double_t rmin, Double_t rmax, Double_t dz);
 
-		static  Bool_t			IsNextPointOnTube(Double_t* point, Double_t* velocity, Double_t* field, const Double_t radius, const Double_t dz, const Double_t t);
-		
-   ClassDef(TUCNGeoTube, 1)     // UCNGeoTube
+      // -- new methods
+      virtual Double_t     TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, 
+                                        Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
+      static  Double_t     TimeFromInsideAlongParabolaS(Double_t* point, Double_t* velocity, Double_t* field,
+                                        Double_t rmin, Double_t rmax, Double_t dz);
+      virtual Double_t     TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, 
+                                        Double_t stepmax=TGeoShape::Big(), Int_t iact=1, Double_t *safe=0) const;
+      static  Double_t     TimeFromOutsideAlongParabolaS(Double_t* point, Double_t* velocity, Double_t* field,
+                                        Double_t rmin, Double_t rmax, Double_t dz);
+      static  Bool_t       IsNextPointOnTube(Double_t* point, Double_t* velocity, Double_t* field,
+                                        const Double_t radius, const Double_t dz, const Double_t t);
+
+      ClassDef(TUCNGeoTube, 1)     // UCNGeoTube
 };
 
 #endif

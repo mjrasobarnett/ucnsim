@@ -66,14 +66,16 @@ TUCNGeoBBox::~TUCNGeoBBox()
 //_____________________________________________________________________________
 Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, Double_t stepmax, Int_t iact, Double_t *safe) const
 {
-	// This method calculates the time of all possible intersections of the particle's future path with all possible boundaries of the current shape.
+	// This method calculates the time of all possible intersections of the particle's future path
+	// with all possible boundaries of the current shape.
 	// Method then compares the times found and returns the smallest, non-zero value. 
 	
 	#ifdef VERBOSE_MODE		
 		cout << "TimeFromInsideAlongParabola - iact: " << iact << "\t" << "stepmax: " << stepmax << endl;
 	#endif
 	// ----------------------------------------------------------------------
-	// -- For efficiency calculate the safety distance along straight line to surface. If this distance is greater than the proposed stepmax, then just return Big()
+	// -- For efficiency calculate the safety distance along straight line to surface.
+	// -- If this distance is greater than the proposed stepmax, then just return Big()
 	// -- This code is from root's DistanceFrom... methods. 
 	Double_t smin,saf[6];
    Double_t newpt[3];
@@ -194,10 +196,11 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point, Double_t* vel
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, 
+Double_t TUCNGeoBBox::TimeFromInsideAlongParabolaS(Double_t* point, Double_t* velocity, Double_t* field, 
 																		Double_t dx, Double_t dy, Double_t dz, const Double_t *origin, Double_t /*stepmax*/)
 {
-	// This method calculates the time of all possible intersections of the particle's future path with all possible boundaries of the current shape.
+	// This method calculates the time of all possible intersections of the particle's future
+	// path with all possible boundaries of the current shape.
 	// Method then compares the times found and returns the smallest, non-zero value. 
 		
 	// ----------------------------------------------------------------------
@@ -470,16 +473,18 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, 
+Double_t TUCNGeoBBox::TimeFromOutsideAlongParabolaS(Double_t* point, Double_t* velocity, Double_t* field, 
 																		Double_t dx, Double_t dy, Double_t dz, const Double_t *origin, Double_t stepmax) 
 {
-	// This method calculates the time of all possible intersections of the particle's future path with all possible boundaries of the current shape.
-	// Method then compares the times found and checks that the corresponding point of intersection with each boundary plane actually corresponds to a point
-	// on the box. From these valid solutions, the method	returns the smallest, non-zero value.
+	// This method calculates the time of all possible intersections of the particle's future path
+	// with all possible boundaries of the current shape. Method then compares the times found and
+	// checks that the corresponding point of intersection with each boundary plane actually corresponds
+	// to a point on the box. From these valid solutions, the method	returns the smallest, non-zero value.
 		
 	// ----------------------------------------------------------------------
-	// -- For efficiency calculate the safety distance along straight line to surface. If this distance is greater than the proposed stepmax, then just return Big()
-	// -- This code is from root's DistanceFrom... methods.
+	// For efficiency calculate the safety distance along straight line to surface. If this distance
+	// is greater than the proposed stepmax, then just return Big().
+	// This code is from root's DistanceFrom... methods.
 	Bool_t in = kTRUE;
    Double_t saf[3], par[3], newpt[3];
 
@@ -508,7 +513,6 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 	
 
 	// ----------------------------------------------------------------------
-	
 	// -- Calculate the actual time to the boundary
 	Double_t tfinal = 0.; // The smallest time to reach any boundary;
 	Double_t boundary[3] = {dx, dy, dz}; // Store the coordinates of the box boundaries
@@ -584,7 +588,8 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 				// -- If the current overall smallest time to any boundary is zero, initialise it to the first non-zero time to a boundary
 				tfinal = tmin;
 			} else if (tmin > 0.0 && tmin < tfinal) {
-				// -- Check if this time, the smallest, non-zero time to the current boundary, is smaller than the current overall smallest time to any boundary
+				// -- Check if this time, the smallest, non-zero time to the current boundary, is smaller
+				// -- than the current overall smallest time to any boundary
 				tfinal = tmin;
 			}
 		}
