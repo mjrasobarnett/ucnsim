@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
+#include <string>
 #include <cassert>
 #include <stdio.h> // sprintf
 
@@ -41,12 +42,14 @@
 #include "TUCNUniformMagField.h"
 #include "TUCNRun.h"
 #include "TUCNFieldManager.h"
+#include "TUCNConfigFile.h"
 
 #include "Constants.h"
 #include "Units.h"
 
 using std::cout;
 using std::endl;
+using std::string;
 
 void BuildGeometry(TUCNGeoManager* geoManager);
 

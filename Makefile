@@ -61,6 +61,8 @@ TUCNPARABOLICMAGFIELDO = src/TUCNParabolicMagField.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNPARABOLICMAGFIELDS = src/TUCNParabolicMagField.$(SrcSuf) UCNDict.$(SrcSuf)
 TUCNFIELDMANAGERO 	= src/TUCNFieldManager.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNFIELDMANAGERS 	= src/TUCNFieldManager.$(SrcSuf) UCNDict.$(SrcSuf)
+TUCNCONFIGFILEO 		= src/TUCNConfigFile.$(ObjSuf) UCNDict.$(ObjSuf)
+TUCNCONFIGFILES 		= src/TUCNConfigFile.$(SrcSuf) UCNDict.$(SrcSuf)
 
 #------------------------------------------------------------------------------
 # my library with my classes
@@ -72,7 +74,7 @@ UCNLIB			= -L./lib -lUCN -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter
 OBJS				=	$(SANDBOXO) $(UCNSIMO) $(FITDATAO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) \
  						$(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) \
  						$(TUCNPARABOLAO) $(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) \
- 						$(TUCNRUNO) $(TUCNPARABOLICMAGFIELDO) $(TUCNFIELDMANAGERO)
+ 						$(TUCNRUNO) $(TUCNPARABOLICMAGFIELDO) $(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO)
 PROGRAMS			=	$(UCNSO) $(UCNSIM) $(FITDATA) $(SANDBOX)
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
@@ -105,7 +107,7 @@ UCN:				$(UCNSO)
 $(UCNSO):		$(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) \
 					$(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
 					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO) \
-					$(TUCNPARABOLICMAGFIELDO) $(TUCNFIELDMANAGERO)
+					$(TUCNPARABOLICMAGFIELDO) $(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO)
 
 ifeq ($(ARCH),aix)
 		/usr/ibmcxx/bin/makeC++SharedLib $(OutPutOpt) $@ $(LIBS) -p 0 $^
@@ -149,13 +151,14 @@ TUCNUNIFORMMAGFIELDO:		include/TUCNUniformMagField.h
 TUCNRUNO:						include/TUCNRun.h
 TUCNPARABOLICMAGFIELDO:		include/TUCNParabolicMagField.h
 TUCNFIELDMANAGERO:			include/TUCNFieldManager.h
+TUCNCONFIGFILEO:				include/TUCNConfigFile.h
 
 UCNDict.$(SrcSuf):		include/TUCNGeoManager.h include/TUCNGeoNavigator.h include/TUCNGeoBuilder.h \
 								include/TUCNGeoBBox.h include/TUCNGeoTube.h include/TUCNGeoMaterial.h \
 								include/TUCNGravField.h include/TUCNParticle.h \
 								include/TUCNDataParser.h include/TUCNPolynomial.h include/TUCNParabola.h \
 								include/TUCNRunManager.h include/TUCNData.h include/TUCNMagField.h include/TUCNUniformMagField.h \
-								include/TUCNParabolicMagField.h include/TUCNRun.h include/TUCNFieldManager.h $(LINKDEF)
+								include/TUCNParabolicMagField.h include/TUCNRun.h include/TUCNFieldManager.h include/TUCNConfigFile.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 
