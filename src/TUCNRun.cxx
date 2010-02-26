@@ -40,6 +40,7 @@ using std::cout;
 using std::endl;
 using std::cerr;
 using std::runtime_error;
+
 //#define VERBOSE_MODE
 
 ClassImp(TUCNRun)
@@ -1579,7 +1580,9 @@ Bool_t TUCNRun::DiffuseBounce(Double_t* dir, const Double_t* norm)
 	gGeoManager->GetCurrentNavigator()->MasterToLocalVect(norm, lnorm);
 	TVector3 localNorm(lnorm[0], lnorm[1], lnorm[2]);
 	assert(TMath::Abs(localNorm.Mag() - 1.0) < fgTolerance);
-		
+	
+	// ------------------------------------------------------------------
+	// -- FIND A SINGLE ARBITRARY VECTOR PERPENDICULAR TO THE LOCAL NORMAL
 	// Define a preferred direction in our coordinate system - usually the z-direction - that we want to be perpendicular to the normal vector of our surface
 	TVector3 upAxis(0.,0.,1.);
 		
@@ -1587,17 +1590,22 @@ Bool_t TUCNRun::DiffuseBounce(Double_t* dir, const Double_t* norm)
 	if (TMath::Abs(upAxis.Dot(localNorm)) > fgTolerance) {
 		upAxis.SetXYZ(1.,0.,0.);
 		if (TMath::Abs(upAxis.Dot(localNorm)) > fgTolerance) {
-			cout << "Axis X: " << upAxis.X() << "\t" <<  "Y: " << upAxis.Y() << "\t" <<   "Z: " << upAxis.Z() << endl;
-			cout << "LocalNorm X: " << localNorm.X() << "\t" <<  "Y: " << localNorm.Y() << "\t" <<   "Z: " << localNorm.Z() << endl;
-			throw runtime_error("In TUCNRun::DiffuseBounce - Could not find an axis perpendicular to normal. Normal is parallel to z and x axes!!!");
+			// In the (hopefully) unlikely case that localNorm has components in the x and z directions. This has been observed when including the
+			// bend geometry. This suggests that in the local coordinate system in this instance, the z-axis is not along the vertical as we usually assume.
+			// Thus including this check covers our backs. 
+			upAxis.SetXYZ(0.,1.,0.);
+			if (TMath::Abs(upAxis.Dot(localNorm)) > fgTolerance) {
+				cout << "Axis X: " << upAxis.X() << "\t" <<  "Y: " << upAxis.Y() << "\t" <<   "Z: " << upAxis.Z() << endl;
+				cout << "LocalNorm X: " << localNorm.X() << "\t" <<  "Y: " << localNorm.Y() << "\t" <<   "Z: " << localNorm.Z() << endl;
+				throw runtime_error("In TUCNRun::DiffuseBounce - Could not find an axis perpendicular to normal. Normal is parallel to z and x axes!!!");
+			}
 		}
 	}
-	
 	// Calculate the cross product of the 'up' vector with our normal vector to get a vector guaranteed to be perpendicular to the normal. 
 	// This is the vector we will want to rotate around initially. 
 	TVector3 perpAxis = localNorm.Cross(upAxis); 
 	assert(TMath::Abs(perpAxis.Mag() - 1.0) < fgTolerance);
-	
+	// ------------------------------------------------------------------
 	
 	// Rotate normal vector about perpendicular axis by angle theta. Using Rodrigues' formula derived in notes. 
 	TVector3 rotatedNorm(0.,0.,0.);
