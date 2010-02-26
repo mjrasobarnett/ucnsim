@@ -257,6 +257,10 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 		TVirtualGeoTrack* track = geoManager->GetTrack(trackid);
 		// Set Current Track
 		geoManager->SetCurrentTrack(track);
+		// Store the random number seed in particle
+		static_cast<TUCNParticle*>(track->GetParticle())->SetInitialSeed(gRandom->GetSeed());
+		// Add Initial Particle State to data tree
+		this->AddInitialParticle(static_cast<TUCNParticle*>(track->GetParticle()));
 		// Propagate track
 		Bool_t propagated = this->PropagateTrack(geoManager, fieldManager);
 		if (!propagated) {
