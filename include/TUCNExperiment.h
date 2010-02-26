@@ -19,6 +19,10 @@ class TUCNConfigFile;
 class TUCNExperiment : public TNamed 
 {
 protected:
+	// GeoManager
+	TGeoManager*				fGeoManager;
+	TGeoManager*				GeoManager() const {return fGeoManager;}
+	
 	// Runs
 	TObjArray*					fRuns;
 	// Source Volume
@@ -44,7 +48,7 @@ public:
 
 	// -- methods
 	Bool_t					Initialise(TUCNConfigFile& configFile);
-	Bool_t					BuildGeometry(TGeoManager* geoManager, TUCNConfigFile& configFile);
+	Bool_t					BuildGeometry(TGeoManager& geoManager, TUCNConfigFile& configFile);
 	
 	Int_t						NumberOfRuns() const {return fRuns->GetEntries();}
 	TUCNRun*					GetRun(Int_t index) const;

@@ -41,29 +41,38 @@ ClassImp(TUCNExperiment)
 
 //_____________________________________________________________________________
 TUCNExperiment::TUCNExperiment()
-					:TNamed("Experiment", "Default Run Manager")
+					:TNamed("Experiment", "The Experiment")
 {
 // -- Default constructor
    Info("TUCNExperiment", "Constructor");
+	fGeoManager = new TGeoManager("GeoManager", "The Geometry Manager");
 	fRuns = new TObjArray();
+	fSourceVolumeIndex = 0;
+	fSourceMatrixIndex = 0;
 } 
 
 //_____________________________________________________________________________
-TUCNExperiment::TUCNExperiment(const TUCNExperiment& runm)
-					:TNamed(runm),
-					 fRuns(runm.fRuns)
+TUCNExperiment::TUCNExperiment(const TUCNExperiment& other)
+					:TNamed(other),
+					 fGeoManager(other.fGeoManager),
+					 fRuns(other.fRuns),
+					 fSourceVolumeIndex(other.fSourceVolumeIndex),
+					 fSourceMatrixIndex(other.fSourceMatrixIndex)
 {
 // -- Copy Constructor
 	Info("TUCNExperiment", "Copy Constructor");
 }
 
 //_____________________________________________________________________________
-TUCNExperiment& TUCNExperiment::operator=(const TUCNExperiment& runm)
+TUCNExperiment& TUCNExperiment::operator=(const TUCNExperiment& other)
 {
 // --assignment operator
-	if(this!=&runm) {
-      TNamed::operator=(runm);
-		fRuns = runm.fRuns;
+	if(this!=&other) {
+      TNamed::operator=(other);
+		fGeoManager = other.fGeoManager;
+		fRuns = other.fRuns;
+		fSourceVolumeIndex = other.fSourceVolumeIndex;
+		fSourceMatrixIndex = other.fSourceMatrixIndex;
 	}
    return *this;
 }
@@ -73,7 +82,8 @@ TUCNExperiment::~TUCNExperiment()
 { 
 // -- Destructor
 	Info("TUCNExperiment", "Destructor");
-	if (fRuns) fRuns->Delete();
+	if (fGeoManager) delete fGeoManager;
+	if (fRuns) {fRuns->Delete(); delete fRuns;}
 }
 
 // -- METHODS --
@@ -81,7 +91,7 @@ TUCNExperiment::~TUCNExperiment()
 TGeoVolume* TUCNExperiment::MakeUCNBox(const char *name, TGeoMedium *medium, Double_t dx, Double_t dy, Double_t dz)
 {
 // Make in one step a volume pointing to a box shape with given medium.
-	return TUCNGeoBuilder::UCNInstance(gGeoManager)->MakeUCNBox(name, medium, dx, dy, dz);
+	return TUCNGeoBuilder::UCNInstance(this->GeoManager())->MakeUCNBox(name, medium, dx, dy, dz);
 }
 
 //_____________________________________________________________________________
@@ -89,14 +99,14 @@ TGeoVolume *TUCNExperiment::MakeUCNTube(const char *name, TGeoMedium *medium,
 	Double_t rmin, Double_t rmax, Double_t dz)
 {
 // Make in one step a volume pointing to a tube shape with given medium.
-	return TUCNGeoBuilder::UCNInstance(gGeoManager)->MakeUCNTube(name, medium, rmin, rmax, dz);
+	return TUCNGeoBuilder::UCNInstance(this->GeoManager())->MakeUCNTube(name, medium, rmin, rmax, dz);
 }
 
 //_____________________________________________________________________________
 void	TUCNExperiment::SetSourceVolume(TGeoVolume* sourceVolume)
 {
 	// Find object in the list and store the array index
-	Int_t index = gGeoManager->GetListOfVolumes()->IndexOf(sourceVolume);
+	Int_t index = this->GeoManager()->GetListOfVolumes()->IndexOf(sourceVolume);
 	if (index < 0) {
 		cerr << "Source volume not found in array. Volume must be registered with GeoManager first." << endl;
 	} else {
@@ -108,7 +118,7 @@ void	TUCNExperiment::SetSourceVolume(TGeoVolume* sourceVolume)
 void	TUCNExperiment::SetSourceMatrix(TGeoMatrix* sourceMatrix)
 {
 	// Find object in the list and store the array index
-	TObjArray* matricesList = gGeoManager->GetListOfMatrices();
+	TObjArray* matricesList = this->GeoManager()->GetListOfMatrices();
 	if (!sourceMatrix->IsRegistered()) {
 		cerr << "SourceMatrix not previously registered. Registering now..." << endl;
 		sourceMatrix->RegisterYourself();
@@ -128,7 +138,7 @@ TGeoVolume*	TUCNExperiment::GetSourceVolume() const
 {
 	// Find object in the list and return
 	if (fSourceVolumeIndex > 0) {
-		TGeoVolume* sourceVolume = static_cast<TGeoVolume*>(gGeoManager->GetListOfVolumes()->At(fSourceVolumeIndex));
+		TGeoVolume* sourceVolume = static_cast<TGeoVolume*>(this->GeoManager()->GetListOfVolumes()->At(fSourceVolumeIndex));
 		assert(sourceVolume != 0);
 		return sourceVolume;
 	} else {
@@ -142,7 +152,7 @@ TGeoMatrix*	TUCNExperiment::GetSourceMatrix() const
 {
 	// Find object in the list and return
 	if (fSourceMatrixIndex > 0) {
-		TGeoMatrix* sourceMatrix = static_cast<TGeoMatrix*>(gGeoManager->GetListOfMatrices()->At(fSourceMatrixIndex));
+		TGeoMatrix* sourceMatrix = static_cast<TGeoMatrix*>(this->GeoManager()->GetListOfMatrices()->At(fSourceMatrixIndex));
 		assert(sourceMatrix != 0);
 		return sourceMatrix;
 	} else {
@@ -164,10 +174,8 @@ Bool_t TUCNExperiment::Initialise(TUCNConfigFile& configFile)
 	cout << "-------------------------------------------" << endl;
 	cout << "Building Geometry..." << endl;
 	cout << "-------------------------------------------" << endl;	
-	// Create the GeoManager
-	TGeoManager* geoManager = new TGeoManager("GeoManager", "Geometry Manager");
 	// Build Geometry
-	if(!(this->BuildGeometry(geoManager, configFile))) { 
+	if(!(this->BuildGeometry(*(this->GeoManager()), configFile))) { 
 		Warning("Initialise","Failed building geometry. Program aborting.");
 		return kFALSE;
 	}
@@ -203,7 +211,7 @@ Bool_t TUCNExperiment::Initialise(TUCNConfigFile& configFile)
 }
 
 //______________________________________________________________________________
-Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile& configFile)
+Bool_t TUCNExperiment::BuildGeometry(TGeoManager& geoManager, TUCNConfigFile& configFile)
 {
 	// -------------------------------------
 	// BUILDING GEOMETRY
@@ -211,9 +219,9 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile& co
 	// Create the UCNNavigator and initialise in the UCNManager
 	// This must be done so that the manager defaults to our navigator. Otherwise it will create a new defualt navigator
 	// that is not of type UCNNavigator.
-	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(geoManager);
-	Int_t navigatorIndex = geoManager->AddNavigator(navigator);
-	geoManager->SetCurrentNavigator(navigatorIndex);
+	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(&geoManager);
+	Int_t navigatorIndex = geoManager.AddNavigator(navigator);
+	geoManager.SetCurrentNavigator(navigatorIndex);
 	
 	// Read in value of FermiPotential
 	Double_t V = 0.0;
@@ -254,7 +262,7 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile& co
 	
 	// -- Making Top Volume
 	TGeoVolume* chamber = this->MakeUCNBox("TOP",blackHole,20,20,20);
-	geoManager->SetTopVolume(chamber);
+	geoManager.SetTopVolume(chamber);
 	
 	// -- Make a GeoTube object via the UCNGeoManager
 	Double_t rMin = 0.0, rMax = 0.236, length = 0.121; 
@@ -285,7 +293,7 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile& co
 	this->SetSourceMatrix(matrix);
 	
 	// -- Arrange and close geometry
-	geoManager->CloseGeometry();
+	geoManager.CloseGeometry();
 	return kTRUE;
 }
 
@@ -314,7 +322,7 @@ void	TUCNExperiment::WriteToFile(TFile* file)
 {
 	assert(file->IsOpen());
 	cout << "Writing data to file: " << file->GetName() << endl;
-	gGeoManager->Write();
+	this->GeoManager()->Write();
 	this->Write();
 	//fRuns->Write();
 	file->Close();
