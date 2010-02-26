@@ -33,6 +33,7 @@ class TUCNRun : public TNamed
 		Double_t					fTotalEnergy;
 		Double_t					fRunTime;
 		Double_t					fMaxStepTime;
+		Double_t					fDiffuseCoeff;
 		
 		Int_t 					fBoundaryLossCounter;
 		Int_t 					fDetectedCounter;

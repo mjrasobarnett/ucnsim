@@ -51,6 +51,7 @@ TUCNRun::TUCNRun()
 	fBoundaryLossCounter = 0;
 	fDetectedCounter = 0;
 	fDecayedCounter = 0;
+	fDiffuseCoeff = 0;
 } 
 
 //_____________________________________________________________________________
@@ -68,6 +69,7 @@ TUCNRun::TUCNRun(const char *name, const char *title)
 	fBoundaryLossCounter = 0;
 	fDetectedCounter = 0;
 	fDecayedCounter = 0;
+	fDiffuseCoeff = 0;
 }
 
 //_____________________________________________________________________________
@@ -78,6 +80,7 @@ TUCNRun::TUCNRun(const TUCNRun& run)
 			fTotalEnergy(run.fTotalEnergy),
 			fRunTime(run.fRunTime),
 			fMaxStepTime(run.fMaxStepTime),
+			fDiffuseCoeff(run.fDiffuseCoeff),
 			fBoundaryLossCounter(run.fBoundaryLossCounter),
 			fDetectedCounter(run.fDetectedCounter),
 			fDecayedCounter(run.fDecayedCounter)
@@ -100,6 +103,7 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& run)
 		fBoundaryLossCounter = run.fBoundaryLossCounter;
 		fDetectedCounter = run.fDetectedCounter;
 		fDecayedCounter = run.fDecayedCounter;
+		fDiffuseCoeff = run.fDiffuseCoeff;
 	}
    return *this;
 }
@@ -123,6 +127,7 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 	// - Number of particles
 	fNeutrons = configFile->GetInt("Neutrons", this->GetName());
 	if (fNeutrons == 0) { Warning("Initialise","No number of particles has been set"); return kFALSE; }
+	
 	// - Initial Energy
 	// Get the initial energy in units of (neV)
 	Double_t totalEnergyneV = configFile->GetFloat("InitialEnergy(neV)", this->GetName())*Units::neV;
@@ -137,17 +142,25 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 		Warning("Initialise","No initial energy has been set for this Run.");
 		return kFALSE;
 	}
+	
 	// - Run Time
 	fRunTime = configFile->GetFloat("RunTime(s)", this->GetName())*Units::s;
 	if (fRunTime == 0.0) { Warning("Initialise","No RunTime has been set"); return kFALSE; }
+	
 	// - Max Step Time
 	fMaxStepTime = configFile->GetFloat("MaxStepTime(s)", this->GetName())*Units::s;
 	if (fMaxStepTime == 0.0) { Warning("Initialise","No max step time has been set"); return kFALSE; }
+	
+	// - Diffuse Coefficient
+	fDiffuseCoeff = configFile->GetFloat("DiffuseBounceCoefficient", this->GetName());
+	// - Set material's roughness parameter to the Diffuse Coefficient
+	static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->RoughnessCoeff(fDiffuseCoeff);
 		
 	cout << "Particles: " << fNeutrons << endl;
-	cout << "Total Energy: " << fTotalEnergy << endl;
-	cout << "RunTime: " << fRunTime << endl;
-	cout << "MaxStepTime: " << fMaxStepTime << endl;
+	cout << "Total Energy(neV): " << fTotalEnergy/Units::neV << endl;
+	cout << "RunTime(s): " << fRunTime << endl;
+	cout << "MaxStepTime(s): " << fMaxStepTime << endl;
+	cout << "DiffuseCoeff: " << static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->RoughnessCoeff() << endl;
 	cout << "-------------------------------------------" << endl;
 	cout << "Run successfully initialised" << endl;
 	cout << "-------------------------------------------" << endl;
