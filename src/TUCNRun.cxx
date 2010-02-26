@@ -82,10 +82,9 @@ void TUCNRun::Initialise(Int_t particles, Double_t totalEnergy)
 {
 	// Generating mono-energetic particles inside the source volume
 	gGeoManager->GetCurrentNavigator()->ResetAll();
-	cout << gGeoManager->GetCurrentNode() << endl;
 	cout << "Generating " << particles << " particles..."	<< endl;
 	this->GenerateMonoEnergeticParticles(particles, totalEnergy);
-	cout << "Particle's created. Preparing to Propagate..." << endl;
+	cout << "Particle's created. Ready to Propagate..." << endl;
 }
 
 //______________________________________________________________________________
