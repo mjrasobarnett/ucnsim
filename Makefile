@@ -73,7 +73,7 @@ TUCNGEOBOOLNODES		= src/TUCNGeoBoolNode.$(SrcSuf) UCNDict.$(SrcSuf)
 #------------------------------------------------------------------------------
 LINKDEF			= UCNLinkDef.h
 UCNSO				= lib/libUCN.$(DllSuf)
-UCNLIB			= -L./lib -lUCN -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter
+UCNLIB			= -L./lib -lUCN -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter -lMathMore
 #------------------------------------------------------------------------------
 OBJS				=	$(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) \
  						$(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) \
