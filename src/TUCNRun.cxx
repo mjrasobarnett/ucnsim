@@ -1643,8 +1643,6 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			// daughter volume that contains the point as well. 
 			// If we are sitting right on the boundary, so that the current point is still contained by the initialnode
 			// Lets try making a tiny step along our current path, so that we are within the current volume
-			cout << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
-			Double_t point[3] = {navigator->GetCurrentPoint()[0], navigator->GetCurrentPoint()[1], navigator->GetCurrentPoint()[2]};
 			// To do this we shall use the normal vector of the current boundary
 			Double_t dir[3] = {navigator->GetCurrentDirection()[0], navigator->GetCurrentDirection()[1], navigator->GetCurrentDirection()[2]};
 			// -- Get the normal vector to the boundary
@@ -1660,19 +1658,32 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			}
 			cout << "Normal To Boundary aligned with Current Direction: " << endl;
 			cout << "X:" << norm[0] << "\t" << "Y:" << norm[1] << "\t" << "Z:" << norm[2] << endl;
-			point[0] += norm[0]*10.0*TGeoShape::Tolerance(); 
-		   point[1] += norm[1]*10.0*TGeoShape::Tolerance(); 
-		   point[2] += norm[2]*10.0*TGeoShape::Tolerance();
-			// Update point in the navigator
-			navigator->SetCurrentPoint(point);
-			this->UpdateParticle(particle);
-			currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
-			cout << "Global Point after micro-step: ";
-			cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-			initialMatrix->MasterToLocal(currentGlobalPoint,&nextLocalPoint[0]);
-			cout << "Point Local to initial volume after micro-step: ";
-			cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
-			cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(nextLocalPoint[0]*nextLocalPoint[0] + nextLocalPoint[1]*nextLocalPoint[1]) << endl;
+			
+			for (Int_t i = 1; i <= 100; i++) {
+				cout << i << "\t" << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
+				Double_t point[3] = {navigator->GetCurrentPoint()[0], navigator->GetCurrentPoint()[1], navigator->GetCurrentPoint()[2]};
+				point[0] += norm[0]*1.0*TGeoShape::Tolerance(); 
+			   point[1] += norm[1]*1.0*TGeoShape::Tolerance(); 
+			   point[2] += norm[2]*1.0*TGeoShape::Tolerance();
+				// Update point in the navigator
+				navigator->SetCurrentPoint(point);
+				this->UpdateParticle(particle);
+				currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
+				cout << "Global Point after micro-step: ";
+				cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
+				initialMatrix->MasterToLocal(currentGlobalPoint,&nextLocalPoint[0]);
+				cout << "Point Local to initial volume after micro-step: ";
+				cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
+				cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(nextLocalPoint[0]*nextLocalPoint[0] + nextLocalPoint[1]*nextLocalPoint[1]) << endl;
+				if (navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
+					break;
+				}
+				cout << "Current Node: " << nextNode->GetName() << endl;
+				cout << "Global Point: ";
+				cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
+				cout << "Current Volume Contains Local Point: " << nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint) << endl;
+			}
+			
 			if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
 				Error("MakeStep","2. Next Point is STILL not contained in Current Node, according to Navigator::IsSameLocation");
 				cout << "Current Node: " << nextNode->GetName() << endl;
@@ -1778,8 +1789,6 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 				
 				// Now, we know that the point is not in the volume that it should be, and that volume may not actually contain the point.
 				// Either way, we will now make a microstep back along the way we came (since the direction has been reversed)
-				cout << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
-				Double_t point[3] = {navigator->GetCurrentPoint()[0], navigator->GetCurrentPoint()[1], navigator->GetCurrentPoint()[2]};
 				// To do this we shall use the normal vector of the current boundary
 				Double_t dir[3] = {navigator->GetCurrentDirection()[0], navigator->GetCurrentDirection()[1], navigator->GetCurrentDirection()[2]};
 				Double_t norm[3] = {normal[0], normal[1], normal[2]};
@@ -1793,19 +1802,34 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 				}
 				cout << "Normal To Boundary aligned with Current Direction: " << endl;
 				cout << "X:" << norm[0] << "\t" << "Y:" << norm[1] << "\t" << "Z:" << norm[2] << endl;
-				point[0] += norm[0]*10.0*TGeoShape::Tolerance(); 
-			   point[1] += norm[1]*10.0*TGeoShape::Tolerance(); 
-			   point[2] += norm[2]*10.0*TGeoShape::Tolerance();
-				// Update point in the navigator
-				navigator->SetCurrentPoint(point);
-				this->UpdateParticle(particle);
-				currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
-				cout << "Global Point after micro-step: ";
-				cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-				navigator->GetCurrentMatrix()->MasterToLocal(currentGlobalPoint,&nextLocalPoint[0]);
-				cout << "Local Point after micro-step: ";
-				cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
-				cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(nextLocalPoint[0]*nextLocalPoint[0] + nextLocalPoint[1]*nextLocalPoint[1]) << endl;
+				
+				
+				for (Int_t i = 1; i <= 100; i++) {
+					cout << i << "\t" << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
+					Double_t point[3] = {navigator->GetCurrentPoint()[0], navigator->GetCurrentPoint()[1], navigator->GetCurrentPoint()[2]};
+				
+					point[0] += norm[0]*1.0*TGeoShape::Tolerance(); 
+				   point[1] += norm[1]*1.0*TGeoShape::Tolerance(); 
+				   point[2] += norm[2]*1.0*TGeoShape::Tolerance();
+					// Update point in the navigator
+					navigator->SetCurrentPoint(point);
+					this->UpdateParticle(particle);
+					currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
+					cout << "Global Point after micro-step: ";
+					cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
+					navigator->GetCurrentMatrix()->MasterToLocal(currentGlobalPoint,&nextLocalPoint[0]);
+					cout << "Local Point after micro-step: ";
+					cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
+					cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(nextLocalPoint[0]*nextLocalPoint[0] + nextLocalPoint[1]*nextLocalPoint[1]) << endl;
+					if (navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
+						break;
+					}
+					cout << "Current Node: " << finalNode->GetName() << endl;
+					cout << "Global Point: ";
+					cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
+					cout << "Current Volume Contains Local Point: " << finalNode->GetVolume()->GetShape()->Contains(finalLocalPoint) << endl;
+				}
+						
 				if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
 					Error("MakeStep","3. Final Point is STILL not contained in Current Node, according to Navigator::IsSameLocation");
 					cout << "Current Node: " << finalNode->GetName() << endl;
