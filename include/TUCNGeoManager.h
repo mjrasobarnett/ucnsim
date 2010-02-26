@@ -25,8 +25,8 @@ class TUCNGeoManager : public TGeoManager
 protected:
 	Bool_t						fGravity;						// The grav field direction vector
 	TObjArray*					fMagFields;	
-	TGeoVolume* 				fSourceVolume;
-	TGeoMatrix*					fSourceMatrix;
+	Int_t 						fSourceVolumeIndex;
+	Int_t							fSourceMatrixIndex;
 	
 public:
 	
@@ -47,10 +47,10 @@ public:
 	TUCNMagField*				GetMagField(const char* name) const;
 	
 	// Source Volume
-	void							SetSourceVolume(TGeoVolume* sourceVolume) {fSourceVolume = sourceVolume;}
-	TGeoVolume*					GetSourceVolume() const {return fSourceVolume;}
-	void							SetSourceMatrix(TGeoMatrix* sourceMatrix) {fSourceMatrix = sourceMatrix;}
-	TGeoMatrix*					GetSourceMatrix() const {return fSourceMatrix;}
+	void							SetSourceVolume(TGeoVolume* sourceVolume);
+	TGeoVolume*					GetSourceVolume() const;
+	void							SetSourceMatrix(TGeoMatrix* sourceMatrix);
+	TGeoMatrix*					GetSourceMatrix() const;
 	
 	// Make UCNVolumes using TUCNGeoBuilder
 	TGeoVolume*					MakeUCNBox(const char *name, TGeoMedium *medium, Double_t dx, Double_t dy, Double_t dz);

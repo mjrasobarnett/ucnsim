@@ -2,6 +2,7 @@
 // Author: Matthew Raso-Barnett  22/05/2009
 #include <iostream>
 #include <fstream>
+#include <cassert>
 
 #include "TGeoManager.h"
 #include "TGeoVolume.h"
@@ -19,6 +20,7 @@
 #include "TUCNGeoManager.h"
 
 using std::cout;
+using std::cerr;
 using std::endl;
 
 //#define VERBOSE_MODE
@@ -33,9 +35,9 @@ ClassImp(TUCNGeoManager)
 // Default Constructor
 	Info("TUCNGeoManager", "Dummy Constructor");
 	fGravity = kFALSE;
-	fMagFields = NULL;
-	fSourceVolume = NULL;
-	fSourceMatrix = NULL;
+	fMagFields = new TObjArray(2);
+	fSourceVolumeIndex = -1;
+	fSourceMatrixIndex = -1;
 }
 
 //_____________________________________________________________________________
@@ -45,9 +47,9 @@ TUCNGeoManager::TUCNGeoManager(const char *name, const char *title)
 // Constructor
 	Info("TUCNGeoManager","UCNGeometry %s, %s created", this->GetName(), this->GetTitle());
 	fGravity = kFALSE;
-	fMagFields = new TObjArray(5);
-	fSourceVolume = NULL;
-	fSourceMatrix = NULL;
+	fMagFields = new TObjArray(2);
+	fSourceVolumeIndex = -1;
+	fSourceMatrixIndex = -1;
 }
 
 //_____________________________________________________________________________
@@ -58,8 +60,8 @@ TUCNGeoManager& TUCNGeoManager::operator=(const TUCNGeoManager& gm)
       TGeoManager::operator=(gm);
 		fGravity = gm.fGravity;
 		fMagFields = gm.fMagFields;
-		fSourceVolume = gm.fSourceVolume;
-		fSourceMatrix = gm.fSourceMatrix;
+		fSourceVolumeIndex = gm.fSourceVolumeIndex;
+		fSourceMatrixIndex = gm.fSourceMatrixIndex;
 	}
    return *this;
 }
@@ -69,8 +71,8 @@ TUCNGeoManager::TUCNGeoManager(const TUCNGeoManager& gm)
 					:TGeoManager(gm),
 					 fGravity(gm.fGravity),
 					 fMagFields(gm.fMagFields),
-					 fSourceVolume(gm.fSourceVolume),
-					 fSourceMatrix(gm.fSourceMatrix)
+					 fSourceVolumeIndex(gm.fSourceVolumeIndex),
+					 fSourceMatrixIndex(gm.fSourceMatrixIndex)
 {
 // Copy Constructor
 }
@@ -80,12 +82,12 @@ TUCNGeoManager::~TUCNGeoManager()
 {
 // Destructor
 	Info("TUCNGeoManager", "Destructor");
-	for (Int_t i = 0; i < this->GetNtracks(); i++) {
-		this->GetTrack(i)->GetParticle()->Delete();
-	}	
-	if (fGravity == kTRUE) delete TUCNGravField::Instance();
-	if (fMagFields) {fMagFields->Delete(); delete fMagFields;}
-	delete TUCNParabola::Instance();
+//	for (Int_t i = 0; i < this->GetNtracks(); i++) {
+//		this->GetTrack(i)->GetParticle()->Delete();
+//	}	
+//	if (fGravity == kTRUE) delete TUCNGravField::Instance();
+//	if (fMagFields) {fMagFields->Delete(); delete fMagFields;}
+//	delete TUCNParabola::Instance();
 }
 
 //_____________________________________________________________________________
@@ -124,4 +126,56 @@ TGeoVolume *TUCNGeoManager::MakeUCNTube(const char *name, TGeoMedium *medium,
 {
 // Make in one step a volume pointing to a tube shape with given medium.
 	return TUCNGeoBuilder::UCNInstance(this)->MakeUCNTube(name, medium, rmin, rmax, dz);
+}
+
+//_____________________________________________________________________________
+void	TUCNGeoManager::SetSourceVolume(TGeoVolume* sourceVolume)
+{
+	// Find object in the list and store the array index
+	Int_t index = this->GetListOfVolumes()->IndexOf(sourceVolume);
+	if (index < 0) {
+		cerr << "Source volume not found in array. Volume must be registered with GeoManager first." << endl;
+	} else {
+		fSourceVolumeIndex = index;
+	}
+}
+
+//_____________________________________________________________________________
+void	TUCNGeoManager::SetSourceMatrix(TGeoMatrix* sourceMatrix)
+{
+	// Find object in the list and store the array index
+	Int_t index = this->GetListOfMatrices()->IndexOf(sourceMatrix);
+	if (index < 0) {
+		cerr << "Source matrix not found in array. Matrix must be registered with GeoManager first." << endl;
+	} else {
+		fSourceMatrixIndex = index;
+	}
+}
+
+//_____________________________________________________________________________
+TGeoVolume*	TUCNGeoManager::GetSourceVolume() const
+{
+	// Find object in the list and return
+	if (fSourceVolumeIndex > 0) {
+		TGeoVolume* sourceVolume = static_cast<TGeoVolume*>(this->GetListOfVolumes()->At(fSourceVolumeIndex));
+		assert(sourceVolume != 0);
+		return sourceVolume;
+	} else {
+		cerr << "No Source volume has been set" << endl;
+		return 0;
+	}
+}
+
+//_____________________________________________________________________________
+TGeoMatrix*	TUCNGeoManager::GetSourceMatrix() const
+{
+	// Find object in the list and return
+	if (fSourceMatrixIndex > 0) {
+		TGeoMatrix* sourceMatrix = static_cast<TGeoMatrix*>(this->GetListOfMatrices()->At(fSourceMatrixIndex));
+		assert(sourceMatrix != 0);
+		return sourceMatrix;
+	} else {
+		cerr << "No Source matrix has been set" << endl;
+		return 0;
+	}
 }
