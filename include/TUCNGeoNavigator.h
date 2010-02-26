@@ -74,15 +74,15 @@ public:
 	Double_t 					GetStepTime() const {return fStepTime;}
 	void							SetStepTime(Double_t stepTime); 
 		
-	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Double_t runTime, const Double_t maxStepTime);
-	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Int_t steps, const Double_t maxStepTime);
+	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Double_t runTime, const Double_t maxStepTime, TUCNGravField* gravField=0);
+	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Int_t steps, const Double_t maxStepTime, TUCNGravField* gravField=0);
 	
 	Bool_t						MakeStep(TVirtualGeoTrack* track, TUCNGravField* field);
 	
-	Bool_t 						Bounce(TVirtualGeoTrack* track);
+	Bool_t 						Bounce(TVirtualGeoTrack* track, const Double_t* normal);
 	Bool_t 						SpecularBounce(Double_t* dir, const Double_t* norm);
 	Bool_t 						DiffuseBounce(Double_t* dir, const Double_t* norm);
-	void							UpdateTrack(TVirtualGeoTrack* track, Double_t timeInterval=0.);
+	void							UpdateTrack(TVirtualGeoTrack* track, Double_t timeInterval=0., TUCNGravField* gravField=0);
 	
 	Int_t 						GetNumberLost() const {return fLostCounter;}
 	Int_t 						GetNumberDetected() const {return fDetectedCounter;}

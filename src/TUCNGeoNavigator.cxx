@@ -133,8 +133,6 @@ Double_t* TUCNGeoNavigator::FindUCNNormal()
 // Computes fast normal to next crossed boundary, assuming that the current point
 // is close enough to the boundary. Works only after calling FindNextBoundaryAndStepAlongParabola.
 // This method must be used exclusively instead of TGeoNavigator::FindNormal when gravity is present.
-
-	if (static_cast<TUCNGeoManager*>(gGeoManager)->CheckForGravity() == kFALSE) return this->FindNormal(); // If there is no gravity use method FindNormal
 	if (fUCNNextNode == NULL) return 0;
    Double_t local[3];
    Double_t ldir[3];
@@ -372,9 +370,7 @@ TGeoNode* TUCNGeoNavigator::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrac
 	// -- Get the track's particle
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
 	
-	// -- Get the global field
-	assert(static_cast<TUCNGeoManager*>(gGeoManager)->CheckForGravity() == kTRUE);
-	
+	// -- Get the global field	
 	Double_t globalField[3] 	 = {field->Gx(), field->Gy(), field->Gz()}; 
 	Double_t globalPoint[3] 	 = {particle->Vx(), particle->Vy(), particle->Vz()};
 	Double_t globalDir[3]	 	 = {particle->DirX(), particle->DirY(), particle->DirZ()};
@@ -938,11 +934,10 @@ void TUCNGeoNavigator::SetStepTime(Double_t stepTime)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t runTime, const Double_t maxStepTime)
+Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t runTime, const Double_t maxStepTime, TUCNGravField* gravField)
 {
 // Propagate track through geometry until it is either stopped or the runTime has been reached
 // Track passed MUST REFERENCE A TUCNPARTICLE as its particle type. 
-// In future I will attempt to guarentee this. (4/06/09) 
 
 // UNITS:: runTime, stepTime in Seconds
 
@@ -958,12 +953,6 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 	if (static_cast<TUCNGeoMaterial*>(this->GetCurrentNode()->GetMedium()->GetMaterial())->IsTrackingMaterial() == kFALSE) {
 		cerr << "Track number " << track->GetId() << " initialised inside boundary of " << this->GetCurrentVolume()->GetName() << endl;
 		throw runtime_error("In TUCNGeoNavigator::PropagateTrack - particle initialised inside a boundary");
-	}
-	
-	// -- Check for presence of Grav Field
-	TUCNGravField* gravField = NULL;
-	if(static_cast<TUCNGeoManager*>(gGeoManager)->CheckForGravity() == kTRUE) {
-		gravField = TUCNGravField::Instance();
 	}
 	
 	///////////////////////////////////	
@@ -1014,7 +1003,7 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Int_t steps, const Double_t maxStepTime)
+Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Int_t steps, const Double_t maxStepTime, TUCNGravField* gravField)
 {
 // Propagate track through geometry until it is either stopped or the max steps has been reached
 // Track passed MUST REFERENCE A TUCNPARTICLE as its particle type. 
@@ -1036,12 +1025,6 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Int_t ste
 		throw runtime_error("In TUCNGeoNavigator::PropagateTrack - particle initialised inside a boundary");
 	}
 	
-	// -- Check for presence of Grav Field
-	TUCNGravField* field = NULL;
-	if(static_cast<TUCNGeoManager*>(gGeoManager)->CheckForGravity() == kTRUE) {
-		field = TUCNGravField::Instance();
-	}
-	
 	if (steps <= 0) {
 		Error("PropagateTrack", "No. of Steps must be greater than or equal to 1");
 		return kFALSE;
@@ -1060,7 +1043,7 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Int_t ste
 		this->DetermineNextStepTime(particle, maxStepTime, 0.0); 
 
 		// Make a step
-		Bool_t stepSuccess = this->MakeStep(track, field);
+		Bool_t stepSuccess = this->MakeStep(track, gravField);
 		assert(stepSuccess == kTRUE);
 
 		// -- Determine Particle destination
@@ -1089,7 +1072,7 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Int_t ste
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* field)
+Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField)
 {
 	// -- Find time to reach next boundary and step along parabola
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
@@ -1117,7 +1100,7 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* field)
 		cout << "-----------------------------" << endl << endl;
 	#endif
 	
-	if (field == NULL) {
+	if (gravField == NULL) {
 		this->FindNextBoundaryAndStep(this->GetStepTime());
 		// TODO: UPDATE CLASS DATA MEMBERS NOW LIKE fUCNNextNode
 		
@@ -1129,7 +1112,7 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* field)
 		
 	} else {
 		// -- Update Particle is called by FindNext...AlongParabola so no need to repeat that here
-		this->FindNextBoundaryAndStepAlongParabola(track, field, this->GetStepTime());
+		this->FindNextBoundaryAndStepAlongParabola(track, gravField, this->GetStepTime());
 	}
 	
 	#ifdef VERBOSE_MODE	
@@ -1151,6 +1134,14 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* field)
 	
 	// -- Get the current material we are in to determine what to do next
 	TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(this->GetCurrentNode()->GetMedium()->GetMaterial());
+	// -- Get the normal vector to the boundary
+	Double_t* normal = 0;
+	if (gravField) {
+		normal = this->FindUCNNormal();
+	} else {
+		normal = this->FindNormal();
+	}
+	
 	// -- Determine what to do if we are on a boundary
 	// -- Is Track on the surface of a boundary?
 	if (currentMaterial->IsTrackingMaterial() == kFALSE) {
@@ -1171,7 +1162,7 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* field)
 				return kFALSE;
 			}
 		// -- Was particle lost to boundary (absorbed/upscattered) ?
-		} else if (particle->IsLostToWall(currentMaterial, this->FindUCNNormal())) {	
+		} else if (particle->IsLostToWall(currentMaterial, normal)) {	
 			particle->Lost(kTRUE); // Set lost flag
 		// -- Are we outside the geometry heirarchy we have built - ie: in TOP
 		} else if (currentMaterial->IsBlackHole() == kTRUE) {
@@ -1185,7 +1176,7 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* field)
 				cout << "On Boundary? " << this->IsUCNOnBoundary() << endl;
 			#endif	
 			// -- Make a Bounce
-			this->Bounce(track);
+			this->Bounce(track, normal);
 
 			// -- cd back to the saved node before we made the step -- stored in 'path'. 
 			this->cd(path);
@@ -1211,7 +1202,7 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* field)
 }
 
 //_____________________________________________________________________________
-void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track, const Double_t timeInterval)
+void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track, const Double_t timeInterval, TUCNGravField* gravField)
 {
 // Take the particle and update its position, momentum, time and energy with the current properties stored in the Navigator
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
@@ -1227,14 +1218,13 @@ void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track, const Double_t timeI
 	Double_t heightClimbed = 0.0;
 	Double_t gravPotentialEnergy = 0.0;
 	
-	if (static_cast<TUCNGeoManager*>(gGeoManager)->CheckForGravity() == kTRUE) {
+	if (gravField) {
 		// Determine the height of our particle in the global coordinate system of TOP.
 		// Take the dot product of the point vector with the field direction unit vector to get the height of this point in the gravitational field.
 		// This assumes a convention that 'height' is measured along an axis that INCREASES in the opposite direction to the field direction vector
 		// (which is usually 'downwards')
-		TUCNGravField* field = TUCNGravField::Instance();
-		heightClimbed = -1.0*((pos[0] - particle->Vx())*field->Nx() + (pos[1] - particle->Vy())*field->Ny() + (pos[2] - particle->Vz())*field->Nz());
-		gravPotentialEnergy = particle->Mass_GeV_c2()*field->GravAcceleration()*heightClimbed;
+		heightClimbed = -1.0*((pos[0] - particle->Vx())*gravField->Nx() + (pos[1] - particle->Vy())*gravField->Ny() + (pos[2] - particle->Vz())*gravField->Nz());
+		gravPotentialEnergy = particle->Mass_GeV_c2()*gravField->GravAcceleration()*heightClimbed;
 	}
 	
 	// Determine current Kinetic energy of particle given the height climbed in graviational field
@@ -1261,7 +1251,7 @@ void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track, const Double_t timeI
 
 
 //_____________________________________________________________________________
-Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track)
+Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track, const Double_t* normal)
 {
 	// -- Get particle
 	TUCNParticle* ucnparticle = static_cast<TUCNParticle*>(track->GetParticle());
@@ -1270,7 +1260,6 @@ Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track)
 	Double_t dir[3] = {(this->GetCurrentDirection())[0], (this->GetCurrentDirection())[1], (this->GetCurrentDirection())[2]};
 	
 	// -- Normal Vector
-	const Double_t *normal = this->FindUCNNormal();
 	Double_t norm[3] = {normal[0], normal[1], normal[2]};
 	
 	// Check if the normal vector is actually pointing in the wrong direction 

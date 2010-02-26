@@ -32,17 +32,17 @@ class TUCNRun : public TNamed
 		// -- destructor
 		virtual ~TUCNRun();
 		
-		void						Initialise(Int_t particles, Double_t totalEnergy);
+		void						Initialise(Int_t particles, Double_t totalEnergy, TUCNGravField* gravField=0);
 		
 		void 						DrawParticles(TCanvas* canvas, TPolyMarker3D* points);
 		void						DrawTrack(TCanvas* canvas, Int_t trackID);
-		Bool_t 					GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t totalEnergy);
+		Bool_t 					GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t totalEnergy, TUCNGravField* gravField=0);
 		TGeoTrack*				GetTrack(Int_t trackID);
 		TUCNParticle*			GetParticle(Int_t particleID);
-		Bool_t 					PropagateAllTracks(Double_t runTime, Double_t maxStepTime);
-		Bool_t 					PropagateAllTracks(Int_t steps, Double_t maxStepTime);
-		Bool_t 					PropagateTrack(Double_t runTime, Double_t maxStepTime, Int_t trackIndex = 0);
-		Bool_t 					PropagateTrack(Int_t steps, Double_t maxStepTime, Int_t trackIndex = 0);
+		Bool_t 					PropagateAllTracks(Double_t runTime, Double_t maxStepTime, TUCNGravField* gravField = 0);
+		Bool_t 					PropagateAllTracks(Int_t steps, Double_t maxStepTime, TUCNGravField* gravField = 0);
+		Bool_t 					PropagateTrack(Double_t runTime, Double_t maxStepTime, Int_t trackIndex = 0, TUCNGravField* gravField = 0);
+		Bool_t 					PropagateTrack(Int_t steps, Double_t maxStepTime, Int_t trackIndex = 0, TUCNGravField* gravField = 0);
 		
 		void						WriteOutData(TFile* file);
 		

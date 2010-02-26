@@ -34,7 +34,6 @@ ClassImp(TUCNGeoManager)
 {
 // Default Constructor
 	Info("TUCNGeoManager", "Dummy Constructor");
-	fGravity = kFALSE;
 	fMagFields = new TObjArray(2);
 	fSourceVolumeIndex = -1;
 	fSourceMatrixIndex = -1;
@@ -46,7 +45,6 @@ TUCNGeoManager::TUCNGeoManager(const char *name, const char *title)
 {
 // Constructor
 	Info("TUCNGeoManager","UCNGeometry %s, %s created", this->GetName(), this->GetTitle());
-	fGravity = kFALSE;
 	fMagFields = new TObjArray(2);
 	fSourceVolumeIndex = -1;
 	fSourceMatrixIndex = -1;
@@ -58,7 +56,6 @@ TUCNGeoManager& TUCNGeoManager::operator=(const TUCNGeoManager& gm)
 // --assignment operator
 	if(this!=&gm) {
       TGeoManager::operator=(gm);
-		fGravity = gm.fGravity;
 		fMagFields = gm.fMagFields;
 		fSourceVolumeIndex = gm.fSourceVolumeIndex;
 		fSourceMatrixIndex = gm.fSourceMatrixIndex;
@@ -69,7 +66,6 @@ TUCNGeoManager& TUCNGeoManager::operator=(const TUCNGeoManager& gm)
 //_____________________________________________________________________________
 TUCNGeoManager::TUCNGeoManager(const TUCNGeoManager& gm) 
 					:TGeoManager(gm),
-					 fGravity(gm.fGravity),
 					 fMagFields(gm.fMagFields),
 					 fSourceVolumeIndex(gm.fSourceVolumeIndex),
 					 fSourceMatrixIndex(gm.fSourceMatrixIndex)
@@ -85,7 +81,6 @@ TUCNGeoManager::~TUCNGeoManager()
 //	for (Int_t i = 0; i < this->GetNtracks(); i++) {
 //		this->GetTrack(i)->GetParticle()->Delete();
 //	}	
-//	if (fGravity == kTRUE) delete TUCNGravField::Instance();
 //	if (fMagFields) {fMagFields->Delete(); delete fMagFields;}
 //	delete TUCNParabola::Instance();
 }

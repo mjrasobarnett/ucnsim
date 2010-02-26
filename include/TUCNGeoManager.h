@@ -23,7 +23,6 @@ class TUCNGeoManager : public TGeoManager
 {
 	
 protected:
-	Bool_t						fGravity;						// The grav field direction vector
 	TObjArray*					fMagFields;	
 	Int_t 						fSourceVolumeIndex;
 	Int_t							fSourceMatrixIndex;
@@ -55,10 +54,6 @@ public:
 	// Make UCNVolumes using TUCNGeoBuilder
 	TGeoVolume*					MakeUCNBox(const char *name, TGeoMedium *medium, Double_t dx, Double_t dy, Double_t dz);
  	TGeoVolume*					MakeUCNTube(const char *name, TGeoMedium *medium, Double_t rmin, Double_t rmax, Double_t dz);
-		
-	// Make Gravitational Field
-	void							SetGravity(Bool_t gravityPresent) {fGravity = gravityPresent;}
-	Bool_t						CheckForGravity() {return fGravity;}
 	
 	Int_t 						GetNumberDetected() const {return static_cast<TUCNGeoNavigator*>(this->GetCurrentNavigator())->GetNumberDetected();}
 	Int_t 						GetNumberLost() const {return static_cast<TUCNGeoNavigator*>(this->GetCurrentNavigator())->GetNumberLost();}

@@ -15,48 +15,51 @@
 ClassImp(TUCNGravField)
 
 // -- Static Data Members Initialised
-TUCNGravField* 	TUCNGravField::fgInstance = NULL;
-const Double_t 	TUCNGravField::fGravAcceleration; // Initialised in header, definition in implimentation must not specify an initial value (static const)
+const Double_t 	TUCNGravField::fGravAcceleration; 
 
 //_____________________________________________________________________________
 TUCNGravField::TUCNGravField()
-				  :fGlobalFieldVector(0.,0.,-1.0)
+				  :TNamed("GravField","Universal Grav Field Vector"),
+					fGlobalFieldVector(0.,0.,-1.0)
 {
-// Default constructor.
+// -- Default constructor.
 	Info("TUCNGravField", "Constructor");
-   fgInstance = this;
 } 
+
+//_____________________________________________________________________________
+TUCNGravField::TUCNGravField(const char *name, const char *title)
+				  :TNamed(name, title),
+					fGlobalFieldVector(0.,0.,-1.0)
+{
+// -- Constructor.
+	Info("TUCNGravField", "Constructor");
+}
 
 //_____________________________________________________________________________
 TUCNGravField::TUCNGravField(const TUCNGravField& other)
-              :TObject(other)
+              :TNamed(other),
+					fGlobalFieldVector(other.fGlobalFieldVector)
 {
-// Copy constructor.
-   Error("copy constructor","copying not allowed for TUCNGravField");
+// -- Copy constructor.
+   Info("TUCNGravField","Copy Constructor");
 } 
 
 //_____________________________________________________________________________
-TUCNGravField::~TUCNGravField()
+TUCNGravField& TUCNGravField::operator=(const TUCNGravField& other)
 {
-// Destructor.
-	Info("TUCNGravField", "Destructor");
-	fgInstance = NULL;
-}   
-
-//_____________________________________________________________________________
-TUCNGravField &TUCNGravField::operator=(const TUCNGravField&)
-{
-// Assignment.
-   Error("Assignment","assignment not allowed for TUCNGravField");
+// -- Assignment operator
+	if(this!=&other) {
+		TNamed::operator=(other);
+      fGlobalFieldVector = other.fGlobalFieldVector;
+	}
    return *this;
 }
 
 //_____________________________________________________________________________
-TUCNGravField* TUCNGravField::Instance() 
+TUCNGravField::~TUCNGravField()
 {
-// Return pointer to singleton.   
-   if (!fgInstance) fgInstance = new TUCNGravField();
-	return fgInstance;
+// -- Destructor.
+	Info("TUCNGravField", "Destructor");
 }   
 
 //_____________________________________________________________________________

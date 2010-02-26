@@ -4,7 +4,7 @@
 #ifndef ROOT_TUCNGravField
 #define ROOT_TUCNGravField
 
-#include "TObject.h"
+#include "TNamed.h"
 #include "TVector3.h"
 
 ////////////////////////////////////////////////////////////////////////////
@@ -14,29 +14,20 @@
 //                                      											  //
 ////////////////////////////////////////////////////////////////////////////
 
-class TUCNGeoManager;
-
-class TUCNGravField : public TObject
+class TUCNGravField : public TNamed
 {
 
-protected:
-	
-	static TUCNGravField    *fgInstance;  
-	
-	// -- constructors
-   TUCNGravField(const TUCNGravField&);
-	TUCNGravField& operator=(const TUCNGravField&); 
-   
 private:
-	
 	TVector3 						fGlobalFieldVector;
 	static const Double_t 		fGravAcceleration = 9.80665; //*m/(s*s);
 	
 public:
 	
-   TUCNGravField();
-
-	static TUCNGravField* Instance();
+	// -- constructors
+	TUCNGravField();
+	TUCNGravField(const char *name, const char *title);
+   TUCNGravField(const TUCNGravField&);
+	TUCNGravField& operator=(const TUCNGravField&);
 	   
 	// -- destructor
    virtual ~TUCNGravField();

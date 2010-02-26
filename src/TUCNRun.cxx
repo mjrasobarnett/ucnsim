@@ -78,17 +78,17 @@ TUCNRun::~TUCNRun()
 }
 
 //_____________________________________________________________________________
-void TUCNRun::Initialise(Int_t particles, Double_t totalEnergy)
+void TUCNRun::Initialise(Int_t particles, Double_t totalEnergy, TUCNGravField* gravField)
 {
 	// Generating mono-energetic particles inside the source volume
 	gGeoManager->GetCurrentNavigator()->ResetAll();
 	cout << "Generating " << particles << " particles..."	<< endl;
-	this->GenerateMonoEnergeticParticles(particles, totalEnergy);
+	this->GenerateMonoEnergeticParticles(particles, totalEnergy, gravField);
 	cout << "Particle's created. Ready to Propagate..." << endl;
 }
 
 //______________________________________________________________________________
-Bool_t TUCNRun::GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t totalEnergy)
+Bool_t TUCNRun::GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t totalEnergy, TUCNGravField* gravField)
 {
 	// Generates a uniform distribution of particles with random directions all with the same total energy (kinetic plus potential).
 	// defined at z = 0.	
@@ -104,16 +104,15 @@ Bool_t TUCNRun::GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t to
 	Double_t gravAcceleration = 0.0;
 	Double_t fieldDir[3] = {0.,0.,0.};
 	
-	if (static_cast<TUCNGeoManager*>(gGeoManager)->CheckForGravity() == kTRUE) {
+	if (gravField) {
 		fieldPresent = kTRUE;
-		gravAcceleration = (TUCNGravField::Instance()->GravAcceleration());
-		fieldDir[0] = TUCNGravField::Instance()->Nx(); 
-		fieldDir[1] = TUCNGravField::Instance()->Ny();
-		fieldDir[2] = TUCNGravField::Instance()->Nz();
+		gravAcceleration = (gravField->GravAcceleration());
+		fieldDir[0] = gravField->Nx(); 
+		fieldDir[1] = gravField->Ny();
+		fieldDir[2] = gravField->Nz();
 	}
 
 	// -- 2. Get the Source volume and matrix transformation of volume	
-	
 	// Determine the dimensions of the source volume's bounding box.
 	TGeoShape* shape = sourceVolume->GetShape();
 	TGeoBBox* boundingBox = static_cast<TGeoBBox*>(shape);
@@ -168,9 +167,9 @@ Bool_t TUCNRun::GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t to
 			// in order to get the particle's kinetic energy from the defined total energy. 
 			if (fieldPresent == kTRUE) {
 				// Determine the height of our particle in the global coordinate system of TOP.
-				// Take the dot product of the point vector with the field direction unit vector to get the height of this point in the gravitational field.
-				// This assumes a convention that 'height' is measured along an axis that INCREASES in the opposite direction to the field direction vector
-				// (which is usually 'downwards')
+				// Take the dot product of the point vector with the field direction unit vector to get the height
+				// of this point in the gravitational field. This assumes a convention that 'height' is measured along
+				// an axis that INCREASES in the opposite direction to the field direction vector (which is usually 'downwards')
 				height = -1.0*(point[0]*fieldDir[0] + point[1]*fieldDir[1] + point[2]*fieldDir[2]);
 				#ifdef VERBOSE_MODE
 					cout << "Height from origin of TOP volume: " <<  height << endl; 
@@ -196,7 +195,8 @@ Bool_t TUCNRun::GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t to
 			cout << "Final Point Chosen - X: " << point[0] << "\t" << "Y: " << point[1] << "\t" << "Z:" << point[2] << endl;
 		#endif
 
-		// -- 4. Determine a random direction vector on the unit sphere weighted by an additional cos(theta). Phi ranges from 0 to 2*Pi, Theta from 0 to Pi.
+		// -- 4. Determine a random direction vector on the unit sphere weighted by an additional cos(theta).
+		// Phi ranges from 0 to 2*Pi, Theta from 0 to Pi.
 		Double_t phi = gRandom->Uniform(0.0, 1.0)*2.0*TMath::Pi();
 		Double_t u   = gRandom->Uniform(0.0, 0.5);
 		Double_t theta = 0.0; 
@@ -240,9 +240,8 @@ Bool_t TUCNRun::GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t to
 	return kTRUE;
 }
 
-
 //_____________________________________________________________________________
-Bool_t TUCNRun::PropagateAllTracks(Double_t runTime, Double_t maxStepTime)
+Bool_t TUCNRun::PropagateAllTracks(Double_t runTime, Double_t maxStepTime, TUCNGravField* gravField)
 {
 // -- Propagate all tracks stored in the GeoManager for a set period of time
 	Int_t numberOfTracks = gGeoManager->GetNtracks();
@@ -259,7 +258,7 @@ Bool_t TUCNRun::PropagateAllTracks(Double_t runTime, Double_t maxStepTime)
 		gGeoManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
 			particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
 		// Propagate track
-		Bool_t propagated = static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->PropagateTrack(track, runTime, maxStepTime);
+		Bool_t propagated = static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->PropagateTrack(track, runTime, maxStepTime, gravField);
 		if (!propagated) lostTracks.push_back(trackid);
 		// Add Track to data tree
 		fData->AddParticle(particle);
@@ -279,7 +278,7 @@ Bool_t TUCNRun::PropagateAllTracks(Double_t runTime, Double_t maxStepTime)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::PropagateAllTracks(Int_t steps, Double_t maxStepTime)
+Bool_t TUCNRun::PropagateAllTracks(Int_t steps, Double_t maxStepTime, TUCNGravField* gravField)
 {
 // -- Propagate all tracks stored in the GeoManager for a set number of steps
 	Int_t numberOfTracks = gGeoManager->GetNtracks();
@@ -296,7 +295,7 @@ Bool_t TUCNRun::PropagateAllTracks(Int_t steps, Double_t maxStepTime)
 		gGeoManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
 			particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
 		// Propagate track
-		Bool_t propagated = static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->PropagateTrack(track, steps, maxStepTime);
+		Bool_t propagated = static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->PropagateTrack(track, steps, maxStepTime, gravField);
 		if (!propagated) lostTracks.push_back(trackid);
 		// Add Track to data tree
 		fData->AddParticle(particle);
@@ -315,7 +314,7 @@ Bool_t TUCNRun::PropagateAllTracks(Int_t steps, Double_t maxStepTime)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::PropagateTrack(Double_t runTime, Double_t maxStepTime, Int_t trackIndex)
+Bool_t TUCNRun::PropagateTrack(Double_t runTime, Double_t maxStepTime, Int_t trackIndex, TUCNGravField* gravField)
 {
 // -- Propagate single track stored in the GeoManager for a set period of time
 	Int_t numberOfTracks = gGeoManager->GetNtracks();
@@ -330,7 +329,7 @@ Bool_t TUCNRun::PropagateTrack(Double_t runTime, Double_t maxStepTime, Int_t tra
 	gGeoManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
 		particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
 	// Propagate track
-	static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->PropagateTrack(track, runTime, maxStepTime);
+	static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->PropagateTrack(track, runTime, maxStepTime, gravField);
 	// Add Track to data tree
 	fData->AddParticle(particle);
 	// Reset Track to free memory
@@ -340,7 +339,7 @@ Bool_t TUCNRun::PropagateTrack(Double_t runTime, Double_t maxStepTime, Int_t tra
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::PropagateTrack(Int_t steps, Double_t maxStepTime, Int_t trackIndex)
+Bool_t TUCNRun::PropagateTrack(Int_t steps, Double_t maxStepTime, Int_t trackIndex, TUCNGravField* gravField)
 {
 // -- Propagate single track stored in the GeoManager for a set number of steps
 	Int_t numberOfTracks = gGeoManager->GetNtracks();
@@ -355,7 +354,7 @@ Bool_t TUCNRun::PropagateTrack(Int_t steps, Double_t maxStepTime, Int_t trackInd
 	gGeoManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
 		particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
 	// Propagate track
-	static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->PropagateTrack(track, steps, maxStepTime);
+	static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->PropagateTrack(track, steps, maxStepTime, gravField);
 	// Add Track to data tree
 	fData->AddParticle(particle);
 	// Reset Track to free memory
