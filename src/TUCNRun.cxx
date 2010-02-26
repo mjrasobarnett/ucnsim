@@ -1689,7 +1689,6 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		gGeoManager->SetStep(initialStep);
 		this->SetStepTime(initialStepTime);
 		
-		// -- Update Particle is called by FindNext...AlongParabola so no need to repeat that here
 		this->FindNextBoundaryAndStepAlongParabola(track, gravField, this->GetStepTime());
 		const Double_t finalStepTime = this->GetStepTime();
 		const Double_t finalStep = gGeoManager->GetStep();
