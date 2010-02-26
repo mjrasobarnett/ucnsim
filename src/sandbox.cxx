@@ -82,8 +82,8 @@ Int_t ucnstandalone() {
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Run Simulation
-	Double_t runTime = 10000.*Units::s;
-	Double_t maxStepTime = 1.00*Units::s;
+	Double_t runTime = 100.*Units::s;
+	Double_t maxStepTime = 0.05*Units::s;
 	Int_t particles = 1000;
 	Double_t V = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->FermiPotential();
 	Double_t f = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->Eta();
@@ -131,132 +131,91 @@ Int_t ucnstandalone() {
 	
 //	runManager->WriteRunsToFile();
 	
-/*	
-	{
-		///////////////////////////////////////////////////////////////////////////////////////
-		// Draw Final Positions 
-		
-		TCanvas * canvas1 = new TCanvas("canvas1", "Final Particle Positions", 800, 10, 600, 600);
-		TPolyMarker3D* finalPoints = new TPolyMarker3D(geoManager->GetNtracks(), 1);
-		run->DrawParticles(canvas1, finalPoints);
 	
-		///////////////////////////////////////////////////////////////////////////////////////
-		// -- FITTING 
-		Int_t nbins = 50;
-		Double_t maxlength = 0.12;
-		
-		// Plot Histogram
-		TH1F * Histogram1 = new TH1F("Histogram1","Neutron Density versus height", nbins, 0.0, maxlength);	
-		TH1F * Histogram2 = new TH1F("Histogram2","Avg Field Sampled by Neutron", nbins/5, 0.0, 2.);	
-		TH1F * Histogram3a = new TH1F("Histogram3a","Number of collisions before loss", nbins, 0.0, 10000);	
-		TH1F * Histogram3b = new TH1F("Histogram3b","Lifetime of neutron", nbins, 0.0, runTime);	
-		TH1F * Histogram3c = new TH1F("Histogram3c","Percentage Diffuse", nbins, 0.0, 0.2);	
-		TH1F * Histogram3d = new TH1F("Histogram3d","Percentage Specular", nbins, 0.8, 1.);	
-	
-		for (Int_t i = 0; i < particles; i++) {
-			// Get each Track
-			TVirtualGeoTrack* track = geoManager->GetTrack(i);
-			TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-			Histogram1->Fill(particle->Vz());
-			Histogram2->Fill(particle->AvgMagField());
-			Histogram3a->Fill(particle->Bounces());
-			Histogram3b->Fill(particle->T());
-		
-			Double_t diffusePercentage = 0;
-			Double_t specularPercentage = 0;
-			if (particle->Bounces() != 0) {
-				diffusePercentage = static_cast<Double_t>(particle->DiffuseBounces())/particle->Bounces();
-				specularPercentage = static_cast<Double_t>(particle->SpecularBounces())/particle->Bounces();
-			} else {
-				diffusePercentage = particle->DiffuseBounces();
-				specularPercentage = particle->SpecularBounces();
-			}
-			Histogram3c->Fill(diffusePercentage);
-			Histogram3d->Fill(specularPercentage);
-		}
-	
-		// --------------------------------------------------------------------------------------
-		// Fit Neutron Density versus Height
-		TCanvas * histcanvas = new TCanvas("HistCanvas","Neutron Density versus height",0,0,800,800);
-	   histcanvas->Divide(1,2);
-		histcanvas->SetGrid();
-		histcanvas->cd(1);
-	
-		// -- Max height of neutrons
-		Double_t maxheight = totalEnergy/(Constants::neutron_mass*(Constants::grav_acceleration));
-	
-		TF1 * fitdensf = new TF1("fitdensf", densityf, 0.0, maxheight, 1); 
-		fitdensf->SetParName(0,"Const");
-		fitdensf->SetParameter(0, 240);
-		fitdensf->SetLineColor(kRed);
-	
-		Histogram1->SetLineColor(kBlack);
-		Histogram1->SetXTitle("Height from bottom of Tube (m)");
-		Histogram1->SetYTitle("Number of Neutrons");
-	
-		Histogram1->Fit("fitdensf", "R");
-		Histogram1->Draw("E1");
-
-		// -------------------------------------------------------------------------------------- 
-		// -- Plot difference between bin content and fitted distribution of above histogram
-		histcanvas->cd(2);	
-		Int_t n = nbins;
-	  	Double_t ex[n], ey[n], x[n], y[n]; 
-	  	for (Int_t i=1;i<n;i++) { 
-			x[i] = Histogram1->GetBinCenter(i); 
-			y[i] = Histogram1->GetBinContent(i) - fitdensf->Eval(x[i]);
-			ex[i] = 0.;
-			ey[i] = Histogram1->GetBinError(i);
-		} 
-	  	// create graph 
-	  	TGraphErrors* gr1  = new TGraphErrors(n,x,y,ex,ey); 
-		gr1->SetTitle("Bin value minus fitted value versus height");
-		gr1->Draw("AC*");
-	
-		// -------------------------------------------------------------------------------------- 
-		// -- Plot Avg Field sampled by neutrons
-		TCanvas * histcanvas2 = new TCanvas("HistCanvas2","Avg Field Sampled by Neutron",0,0,800,800);
-		histcanvas2->cd();
-		Histogram2->SetLineColor(kBlack);
-		Histogram2->SetXTitle("Avg Field (T)");
-		Histogram2->SetYTitle("Number of Neutrons");
-		Histogram2->Draw("");
-	
-		// -------------------------------------------------------------------------------------- 
-		// -- Plot Bounces 
-		TCanvas * histcanvas3 = new TCanvas("HistCanvas3","Number of bounces before loss",0,0,800,800);
-		histcanvas3->Divide(2,2);
-		histcanvas3->SetGrid();
-		histcanvas3->cd(1);
-		Histogram3a->SetLineColor(kBlack);
-		Histogram3a->SetXTitle("Bounces before loss");
-		Histogram3a->SetYTitle("Number of Neutrons");
-		Histogram3a->Draw("");
-		histcanvas3->cd(2);
-		Histogram3b->SetXTitle("LifeTime (s)");
-		Histogram3b->SetYTitle("Number of Neutrons");
-		Histogram3b->Draw("");
-		histcanvas3->cd(3);
-		Histogram3c->SetXTitle("Percentage of Diffuse Reflections");
-		Histogram3c->SetYTitle("Number of Neutrons");
-		Histogram3c->Draw("");
-		histcanvas3->cd(4);
-		Histogram3d->SetXTitle("Percentage of Specular Reflections");
-		Histogram3d->SetYTitle("Number of Neutrons");
-		Histogram3d->Draw("");
-	
-		Double_t mean = Histogram3a->GetMean();
-		Double_t meanerror = Histogram3a->GetMeanError();
-		cout << mean << "\t" << meanerror << endl;
-	
-		Double_t estimatedLoss = 1./mean;
-		Double_t estimatedLossError = TMath::Sqrt((-1./(mean*mean))*(-1./(mean*mean))*meanerror*meanerror);
-		cout << estimatedLoss << "\t" << estimatedLossError << endl;
-	}
-*/	
-	
+	TUCNRun* run = runManager->GetRun(0);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
+	// Draw Final Positions 
+	TCanvas * canvas1 = new TCanvas("canvas1", "Final Particle Positions", 800, 10, 600, 600);
+	TPolyMarker3D* finalPoints = new TPolyMarker3D(geoManager->GetNtracks(), 1);
+	run->DrawParticles(canvas1, finalPoints);
+
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- FITTING 
+	Int_t nbins = 50;
+	Double_t maxlength = 0.12;
+	
+	// Plot Histogram
+	TH1F * Histogram1 = new TH1F("Histogram1","Neutron Density versus height", nbins, 0.0, maxlength);	
+	TH1F * Histogram2 = new TH1F("Histogram2","Avg Field Sampled by Neutron", nbins, 0.001, 0.002);	
+	TH1F * Histogram3 = new TH1F("Histogram3","Distance Travelled", nbins, 500, 700.);	
+	
+	for (Int_t i = 0; i < particles; i++) {
+		// Get each Track
+		TUCNParticle* particle = run->GetParticle(i);
+		if (particle->Lost() == kTRUE) continue;
+		Histogram1->Fill(particle->Vz());
+		Histogram2->Fill(particle->AvgMagField()/particle->Distance());
+		Histogram3->Fill(particle->Distance());
+	}
+
+	// --------------------------------------------------------------------------------------
+	// Fit Neutron Density versus Height
+	TCanvas * histcanvas = new TCanvas("HistCanvas","Neutron Density versus height",20,20,800,800);
+   histcanvas->Divide(1,2);
+	histcanvas->SetGrid();
+	histcanvas->cd(1);
+
+	// -- Max height of neutrons
+	Double_t maxheight = totalEnergy/(Constants::neutron_mass*(Constants::grav_acceleration));
+
+	TF1 * fitdensf = new TF1("fitdensf", densityf, 0.0, maxheight, 1); 
+	fitdensf->SetParName(0,"Const");
+	fitdensf->SetParameter(0, 240);
+	fitdensf->SetLineColor(kRed);
+
+	Histogram1->SetLineColor(kBlack);
+	Histogram1->SetXTitle("Height from bottom of Tube (m)");
+	Histogram1->SetYTitle("Number of Neutrons");
+
+	Histogram1->Fit("fitdensf", "R");
+	Histogram1->Draw("E1");
+
+	// -------------------------------------------------------------------------------------- 
+	// -- Plot difference between bin content and fitted distribution of above histogram
+	histcanvas->cd(2);	
+	Int_t n = nbins;
+  	Double_t ex[n], ey[n], x[n], y[n]; 
+  	for (Int_t i=1;i<n;i++) { 
+		x[i] = Histogram1->GetBinCenter(i); 
+		y[i] = Histogram1->GetBinContent(i) - fitdensf->Eval(x[i]);
+		ex[i] = 0.;
+		ey[i] = Histogram1->GetBinError(i);
+	} 
+  	// create graph 
+  	TGraphErrors* gr1  = new TGraphErrors(n,x,y,ex,ey); 
+	gr1->SetTitle("Bin value minus fitted value versus height");
+	gr1->Draw("AC*");
+
+	// -------------------------------------------------------------------------------------- 
+	// -- Plot Avg Field sampled by neutrons
+	TCanvas * histcanvas2 = new TCanvas("HistCanvas2","Avg Field Sampled by Neutron",20,20,800,800);
+	histcanvas2->cd();
+	Histogram2->SetLineColor(kBlack);
+	Histogram2->SetXTitle("Avg Field (T)");
+	Histogram2->SetYTitle("Number of Neutrons");
+	Histogram2->Draw("");
+	
+	cout << Histogram2->GetEntries() << endl;
+	
+	TCanvas * histcanvas3 = new TCanvas("HistCanvas3","Distance Travelled by Neutron",20,20,800,800);
+	histcanvas3->cd();
+	Histogram3->SetLineColor(kBlack);
+	Histogram3->SetXTitle("Distance (m)");
+	Histogram3->SetYTitle("Number of Neutrons");
+	Histogram3->Draw("");
+	
+/*	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Fitting
 	Double_t point_x[numberOfRuns];
 	Double_t point_y[numberOfRuns];	
@@ -272,7 +231,7 @@ Int_t ucnstandalone() {
 		histcanvas->cd(i+1);
 		Int_t nbins = 100;
 		Int_t range = 100000;
-		
+*/		
 /*		switch (i) {
 			case 0:
 				range = 60000;
@@ -306,7 +265,7 @@ Int_t ucnstandalone() {
 				break;
 		}
 */		
-		TH1F * Histogram = new TH1F("Histogram","Number of collisions before loss", nbins, 0.0, range);
+/*		TH1F * Histogram = new TH1F("Histogram","Number of collisions before loss", nbins, 0.0, range);
 		TF1 *f1 = new TF1("f1", "expo", range);
 		cout << "Filling Histogram..." << endl;
 		
@@ -343,13 +302,13 @@ Int_t ucnstandalone() {
 	lossf->Draw();
 	cout << lossf->Eval(1.,0.,0.,0.) << endl;
 	
-/*	
-	Double_t point_x[13] = {0.01, 0.05, 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,1.0};
-	Double_t point_y[13] = {0.134027*f, 7.64717e-05, 0.000111426, 0.000162566, 0.780407*f, 0.000252422, 0.000301221, 0.00034624, 0.000389121, 0.000449889, 0.000510026, 0.000552799, 0.000782759 };	
-	Double_t error_x[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
-	Double_t error_y[13] = {0.00578513*f, 2.97809e-06, 6.76548e-06, 6.31687e-06, 1.91486e-06, 1.00426e-05, 1.03125e-05, 1.1159e-05, 1.42658e-05, 1.58957e-05, 2.26283e-05, 2.96299e-05, 3.39148e-05};
-	Int_t numberOfRuns = 13;
-*/
+	
+//	Double_t point_x[13] = {0.01, 0.05, 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,1.0};
+//	Double_t point_y[13] = {0.134027*f, 7.64717e-05, 0.000111426, 0.000162566, 0.780407*f, 0.000252422, 0.000301221, 0.00034624, 0.000389121, 0.000449889, 0.000510026, 0.000552799, 0.000782759 };	
+//	Double_t error_x[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
+//	Double_t error_y[13] = {0.00578513*f, 2.97809e-06, 6.76548e-06, 6.31687e-06, 1.91486e-06, 1.00426e-05, 1.03125e-05, 1.1159e-05, 1.42658e-05, 1.58957e-05, 2.26283e-05, 2.96299e-05, 3.39148e-05};
+//	Int_t numberOfRuns = 13;
+
 	for (Int_t i = 0; i < numberOfRuns; i++) {
 		point_y[i] = point_y[i]/f;
 		error_y[i] = error_y[i]/f;
@@ -367,7 +326,7 @@ Int_t ucnstandalone() {
 	lossf->GetYaxis()->SetRangeUser(0.,3.2);
 	lossf->GetXaxis()->SetTitle("E/V");
 	lossf->GetYaxis()->SetTitle("Loss Probability");
-
+*/
 	benchmark.Stop("UCNSim");
 	benchmark.Show("UCNSim");
 	

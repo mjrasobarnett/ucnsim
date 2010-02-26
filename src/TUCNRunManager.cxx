@@ -12,6 +12,7 @@
 #include "TUCNGravField.h"
 #include "TUCNParticle.h"
 #include "TUCNUniformMagField.h"
+#include "TUCNParabolicMagField.h"
 
 #include "TObjArray.h"
 #include "TRandom.h"
@@ -101,8 +102,9 @@ void TUCNRunManager::InitialiseGeometry()
 	CreateGeometry_v5(fermiPotential, W);
 		
 	// -- Define Mag Field
-	TUCNUniformMagField* magfield = new TUCNUniformMagField("Uniform magnetic field", 0.0,1.0,1.0);
-	fManager->AddMagField(magfield);
+//	TUCNUniformMagField* magField = new TUCNUniformMagField("Uniform magnetic field", 0.0,1.0,1.0);
+	TUCNParabolicMagField* magField = new TUCNParabolicMagField("Parabolic magnetic field",0.1,1.0,0.235);
+	fManager->AddMagField(magField);
 }
 
 //______________________________________________________________________________

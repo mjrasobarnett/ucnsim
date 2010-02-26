@@ -948,7 +948,7 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 
 	Int_t stepNumber;
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-	TUCNMagField* magField = static_cast<TUCNGeoManager*>(gGeoManager)->GetMagField("Uniform magnetic field");
+	TUCNMagField* magField = static_cast<TUCNGeoManager*>(gGeoManager)->GetMagField("Parabolic magnetic field");
 	
 	#ifdef VERBOSE_MODE				
 		cout << "PropagateForSetTime - Starting Run - Max time (seconds): " <<  runTime << endl;
@@ -1006,9 +1006,9 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 	// -- END OF PROPAGATION LOOP
 	}	
 							
-	cout << "FINAL STATUS: " << "Track: " << track->GetId() << "\t" << "Steps taken: " << stepNumber << "\t";
-	cout << "Time: " << particle->T() << "s" << "\t" << "Final Medium: " << this->GetCurrentNode()->GetMedium()->GetName() << "\t";
-	cout << "Bounces: " << particle->Bounces() << "\t" << "Diffuse: " << particle->DiffuseBounces() << "\t" << "Specular: " << particle->SpecularBounces() << endl;
+//	cout << "FINAL STATUS: " << "Track: " << track->GetId() << "\t" << "Steps taken: " << stepNumber << "\t";
+//	cout << "Time: " << particle->T() << "s" << "\t" << "Final Medium: " << this->GetCurrentNode()->GetMedium()->GetName() << "\t";
+//	cout << "Bounces: " << particle->Bounces() << "\t" << "Diffuse: " << particle->DiffuseBounces() << "\t" << "Specular: " << particle->SpecularBounces() << endl;
 	
 	return kTRUE;
 }
