@@ -84,9 +84,9 @@ public:
 	Bool_t 						DiffuseBounce(Double_t* dir, const Double_t* norm);
 	void							UpdateTrack(TVirtualGeoTrack* track, Double_t timeInterval=0.);
 	
-//	Int_t 						GetNumberLost() const {return fLostCounter;}
-//	Int_t 						GetNumberDetected() const {return fDetectedCounter;}
-//	Int_t 						GetNumberDecayed() const {return fDecayedCounter;}
+	Int_t 						GetNumberLost() const {return fLostCounter;}
+	Int_t 						GetNumberDetected() const {return fDetectedCounter;}
+	Int_t 						GetNumberDecayed() const {return fDecayedCounter;}
 		
    ClassDef(TUCNGeoNavigator, 1)          // UCN geometry manager
 };

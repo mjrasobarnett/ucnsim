@@ -43,11 +43,10 @@ public:
 	void							SetGravity(Bool_t gravityPresent) {fGravity = gravityPresent;}
 	Bool_t						CheckForGravity() {return fGravity;}
 	
-//	Int_t 						GetNumberDetected() const {return static_cast<TUCNGeoNavigator*>(this->GetCurrentNavigator())->GetNumberDetected();}
-//	Int_t 						GetNumberLost() const {return static_cast<TUCNGeoNavigator*>(this->GetCurrentNavigator())->GetNumberLost();}
-//	Int_t 						GetNumberDecayed() const {return static_cast<TUCNGeoNavigator*>(this->GetCurrentNavigator())->GetNumberDecayed();}
-	
-				
+	Int_t 						GetNumberDetected() const {return static_cast<TUCNGeoNavigator*>(this->GetCurrentNavigator())->GetNumberDetected();}
+	Int_t 						GetNumberLost() const {return static_cast<TUCNGeoNavigator*>(this->GetCurrentNavigator())->GetNumberLost();}
+	Int_t 						GetNumberDecayed() const {return static_cast<TUCNGeoNavigator*>(this->GetCurrentNavigator())->GetNumberDecayed();}
+					
    ClassDef(TUCNGeoManager, 1)          // UCN geometry manager
 };
 
