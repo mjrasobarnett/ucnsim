@@ -36,21 +36,54 @@
 
 Double_t gTotalEnergy = 0.0*Units::neV;
 
-Bool_t DrawFinalPositions(const char* fileName);
+Bool_t DrawInitialPositions(const char* fileName, TGeoManager* geoManager);
+Bool_t DrawFinalPositions(const char* fileName, TGeoManager* geoManager);
 Bool_t DrawNeutronHeightDistribution(const char* fileName);
 Double_t densityf(Double_t* x, Double_t* par); 
 
 Int_t buildtest_plot(const char* fileName) {
 	
-	DrawFinalPositions(fileName);
+	// -- Import Geometry
+	TGeoManager* geoManager = TGeoManager::Import(fileName);
+	
+	DrawInitialPositions(fileName, geoManager);
+	DrawFinalPositions(fileName, geoManager);
 	DrawNeutronHeightDistribution(fileName);
 	
-		
 	return 0;
 }
 
 // -------------------------------------------------------------------------------------- 
-Bool_t DrawFinalPositions(const char* fileName) 
+Bool_t DrawInitialPositions(const char* fileName, TGeoManager* geoManager) 
+{
+	// -- Open File
+	TFile *file = 0;
+	file = TFile::Open(fileName, "read");
+	if (!file || file->IsZombie()) {
+	   cerr << "Cannot open file: " << fileName << endl;
+	   return 0;
+	}
+	// -- Extract Initial Positions in TPolyMarker3D
+	const char* positions = "NeutronInitialPositions;1";
+	TPolyMarker3D* initialPositions = new TPolyMarker3D();
+	file->GetObject(positions, initialPositions);
+	if (initialPositions == NULL) {
+		cerr << "Could not find TPolyMarker3D: " << positions << endl;
+		return kFALSE;
+	}
+	// -- Draw Points
+	TCanvas *canvas = new TCanvas("InitialPositionsCanvas","Neutron InitialPositions",60,0,400,400);
+	canvas->cd();
+	geoManager->GetTopVolume()->Draw();
+	geoManager->SetVisLevel(4);
+	geoManager->SetVisOption(0);
+	initialPositions->Draw();
+	
+	return kTRUE;
+}
+
+// -------------------------------------------------------------------------------------- 
+Bool_t DrawFinalPositions(const char* fileName, TGeoManager* geoManager) 
 {
 	// -- Open File
 	TFile *file = 0;
@@ -60,24 +93,19 @@ Bool_t DrawFinalPositions(const char* fileName)
 	   return 0;
 	}
 	// -- Extract Final Positions in TPolyMarker3D
-	const char* positions = "NeutronPositions;1";
+	const char* positions = "NeutronFinalPositions;1";
 	TPolyMarker3D* finalPositions = new TPolyMarker3D();
-	if (positions && strlen(positions) > 0) {
-	   file->GetObject(positions, finalPositions);
-	} else {
-		cerr << "Could not find required object" << endl;
+	file->GetObject(positions, finalPositions);
+	if (finalPositions == NULL) {
+		cerr << "Could not find TPolyMarker3D: " << positions << endl;
 		return kFALSE;
 	}
-	// -- Import Geometry
-	TGeoManager* geoManager = TGeoManager::Import(fileName);
-	
-	TCanvas * canvas = new TCanvas("FinalPositionsCanvas","Neutron Positions",20,20,800,800);
+	// -- Draw Points
+	TCanvas * canvas = new TCanvas("FinalPositionsCanvas","Neutron Final Positions",500,0,400,400);
 	canvas->cd();
-	
 	geoManager->GetTopVolume()->Draw();
 	geoManager->SetVisLevel(4);
 	geoManager->SetVisOption(0);
-	
 	finalPositions->Draw();
 	
 	return kTRUE;
@@ -112,7 +140,7 @@ Bool_t DrawNeutronHeightDistribution(const char* fileName)
 	// --------------------------------------------------------------------------------------
 	// Fit Neutron Density versus Height
 	
-	TCanvas * histcanvas = new TCanvas("NeutronDensityCanvas","Neutron Density versus height",20,20,800,800);
+	TCanvas * histcanvas = new TCanvas("NeutronDensityCanvas","Neutron Density versus height",60,0,800,800);
    histcanvas->Divide(1,2);
 	histcanvas->SetGrid();
 	histcanvas->cd(1);

@@ -7,8 +7,8 @@ void set_my_style(void)
 //	gStyle->SetOptStat(0);
 //	gStyle->SetOptTitle(0);
 	gStyle->SetOptFit(111);
-	gStyle->SetStatW(0.25);
-	gStyle->SetStatH(0.25);
+	gStyle->SetStatW(0.15);
+	gStyle->SetStatH(0.15);
 	gStyle->SetPadLeftMargin  (0.15);
 	gStyle->SetPadRightMargin (0.10);
 	gStyle->SetPadBottomMargin(0.15);

@@ -57,10 +57,10 @@ using std::string;
 
 const Double_t total_energy = 50*Units::neV;
 
-Bool_t DrawFinalPositions(TString& dataFileName);
-Bool_t PlotFinalHeightDistribution(TString& dataFileName);
-Bool_t PlotLossFunction(TString& dataFileName);
-Bool_t PlotAvgMagField(TString& dataFileName);
+Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& runName);
+Bool_t PlotFinalHeightDistribution(const TString& dataFileName);
+Bool_t PlotLossFunction(const TString& dataFileName);
+Bool_t PlotAvgMagField(const TString& dataFileName);
 
 Int_t main(Int_t argc,Char_t ** argv)
 {
@@ -89,11 +89,6 @@ Int_t main(Int_t argc,Char_t ** argv)
 		return EXIT_FAILURE;
 	}
 	
-	
-	gGeoManager->GetTopVolume()->Draw();
-	gGeoManager->GetTrack(0)->Draw();
-	theApp->Run();
-	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Export to File
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -117,7 +112,7 @@ Int_t main(Int_t argc,Char_t ** argv)
 	cout << "Run Build Test Analysis on: " << dataFile <<  endl;
 	cout << "-------------------------------------------" << endl << endl;
 	
-	DrawFinalPositions(dataFile);
+	PlotInitialAndFinalPositions(dataFile, "Run1;1");
 	PlotFinalHeightDistribution(dataFile);
 	PlotLossFunction(dataFile);
 	PlotAvgMagField(dataFile);
@@ -130,11 +125,11 @@ Int_t main(Int_t argc,Char_t ** argv)
 
 
 // -------------------------------------------------------------------------------------- 
-Bool_t DrawFinalPositions(TString& dataFileName) 
+Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& runName) 
 {
 // -- Create a TPolyMarker3D object to store the final positions of the neutrons and write this to file. 
 	cout << "-------------------------------------------" << endl;
-	cout << "DrawFinalPositions" <<  endl;
+	cout << "DrawInitialAndFinalPositions" <<  endl;
 	cout << "-------------------------------------------" << endl;
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Open File
@@ -145,15 +140,28 @@ Bool_t DrawFinalPositions(TString& dataFileName)
 	   return 0;
 	}
 	// -- Extract Run Object
-	const char* name = "Run1;1";
+//	const char* name = "Run1;1";
 	TUCNRun* run = new TUCNRun();
-   f->GetObject(name, run);
+   f->GetObject(static_cast<const char*>(runName), run);
 	if (run == NULL) {
-		cerr << "Could not find run: " << name << endl;
+		cerr << "Could not find run: " << runName << endl;
 		return kFALSE;
 	}
 	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Create the points
+	// -- Create the initial points
+	TPolyMarker3D* initialPoints = new TPolyMarker3D(run->Neutrons(), 1); // 1 is marker style
+	for (Int_t i = 0; i < run->Neutrons(); i++) {
+		TUCNParticle* particle = run->GetInitialParticle(i);
+		assert(particle != NULL);
+		initialPoints->SetPoint(i, particle->Vx(), particle->Vy(), particle->Vz());
+	}
+	initialPoints->SetMarkerColor(2);
+	initialPoints->SetMarkerStyle(6);
+	// -- Write the points to the File
+	initialPoints->SetName("NeutronInitialPositions");
+	initialPoints->Write();
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- Create the final points
 	TPolyMarker3D* finalPoints = new TPolyMarker3D(run->Neutrons(), 1); // 1 is marker style
 	for (Int_t i = 0; i < run->Neutrons(); i++) {
 		TUCNParticle* particle = run->GetParticle(i);
@@ -163,10 +171,12 @@ Bool_t DrawFinalPositions(TString& dataFileName)
 	finalPoints->SetMarkerColor(2);
 	finalPoints->SetMarkerStyle(6);
 	// -- Write the points to the File
-	finalPoints->SetName("NeutronPositions");
+	finalPoints->SetName("NeutronFinalPositions");
 	finalPoints->Write();
+	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Clean Up
-	delete run; 
+	delete run;
+	delete initialPoints; 
 	delete finalPoints;
 	delete f;
 	
@@ -174,7 +184,7 @@ Bool_t DrawFinalPositions(TString& dataFileName)
 }
 
 // -------------------------------------------------------------------------------------- 
-Bool_t PlotFinalHeightDistribution(TString& dataFileName)
+Bool_t PlotFinalHeightDistribution(const TString& dataFileName)
 {
 	// -- Write a histogram to the output file that contains the final height distribution of the run: Run1
 	// -- This is a test of the neutron's real space density as a function of height under gravity. There is a clear analytic result for this.
@@ -244,7 +254,7 @@ Bool_t PlotFinalHeightDistribution(TString& dataFileName)
 }
 
 // -------------------------------------------------------------------------------------- 
-Bool_t PlotLossFunction(TString& dataFileName)
+Bool_t PlotLossFunction(const TString& dataFileName)
 {
 	cout << "-------------------------------------------" << endl;
 	cout << "PlotLossFunction" <<  endl;
@@ -339,7 +349,7 @@ Bool_t PlotLossFunction(TString& dataFileName)
 }
 
 // -------------------------------------------------------------------------------------- 
-Bool_t PlotAvgMagField(TString& dataFileName)
+Bool_t PlotAvgMagField(const TString& dataFileName)
 {
 	// -- Plot the Average Mag Field
 	cout << "-------------------------------------------" << endl;
