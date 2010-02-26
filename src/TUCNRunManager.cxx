@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cassert>
 #include <vector>
+#include <stdio.h>
 
 #include "TUCNRunManager.h"
 
@@ -114,19 +115,24 @@ TUCNRun* TUCNRunManager::GetRun(Int_t index) const
 }
 
 //______________________________________________________________________________
-void TUCNRunManager::AddRuns(Int_t numberOfRuns)
+void TUCNRunManager::CreateRuns(Int_t numberOfRuns)
 {
 	for(Int_t i = 0; i < numberOfRuns; i++) {
+		Char_t name[10], title[20];
+		sprintf(name,"run%d",i); 
+		sprintf(title,"Run no:%d",i);
 		Int_t index = this->GetNumberOfRuns();
-		TUCNRun* newRun = new TUCNRun();
+		TUCNRun* newRun = new TUCNRun(name, title);
 	   fRuns->AddAtAndExpand(newRun , index);
 	}
 }
 
 //_____________________________________________________________________________
-void	TUCNRunManager::WriteRunsToFile()
+void	TUCNRunManager::WriteRunsToFile(TFile* file)
 {
-	TFile f("runs.root","recreate");
+	assert(file->IsOpen());
+	cout << "Writing data to file: " << file->GetName() << endl;
 	fRuns->Write();
-	f.Close();
+	file->Close();
+	cout << "WriteOutData completed" << endl;		
 }

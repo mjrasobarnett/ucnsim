@@ -11,6 +11,8 @@
 #include "TRint.h"
 #include "TRandom.h"
 #include "TObjArray.h"
+#include "TFile.h"
+#include "TKey.h"
 
 #include "TF1.h"
 #include "TH1.h"
@@ -55,7 +57,7 @@ Double_t densityf(Double_t* x, Double_t* par);
 
 Int_t main(Int_t argc,Char_t **argv)
 {
-	TRint *theApp = new TRint("UCN App", &argc, argv);
+	TRint *theApp = new TRint("UCNSimApp", &argc, argv);
 #else 
 Int_t ucnstandalone() {	
 	gSystem->Load("libPhysics");
@@ -73,10 +75,10 @@ Int_t ucnstandalone() {
 	TUCNRunManager* runManager = new TUCNRunManager();
 	TUCNGeoManager* geoManager = runManager->GetGeoManager();
 	
-	Int_t numberOfRuns = 1;
+	Int_t numberOfRuns = 2;
 	// Need to Add the runs before we initialise the geometry (because we create the navigators with each run). 
 	// and the navigators need to be created before we close the geometry.
-	runManager->AddRuns(numberOfRuns);
+	runManager->CreateRuns(numberOfRuns);
 	
 	runManager->InitialiseGeometry();
 	
@@ -84,7 +86,7 @@ Int_t ucnstandalone() {
 	// -- Run Simulation
 	Double_t runTime = 100.*Units::s;
 	Double_t maxStepTime = 0.05*Units::s;
-	Int_t particles = 1000;
+	Int_t particles = 100;
 	Double_t V = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->FermiPotential();
 	Double_t f = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->Eta();
 	Double_t totalEnergy = 0;
@@ -94,7 +96,7 @@ Int_t ucnstandalone() {
 		totalEnergy = 0.57*V; //(1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
 		
 		TUCNRun* run = runManager->GetRun(runNumber);
-		cout << "Run number: " << runNumber << endl;
+		cout << "Run number: " << runNumber << "\t" << "called: " << run->GetName() << endl;
 		cout << "totalEnergy: " << totalEnergy << endl;
 		
 		run->Initialise(particles, totalEnergy);
@@ -129,8 +131,17 @@ Int_t ucnstandalone() {
 		cout << "End of run" << endl << endl;
 	}
 	
-//	runManager->WriteRunsToFile();
+	TFile* file = new TFile("tracks_test.root","RECREATE");
+	runManager->WriteRunsToFile(file);
 	
+	TFile myfile("tracks_test.root");
+	myfile.ls();
+	
+	TIter next(myfile.GetListOfKeys()); 
+	TKey* key;
+	while ((key=(TKey*)next())) {
+		printf("key: %s points to an object of class: %s at %d \n", key->GetName(), key->GetClassName(),key->GetSeekKey());
+	}
 	
 	TUCNRun* run = runManager->GetRun(0);
 	
