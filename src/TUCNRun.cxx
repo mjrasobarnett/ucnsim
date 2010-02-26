@@ -13,7 +13,12 @@
 #include "TUCNFieldManager.h"
 #include "TUCNGravField.h"
 #include "TUCNParticle.h"
+#include "TUCNData.h"
 
+#include "TFile.h"
+#include "TCanvas.h"
+#include "TPolyMarker3D.h"
+#include "TGeoManager.h"
 #include "TRandom.h"
 #include "TGeoVolume.h"
 #include "TGeoShape.h"
@@ -101,7 +106,7 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& run)
 
 //______________________________________________________________________________
 TUCNRun::~TUCNRun()
-{ 
+{
 // -- Destructor
 	Info("TUCNRun", "Destructor");
 	fData->Delete();
@@ -151,8 +156,8 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile& configFile)
 	return kTRUE;
 }
 
-//______________________________________________________________________________
-Bool_t TUCNRun::GenerateMonoEnergeticParticles(TUCNGeoManager* geoManager, TUCNGravField* gravField)
+/*//______________________________________________________________________________
+Bool_t TUCNRun::GenerateMonoEnergeticParticles(TGeoManager* geoManager, TUCNGravField* gravField)
 {
 	// Generates a uniform distribution of particles with random directions all with the same total energy
 	// (kinetic plus potential) defined at z = 0.	
@@ -306,7 +311,7 @@ Bool_t TUCNRun::GenerateMonoEnergeticParticles(TUCNGeoManager* geoManager, TUCNG
 	}		
 	return kTRUE;
 }
-
+*/
 //_____________________________________________________________________________
 Bool_t TUCNRun::PropagateTracks(TUCNFieldManager* fieldManager)
 {
@@ -450,7 +455,7 @@ void	TUCNRun::DrawTrack(TCanvas* canvas, Int_t trackID)
 	gGeoManager->SetVisLevel(4);
 	gGeoManager->SetVisOption(0);
 	// -- Draw Track
-	TGeoTrack* track = this->GetTrack(trackID);
+	TVirtualGeoTrack* track = this->GetTrack(trackID);
 	assert(track != NULL);
 	track->Draw();
 }
@@ -465,7 +470,7 @@ void	TUCNRun::WriteOutData(TFile* file)
 }
 
 //_____________________________________________________________________________
-TGeoTrack* TUCNRun::GetTrack(Int_t trackID)
+TVirtualGeoTrack* TUCNRun::GetTrack(Int_t trackID)
 {
 	TGeoTrack* track = 0;
 	assert(trackID < fData->GetTracks()->GetEntries() && trackID >= 0);

@@ -12,10 +12,12 @@
 #include "TMath.h"
 #include "TLegend.h"
 #include "TGraphErrors.h"
-
 #include "TGeoManager.h"
+#include "TPolyMarker3D.h"
+
 #include "TUCNExperiment.h"
 #include "TUCNFieldManager.h"
+#include "TUCNParticle.h"
 #include "TUCNRun.h"
 
 #include "Constants.h"

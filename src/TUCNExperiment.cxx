@@ -19,6 +19,7 @@
 #include "TUCNParabolicMagField.h"
 #include "TUCNConfigFile.h"
 
+#include "TFile.h"
 #include "TObjArray.h"
 #include "TRandom.h"
 #include "TGeoVolume.h"
@@ -46,6 +47,7 @@ TUCNExperiment::TUCNExperiment()
 // -- Default constructor
    Info("TUCNExperiment", "Constructor");
 	fGeoManager = new TGeoManager("GeoManager", "The Geometry Manager");
+	fFieldManager = new TUCNFieldManager();
 	fRuns = new TObjArray();
 	fSourceVolumeIndex = 0;
 	fSourceMatrixIndex = 0;
@@ -55,6 +57,7 @@ TUCNExperiment::TUCNExperiment()
 TUCNExperiment::TUCNExperiment(const TUCNExperiment& other)
 					:TNamed(other),
 					 fGeoManager(other.fGeoManager),
+					 fFieldManager(other.fFieldManager),
 					 fRuns(other.fRuns),
 					 fSourceVolumeIndex(other.fSourceVolumeIndex),
 					 fSourceMatrixIndex(other.fSourceMatrixIndex)
@@ -70,6 +73,7 @@ TUCNExperiment& TUCNExperiment::operator=(const TUCNExperiment& other)
 	if(this!=&other) {
       TNamed::operator=(other);
 		fGeoManager = other.fGeoManager;
+		fFieldManager = other.fFieldManager;
 		fRuns = other.fRuns;
 		fSourceVolumeIndex = other.fSourceVolumeIndex;
 		fSourceMatrixIndex = other.fSourceMatrixIndex;
@@ -83,6 +87,7 @@ TUCNExperiment::~TUCNExperiment()
 // -- Destructor
 	Info("TUCNExperiment", "Destructor");
 	if (fGeoManager) delete fGeoManager;
+	if (fFieldManager) delete fFieldManager;
 	if (fRuns) {fRuns->Delete(); delete fRuns;}
 }
 
@@ -175,7 +180,7 @@ Bool_t TUCNExperiment::Initialise(TUCNConfigFile& configFile)
 	cout << "Building Geometry..." << endl;
 	cout << "-------------------------------------------" << endl;	
 	// Build Geometry
-	if(!(this->BuildGeometry(*(this->GeoManager()), configFile))) { 
+	if (!(this->BuildGeometry(*(this->GeoManager()), configFile))) { 
 		Warning("Initialise","Failed building geometry. Program aborting.");
 		return kFALSE;
 	}
@@ -187,8 +192,7 @@ Bool_t TUCNExperiment::Initialise(TUCNConfigFile& configFile)
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Field Initialisation
 	///////////////////////////////////////////////////////////////////////////////////////
-	TUCNFieldManager* fieldManager = new TUCNFieldManager();
-	if(!(fieldManager->Initialise(configFile))) {
+	if(!(this->FieldManager()->Initialise(configFile))) {
 		Warning("Initialise","Failed in field initialisation. Program aborting.");
 		return kFALSE;
 	}
@@ -198,10 +202,8 @@ Bool_t TUCNExperiment::Initialise(TUCNConfigFile& configFile)
 	cout << "-------------------------------------------" << endl;
 	cout << "Initialising the Runs" << endl;
 	cout << "-------------------------------------------" << endl;
-	Int_t numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
-	if (!(numberOfRuns < 1)) {
-		this->CreateRuns(numberOfRuns, configFile);
-	} else {
+	if (!(this->CreateRuns(configFile))) {
+		Warning("Initialise","Failed creating Runs. Program aborting.");
 		return kFALSE;
 	}
 	cout << "-------------------------------------------" << endl;
@@ -300,21 +302,30 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager& geoManager, TUCNConfigFile& co
 //______________________________________________________________________________
 TUCNRun* TUCNExperiment::GetRun(Int_t index) const
 {
-	return (index<fRuns->GetEntries()) ? static_cast<TUCNRun*>(fRuns->At(index)) : 0;
+	return (index < this->RunContainer()->GetEntries()) ? static_cast<TUCNRun*>(this->RunContainer()->At(index)) : 0;
 }
 
 //______________________________________________________________________________
-void TUCNExperiment::CreateRuns(Int_t numberOfRuns, TUCNConfigFile& configFile)
+Bool_t TUCNExperiment::CreateRuns(TUCNConfigFile& configFile)
 {
-	for(Int_t i = 1; i <= numberOfRuns; i++) {
-		Char_t name[10], title[20];
-		sprintf(name,"Run%d",i); 
-		sprintf(title,"Run no:%d",i);
-		Info("CreateRuns", "Run Name: %s,  Title: %s", name, title);
-		TUCNRun* newRun = new TUCNRun(name, title);
-		newRun->Initialise(configFile);
-		fRuns->Add(newRun);
+	// Extract the number of runs from the configFile and initialise each run with extracted run parameters
+	Int_t numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
+	if (numberOfRuns < 1) {
+		Error("CreateRuns", "Number of Runs is less than 1!");
+		return kFALSE;
+	} else {
+		// Create each run and initialise
+		for(Int_t i = 1; i <= numberOfRuns; i++) {
+			Char_t name[10], title[20];
+			sprintf(name,"Run%d",i); 
+			sprintf(title,"Run no:%d",i);
+			Info("CreateRuns", "Run Name: %s,  Title: %s", name, title);
+			TUCNRun* newRun = new TUCNRun(name, title);
+			newRun->Initialise(configFile);
+			this->RunContainer()->Add(newRun);
+		}
 	}
+	return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -324,7 +335,7 @@ void	TUCNExperiment::WriteToFile(TFile* file)
 	cout << "Writing data to file: " << file->GetName() << endl;
 	this->GeoManager()->Write();
 	this->Write();
-	//fRuns->Write();
+	//this->RunContainer()->Write();
 	file->Close();
-	cout << "WriteOutData completed" << endl;		
+	cout << "WriteOutData completed" << endl;
 }

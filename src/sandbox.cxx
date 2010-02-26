@@ -50,6 +50,7 @@
 
 using std::cout;
 using std::endl;
+using std::cerr;
 using std::string;
 
 Bool_t BuildGeometry(TUCNGeoManager* geoManager, TUCNConfigFile& configFile);

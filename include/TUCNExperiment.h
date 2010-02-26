@@ -22,9 +22,12 @@ protected:
 	// GeoManager
 	TGeoManager*				fGeoManager;
 	TGeoManager*				GeoManager() const {return fGeoManager;}
-	
+	// FieldManager
+	TUCNFieldManager*			fFieldManager;
+	TUCNFieldManager*			FieldManager() const {return fFieldManager;}
 	// Runs
 	TObjArray*					fRuns;
+	TObjArray*					RunContainer() const {return fRuns;}
 	// Source Volume
 	Int_t 						fSourceVolumeIndex;
 	Int_t							fSourceMatrixIndex;
@@ -52,7 +55,7 @@ public:
 	
 	Int_t						NumberOfRuns() const {return fRuns->GetEntries();}
 	TUCNRun*					GetRun(Int_t index) const;
-	void						CreateRuns(Int_t numberOfRuns, TUCNConfigFile& configFile);
+	Bool_t					CreateRuns(TUCNConfigFile& configFile);
 	void						WriteToFile(TFile* file);
 	
    ClassDef(TUCNExperiment, 1)      

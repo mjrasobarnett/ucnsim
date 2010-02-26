@@ -5,18 +5,22 @@
 #define ROOT_TUCNRun
 
 #include "TNamed.h"
-#include "TCanvas.h"
-#include "TFile.h"
-#include "TPolyMarker3D.h"
-
-#include "TUCNData.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
 // 						TUCNRun															  //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+class TGeoManager;
+class TPolyMarker3D;
+class TFile;
+class TVirtualGeoTrack;
+
+class TCanvas;
 class TUCNConfigFile;
+class TUCNFieldManager;
+class TUCNData;
+class TUCNParticle;
 
 class TUCNRun : public TNamed 
 {
@@ -50,8 +54,8 @@ class TUCNRun : public TNamed
 		
 		void						DrawParticles(TCanvas* canvas, TPolyMarker3D* points);
 		void						DrawTrack(TCanvas* canvas, Int_t trackID);
-		Bool_t 					GenerateMonoEnergeticParticles(TUCNGeoManager* geoManager, TUCNGravField* gravField=0);
-		TGeoTrack*				GetTrack(Int_t trackID);
+//		Bool_t 					GenerateMonoEnergeticParticles(TGeoManager* geoManager, TUCNGravField* gravField=0);
+		TVirtualGeoTrack*		GetTrack(Int_t trackID);
 		TUCNParticle*			GetParticle(Int_t particleID);
 		
 		Bool_t					PropagateTracks(TUCNFieldManager* fieldManager);
