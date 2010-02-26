@@ -637,6 +637,11 @@ TGeoNode* TUCNRun::FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGr
 		Error("FindNextBoundaryAlongParabola","Point is Outside");
 		TUCNGeoBBox* topShape = static_cast<TUCNGeoBBox*>(top_volume->GetShape());
 		tnext = topShape->TimeFromInsideAlongParabola(globalPoint, globalVelocity, globalField, this->GetStepTime(), fUCNIsOnBoundary);
+		if (tnext <= 0.0) {
+			Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+			return NULL;
+		}
+		
 		topShape = 0; 
 		snext = TUCNParabola::Instance()->ArcLength(globalVelocity, globalField, tnext);
 		fUCNNextNode = top_node;
@@ -671,6 +676,10 @@ TGeoNode* TUCNRun::FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGr
 	
 	TUCNGeoBBox* currentShape = static_cast<TUCNGeoBBox*>(currentVol->GetShape());
    tnext = currentShape->TimeFromInsideAlongParabola(localPoint, localVelocity, localField, this->GetStepTime(), fUCNIsOnBoundary); 
+	if (tnext <= 0.0) {
+		Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+		return NULL;
+	}
 	currentShape = 0;
 	snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
    // -- Check if we are within the safety region
@@ -722,6 +731,10 @@ TGeoNode* TUCNRun::FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGr
          if (!motherVolume->IsAssembly()) {
 				TUCNGeoBBox* motherShape = static_cast<TUCNGeoBBox*>(motherVolume->GetShape());
 				tnext = motherShape->TimeFromInsideAlongParabola(motherPoint, motherVelocity, motherField, this->GetStepTime(), fUCNIsOnBoundary); 
+				if (tnext <= 0.0) {
+					Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+					return NULL;
+				}
 				motherShape = 0;
 				snext = TUCNParabola::Instance()->ArcLength(motherVelocity, motherField, tnext);
          }
@@ -750,7 +763,11 @@ TGeoNode* TUCNRun::FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGr
                snext = TGeoShape::Big();
                if (!currentNode->GetVolume()->Contains(daughterPoint)) {
                   TUCNGeoBBox* shape = static_cast<TUCNGeoBBox*>(currentNode->GetVolume()->GetShape());
-						tnext = shape->TimeFromInsideAlongParabola(daughterPoint, daughterVelocity, daughterField, this->GetStepTime(), fUCNIsOnBoundary); 
+						tnext = shape->TimeFromInsideAlongParabola(daughterPoint, daughterVelocity, daughterField, this->GetStepTime(), fUCNIsOnBoundary);
+						if (tnext <= 0.0) {
+							Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+							return NULL;
+						}
 						shape = 0;
 						snext = TUCNParabola::Instance()->ArcLength(daughterVelocity, daughterField, tnext);
 					}
@@ -806,6 +823,10 @@ TGeoNode* TUCNRun::FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGr
                // Point is outside   
 						TUCNGeoBBox* shape = static_cast<TUCNGeoBBox*>(currentNode->GetVolume()->GetShape());
 						tnext = shape->TimeFromInsideAlongParabola(daughterPoint, daughterVelocity, daughterField, this->GetStepTime(), fUCNIsOnBoundary); 
+						if (tnext <= 0.0) {
+							Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+							return NULL;
+						}
 						shape = 0;
 						snext = TUCNParabola::Instance()->ArcLength(daughterVelocity, daughterField, tnext);
                   // Determine if distance to node is within current stepsize
@@ -866,6 +887,10 @@ TGeoNode* TUCNRun::FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGr
                if (!motherNode->GetVolume()->IsAssembly()) {
                	TUCNGeoBBox* motherShape = static_cast<TUCNGeoBBox*>(motherNode->GetVolume()->GetShape());
 						tnext = motherShape->TimeFromInsideAlongParabola(daughterPoint, daughterVelocity, daughterField, this->GetStepTime(), fUCNIsOnBoundary); 
+						if (tnext <= 0.0) {
+							Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+							return NULL;
+						}
 						motherShape = 0;
 						snext = TUCNParabola::Instance()->ArcLength(daughterVelocity, daughterField, tnext);
 					}
@@ -967,6 +992,10 @@ TGeoNode* TUCNRun::FindNextDaughterBoundaryAlongParabola(Double_t* point, Double
 				cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t" << "Z: " << localField[2] << endl;
 			#endif
 			tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, this->GetStepTime(), fUCNIsOnBoundary);  
+			if (tnext <= 0.0) {
+				Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+				return NULL;
+			}
 			snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
          if (snext < (gGeoManager->GetCurrentNavigator()->GetStep() - fgTolerance)) {
             if (compmatrix) {
@@ -996,6 +1025,10 @@ TGeoNode* TUCNRun::FindNextDaughterBoundaryAlongParabola(Double_t* point, Double
 				cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t" << "Z: " << localField[2] << endl;
 			#endif
 			tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, this->GetStepTime(), fUCNIsOnBoundary);
+			if (tnext <= 0.0) {
+				Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+				return NULL;
+			}
 			snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
          if (snext < (gGeoManager->GetCurrentNavigator()->GetStep() - fgTolerance)) {
             if (compmatrix) {
@@ -1033,6 +1066,10 @@ TGeoNode* TUCNRun::FindNextDaughterBoundaryAlongParabola(Double_t* point, Double
 				cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t" << "Z: " << localField[2] << endl;
 			#endif
 			tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, this->GetStepTime(), fUCNIsOnBoundary);
+			if (tnext <= 0.0) {
+				Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+				return NULL;
+			}
 			snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
          if (snext < (gGeoManager->GetCurrentNavigator()->GetStep() - fgTolerance)) {
 				#ifdef VERBOSE_MODE		
@@ -1084,6 +1121,10 @@ TGeoNode* TUCNRun::FindNextDaughterBoundaryAlongParabola(Double_t* point, Double
 				cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t" << "Z: " << localField[2] << endl;
 			#endif
 			tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, this->GetStepTime(), fUCNIsOnBoundary);
+			if (tnext <= 0.0) {
+				Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+				return NULL;
+			}
 			snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
          sumchecked++;
 //         printf("checked %d from %d : snext=%g\n", sumchecked, nd, snext);
@@ -1224,6 +1265,10 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 	// -- Find distance to exiting current node
    // ***************************************************************************************************
 	tnext = static_cast<TUCNGeoBBox*>(vol->GetShape())->TimeFromInsideAlongParabola(localPoint, localVelocity, localField, this->GetStepTime(), fUCNIsOnBoundary); 
+	if (tnext <= 0.0) {
+		Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+		return NULL;
+	}
 	snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
 	fUCNNextNode = gGeoManager->GetCurrentNavigator()->GetCurrentNode();
 	#ifdef VERBOSE_MODE		
@@ -1571,7 +1616,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		cout << "Initial is Daughter of Final: " << (initialNode->GetMotherVolume() == nextNode->GetVolume() ? 1 : 0) << endl;
 		cout << "-----------------------------" << endl << endl;
 		
-		// -- Check that current point is located within the current volume
+/*		// -- Check that current point is located within the current volume
 		if (!nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint)) {
 			Error("MakeStep","2. Next Point is not contained in Current Node, according to Shape::Contains");
 			cout << "Current Node: " << nextNode->GetName() << endl;
@@ -1583,7 +1628,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			cout << "Find Node Result: "    << navigator->FindNode()->GetName() << endl;
 			return kFALSE;
 		}
-		
+*/		
 		// -- Now check that current point is exclusively located within the current volume
 		if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
 			Warning("MakeStep","2. Next Point is not contained in Current Node, according to Navigator::IsSameLocation");
