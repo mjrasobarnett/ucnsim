@@ -1,0 +1,3 @@
+{
+cout << "Bye bye" << endl;
+}
