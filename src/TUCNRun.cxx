@@ -280,10 +280,10 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 			cout << "Track: " << track->GetId() << " has exited errorneously." << endl << endl;
 			lostTracks.push_back(trackid);
 			// Update Track to Include the final point
-	//		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-	//		track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
+			TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+			track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
 			// Add Track to the data tree
-/*			this->AddTrack(track);
+			this->AddTrack(track);
 			// Write the current track's points to file for debugging
 			TPolyMarker3D* badTrackPoints = new TPolyMarker3D(track->GetNpoints(), 1); // 1 is marker style
 			TPolyLine3D* badTrack = new TPolyLine3D();
@@ -311,12 +311,12 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 			f->Delete();
 			cout << "Track: " << track->GetId() << " was successfully written to file" << endl;
 			cout << "-------------------------------------------" << endl;
-*/			// Exit the loop
+			// Exit the loop
 	//		break;
 		}
 		// Add Track to the data tree
 //		this->AddTrack(track);
-		// Reset Track to release memory
+      // Reset Track to release memory
 		track->ResetTrack();
 	}
 	
