@@ -511,9 +511,6 @@ TGeoNode* TUCNGeoNavigator::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrac
 			currentDir[2] = currentVelocity[2]/velocityMag;
 			this->SetCurrentDirection(currentDir);
 			
-			// -- Update track/particle properties
-			this->UpdateTrack(track, timestep);
-						
 			fUCNIsOnBoundary = kTRUE;
          fUCNIsOutside = kFALSE;
          return this->CrossBoundaryAndLocate(kTRUE, this->GetCurrentNode());
@@ -545,9 +542,6 @@ TGeoNode* TUCNGeoNavigator::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrac
 			currentDir[1] = currentVelocity[1]/velocityMag;
 			currentDir[2] = currentVelocity[2]/velocityMag;
 			this->SetCurrentDirection(currentDir);
-			
-			// -- Update particle properties
-			this->UpdateTrack(track, timestep);
 		
 			return fUCNNextNode;
       }      
@@ -599,9 +593,6 @@ TGeoNode* TUCNGeoNavigator::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrac
 	   currentPoint[1] += this->GetStep()*currentDir[1]; 
 	   currentPoint[2] += this->GetStep()*currentDir[2];	
 		this->SetCurrentPoint(currentPoint);
-		
-		// Update Particle
-		this->UpdateTrack(track, tnext);
 		
       is_assembly = this->GetCurrentNode()->GetVolume()->IsAssembly();
       if (!(this->GetLevel()) && !is_assembly) {
@@ -852,9 +843,6 @@ TGeoNode* TUCNGeoNavigator::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrac
 	currentDir[2] = currentVelocity[2]/velocityMag;
 	this->SetCurrentDirection(currentDir);
 	
-	// -- Update particle properties
-	this->UpdateTrack(track, timestep);
-	
 	this->SetStep(this->GetStep() + extra);
 	this->SetStepTime(this->GetStepTime() + extra);
 	
@@ -1101,6 +1089,8 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNFieldManager* fie
 		cout << "-----------------------------" << endl << endl;
 	#endif
 	
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- Find Next Boundary
 	if (gravField == NULL) {
 		this->FindNextBoundaryAndStep(this->GetStepTime());
 		// TODO: UPDATE CLASS DATA MEMBERS NOW LIKE fUCNNextNode
@@ -1109,12 +1099,20 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNFieldManager* fie
 		assert(particle->Velocity() > 0.0);
 		Double_t timeTravelled = this->GetStep()/particle->Velocity(); 
 		this->SetStepTime(timeTravelled);
-		this->UpdateTrack(track, this->GetStepTime());
-		
 	} else {
 		// -- Update Particle is called by FindNext...AlongParabola so no need to repeat that here
 		this->FindNextBoundaryAndStepAlongParabola(track, gravField, this->GetStepTime());
 	}
+	
+	// -- Sample Magnetic Field if there is one	
+	if (magField) {
+		Double_t integratedField = magField->IntegratedField(this->GetStepTime(), particle, gravField);
+	//	cout << integratedField/this->GetStepTime() << endl;
+	}
+	
+	// -- Update track/particle properties
+	this->UpdateTrack(track, this->GetStepTime());
+	///////////////////////////////////////////////////////////////////////////////////////
 	
 	#ifdef VERBOSE_MODE	
 		cout << "------------------- END OF STEP ----------------------" << endl;
@@ -1132,12 +1130,6 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNFieldManager* fie
 		cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
 		cout << "-----------------------------" << endl << endl;
 	#endif	
-	
-	// -- Sample Magnetic Field if there is one	
-	if (magField) {
-		Double_t integratedField = magField->IntegratedField(this->GetStepTime(), particle, gravField);
-//		cout << integratedField/this->GetStepTime() << endl;
-	}
 	
 	// -- Get the current material we are in to determine what to do next
 	TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(this->GetCurrentNode()->GetMedium()->GetMaterial());

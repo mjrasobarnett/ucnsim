@@ -99,7 +99,7 @@ Double_t TUCNParabolicMagField::IntegratedField(const Double_t stepTime, const T
 	Double_t vy = initialState->VelocityY();
 	
 	Double_t r = TMath::Sqrt(x0*x0 + y0*y0);
-	cout << "r/R: " << r/fFieldRadius << "(r/R)^2: " << r*r/(fFieldRadius*fFieldRadius) << endl;
+//	cout << "r/R: " << r/fFieldRadius << "(r/R)^2: " << r*r/(fFieldRadius*fFieldRadius) << endl;
 	
 	// -- Calculate integrated field
 	if (gravField) {
