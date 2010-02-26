@@ -13,10 +13,9 @@
 // 						TUCNGeoNavigator												  //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-class TUCNGeoManager;
 class TUCNParticle;
 class TUCNGravField;
-
+class TUCNGeoManager;
 class TGeoManager;
 class TGeoNode;
 class TGeoVolume;
@@ -29,12 +28,10 @@ class TUCNGeoNavigator : public TGeoNavigator
 
 protected:
 	TUCNGeoNavigator(const TUCNGeoNavigator&); 
-// TUCNGeoNavigator& operator=(const TUCNGeoNavigator&);
+ 	TUCNGeoNavigator& operator=(const TUCNGeoNavigator&);
 	static const Double_t 		fgTolerance = 1.E-10;
-	static const Int_t 			fgMaxSteps = 1000000;
+	static const Int_t 			fgMaxSteps = 100000000;
 		
-private:
-	TUCNGeoManager*				fUCNGeometry;		  
 	TGeoNode*						fUCNNextNode;
 	Double_t							fUCNNormal[3];
 	
@@ -44,6 +41,10 @@ private:
 	Bool_t 							fUCNIsStepExiting;
 	Bool_t                		fUCNIsOutside;        //! flag that current point is outside geometry
    Bool_t                		fUCNIsOnBoundary;     //! flag that current point is on some boundary	
+	
+	Int_t 					 		fLostCounter;
+	Int_t 					 		fDetectedCounter;
+	Int_t						 		fDecayedCounter;
 	
 public:
 	// -- constructors
@@ -64,8 +65,10 @@ public:
 	const Double_t*			GetNormal() const        			{return fUCNNormal;}
    
 	// Track Propagation methods
-	TGeoNode*					FindNextDaughterBoundaryAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, Int_t &idaughter, Bool_t compmatrix=kFALSE);
- 	TGeoNode*					FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track, TUCNGravField* field, Double_t stepTime, Bool_t compsafe=kFALSE);
+	TGeoNode*					FindNextDaughterBoundaryAlongParabola(Double_t* point, Double_t* velocity, 
+																							Double_t* field, Int_t &idaughter, Bool_t compmatrix=kFALSE);
+ 	TGeoNode*					FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track, TUCNGravField* field,
+ 																							Double_t stepTime, Bool_t compsafe=kFALSE);
 		
 	Double_t                DetermineNextStepTime(TUCNParticle* particle, const Double_t runTime);
 	Double_t 					GetStepTime() const {return fStepTime;}
@@ -74,11 +77,16 @@ public:
 	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Double_t runTime, const Double_t maxStepTime);
 	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Int_t steps, const Double_t maxStepTime);
 	
+//	Bool_t						MakeStep(TVirtualGeoTrack* track, TUCNGravField* field);
+	
 	Bool_t 						Bounce(TVirtualGeoTrack* track);
 	Bool_t 						SpecularBounce(Double_t* dir, const Double_t* norm);
 	Bool_t 						DiffuseBounce(Double_t* dir, const Double_t* norm);
 	void							UpdateTrack(TVirtualGeoTrack* track, Double_t timeInterval=0.);
 	
+//	Int_t 						GetNumberLost() const {return fLostCounter;}
+//	Int_t 						GetNumberDetected() const {return fDetectedCounter;}
+//	Int_t 						GetNumberDecayed() const {return fDecayedCounter;}
 		
    ClassDef(TUCNGeoNavigator, 1)          // UCN geometry manager
 };
