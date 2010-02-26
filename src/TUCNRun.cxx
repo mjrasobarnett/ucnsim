@@ -98,8 +98,6 @@ void TUCNRun::Initialise(Int_t particles, Double_t totalEnergy)
 {
 	// SetCurrentNavigator
 	gGeoManager->SetCurrentNavigator(fNavigatorIndex);
-	// Turn on gravity
-	this->TurnGravityOn();
 	// Generating mono-energetic particles inside the source volume
 	gGeoManager->GetCurrentNavigator()->Print();
 	cout << gGeoManager->GetCurrentNode() << endl;

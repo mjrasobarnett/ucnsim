@@ -44,8 +44,6 @@ class TUCNRun : public TNamed
 		Bool_t 					PropagateAllTracks(Int_t steps, Double_t maxStepTime);
 		Bool_t 					PropagateTrack(Double_t runTime, Double_t maxStepTime, Int_t trackIndex = 0);
 		Bool_t 					PropagateTrack(Int_t steps, Double_t maxStepTime, Int_t trackIndex = 0);
-		void						TurnGravityOn() { static_cast<TUCNGeoManager*>(gGeoManager)->SetGravity(kTRUE); }
-		void						TurnGravityOff() { static_cast<TUCNGeoManager*>(gGeoManager)->SetGravity(kFALSE); }
 		
 		void						WriteOutData(TFile* file);
 		

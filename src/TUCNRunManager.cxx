@@ -97,7 +97,10 @@ void TUCNRunManager::InitialiseGeometry()
 	
 	// -- Create Geometry using function specified in geometries.C macro
 	CreateGeometry_v5(fermiPotential, W);
-		
+	
+	// Turn on/off gravity
+	static_cast<TUCNGeoManager*>(gGeoManager)->SetGravity(gravity);
+	
 	// -- Define Mag Field
 //	TUCNUniformMagField* magField = new TUCNUniformMagField("Uniform magnetic field", 0.0,1.0,1.0);
 	TUCNParabolicMagField* magField = new TUCNParabolicMagField("Parabolic magnetic field",0.1,1.0,0.235);
