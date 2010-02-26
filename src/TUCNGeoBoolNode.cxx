@@ -54,7 +54,8 @@ ClassImp(TUCNGeoBoolNode)
 TUCNGeoBoolNode::TUCNGeoBoolNode()
 {
 // Default constructor
-   fLeft     = 0;
+	Info("TUCNGeoBoolNode","Default Constructor");
+	fLeft     = 0;
    fRight    = 0;
    fLeftMat  = 0;
    fRightMat = 0;
@@ -64,7 +65,8 @@ TUCNGeoBoolNode::TUCNGeoBoolNode()
 TUCNGeoBoolNode::TUCNGeoBoolNode(const char *expr1, const char *expr2)
 {
 // Constructor called by TUCNGeoCompositeShape providing 2 subexpressions for the 2 branches.
-   fLeft     = 0;
+   Info("TUCNGeoBoolNode","Constructor");
+	fLeft     = 0;
    fRight    = 0;
    fLeftMat  = 0;
    fRightMat = 0;
@@ -81,7 +83,8 @@ TUCNGeoBoolNode::TUCNGeoBoolNode(const char *expr1, const char *expr2)
 TUCNGeoBoolNode::TUCNGeoBoolNode(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, TGeoMatrix *rmat)
 {
 // Constructor providing left and right shapes and matrices (in the Boolean operation).
-   fSelected = 0;
+   Info("TUCNGeoBoolNode","Constructor");
+	fSelected = 0;
    fLeft = left;
    fRight = right;
    fLeftMat = lmat;
@@ -105,6 +108,7 @@ TUCNGeoBoolNode::~TUCNGeoBoolNode()
 {
 // Destructor.
 // --- deletion of components handled by TGeoManager class.
+	Info("TUCNGeoBoolNode","Destructor");
 }
 //_____________________________________________________________________________
 Bool_t TUCNGeoBoolNode::MakeBranch(const char *expr, Bool_t left)
@@ -276,12 +280,15 @@ void TUCNGeoUnion::Paint(Option_t *option)
 TUCNGeoUnion::TUCNGeoUnion()
 {
 // Default constructor
+	Info("TUCNGeoUnion","Default Constructor");
 }
 //_____________________________________________________________________________
 TUCNGeoUnion::TUCNGeoUnion(const char *expr1, const char *expr2)
           :TUCNGeoBoolNode(expr1, expr2)
 {
 // Constructor
+	Info("TUCNGeoUnion","Constructor");
+
 }
 
 //_____________________________________________________________________________
@@ -289,7 +296,8 @@ TUCNGeoUnion::TUCNGeoUnion(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, 
           :TUCNGeoBoolNode(left,right,lmat,rmat)
 {
 // Constructor providing pointers to components
-   if (left->TestShapeBit(TGeoShape::kGeoHalfSpace) || right->TestShapeBit(TGeoShape::kGeoHalfSpace)) {
+   Info("TUCNGeoUnion","Constructor");
+	if (left->TestShapeBit(TGeoShape::kGeoHalfSpace) || right->TestShapeBit(TGeoShape::kGeoHalfSpace)) {
       Fatal("TUCNGeoUnion", "Unions with a half-space (%s + %s) not allowed", left->GetName(), right->GetName());
    }
 }
@@ -299,6 +307,7 @@ TUCNGeoUnion::~TUCNGeoUnion()
 {
 // Destructor
 // --- deletion of components handled by TGeoManager class.
+   Info("TUCNGeoUnion","Destructor");
 }
 //_____________________________________________________________________________
 void TUCNGeoUnion::ComputeBBox(Double_t &dx, Double_t &dy, Double_t &dz, Double_t *origin)
@@ -636,6 +645,7 @@ void TUCNGeoSubtraction::Paint(Option_t *option)
 TUCNGeoSubtraction::TUCNGeoSubtraction()
 {
 // Default constructor
+   Info("TUCNGeoSubtraction","Default Constructor");
 }
 
 //_____________________________________________________________________________
@@ -643,6 +653,7 @@ TUCNGeoSubtraction::TUCNGeoSubtraction(const char *expr1, const char *expr2)
           :TUCNGeoBoolNode(expr1, expr2)
 {
 // Constructor
+   Info("TUCNGeoSubtraction","Constructor");
 }
 
 //_____________________________________________________________________________
@@ -650,6 +661,7 @@ TUCNGeoSubtraction::TUCNGeoSubtraction(TGeoShape *left, TGeoShape *right, TGeoMa
                 :TUCNGeoBoolNode(left,right,lmat,rmat)
 {
 // Constructor providing pointers to components
+   Info("TUCNGeoSubtraction","Constructor");
    if (left->TestShapeBit(TGeoShape::kGeoHalfSpace)) {
       Fatal("TGeoSubstraction", "Substractions from a half-space (%s) not allowed", left->GetName());
    }
@@ -660,6 +672,7 @@ TUCNGeoSubtraction::~TUCNGeoSubtraction()
 {
 // Destructor
 // --- deletion of components handled by TGeoManager class.
+   Info("TUCNGeoSubtraction","Destructor");
 }
 
 //_____________________________________________________________________________
@@ -945,6 +958,7 @@ void TUCNGeoIntersection::Paint(Option_t *option)
 TUCNGeoIntersection::TUCNGeoIntersection()
 {
 // Default constructor
+   Info("TUCNGeoIntersection","Default Constructor");
 }
 
 //_____________________________________________________________________________
@@ -952,6 +966,7 @@ TUCNGeoIntersection::TUCNGeoIntersection(const char *expr1, const char *expr2)
           :TUCNGeoBoolNode(expr1, expr2)
 {
 // Constructor
+   Info("TUCNGeoIntersection","Constructor");
 }
 
 //_____________________________________________________________________________
@@ -959,6 +974,7 @@ TUCNGeoIntersection::TUCNGeoIntersection(TGeoShape *left, TGeoShape *right, TGeo
                  :TUCNGeoBoolNode(left,right,lmat,rmat)
 {
 // Constructor providing pointers to components
+   Info("TUCNGeoIntersection","Constructor");
    Bool_t hs1 = (fLeft->TestShapeBit(TGeoShape::kGeoHalfSpace))?kTRUE:kFALSE;
    Bool_t hs2 = (fRight->TestShapeBit(TGeoShape::kGeoHalfSpace))?kTRUE:kFALSE;
    if (hs1 && hs2) Fatal("ctor", "cannot intersect two half-spaces: %s * %s", left->GetName(), right->GetName());
@@ -969,6 +985,7 @@ TUCNGeoIntersection::~TUCNGeoIntersection()
 {
 // Destructor
 // --- deletion of components handled by TGeoManager class.
+   Info("TUCNGeoIntersection","Destructor");
 }
 
 //_____________________________________________________________________________

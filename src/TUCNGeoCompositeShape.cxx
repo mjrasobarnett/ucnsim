@@ -32,7 +32,8 @@ TUCNGeoCompositeShape::TUCNGeoCompositeShape()
                       :TUCNGeoBBox(0, 0, 0)
 {
 // Default constructor
-   SetShapeBit(TGeoShape::kGeoComb);
+   Info("TUCNGeoCompositeShape", "Default Constructor");
+	SetShapeBit(TGeoShape::kGeoComb);
    fNode  = 0;
 }   
 
@@ -41,7 +42,8 @@ TUCNGeoCompositeShape::TUCNGeoCompositeShape(const char *name, const char *expre
                       :TUCNGeoBBox(0, 0, 0)
 {
 // Default constructor
-   SetShapeBit(TGeoShape::kGeoComb);
+   Info("TUCNGeoCompositeShape", "Default Constructor");
+	SetShapeBit(TGeoShape::kGeoComb);
    SetName(name);
    fNode  = 0;
    MakeNode(expression);
@@ -57,6 +59,7 @@ TUCNGeoCompositeShape::TUCNGeoCompositeShape(const char *expression)
                       :TUCNGeoBBox(0, 0, 0)
 {
 // Default constructor
+   Info("TUCNGeoCompositeShape", "Default Constructor");
    SetShapeBit(TGeoShape::kGeoComb);
    fNode  = 0;
    MakeNode(expression);
@@ -74,6 +77,7 @@ TUCNGeoCompositeShape::TUCNGeoCompositeShape(const char *name, TUCNGeoBoolNode *
                       :TUCNGeoBBox(0,0,0)
 {
 // Constructor with a Boolean node
+   Info("TUCNGeoCompositeShape", "Constructor");
    SetName(name);
    fNode = node;
    if (!fNode) {
@@ -87,6 +91,7 @@ TUCNGeoCompositeShape::TUCNGeoCompositeShape(const char *name, TUCNGeoBoolNode *
 TUCNGeoCompositeShape::~TUCNGeoCompositeShape()
 {
 // destructor
+   Info("TUCNGeoCompositeShape", "Destructor");
    if (fNode) delete fNode;
 }
 
