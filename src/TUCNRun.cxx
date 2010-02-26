@@ -37,6 +37,13 @@ TUCNRun::TUCNRun()
    Info("TUCNRun", "Default Constructor");
 	// Create the data object
 	fData = new TUCNData("ucndata", "ucndata");
+	fParticles = 0;
+	fTotalEnergy = 0.0;
+	fRunTime = 0.0;
+	fMaxStepTime = 0.0;
+	fBoundaryLossCounter = 0;
+	fDetectedCounter = 0;
+	fDecayedCounter = 0;
 } 
 
 //_____________________________________________________________________________
@@ -47,12 +54,26 @@ TUCNRun::TUCNRun(const char *name, const char *title)
    Info("TUCNRun", "Constructor");
 	// Create the data object
 	fData = new TUCNData("ucndata", "ucndata");
+	fParticles = 0;
+	fTotalEnergy = 0.0;
+	fRunTime = 0.0;
+	fMaxStepTime = 0.0;
+	fBoundaryLossCounter = 0;
+	fDetectedCounter = 0;
+	fDecayedCounter = 0;
 }
 
 //_____________________________________________________________________________
 TUCNRun::TUCNRun(const TUCNRun& run)
 		  :TNamed(run),
-			fData(run.fData)
+			fData(run.fData),
+			fParticles(run.fParticles),
+			fTotalEnergy(run.fTotalEnergy),
+			fRunTime(run.fRunTime),
+			fMaxStepTime(run.fMaxStepTime),
+			fBoundaryLossCounter(run.fBoundaryLossCounter),
+			fDetectedCounter(run.fDetectedCounter),
+			fDecayedCounter(run.fDecayedCounter)
 {
 // -- Copy Constructor
 	Info("TUCNRunManager", "Copy Constructor");
@@ -65,6 +86,13 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& run)
 	if(this!=&run) {
 		TNamed::operator=(run);
       fData = run.fData;
+		fParticles = run.fParticles;
+		fTotalEnergy = run.fTotalEnergy;
+		fRunTime = run.fRunTime;
+		fMaxStepTime = run.fMaxStepTime;
+		fBoundaryLossCounter = run.fBoundaryLossCounter;
+		fDetectedCounter = run.fDetectedCounter;
+		fDecayedCounter = run.fDecayedCounter;
 	}
    return *this;
 }
@@ -78,20 +106,30 @@ TUCNRun::~TUCNRun()
 }
 
 //_____________________________________________________________________________
-void TUCNRun::Initialise(Int_t particles, Double_t totalEnergy, TUCNGeoManager* geoManager, TUCNGravField* gravField)
+void TUCNRun::Initialise(Int_t particles, Double_t totalEnergy, Double_t runTime, Double_t maxStepTime, TUCNGeoManager* geoManager, TUCNGravField* gravField)
 {
-	// Generating mono-energetic particles inside the source volume
+	// Initialise the Run
+	// Reset the Navigator
 	gGeoManager->GetCurrentNavigator()->ResetAll();
-	cout << "Generating " << particles << " particles..."	<< endl;
-	this->GenerateMonoEnergeticParticles(particles, totalEnergy, geoManager, gravField);
+	// Store the run parameters
+	fParticles = particles;
+	fTotalEnergy = totalEnergy;
+	fRunTime = runTime;
+	fMaxStepTime = maxStepTime;
+	// Generating mono-energetic particles inside the source volume
+	cout << "Generating " << fParticles << " particles..."	<< endl;
+	this->GenerateMonoEnergeticParticles(geoManager, gravField);
 	cout << "Particle's created. Ready to Propagate..." << endl;
 }
 
 //______________________________________________________________________________
-Bool_t TUCNRun::GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t totalEnergy, TUCNGeoManager* geoManager, TUCNGravField* gravField)
+Bool_t TUCNRun::GenerateMonoEnergeticParticles(TUCNGeoManager* geoManager, TUCNGravField* gravField)
 {
 	// Generates a uniform distribution of particles with random directions all with the same total energy (kinetic plus potential).
 	// defined at z = 0.	
+	
+	Int_t totalParticles = fParticles;
+	Double_t totalEnergy = fTotalEnergy;
 	
 	// -- 0. Get the source volume and matrix that places it in the geometry
 	TGeoVolume* sourceVolume = geoManager->GetSourceVolume();
@@ -241,7 +279,7 @@ Bool_t TUCNRun::GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t to
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::PropagateAllTracks(Double_t runTime, Double_t maxStepTime, TUCNGravField* gravField)
+Bool_t TUCNRun::PropagateTracks(TUCNGravField* gravField)
 {
 // -- Propagate all tracks stored in the GeoManager for a set period of time
 	Int_t numberOfTracks = gGeoManager->GetNtracks();
@@ -252,13 +290,8 @@ Bool_t TUCNRun::PropagateAllTracks(Double_t runTime, Double_t maxStepTime, TUCNG
 		// Get Track from list
 		TVirtualGeoTrack* track = gGeoManager->GetTrack(trackid);
 		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-		// Set Current Track -- needed by fData
-		gGeoManager->SetCurrentTrack(track);
-		// Initialise track - Sets navigator's current point/direction/node to that of the particle
-		gGeoManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
-			particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
 		// Propagate track
-		Bool_t propagated = static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->PropagateTrack(track, runTime, maxStepTime, gravField);
+		Bool_t propagated = this->Propagate(track, gravField);
 		if (!propagated) lostTracks.push_back(trackid);
 		// Add Track to data tree
 		fData->AddParticle(particle);
@@ -268,98 +301,88 @@ Bool_t TUCNRun::PropagateAllTracks(Double_t runTime, Double_t maxStepTime, TUCNG
 	}
 	
 	if (lostTracks.size() != 0) {
-		cout << "Lost Tracks:" << endl;
+		cout << "-------------------------------------------" << endl;
+		cout << "Erroneously Lost Tracks: " << lostTracks.size() << endl;
 		for (UInt_t i = 0; i < lostTracks.size(); i++) {
-			cout << lostTracks[i] << endl;
+			cout << "Id: " << lostTracks[i] << endl;
 		}
+		cout << "-------------------------------------------" << endl;
 	}
 	
 	return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::PropagateAllTracks(Int_t steps, Double_t maxStepTime, TUCNGravField* gravField)
+Bool_t TUCNRun::Propagate(TVirtualGeoTrack* track, TUCNGravField* gravField)
 {
-// -- Propagate all tracks stored in the GeoManager for a set number of steps
-	Int_t numberOfTracks = gGeoManager->GetNtracks();
-	// Container to store Ids of lost tracks;
-	vector<Int_t> lostTracks;
-
-	for (Int_t trackid = 0; trackid < numberOfTracks; trackid++) {
-		// Get Track from list
-		TVirtualGeoTrack* track = gGeoManager->GetTrack(trackid);
-		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-		// Set Current Track -- needed by fData
-		gGeoManager->SetCurrentTrack(track);
-		// Initialise track - Sets navigator's current point/direction/node to that of the particle
-		gGeoManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
-			particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
-		// Propagate track
-		Bool_t propagated = static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->PropagateTrack(track, steps, maxStepTime, gravField);
-		if (!propagated) lostTracks.push_back(trackid);
-		// Add Track to data tree
-		fData->AddParticle(particle);
-		// Reset Track to release memory
-		track->ResetTrack();
-	}
+	// Propagate track through geometry until it is either stopped or the runTime has been reached
+	// Track passed MUST REFERENCE A TUCNPARTICLE as its particle type. UNITS:: runTime, stepTime in Seconds
 	
-	if (lostTracks.size() != 0) {
-		cout << "Lost Tracks:" << endl;
-		for (UInt_t i = 0; i < lostTracks.size(); i++) {
-			cout << lostTracks[i] << endl;
-		}
-	}
-	
-	return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t TUCNRun::PropagateTrack(Double_t runTime, Double_t maxStepTime, Int_t trackIndex, TUCNGravField* gravField)
-{
-// -- Propagate single track stored in the GeoManager for a set period of time
-	Int_t numberOfTracks = gGeoManager->GetNtracks();
-	assert(trackIndex >= 0 && trackIndex < numberOfTracks);
-	
-	// Get Track from list
-	TVirtualGeoTrack* track = gGeoManager->GetTrack(trackIndex);
 	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+	TUCNGeoNavigator* navigator = static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator());
+	
+	// -- 1. Initialise Track
 	// Set Current Track -- needed by fData
 	gGeoManager->SetCurrentTrack(track);
 	// Initialise track - Sets navigator's current point/direction/node to that of the particle
 	gGeoManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
 		particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
-	// Propagate track
-	static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->PropagateTrack(track, runTime, maxStepTime, gravField);
-	// Add Track to data tree
-	fData->AddParticle(particle);
-	// Reset Track to free memory
-	track->ResetTrack();
 	
-	return kTRUE;
-}
+		#ifdef VERBOSE_MODE				
+		cout << "PropagateForSetTime - Starting Run - Max time (seconds): " <<  fRunTime << endl;
+	#endif
+	
+	// -- Check that Particle has not been initialised inside a boundary or detector		
+	if (static_cast<TUCNGeoMaterial*>(navigator->GetCurrentNode()->GetMedium()->GetMaterial())->IsTrackingMaterial() == kFALSE) {
+		cerr << "Track number " << track->GetId() << " initialised inside boundary of " << navigator->GetCurrentVolume()->GetName() << endl;
+		return kFALSE;
+	}
+	
+	///////////////////////////////////	
+	// -- 2. Propagation Loop
+	///////////////////////////////////
+	Int_t stepNumber;
+	for (stepNumber = 1 ; ; stepNumber++) {
+		
+		#ifdef VERBOSE_MODE		
+			cout << "STEP " << stepNumber << "\t" << particle->T() << " s" << "\t" << navigator->GetCurrentNode()->GetName() << endl;	
+		#endif
+			
+		// -- Calculate the Next StepTime
+		navigator->DetermineNextStepTime(particle, fMaxStepTime, fRunTime);
+		
+		// -- Make a step
+		Bool_t stepSuccess = navigator->MakeStep(track, gravField);
+		assert(stepSuccess == kTRUE);
+		
+		// -- Sample Field
+		//particle->SampleMagField(magField, stepNumber);
+		
+		// -- Determine Particle destination
+		// Has lost flag been set?
+		if (particle->LostToBoundary() == kTRUE) {
+			fBoundaryLossCounter++;
+			break; // -- End Propagtion Loop
+		// Has detected flag been set?
+		} else if (particle->Detected() == kTRUE) {
+			fDetectedCounter++;
+			break; // -- End Propagation Loop
+		// Has particle decayed within steptime?
+		} else if (particle->WillDecay(navigator->GetStepTime()) == kTRUE) {
+			fDecayedCounter++;
+			particle->Decayed(kTRUE); // Set Decay Flag
+			break; // -- End Propagation Loop
+		// -- Have we reached the maximum runtime?
+		} else if (particle->T() >= fRunTime) {
+			break; // -- End Propagation Loop
+		}
+	}	
+	// -- END OF PROPAGATION LOOP
+	
+//	cout << "FINAL STATUS: " << "Track: " << track->GetId() << "\t" << "Steps taken: " << stepNumber << "\t";
+//	cout << "Time: " << particle->T() << "s" << "\t" << "Final Medium: " << navigator->GetCurrentNode()->GetMedium()->GetName() << "\t";
+//	cout << "Bounces: " << particle->Bounces() << "\t" << "Diffuse: " << particle->DiffuseBounces() << "\t" << "Specular: " << particle->SpecularBounces() << endl;
 
-//_____________________________________________________________________________
-Bool_t TUCNRun::PropagateTrack(Int_t steps, Double_t maxStepTime, Int_t trackIndex, TUCNGravField* gravField)
-{
-// -- Propagate single track stored in the GeoManager for a set number of steps
-	Int_t numberOfTracks = gGeoManager->GetNtracks();
-	assert(trackIndex >= 0 && trackIndex < numberOfTracks);
-	
-	// Get Track from list
-	TVirtualGeoTrack* track = gGeoManager->GetTrack(trackIndex);
-	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-	// Set Current Track -- needed by fData
-	gGeoManager->SetCurrentTrack(track);
-	// Initialise track - Sets navigator's current point/direction/node to that of the particle
-	gGeoManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
-		particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
-	// Propagate track
-	static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->PropagateTrack(track, steps, maxStepTime, gravField);
-	// Add Track to data tree
-	fData->AddParticle(particle);
-	// Reset Track to free memory
-	track->ResetTrack();
-	
 	return kTRUE;
 }
 
@@ -401,7 +424,6 @@ void	TUCNRun::DrawTrack(TCanvas* canvas, Int_t trackID)
 	assert(track != NULL);
 	track->Draw();
 }
-
 
 //_____________________________________________________________________________
 void	TUCNRun::WriteOutData(TFile* file)

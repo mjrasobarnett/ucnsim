@@ -74,8 +74,8 @@ public:
 	Double_t 					GetStepTime() const {return fStepTime;}
 	void							SetStepTime(Double_t stepTime); 
 		
-	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Double_t runTime, const Double_t maxStepTime, TUCNGravField* gravField=0);
-	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Int_t steps, const Double_t maxStepTime, TUCNGravField* gravField=0);
+//	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Double_t runTime, const Double_t maxStepTime, TUCNGravField* gravField=0);
+//	Bool_t						PropagateTrack(TVirtualGeoTrack* track, const Int_t steps, const Double_t maxStepTime, TUCNGravField* gravField=0);
 	
 	Bool_t						MakeStep(TVirtualGeoTrack* track, TUCNGravField* field);
 	

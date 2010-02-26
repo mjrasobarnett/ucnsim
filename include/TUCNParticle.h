@@ -22,7 +22,7 @@ private:
 	static const Double_t	fgDiffuseProb = 0.1;
 	
 	Bool_t 					fDecayed;
-	Bool_t 					fLost;
+	Bool_t 					fLostToBoundary;
 	Bool_t 					fDetected;
 	Int_t 					fBounces;
 	Int_t 					fSpecularBounces;
@@ -59,11 +59,11 @@ public:
 	
 	Bool_t					WillDecay(Double_t timeInterval);
 	
-	Bool_t					Lost() const 									{return fLost;}
-	Bool_t					Decayed() const 								{return fDecayed;}
-	Bool_t					Detected() const 								{return fDetected;}
-	void						Lost(Bool_t lost)  							{fLost = lost;}
-	void						Decayed(Bool_t decayed)  					{fDecayed = decayed;}
+	Bool_t					LostToBoundary() const						{return fLostToBoundary;}
+	void						LostToBoundary(Bool_t lost)				{fLostToBoundary = lost;}
+	Bool_t					Decayed() const								{return fDecayed;}
+	void						Decayed(Bool_t decayed)						{fDecayed = decayed;}
+	Bool_t					Detected() const								{return fDetected;}
 	void						Detected(Bool_t detected)  				{fDetected = detected;}
 	
 	Double_t					Dir()  			const;

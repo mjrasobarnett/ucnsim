@@ -933,6 +933,7 @@ void TUCNGeoNavigator::SetStepTime(Double_t stepTime)
 	fStepTime = stepTime;
 }
 
+/*
 //_____________________________________________________________________________
 Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t runTime, const Double_t maxStepTime, TUCNGravField* gravField)
 {
@@ -1069,6 +1070,7 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Int_t ste
 	
 	return kTRUE;
 }
+*/
 
 //_____________________________________________________________________________
 Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField)
@@ -1162,7 +1164,7 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravFi
 			}
 		// -- Was particle lost to boundary (absorbed/upscattered) ?
 		} else if (particle->IsLostToWall(currentMaterial, normal)) {	
-			particle->Lost(kTRUE); // Set lost flag
+			particle->LostToBoundary(kTRUE); // Set lost flag
 		// -- Are we outside the geometry heirarchy we have built - ie: in TOP
 		} else if (currentMaterial->IsBlackHole() == kTRUE) {
 			return kFALSE;

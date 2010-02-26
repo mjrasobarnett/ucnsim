@@ -26,7 +26,7 @@ TUCNParticle::TUCNParticle()
 //	Info("TUCNParticle", "Default Constructor");
 	this->SetPdgCode(fgNeutronPDGCode);
 	fDecayed = kFALSE;
-	fLost = kFALSE;
+	fLostToBoundary = kFALSE;
 	fDetected = kFALSE;
 	fDistance = 0.0;
 	fBounces = 0;
@@ -46,7 +46,7 @@ TUCNParticle::TUCNParticle(Double_t* pos, Double_t* mom, Double_t kineticEnergy,
 	this->SetProductionVertex(pos[0], pos[1], pos[2], startTime);
 	this->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
 	fDecayed = kFALSE;
-	fLost = kFALSE;
+	fLostToBoundary = kFALSE;
 	fDetected = kFALSE;
 	fDistance = 0.0;
 	fBounces = 0;
@@ -57,10 +57,18 @@ TUCNParticle::TUCNParticle(Double_t* pos, Double_t* mom, Double_t kineticEnergy,
 
 //_____________________________________________________________________________
 TUCNParticle::TUCNParticle(const TUCNParticle& part)
-             :TParticle(part)
+             :TParticle(part),
+				  fDecayed(part.fDecayed),
+				  fLostToBoundary(part.fLostToBoundary),
+				  fDetected(part.fDetected),
+				  fDistance(part.fDistance),
+				  fBounces(part.fBounces),
+				  fSpecularBounces(part.fSpecularBounces),
+				  fDiffuseBounces(part.fDiffuseBounces),
+				  fAvgMagField(part.fAvgMagField)
 {
 // -- Copy Constructor
-//	Info("TUCNParticle", "Copy Constructor");
+	Info("TUCNParticle", "Copy Constructor");
 }
 
 //_____________________________________________________________________________
@@ -68,7 +76,15 @@ TUCNParticle& TUCNParticle::operator=(const TUCNParticle& part)
 {
 // --assignment operator
 	if(this!=&part) {
-     TParticle::operator=(part);
+		TParticle::operator=(part);
+		fDecayed = part.fDecayed;
+		fLostToBoundary = part.fLostToBoundary;
+		fDetected = part.fDetected;
+		fDistance = part.fDistance;
+		fBounces = part.fBounces;
+		fSpecularBounces = part.fSpecularBounces;
+		fDiffuseBounces = part.fDiffuseBounces;
+		fAvgMagField = part.fAvgMagField;
 	}
 	return *this;
 }

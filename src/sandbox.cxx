@@ -102,17 +102,17 @@ Int_t main(Int_t argc,Char_t **argv)
 		cout << "Run number: " << runNumber << "\t" << "called: " << run->GetName() << endl;
 		cout << "totalEnergy: " << totalEnergy << endl;
 		
-		run->Initialise(particles, totalEnergy, geoManager, gravField);
+		run->Initialise(particles, totalEnergy, runTime, maxStepTime, geoManager, gravField);
 	
 		// -- Propagate the tracks according to the run parameters
-		run->PropagateAllTracks(runTime, maxStepTime, gravField);	
+		run->PropagateTracks(gravField);	
 	
 		cout << "-------------------------------------------" << endl;
 		cout << "Propagation Results: " << endl;
 		cout << "Total Particles: " << gGeoManager->GetNtracks() << endl;
-		cout << "Number Detected: " << geoManager->GetNumberDetected() << endl;
-		cout << "Number Lost: " << geoManager->GetNumberLost() << endl;
-		cout << "Number Decayed: " << geoManager->GetNumberDecayed() << endl;
+		cout << "Number Detected: " << run->Detected() << endl;
+		cout << "Number Lost To Boundary: " << run->LostToBoundary() << endl;
+		cout << "Number Decayed: " << run->Decayed() << endl;
 		cout << "-------------------------------------------" << endl;
 
 		gGeoManager->ClearTracks();

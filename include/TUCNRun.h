@@ -25,6 +25,14 @@ class TUCNRun : public TNamed
 
 		TUCNData*				fData;
 		
+		Int_t						fParticles;
+		Double_t					fTotalEnergy;
+		Double_t					fRunTime;
+		Double_t					fMaxStepTime;
+		
+		Int_t 					fBoundaryLossCounter;
+		Int_t 					fDetectedCounter;
+		Int_t						fDecayedCounter;
 	public:
 		// -- constructors
 		TUCNRun();
@@ -32,19 +40,22 @@ class TUCNRun : public TNamed
 		// -- destructor
 		virtual ~TUCNRun();
 		
-		void						Initialise(Int_t particles, Double_t totalEnergy, TUCNGeoManager* geoManager, TUCNGravField* gravField=0);
+		void						Initialise(Int_t particles, Double_t totalEnergy, Double_t runTime, Double_t maxStepTime, TUCNGeoManager* geoManager, TUCNGravField* gravField=0);
 		
-		void 						DrawParticles(TCanvas* canvas, TPolyMarker3D* points);
+		void						DrawParticles(TCanvas* canvas, TPolyMarker3D* points);
 		void						DrawTrack(TCanvas* canvas, Int_t trackID);
-		Bool_t 					GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t totalEnergy, TUCNGeoManager* geoManager, TUCNGravField* gravField=0);
+		Bool_t 					GenerateMonoEnergeticParticles(TUCNGeoManager* geoManager, TUCNGravField* gravField=0);
 		TGeoTrack*				GetTrack(Int_t trackID);
 		TUCNParticle*			GetParticle(Int_t particleID);
-		Bool_t 					PropagateAllTracks(Double_t runTime, Double_t maxStepTime, TUCNGravField* gravField = 0);
-		Bool_t 					PropagateAllTracks(Int_t steps, Double_t maxStepTime, TUCNGravField* gravField = 0);
-		Bool_t 					PropagateTrack(Double_t runTime, Double_t maxStepTime, Int_t trackIndex = 0, TUCNGravField* gravField = 0);
-		Bool_t 					PropagateTrack(Int_t steps, Double_t maxStepTime, Int_t trackIndex = 0, TUCNGravField* gravField = 0);
+		
+		Bool_t					PropagateTracks(TUCNGravField* gravField);
+		Bool_t 					Propagate(TVirtualGeoTrack* track, TUCNGravField* gravField);
 		
 		void						WriteOutData(TFile* file);
+		
+		Int_t 					Detected() const {return fDetectedCounter;}
+		Int_t 					LostToBoundary() const {return fBoundaryLossCounter;}
+		Int_t 					Decayed() const {return fDecayedCounter;}
 		
 
 	ClassDef(TUCNRun, 1)      
