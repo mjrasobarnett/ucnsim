@@ -214,6 +214,9 @@ Bool_t TUCNParticle::IsLostToWall(TUCNGeoMaterial* wall, const Double_t* normal)
 	// Take dot product of two unit vectors - normal and direction vector - to give the angle between them
 	Double_t cosTheta = TMath::Abs(this->DirX()*normal[0] + this->DirY()*normal[1] + this->DirZ()*normal[2]);
 	Double_t energyPerp = this->Energy()*cosTheta*cosTheta;
+	if (energyPerp >= fermiPotential) {
+		return kTRUE;
+	}
 	Double_t lossProb = 2.*eta*(TMath::Sqrt(energyPerp/(fermiPotential - energyPerp)));
 //	cout << "Loss Prob: " << lossProb << "\t" << "EnergyPerp: " << energyPerp/Units::neV << "\t" <<  "cosTheta: " << cosTheta << "\t" << endl;
 	// roll dice to see whether particle is lost
