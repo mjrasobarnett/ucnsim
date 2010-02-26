@@ -5,7 +5,7 @@ void set_my_style(void)
 	cerr <<"------------------------------------------------------------"<< endl;
 	gROOT->SetStyle("Plain");
 	gStyle->SetOptStat(0);
-	gStyle->SetOptTitle(0);
+//	gStyle->SetOptTitle(0);
 	gStyle->SetOptFit(111);
 	gStyle->SetStatW(0.25);
 	gStyle->SetStatH(0.25);
@@ -17,11 +17,11 @@ void set_my_style(void)
 	gStyle->SetPadGridY(1);
 	gStyle->SetPaperSize(10.,10.);
 	gStyle->SetPalette(1,0);
-	gStyle->SetTitleSize  (0.04,"XYZ");
+	gStyle->SetTitleSize  (0.03,"XYZ");
 	gStyle->SetLabelOffset(0.02,"XYZ");
-	gStyle->SetLabelSize  (0.04,"XYZ");
-	gStyle->SetTitleOffset(1.20,  "X");
-	gStyle->SetTitleOffset(1.70,  "Y");
+	gStyle->SetLabelSize  (0.03,"XYZ");
+	gStyle->SetTitleOffset(2.00,  "X");
+	gStyle->SetTitleOffset(2.00,  "Y");
 	gStyle->SetNdivisions(505,"XY");
 }
 
