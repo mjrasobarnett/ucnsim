@@ -33,6 +33,7 @@
 
 #include "Units.h"
 #include "Constants.h"
+#include "FitSuite.h"
 
 using std::cout;
 using std::endl;
@@ -501,6 +502,18 @@ Bool_t TUCNExperiment::Initialise()
 	} else {
 		fNumberOfRuns = numberOfRuns;
 	}
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- Export Geometry to File
+	///////////////////////////////////////////////////////////////////////////////////////
+	TString outputFile = this->ConfigFile()->GetString("OutputFile","I/O");
+	cout << endl << endl;
+	cout << "-------------------------------------------" << endl;
+	cout << "Exporting Geometry to DataFile: " << outputFile << endl;
+	cout << "-------------------------------------------" << endl;
+	if (!(this->GeoManager()->Export(outputFile))) {
+		Error("Initialise", "Could not export GeoManager to file!");
+		return kFALSE;
+	}
 	return kTRUE;
 }
 
@@ -509,21 +522,19 @@ Bool_t TUCNExperiment::Run()
 {
 // -- For every Run, initialise itself, create the tracks/particles, propagate them, write the run to file, tidy up
 	
-	// -- Export Geometry to File
+	// -- Get File name
 	TString outputFile = this->ConfigFile()->GetString("OutputFile","I/O");
+	cout << endl << endl;
 	cout << "-------------------------------------------" << endl;
-	cout << "Exporting Geometry to DataFile: " << outputFile << endl;
+	cout << "Starting to Run the Simulation " << endl;
 	cout << "-------------------------------------------" << endl;
-	if (!(this->GeoManager()->Export(outputFile))) {
-		Error("Initialise", "Could not open export GeoManager to file!");
-		return kFALSE;
-	}
+	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Create the Runs
 	///////////////////////////////////////////////////////////////////////////////////////
 	for (Int_t runNumber = 1; runNumber <= this->NumberOfRuns(); runNumber++) {
 		// Create the Run
-		Char_t name[10], title[20];
+		Char_t name[20], title[20];
 		sprintf(name,"Run%d",runNumber); 
 		sprintf(title,"Run no:%d",runNumber);
 		cout << endl << endl;
@@ -562,21 +573,23 @@ Bool_t TUCNExperiment::Run()
 			return kFALSE;
 		}
 	}
+	
 	return kTRUE;
 }
 
 //______________________________________________________________________________
 Bool_t TUCNExperiment::Export()
 {
-// -- Export Experiment to File
+	// -- Export Experiment to File
 	TString outputFile = this->ConfigFile()->GetString("OutputFile","I/O");
+	cout << endl << endl;
 	cout << "-------------------------------------------" << endl;
-	cout << "Writing " << this->GetName() << " out to File: " << outputFile << endl;
+	cout << "Exporting " << this->GetName() << " to DataFile: " << outputFile << endl;
+	cout << "-------------------------------------------" << endl;
 	if (!(outputFile.Contains(".root"))) {
 		Error("Export", "OutputFile specified is not a ROOT file");
 		return kFALSE;
 	} else {
-		// Save geometry as a root file
 		TFile *f = TFile::Open(outputFile,"update");
 		if (!f || f->IsZombie()) {
 		   Error("Export","Cannot open file");
@@ -593,3 +606,4 @@ Bool_t TUCNExperiment::Export()
 	}
 	return kTRUE;
 }
+

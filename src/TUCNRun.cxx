@@ -261,8 +261,7 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 		}
 	}	
 	// -- END OF PROPAGATION LOOP
-	Double_t avgField = particle->AvgMagField();
-	cout << "AvgField: " << avgField << endl; 
+//	Double_t avgField = particle->AvgMagField();
 	
 //	cout << "FINAL STATUS: " << "Track: " << track->GetId() << "\t" << "Steps taken: " << stepNumber << "\t";
 //	cout << "Time: " << particle->T() << "s" << "\t" << "Final Medium: " << navigator->GetCurrentNode()->GetMedium()->GetName() << "\t";
@@ -320,7 +319,6 @@ Bool_t TUCNRun::Export(TString& outputFile)
 		Error("Export", "OutputFile is not a ROOT filename");
 		return kFALSE;
 	} else {
-		//Save geometry as a root file
 		TFile *f = TFile::Open(outputFile,"update");
 		if (!f || f->IsZombie()) {
 		   Error("Export","Cannot open file");

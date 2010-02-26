@@ -13,9 +13,9 @@ include ./Makefile.arch
 SANDBOXS			= src/sandbox.$(SrcSuf)
 SANDBOXO			= src/sandbox.$(ObjSuf)
 SANDBOX			= bin/sandbox$(ExeSuf)
-UCNSIMS			= src/ucnsim.$(SrcSuf)
-UCNSIMO			= src/ucnsim.$(ObjSuf)
-UCNSIM			= bin/ucnsim$(ExeSuf)
+BUILDTESTS		= src/buildtest.$(SrcSuf)
+BUILDTESTO		= src/buildtest.$(ObjSuf)
+BUILDTEST		= bin/buildtest$(ExeSuf)
 FITDATAS			= src/fitdata.$(SrcSuf)
 FITDATAO			= src/fitdata.$(ObjSuf)
 FITDATA			= bin/fitdata$(ExeSuf)
@@ -57,8 +57,8 @@ TUCNUNIFORMMAGFIELDO	= src/TUCNUniformMagField.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNUNIFORMMAGFIELDS	= src/TUCNUniformMagField.$(SrcSuf) UCNDict.$(SrcSuf)
 TUCNRUNO					= src/TUCNRun.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNRUNS					= src/TUCNRun.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNPARABOLICMAGFIELDO = src/TUCNParabolicMagField.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNPARABOLICMAGFIELDS = src/TUCNParabolicMagField.$(SrcSuf) UCNDict.$(SrcSuf)
+TUCNPARABOLICMAGFIELDO	= src/TUCNParabolicMagField.$(ObjSuf) UCNDict.$(ObjSuf)
+TUCNPARABOLICMAGFIELDS	= src/TUCNParabolicMagField.$(SrcSuf) UCNDict.$(SrcSuf)
 TUCNFIELDMANAGERO 	= src/TUCNFieldManager.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNFIELDMANAGERS 	= src/TUCNFieldManager.$(SrcSuf) UCNDict.$(SrcSuf)
 TUCNCONFIGFILEO 		= src/TUCNConfigFile.$(ObjSuf) UCNDict.$(ObjSuf)
@@ -71,11 +71,11 @@ LINKDEF			= UCNLinkDef.h
 UCNSO				= lib/libUCN.$(DllSuf)
 UCNLIB			= -L./lib -lUCN -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter
 #------------------------------------------------------------------------------
-OBJS				=	$(SANDBOXO) $(UCNSIMO) $(FITDATAO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) \
+OBJS				=	$(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) \
  						$(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) \
  						$(TUCNPARABOLAO) $(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) \
  						$(TUCNRUNO) $(TUCNPARABOLICMAGFIELDO) $(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO)
-PROGRAMS			=	$(UCNSO) $(UCNSIM) $(FITDATA) $(SANDBOX)
+PROGRAMS			=	$(UCNSO) $(BUILDTEST) $(FITDATA) $(SANDBOX)
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 .PHONY:     UCN
@@ -91,8 +91,8 @@ $(SANDBOX):		$(SANDBOXO) $(UCNSO)
 					$(MT_EXE)
 					@echo "$@ done"
 
-$(UCNSIM):		$(UCNSIMO) $(UCNSO)
-					$(LD) $(LDFLAGS) $(UCNSIMO) $(UCNLIB) $(LIBS)  \
+$(BUILDTEST):	$(BUILDTESTO) $(UCNSO)
+					$(LD) $(LDFLAGS) $(BUILDTESTO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
 					@echo "$@ done"		

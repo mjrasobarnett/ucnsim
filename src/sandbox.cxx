@@ -47,30 +47,33 @@
 
 #include "Constants.h"
 #include "Units.h"
+#include "FitSuite.h"
 
 using std::cout;
 using std::endl;
 using std::cerr;
 using std::string;
 
+Bool_t LoadFile(const string& configFileName, TFile* dataFile);
+
 Int_t main(Int_t argc,Char_t **argv)
 {
 	///////////////////////////////////////////////////////////////////////////////////////
 	// Read in ConfigFile
 	///////////////////////////////////////////////////////////////////////////////////////
-	string configFile;
+	string configFileName;
 	if (argc == 2) {
-		configFile= argv[1];
+		configFileName= argv[1];
 	} else {
 		cerr << "Usage:" << endl;
-		cerr << "sandbox <configFile.txt>" << endl;
+		cerr << "sandbox <configFile.cfg>" << endl;
 		return -1;
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Initialise Simulation
 	///////////////////////////////////////////////////////////////////////////////////////
-	TUCNExperiment* experiment = new TUCNExperiment(configFile);
+	TUCNExperiment* experiment = new TUCNExperiment(configFileName);
 	if (!(experiment->Initialise())) {
 		cerr << "Failed to initialise the Experiment. Program aborting." << endl;
 		return EXIT_FAILURE;
@@ -99,6 +102,6 @@ Int_t main(Int_t argc,Char_t **argv)
 
 	cout << endl << endl << "END OF SIMULATION" << endl << endl << endl;
 	delete experiment;		
+	
 	return EXIT_SUCCESS;
 }
-
