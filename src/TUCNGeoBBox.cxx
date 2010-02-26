@@ -506,7 +506,9 @@ Double_t TUCNGeoBBox::SmallestInsideTime(const Int_t solutions, Double_t* roots,
 			}
 			for (Int_t i = 0; i < 2; i++) {
 				if (TMath::Abs(roots[i]) < 1.E-8) { 
-					cout << "SmallestInsideTime - Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
+					#ifdef VERBOSE_MODE
+						cout << "SmallestInsideTime - Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
+					#endif
 					roots[i] = 0.0;
 				}
 			}
@@ -518,7 +520,11 @@ Double_t TUCNGeoBBox::SmallestInsideTime(const Int_t solutions, Double_t* roots,
 			// produce two intersections in this case).
 			// We could also be very very close to another boundary, say if we are sitting right in the corner of a box.
 			// In any case, we have a single solution which should be correct and not need setting to zero.
-			if (TMath::Abs(roots[0]) < 1.E-8) cout << "SmallestInsideTime - Single Root found to be < 1.E-8 : " << roots[0] << endl;
+			if (TMath::Abs(roots[0]) < 1.E-8) {
+				#ifdef VERBOSE_MODE
+					cout << "SmallestInsideTime - Single Root found to be < 1.E-8 : " << roots[0] << endl;
+				#endif
+			}
 		} else {
 			// Nothing to be done - both roots should be zero anyway - no solutions found
 		}
@@ -540,7 +546,9 @@ Double_t TUCNGeoBBox::SmallestInsideTime(const Int_t solutions, Double_t* roots,
 		} else if (roots[1] > 0.) {
 			tmin = roots[1];
 		} else {
-			cout << "SmallestInsideTime - Both roots are negative or zero" << endl; 
+			#ifdef VERBOSE_MODE
+				cout << "SmallestInsideTime - Both roots are negative or zero" << endl; 
+			#endif
 			return 0;
 		}
 	} else if (solutions == 1) {
@@ -549,12 +557,16 @@ Double_t TUCNGeoBBox::SmallestInsideTime(const Int_t solutions, Double_t* roots,
 			tmin = roots[0];
 		} else {
 			//-- Only Root is negative or zero
-			cout << "SmallestInsideTime - Only root is nagative or zero" << endl;
+			#ifdef VERBOSE_MODE
+				cout << "SmallestInsideTime - Only root is nagative or zero" << endl;
+			#endif
 			return 0;
 		}
 	} else {
 		// -- No Real Roots
-		cout << "SmallestInsideTime - No real roots - Cannot cross boundary" << endl;
+		#ifdef VERBOSE_MODE
+			cout << "SmallestInsideTime - No real roots - Cannot cross boundary" << endl;
+		#endif
 		return 0;
 	}
 	// Return the smallest time found
@@ -583,7 +595,9 @@ Double_t TUCNGeoBBox::SmallestOutsideTime(const Int_t solutions, Double_t* roots
 			}
 			for (Int_t i = 0; i < 2; i++) {
 				if (TMath::Abs(roots[i]) < 1.E-8) {
-					cout << "SmallestOutsideTime - Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
+					#ifdef VERBOSE_MODE
+						cout << "SmallestOutsideTime - Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
+					#endif
 					roots[i] = 0.0;
 				}
 			}
@@ -595,7 +609,11 @@ Double_t TUCNGeoBBox::SmallestOutsideTime(const Int_t solutions, Double_t* roots
 			// produce two intersections in this case).
 			// We could also be very very close to another boundary, say if we are sitting right in the corner of a box.
 			// In any case, we have a single solution which should be correct and not need setting to zero.
-			if (TMath::Abs(roots[0]) < 1.E-8) cout << "SmallestOutsideTime - Single Root found to be < 1.E-8 : " << roots[0] << endl;
+			if (TMath::Abs(roots[0]) < 1.E-8) {
+				#ifdef VERBOSE_MODE
+					cout << "SmallestOutsideTime - Single Root found to be < 1.E-8 : " << roots[0] << endl;
+				#endif
+			}
 		} else {
 			// Nothing to be done - both roots should be zero anyway - no solutions found
 		}

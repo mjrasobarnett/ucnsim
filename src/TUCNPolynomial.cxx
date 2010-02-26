@@ -222,15 +222,20 @@ Int_t TUCNPolynomial::CubicRootFinder(const Double_t* params, Double_t* roots)
 */	
 	ROOT::Math::Polynomial cubic(a,b,c,d);
 	std::vector<Double_t> realroots = cubic.FindRealRoots();
-	cout << "---------------------------" << endl;
-	cout << "ROOT::MATHMORE::Solver" << endl;
-	cout << "No. of Roots: " << realroots.size() << endl;
+	#ifdef VERBOSE_MODE
+		cout << "---------------------------" << endl;
+		cout << "ROOT::MATHMORE::Solver" << endl;
+		cout << "No. of Roots: " << realroots.size() << endl;
+	#endif
 	for (UInt_t i = 0; i < realroots.size(); i++) {
-		cout << i << "\t" << realroots[i] << "\t";
+		#ifdef VERBOSE_MODE	
+			cout << i << "\t" << realroots[i] << "\t";
+		#endif
 		roots[i] = realroots[i];
 	}
-	cout << endl << "---------------------------" << endl;
-	
+	#ifdef VERBOSE_MODE
+		cout << endl << "---------------------------" << endl;
+	#endif
 	return realroots.size();
 }
 
@@ -271,15 +276,20 @@ Int_t TUCNPolynomial::QuarticRootFinder(const Double_t* params, Double_t* roots)
 */
 	ROOT::Math::Polynomial quartic(a,b,c,d,e);
 	std::vector<Double_t> realroots = quartic.FindRealRoots();
-	cout << "---------------------------" << endl;
-	cout << "ROOT::MATHMORE::Solver" << endl;
-	cout << "No. of Roots: " << realroots.size() << endl;
+	#ifdef VERBOSE_MODE
+		cout << "---------------------------" << endl;
+		cout << "ROOT::MATHMORE::Solver" << endl;
+		cout << "No. of Roots: " << realroots.size() << endl;
+	#endif
 	for (UInt_t i = 0; i < realroots.size(); i++) {
-		cout << i << "\t" << realroots[i] << "\t";
+		#ifdef VERBOSE_MODE	
+			cout << i << "\t" << realroots[i] << "\t";
+		#endif
 		roots[i] = realroots[i];
 	}
-	cout << endl << "---------------------------" << endl;
-	
+	#ifdef VERBOSE_MODE
+		cout << endl << "---------------------------" << endl;
+	#endif
 	return realroots.size();
 	
 }

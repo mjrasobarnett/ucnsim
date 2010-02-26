@@ -1559,7 +1559,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			assert(nextMatrix == initialMatrix);
 		} else {
 			// -- If not, the matrices should be different (I think - if not this will become apparent quickly)
-			cout << "-----------------------------" << endl;
+/*			cout << "-----------------------------" << endl;
 			cout << "Initial Node: " << initialNode->GetName() << endl;
 			cout << "Initial Node Matrix: " << endl;
 			initialNode->GetMatrix()->Print();
@@ -1572,7 +1572,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			nextMatrix->Print();
 			cout << "-----------------------------" << endl;
 	//		assert(nextMatrix != initialMatrix);
-		}
+*/		}
 		
 		#ifdef VERBOSE_MODE	
 			cout << endl << "------------------- AFTER STEP ----------------------" << endl;
@@ -1597,48 +1597,38 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		// -- Get the current coordinates
 		currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
 		nextMatrix->MasterToLocal(currentGlobalPoint,&nextLocalPoint[0]);
-		
-		cout << "-----------------------------" << endl;
-		cout << "Final Node: " << nextNode->GetName() << endl;
-		cout << "Coords local to Final Node: " << endl;
-		cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
-		cout << "Final Node Contains Current Point: " << nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint) << endl;
-		cout << "-----------------------------" << endl;
-		cout << "Initial Node: " << initialNode->GetName() << endl;
-		cout << "Coords local to Initial Node: " << endl;
 		Double_t tempLocalPoint[3] = {0.,0.,0.};
 		initialMatrix->MasterToLocal(currentGlobalPoint,&tempLocalPoint[0]);
-		cout << "X:" << tempLocalPoint[0] << "\t" << "Y:" << tempLocalPoint[1] << "\t" << "Z:" << tempLocalPoint[2] << endl;
-		cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(tempLocalPoint[0]*tempLocalPoint[0] + tempLocalPoint[1]*tempLocalPoint[1]) << endl;
-		cout << "Initial Node Contains Current Point: " << initialNode->GetVolume()->GetShape()->Contains(tempLocalPoint) << endl;
-		cout << "-----------------------------" << endl;
-		cout << "Initial is Parent of Final: " << (nextNode->GetMotherVolume() == initialNode->GetVolume() ? 1 : 0) << endl;
-		cout << "Initial is Daughter of Final: " << (initialNode->GetMotherVolume() == nextNode->GetVolume() ? 1 : 0) << endl;
-		cout << "-----------------------------" << endl << endl;
 		
-/*		// -- Check that current point is located within the current volume
-		if (!nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint)) {
-			Error("MakeStep","2. Next Point is not contained in Current Node, according to Shape::Contains");
-			cout << "Current Node: " << nextNode->GetName() << endl;
-			cout << "Global Point: ";
-			cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-			cout << "Local Point: ";
+		#ifdef VERBOSE_MODE	
+			cout << "-----------------------------" << endl;
+			cout << "Final Node: " << nextNode->GetName() << endl;
+			cout << "Coords local to Final Node: " << endl;
 			cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
-			cout << "Current Volume Contains Local Point: " << nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint) << endl;
-			cout << "Find Node Result: "    << navigator->FindNode()->GetName() << endl;
-			return kFALSE;
-		}
-*/		
+			cout << "Final Node Contains Current Point: " << nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint) << endl;
+			cout << "-----------------------------" << endl;
+			cout << "Initial Node: " << initialNode->GetName() << endl;
+			cout << "Coords local to Initial Node: " << endl;
+			cout << "X:" << tempLocalPoint[0] << "\t" << "Y:" << tempLocalPoint[1] << "\t" << "Z:" << tempLocalPoint[2] << endl;
+			cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(tempLocalPoint[0]*tempLocalPoint[0] + tempLocalPoint[1]*tempLocalPoint[1]) << endl;
+			cout << "Initial Node Contains Current Point: " << initialNode->GetVolume()->GetShape()->Contains(tempLocalPoint) << endl;
+			cout << "-----------------------------" << endl;
+			cout << "Initial is Parent of Final: " << (nextNode->GetMotherVolume() == initialNode->GetVolume() ? 1 : 0) << endl;
+			cout << "Initial is Daughter of Final: " << (initialNode->GetMotherVolume() == nextNode->GetVolume() ? 1 : 0) << endl;
+			cout << "-----------------------------" << endl << endl;
+		#endif
+		
 		// -- Now check that current point is exclusively located within the current volume
 		if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
-			Warning("MakeStep","2. Next Point is not contained in Current Node, according to Navigator::IsSameLocation");
-			cout << "Current Node: " << nextNode->GetName() << endl;
-			cout << "Global Point: ";
-			cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-			cout << "Local Point: ";
-			cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
-			cout << "Current Volume Contains Local Point: " << nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint) << endl;
-			
+			#ifdef VERBOSE_MODE
+				Warning("MakeStep","2. Next Point is not contained in Current Node, according to Navigator::IsSameLocation");
+				cout << "Current Node: " << nextNode->GetName() << endl;
+				cout << "Global Point: ";
+				cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
+				cout << "Local Point: ";
+				cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
+				cout << "Current Volume Contains Local Point: " << nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint) << endl;
+			#endif
 			// At this point we know that the point is contained by the current volume, but therefore, there must be a
 			// daughter volume that contains the point as well. 
 			// If we are sitting right on the boundary, so that the current point is still contained by the initialnode
@@ -1656,11 +1646,13 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 				norm[1] = -norm[1];
 				norm[2] = -norm[2];
 			}
-			cout << "Normal To Boundary aligned with Current Direction: " << endl;
-			cout << "X:" << norm[0] << "\t" << "Y:" << norm[1] << "\t" << "Z:" << norm[2] << endl;
+			
+			#ifdef VERBOSE_MODE
+				cout << "Normal To Boundary aligned with Current Direction: " << endl;
+				cout << "X:" << norm[0] << "\t" << "Y:" << norm[1] << "\t" << "Z:" << norm[2] << endl;
+			#endif
 			
 			for (Int_t i = 1; i <= 100; i++) {
-				cout << i << "\t" << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
 				Double_t point[3] = {navigator->GetCurrentPoint()[0], navigator->GetCurrentPoint()[1], navigator->GetCurrentPoint()[2]};
 				point[0] += norm[0]*1.0*TGeoShape::Tolerance(); 
 			   point[1] += norm[1]*1.0*TGeoShape::Tolerance(); 
@@ -1669,19 +1661,24 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 				navigator->SetCurrentPoint(point);
 				this->UpdateParticle(particle);
 				currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
-				cout << "Global Point after micro-step: ";
-				cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
 				initialMatrix->MasterToLocal(currentGlobalPoint,&nextLocalPoint[0]);
-				cout << "Point Local to initial volume after micro-step: ";
-				cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
-				cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(nextLocalPoint[0]*nextLocalPoint[0] + nextLocalPoint[1]*nextLocalPoint[1]) << endl;
+				#ifdef VERBOSE_MODE
+					cout << i << "\t" << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
+					cout << "Global Point after micro-step: ";
+					cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
+					cout << "Point Local to initial volume after micro-step: ";
+					cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
+					cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(nextLocalPoint[0]*nextLocalPoint[0] + nextLocalPoint[1]*nextLocalPoint[1]) << endl;
+				#endif
 				if (navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
 					break;
 				}
-				cout << "Current Node: " << nextNode->GetName() << endl;
-				cout << "Global Point: ";
-				cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-				cout << "Current Volume Contains Local Point: " << nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint) << endl;
+				#ifdef VERBOSE_MODE
+					cout << "Current Node: " << nextNode->GetName() << endl;
+					cout << "Global Point: ";
+					cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
+					cout << "Current Volume Contains Local Point: " << nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint) << endl;
+				#endif
 			}
 			
 			if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
@@ -1693,7 +1690,10 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 				cout << "Find Node Result: "    << navigator->FindNode()->GetName() << endl;
 				return kFALSE;
 			}
-			cout << "Particle is now correctly located in: " << navigator->GetCurrentNode()->GetName() << endl;
+			
+			#ifdef VERBOSE_MODE
+				cout << "Particle is now correctly located in: " << navigator->GetCurrentNode()->GetName() << endl;
+			#endif
 		}
 	// -- We should now have propagated our point by some stepsize and be inside the correct volume 
 	}
@@ -1779,14 +1779,15 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		
 			// -- Check that current point is exclusively located within the current volume
 			if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
-				Warning("MakeStep","3. Final Point is not contained in Current Node, according to Navigator::IsSameLocation");
-				cout << "Current Node: " << finalNode->GetName() << endl;
-				cout << "Global Point: ";
-				cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-				cout << "Local Point: ";
-				cout << "X:" << finalLocalPoint[0] << "\t" << "Y:" << finalLocalPoint[1] << "\t" << "Z:" << finalLocalPoint[2] << endl;
-				cout << "Current Volume Contains Local Point: " << finalNode->GetVolume()->GetShape()->Contains(finalLocalPoint) << endl;
-				
+				#ifdef VERBOSE_MODE
+					Warning("MakeStep","3. Final Point is not contained in Current Node, according to Navigator::IsSameLocation");
+					cout << "Current Node: " << finalNode->GetName() << endl;
+					cout << "Global Point: ";
+					cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
+					cout << "Local Point: ";
+					cout << "X:" << finalLocalPoint[0] << "\t" << "Y:" << finalLocalPoint[1] << "\t" << "Z:" << finalLocalPoint[2] << endl;
+					cout << "Current Volume Contains Local Point: " << finalNode->GetVolume()->GetShape()->Contains(finalLocalPoint) << endl;
+				#endif
 				// Now, we know that the point is not in the volume that it should be, and that volume may not actually contain the point.
 				// Either way, we will now make a microstep back along the way we came (since the direction has been reversed)
 				// To do this we shall use the normal vector of the current boundary
@@ -1800,14 +1801,14 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 					norm[1] = -norm[1];
 					norm[2] = -norm[2];
 				}
-				cout << "Normal To Boundary aligned with Current Direction: " << endl;
-				cout << "X:" << norm[0] << "\t" << "Y:" << norm[1] << "\t" << "Z:" << norm[2] << endl;
 				
+				#ifdef VERBOSE_MODE
+					cout << "Normal To Boundary aligned with Current Direction: " << endl;
+					cout << "X:" << norm[0] << "\t" << "Y:" << norm[1] << "\t" << "Z:" << norm[2] << endl;
+				#endif
 				
 				for (Int_t i = 1; i <= 100; i++) {
-					cout << i << "\t" << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
 					Double_t point[3] = {navigator->GetCurrentPoint()[0], navigator->GetCurrentPoint()[1], navigator->GetCurrentPoint()[2]};
-				
 					point[0] += norm[0]*1.0*TGeoShape::Tolerance(); 
 				   point[1] += norm[1]*1.0*TGeoShape::Tolerance(); 
 				   point[2] += norm[2]*1.0*TGeoShape::Tolerance();
@@ -1815,19 +1816,24 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 					navigator->SetCurrentPoint(point);
 					this->UpdateParticle(particle);
 					currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
-					cout << "Global Point after micro-step: ";
-					cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
 					navigator->GetCurrentMatrix()->MasterToLocal(currentGlobalPoint,&nextLocalPoint[0]);
-					cout << "Local Point after micro-step: ";
-					cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
-					cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(nextLocalPoint[0]*nextLocalPoint[0] + nextLocalPoint[1]*nextLocalPoint[1]) << endl;
+					#ifdef VERBOSE_MODE
+						cout << i << "\t" << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
+						cout << "Global Point after micro-step: ";
+						cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
+						cout << "Local Point after micro-step: ";
+						cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
+						cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(nextLocalPoint[0]*nextLocalPoint[0] + nextLocalPoint[1]*nextLocalPoint[1]) << endl;
+					#endif
 					if (navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
 						break;
 					}
-					cout << "Current Node: " << finalNode->GetName() << endl;
-					cout << "Global Point: ";
-					cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-					cout << "Current Volume Contains Local Point: " << finalNode->GetVolume()->GetShape()->Contains(finalLocalPoint) << endl;
+					#ifdef VERBOSE_MODE
+						cout << "Current Node: " << finalNode->GetName() << endl;
+						cout << "Global Point: ";
+						cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
+						cout << "Current Volume Contains Local Point: " << finalNode->GetVolume()->GetShape()->Contains(finalLocalPoint) << endl;
+					#endif
 				}
 						
 				if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
@@ -1839,7 +1845,9 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 					cout << "Find Node Result: "    << navigator->FindNode()->GetName() << endl;
 					return kFALSE;
 				}
-				cout << "Particle is now correctly located in: " << navigator->GetCurrentNode()->GetName() << endl;
+				#ifdef VERBOSE_MODE
+					cout << "Particle is now correctly located in: " << navigator->GetCurrentNode()->GetName() << endl;
+				#endif
 			}
 			// End of Bounce. We should have returned to the original node, and guarenteed that the current point is located within it.
 		}

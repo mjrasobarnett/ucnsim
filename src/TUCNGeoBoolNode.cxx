@@ -25,6 +25,8 @@
 #include "TBuffer3DTypes.h"
 #include "TMath.h"
 
+//#define VERBOSE_MODE
+
 //_____________________________________________________________________________
 //  TUCNGeoBoolNode - base class for Boolean operations between two shapes.
 //===============
@@ -1315,8 +1317,10 @@ Double_t TUCNGeoIntersection::TimeFromOutsideAlongParabola(const Double_t* point
 {
 // Compute the time from outside point to this composite shape along parabola.
 // Check if the bounding box is crossed within the requested distance
-	Info("TimeFromOutsideAlongParabola","Start");
-   TUCNGeoBoolNode *node = (TUCNGeoBoolNode*)this;
+	#ifdef VERBOSE_MODE
+		Info("TimeFromOutsideAlongParabola","Start");
+   #endif
+	TUCNGeoBoolNode *node = (TUCNGeoBoolNode*)this;
    Double_t leftPoint[3], rightPoint[3], masterPoint[3], leftVelocity[3], rightVelocity[3], leftField[3], rightField[3];
    // Store the initial position in masterPoint for later use
 	memcpy(masterPoint, point, 3*sizeof(Double_t));
@@ -1333,66 +1337,86 @@ Double_t TUCNGeoIntersection::TimeFromOutsideAlongParabola(const Double_t* point
 	// Determine which shape (if either) contains the point
 	Bool_t inleft = fLeft->Contains(leftPoint);
    Bool_t inright = fRight->Contains(rightPoint);
-   Info("TimeFromOutsideAlongParabola","Is Point in %s Node? : ",fLeft->GetName(),inleft);
-   Info("TimeFromOutsideAlongParabola","Is Point in %s Node? : ",fRight->GetName(),inright);	
+   #ifdef VERBOSE_MODE
+		Info("TimeFromOutsideAlongParabola","Is Point in %s Node? : ",fLeft->GetName(),inleft);
+   	Info("TimeFromOutsideAlongParabola","Is Point in %s Node? : ",fRight->GetName(),inright);	
+	#endif
 	node->SetSelected(0);
    Double_t timeFromInside = 0.0;
    if (inleft && inright) {
-	   Info("TimeFromOutsideAlongParabola","Particle in Both. Returning: %f",timeFromInside);
+	   #ifdef VERBOSE_MODE
+			Info("TimeFromOutsideAlongParabola","Particle in Both. Returning: %f",timeFromInside);
+		#endif
 		return timeFromInside;
 	}
    while (1) {
       leftTime = rightTime = 0.0;
       if (!inleft)  {
-		  	Info("TimeFromOutsideAlongParabola","Point is not in Left node: %s. Finding Time FromOutside.",fLeft->GetName());
+		  	#ifdef VERBOSE_MODE
+				Info("TimeFromOutsideAlongParabola","Point is not in Left node: %s. Finding Time FromOutside.",fLeft->GetName());
+			#endif
 			leftTime = static_cast<TUCNGeoBBox*>(fLeft)->TimeFromOutsideAlongParabola(leftPoint,leftVelocity,leftField,stepTime,onBoundary);
          if (leftTime > 1E20) return TGeoShape::Big();
       }
       if (!inright) {  
-         Info("TimeFromOutsideAlongParabola","Point is not in Right node: %s. Finding Time FromOutside.",fRight->GetName());
-		  	rightTime = static_cast<TUCNGeoBBox*>(fRight)->TimeFromOutsideAlongParabola(rightPoint,rightVelocity,rightField,stepTime,onBoundary);
+         #ifdef VERBOSE_MODE
+				Info("TimeFromOutsideAlongParabola","Point is not in Right node: %s. Finding Time FromOutside.",fRight->GetName());
+			#endif
+			rightTime = static_cast<TUCNGeoBBox*>(fRight)->TimeFromOutsideAlongParabola(rightPoint,rightVelocity,rightField,stepTime,onBoundary);
          if (rightTime > 1E20) return TGeoShape::Big();
       }
 
       if (leftTime > rightTime) {
-         Info("TimeFromOutsideAlongParabola","LeftTime: %f > RightTime: %f.",leftTime, rightTime);
          // propagate to left shape
          timeFromInside += leftTime;
-         Info("TimeFromOutsideAlongParabola","TimeFromInside: %f.",timeFromInside);
+         #ifdef VERBOSE_MODE
+				Info("TimeFromOutsideAlongParabola","LeftTime: %f > RightTime: %f.",leftTime, rightTime);
+	         Info("TimeFromOutsideAlongParabola","TimeFromInside: %f.",timeFromInside);
+			#endif
 			node->SetSelected(1);
          inleft = kTRUE;
          for (i=0; i<3; i++) {
             // moving under gravity
             masterPoint[i] += leftTime*velocity[i] + 0.5*field[i]*leftTime*leftTime;
          }
-		  	Info("TimeFromOutsideAlongParabola","Propagate point by LeftTime: X: %f, Y: %f, Z: %f",masterPoint[0],masterPoint[1],masterPoint[2]);
          fRightMat->MasterToLocal(masterPoint,rightPoint);
          // check if propagated point is inside right shape
          inright = fRight->Contains(rightPoint);
-         Info("TimeFromOutsideAlongParabola","Is new point in Right? : %i",inright);
+         #ifdef VERBOSE_MODE
+				Info("TimeFromOutsideAlongParabola","Propagate point by LeftTime: X: %f, Y: %f, Z: %f",masterPoint[0],masterPoint[1],masterPoint[2]);
+				Info("TimeFromOutsideAlongParabola","Is new point in Right? : %i",inright);
+			#endif
 			if (inright) {
-				Info("TimeFromOutsideAlongParabola","Returning TimeFromInside: %f.",timeFromInside);
+				#ifdef VERBOSE_MODE
+					Info("TimeFromOutsideAlongParabola","Returning TimeFromInside: %f.",timeFromInside);
+				#endif
 				return timeFromInside;
 			}// here inleft=true, inright=false         
       } else {
-         Info("TimeFromOutsideAlongParabola","RightTime: %f > LeftTime: %f.",rightTime, leftTime);
          // propagate to right shape
          timeFromInside += rightTime;
-         Info("TimeFromOutsideAlongParabola","TimeFromInside: %f.",timeFromInside);
-         node->SetSelected(2);
+         #ifdef VERBOSE_MODE
+				Info("TimeFromOutsideAlongParabola","RightTime: %f > LeftTime: %f.",rightTime, leftTime);
+				Info("TimeFromOutsideAlongParabola","TimeFromInside: %f.",timeFromInside);
+         #endif
+			node->SetSelected(2);
          inright = kTRUE;
          for (i=0; i<3; i++) {
             // moving under gravity
             masterPoint[i] += rightTime*velocity[i] + 0.5*field[i]*rightTime*rightTime;
          }
-         Info("TimeFromOutsideAlongParabola","Propagate point by LeftTime: X: %f, Y: %f, Z: %f",masterPoint[0],masterPoint[1],masterPoint[2]);
 		  	fLeftMat->MasterToLocal(masterPoint,leftPoint);
          // check if propagated point is inside left shape
          inleft = fLeft->Contains(leftPoint);
-         Info("TimeFromOutsideAlongParabola","Is new point in Left? : %i",inleft);
-         if (inleft) {
-				Info("TimeFromOutsideAlongParabola","Returning TimeFromInside: %f.",timeFromInside);
-	         return timeFromInside;
+         #ifdef VERBOSE_MODE
+				Info("TimeFromOutsideAlongParabola","Propagate point by LeftTime: X: %f, Y: %f, Z: %f",masterPoint[0],masterPoint[1],masterPoint[2]);
+         	Info("TimeFromOutsideAlongParabola","Is new point in Left? : %i",inleft);
+         #endif
+			if (inleft) {
+				#ifdef VERBOSE_MODE
+					Info("TimeFromOutsideAlongParabola","Returning TimeFromInside: %f.",timeFromInside);
+	         #endif
+				return timeFromInside;
          }
 			// here inleft=false, inright=true
       }            
@@ -1404,7 +1428,9 @@ Double_t TUCNGeoIntersection::TimeFromOutsideAlongParabola(const Double_t* point
 Double_t TUCNGeoIntersection::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 // -- Compute time from inside point to outside of this composite shape along parabola.
-  	Info("TimeFromInsideAlongParabola","Start");
+	#ifdef VERBOSE_MODE
+		Info("TimeFromInsideAlongParabola","Start");
+	#endif
 	// Compute the time to each of the shapes involved in the intersection
    TUCNGeoBoolNode *node = (TUCNGeoBoolNode*)this;
    Double_t leftPoint[3], rightPoint[3], leftVelocity[3], rightVelocity[3], leftField[3], rightField[3];
@@ -1413,9 +1439,11 @@ Double_t TUCNGeoIntersection::TimeFromInsideAlongParabola(const Double_t* point,
    fLeftMat->MasterToLocal(point, &leftPoint[0]);
    fLeftMat->MasterToLocalVect(velocity, &leftVelocity[0]);
    fLeftMat->MasterToLocalVect(field, &leftField[0]);
-   Info("TimeFromInsideAlongParabola","Finding Time from Inside to Left Node, %s.",fLeft->GetName());
 	leftTime = static_cast<TUCNGeoBBox*>(fLeft)->TimeFromInsideAlongParabola(&leftPoint[0], &leftVelocity[0], &leftField[0], stepTime, onBoundary);
-   Info("TimeFromInsideAlongParabola","Time from Inside to Left Node, %s: %f",fLeft->GetName(),leftTime);
+   #ifdef VERBOSE_MODE
+		Info("TimeFromInsideAlongParabola","Finding Time from Inside to Left Node, %s.",fLeft->GetName());
+   	Info("TimeFromInsideAlongParabola","Time from Inside to Left Node, %s: %f",fLeft->GetName(),leftTime);
+	#endif
 	if (leftTime <= 0.0) {
 		Error("TimeFromInsideAlongParabola", "No boundary of left Node was hit from inside");
 		return 0.0;
@@ -1424,23 +1452,31 @@ Double_t TUCNGeoIntersection::TimeFromInsideAlongParabola(const Double_t* point,
    fRightMat->MasterToLocal(point, &rightPoint[0]);
    fRightMat->MasterToLocalVect(velocity, &rightVelocity[0]);
    fRightMat->MasterToLocalVect(field, &rightField[0]);
-   Info("TimeFromInsideAlongParabola","Finding Time from Inside to Right Node, %s.",fRight->GetName());
    rightTime = static_cast<TUCNGeoBBox*>(fRight)->TimeFromInsideAlongParabola(&rightPoint[0], &rightVelocity[0], &rightField[0], stepTime, onBoundary);
-   if (rightTime <= 0.0) {
+   #ifdef VERBOSE_MODE
+		Info("TimeFromInsideAlongParabola","Finding Time from Inside to Right Node, %s.",fRight->GetName());
+	   Info("TimeFromInsideAlongParabola","Time from Inside to Right Node, %s: %f",fRight->GetName(),rightTime);
+	#endif
+	if (rightTime <= 0.0) {
 		Error("TimeFromInsideAlongParabola", "No boundary of right Node was hit from inside");
 		return 0.0;
 	}
-	Info("TimeFromInsideAlongParabola","Time from Inside to Right Node, %s: %f",fRight->GetName(),rightTime);
 	// Work out which time is the shortest
    if (leftTime < rightTime) {
-      Info("TimeFromInsideAlongParabola","LeftTime < RightTime");
-	   timeFromInside = leftTime;
+      #ifdef VERBOSE_MODE
+			Info("TimeFromInsideAlongParabola","LeftTime < RightTime");
+	   #endif
+		timeFromInside = leftTime;
       node->SetSelected(1);
    } else {
-      Info("TimeFromInsideAlongParabola","RightTime < LeftTime");
-      timeFromInside = rightTime;
+      #ifdef VERBOSE_MODE
+			Info("TimeFromInsideAlongParabola","RightTime < LeftTime");
+      #endif
+		timeFromInside = rightTime;
       node->SetSelected(2);
    }      
-   Info("TimeFromInsideAlongParabola","TimeFromInside: %f", timeFromInside);
+   #ifdef VERBOSE_MODE
+		Info("TimeFromInsideAlongParabola","TimeFromInside: %f", timeFromInside);
+	#endif
 	return timeFromInside;
 }
