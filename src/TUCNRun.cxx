@@ -170,10 +170,8 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 		// Propagate track
 		Bool_t propagated = this->PropagateTrack(geoManager, fieldManager);
 		if (!propagated) lostTracks.push_back(trackid);
-		// Add Track to data tree
-		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-		fData->AddParticle(particle);
-//		fData->AddTrack(track);
+		// Add Final Particle State to data tree
+		this->GetData()->AddFinalParticleState(static_cast<TUCNParticle*>(track->GetParticle()));
 		// Reset Track to release memory
 //		track->ResetTrack();
 	}
@@ -280,7 +278,7 @@ void TUCNRun::DrawParticles(TCanvas* canvas, TPolyMarker3D* points)
 	gGeoManager->SetVisOption(0);
 	
 	// -- Number of particles
-	Int_t particles = fData->GetTracks()->GetEntries();
+	Int_t particles = this->Neutrons();
 	
 	// -- Draw Particles
 	for (Int_t i = 0; i < particles; i++) {
@@ -336,20 +334,20 @@ Bool_t TUCNRun::Export(TString& outputFile)
 //_____________________________________________________________________________
 TVirtualGeoTrack* TUCNRun::GetTrack(Int_t trackID)
 {
-	TGeoTrack* track = 0;
-	assert(trackID < fData->GetTracks()->GetEntries() && trackID >= 0);
-	fData->GetTracks()->SetBranchAddress("Tracks", &track);
-	fData->GetTracks()->GetEntry(trackID);
-	return track;
+	// -- Retrieve the requested track from the Data
+	return this->GetData()->GetTrack(trackID);
 }
 
 //_____________________________________________________________________________
 TUCNParticle* TUCNRun::GetParticle(Int_t particleID)
 {
-	TUCNParticle* particle = 0;
-	assert(particleID < fData->GetTracks()->GetEntries() && particleID >= 0);
-	fData->GetTracks()->SetBranchAddress("Particles", &particle);
-	fData->GetTracks()->GetEntry(particleID);
-	return particle;
+	// -- Retrieve the requested particle from the Data
+	return this->GetData()->GetFinalParticleState(particleID);
 }
 
+//_____________________________________________________________________________
+TUCNParticle* TUCNRun::GetInitialParticle(Int_t particleID)
+{
+	// -- Retrieve the requested initial particle state from the Data
+	return this->GetData()->GetInitialParticleState(particleID);
+}

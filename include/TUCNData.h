@@ -2,44 +2,39 @@
 #define TUCNDATA_H
 
 #include "TNamed.h"
-#include "TUCNGeoManager.h"
-#include "TUCNParticle.h"
 #include "TTree.h"
 #include "TGeoTrack.h"
 
-#include <string>
-#include <vector>
-
-
-using namespace std;
+class TUCNParticle;
 
 class TUCNData : public TNamed {
-		protected:
-		Bool_t         fFullTrack; // Store full track or only end and beginning
-		TTree*         fTracks;
-		//TUCNGeoManager fManager;
+	protected:
+		TTree					*fTracks;
+		TTree					*fInitialParticleStates;
+		TTree					*fFinalParticleStates;
 		
-		private:
-		TGeoTrack    * fCurrentTrack;     
-		TUCNParticle * fCurrentParticle;
+	private:
+		TGeoTrack			*fCurrentTrack;     
+		TUCNParticle		*fInitialParticle;
+		TUCNParticle		*fCurrentParticle;
+		
+		TTree*				GetTracksTree()					{return fTracks;}
+		TTree*				GetInitialParticlesTree()		{return fInitialParticleStates;}
+		TTree*				GetFinalParticlesTree()			{return fFinalParticleStates;}
 		
 	public:
 		TUCNData(void); 
-		TUCNData(const char * name, const char * title);
+		TUCNData(const char *name, const char *title);
 		virtual ~TUCNData(void);
 		
-		// Geometry
-		Bool_t	LoadGeometry(TString filename);
-		//TUCNGeoManager * GetGeoManager(void) { return &fManager; }
+		// Storage of Tracks and Particles
+		Bool_t					AddTrack(TGeoTrack* track);
+		Bool_t					AddInitialParticleState(TUCNParticle* particle);
+		Bool_t					AddFinalParticleState(TUCNParticle* particle);
 		
-		// Fields
-		
-		// Tracking
-		void		StoreFullTracks(Bool_t value = kTRUE) { fFullTrack = value; }
-		void		AddTrack(TVirtualGeoTrack* track);
-		void		AddParticle(TUCNParticle* particle);
-		TTree*	GetTracks(void) {return fTracks;}
-//		TGeoTrack* GetTrack(void);
+		TGeoTrack*				GetTrack(Int_t trackID);
+		TUCNParticle*			GetInitialParticleState(Int_t particleID);
+		TUCNParticle*			GetFinalParticleState(Int_t particleID);
 		
    ClassDef(TUCNData, 1) // UCN Data Object
 };
