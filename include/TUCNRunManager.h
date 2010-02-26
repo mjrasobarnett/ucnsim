@@ -39,7 +39,7 @@ public:
 	Int_t						GetNumberOfRuns() const {return fRuns->GetEntries();}
 	TUCNRun*					GetRun(Int_t index) const;
 	void						CreateRuns(Int_t numberOfRuns);
-	void						WriteRunsToFile(TFile* file);
+	void						WriteToFile(TFile* file);
 	
    ClassDef(TUCNRunManager, 1)      
 };

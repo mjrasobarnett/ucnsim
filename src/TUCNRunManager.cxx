@@ -72,8 +72,8 @@ TUCNRunManager::~TUCNRunManager()
 { 
 // -- Destructor
 	Info("TUCNRunManager", "Destructor");
-	fManager->Delete();
-	fRuns->Delete();
+	if (fManager) fManager->Delete();
+	if (fRuns) fRuns->Delete();
 }
 
 // -- METHODS --
@@ -128,11 +128,12 @@ void TUCNRunManager::CreateRuns(Int_t numberOfRuns)
 }
 
 //_____________________________________________________________________________
-void	TUCNRunManager::WriteRunsToFile(TFile* file)
+void	TUCNRunManager::WriteToFile(TFile* file)
 {
 	assert(file->IsOpen());
 	cout << "Writing data to file: " << file->GetName() << endl;
-	fRuns->Write();
+	this->Write();
+	//fRuns->Write();
 	file->Close();
 	cout << "WriteOutData completed" << endl;		
 }
