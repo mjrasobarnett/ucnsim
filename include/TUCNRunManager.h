@@ -7,6 +7,7 @@
 #include "TNamed.h"
 
 #include "TUCNGeoManager.h"
+#include "TUCNRun.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -22,6 +23,7 @@ protected:
  	TUCNRunManager& operator=(const TUCNRunManager&);
 	
 	TUCNGeoManager*				fManager;
+	TObjArray*						fRuns;
 	
 public:
 	// -- constructors
@@ -31,13 +33,12 @@ public:
 	virtual ~TUCNRunManager();
 
 	// -- methods
-	TUCNGeoManager* 		GetGeoManager() { return fManager; } 
-	
+	TUCNGeoManager* 		GetGeoManager() const {return fManager;} 
 	TGeoNode*				CreateGeometry();
 	
-	
-
-	
+	Int_t						GetNumberOfRuns() const {return fRuns->GetEntries();}
+	TUCNRun*					GetRun(Int_t index) const;
+	Int_t						AddRun();
 	
 	
    ClassDef(TUCNRunManager, 1)      

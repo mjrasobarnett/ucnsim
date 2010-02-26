@@ -12,6 +12,7 @@
 #include "TUCNGravField.h"
 #include "TUCNParticle.h"
 
+#include "TObjArray.h"
 #include "TRandom.h"
 #include "TGeoVolume.h"
 #include "TGeoShape.h"
@@ -37,13 +38,14 @@ TUCNRunManager::TUCNRunManager()
 // -- Default constructor
    Info("TUCNRunManager", "Constructor");
 	fManager = new TUCNGeoManager("GeoManager", "Geometry Manager");
-	
+	fRuns = new TObjArray();
 } 
 
 //_____________________________________________________________________________
 TUCNRunManager::TUCNRunManager(const TUCNRunManager& runm)
 					:TNamed(runm),
-					 fManager(runm.fManager)
+					 fManager(runm.fManager),
+					 fRuns(runm.fRuns)
 {
 // -- Copy Constructor
 	Info("TUCNRunManager", "Copy Constructor");
@@ -56,6 +58,7 @@ TUCNRunManager& TUCNRunManager::operator=(const TUCNRunManager& runm)
 	if(this!=&runm) {
       TNamed::operator=(runm);
 		fManager = runm.fManager;
+		fRuns = runm.fRuns;
 	}
    return *this;
 }
@@ -66,6 +69,7 @@ TUCNRunManager::~TUCNRunManager()
 // -- Destructor
 	Info("TUCNRunManager", "Destructor");
 	fManager->Delete();
+	fRuns->Delete();
 }
 
 // -- METHODS --
@@ -77,5 +81,20 @@ TGeoNode* TUCNRunManager::CreateGeometry()
 	Info("TUCNRunManager", "CreateGeometry");
 	// -- Create Geometry using function specified in geometries.C macro
 	return CreateGeometry_v1(fManager);
+}
+
+//______________________________________________________________________________
+TUCNRun* TUCNRunManager::GetRun(Int_t index) const
+{
+	return (index<fRuns->GetEntries()) ? static_cast<TUCNRun*>(fRuns->At(index)) : 0;
+}
+
+//______________________________________________________________________________
+Int_t TUCNRunManager::AddRun()
+{
+	Int_t index = this->GetNumberOfRuns();
+	TUCNRun* newRun = new TUCNRun();
+   fRuns->AddAtAndExpand(newRun , index);
+   return index;
 }
 

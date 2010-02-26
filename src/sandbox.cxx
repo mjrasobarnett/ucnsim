@@ -69,7 +69,8 @@ Int_t ucnstandalone() {
 	
 	TUCNRunManager* runManager = new TUCNRunManager();
 	TUCNGeoManager* geoManager = runManager->GetGeoManager();
-	TUCNRun* run = new TUCNRun();
+	Int_t index = runManager->AddRun();
+	TUCNRun* run = runManager->GetRun(index);
 	
 	Double_t height_equivalent_units = Constants::grav_acceleration*Constants::neutron_mass;
 	
