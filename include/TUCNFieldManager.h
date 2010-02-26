@@ -31,7 +31,7 @@ public:
 	virtual ~TUCNFieldManager();
 	
 	// -- methods
-	Bool_t						Initialise(TUCNConfigFile& configFile);
+	Bool_t						Initialise(TUCNConfigFile* configFile);
 	
 	// Grav Fields
 	TUCNGravField*				AddGravField();

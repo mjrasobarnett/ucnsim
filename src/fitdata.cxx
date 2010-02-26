@@ -90,8 +90,8 @@ Int_t main(Int_t argc,Char_t **argv)
 	///////////////////////////////////////////////////////////////////////////////////////
 		
 	// Draw Final Positions 
-	TCanvas * canvas1 = new TCanvas("canvas1", "Final Particle Positions", 800, 10, 600, 600);
-	PlotFinalPositions(canvas1, experiment);
+//	TCanvas * canvas1 = new TCanvas("canvas1", "Final Particle Positions", 800, 10, 600, 600);
+//	PlotFinalPositions(canvas1, experiment);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- FITTING 
@@ -261,7 +261,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	lossf->GetYaxis()->SetTitle("Loss Probability");
 */	
 	
-	// -- Plot the Average Mag Field
+/*	// -- Plot the Average Mag Field
 	TCanvas* histcanvas = new TCanvas("HistCanvas","AvgMagField",20,20,600,600);
 	
 	// Begin Fit
@@ -300,7 +300,7 @@ Int_t main(Int_t argc,Char_t **argv)
 		
 	}
 	theApp->Run();
-	
+*/	
 	return 0;
 }	
 
@@ -322,7 +322,7 @@ Double_t lossFunc(Double_t* x, Double_t* /*par*/) {
 // -------------------------------------------------------------------------------------- 
 void	PlotFinalPositions(TCanvas* canvas, TUCNExperiment* experiment) {
 	// Take canvas, divide into segments proportional to number of runs. Then plot final positions onto canvas.
-	Int_t nRuns = experiment->NumberOfRuns();
+/*	Int_t nRuns = experiment->NumberOfRuns();
 	// If more than one run, divide the canvas appropriately
 	if (nRuns != 1) 	canvas->Divide((nRuns%2 == 0 ? nRuns/2:(nRuns/2+1)),2);
 	// Draw the final positions of the particles on the canvas
@@ -331,4 +331,6 @@ void	PlotFinalPositions(TCanvas* canvas, TUCNExperiment* experiment) {
 		TPolyMarker3D* finalPoints = new TPolyMarker3D(gGeoManager->GetNtracks(), 1);
 		experiment->GetRun(0)->DrawParticles(canvas, finalPoints);
 	}
+*/
 }
+

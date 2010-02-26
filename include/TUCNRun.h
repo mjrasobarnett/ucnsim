@@ -12,6 +12,8 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 class TGeoManager;
+class TGeoVolume;
+class TGeoMatrix;
 class TPolyMarker3D;
 class TFile;
 class TVirtualGeoTrack;
@@ -30,7 +32,7 @@ class TUCNRun : public TNamed
 
 		TUCNData*				fData;
 		
-		Int_t						fParticles;
+		Int_t						fNeutrons;
 		Double_t					fTotalEnergy;
 		Double_t					fRunTime;
 		Double_t					fMaxStepTime;
@@ -45,16 +47,15 @@ class TUCNRun : public TNamed
 		// -- destructor
 		virtual ~TUCNRun();
 		
-		Bool_t					Initialise(TUCNConfigFile& configFile);
+		Bool_t					Initialise(TUCNConfigFile* configFile);
 		
-		Int_t						Particles() {return fParticles;}
+		Int_t						Neutrons() {return fNeutrons;}
 		Double_t					TotalEnergy() {return fTotalEnergy;}
 		Double_t					RunTime() {return fRunTime;}
 		Double_t					MaxStepTime() {return fMaxStepTime;}
 		
 		void						DrawParticles(TCanvas* canvas, TPolyMarker3D* points);
 		void						DrawTrack(TCanvas* canvas, Int_t trackID);
-//		Bool_t 					GenerateMonoEnergeticParticles(TGeoManager* geoManager, TUCNGravField* gravField=0);
 		TVirtualGeoTrack*		GetTrack(Int_t trackID);
 		TUCNParticle*			GetParticle(Int_t particleID);
 		

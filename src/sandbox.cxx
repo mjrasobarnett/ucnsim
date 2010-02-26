@@ -59,30 +59,37 @@ Double_t ReadFermiPotential(TUCNConfigFile& configFile);
 
 Int_t main(Int_t argc,Char_t **argv)
 {
-	
-	string configFileName;
+	///////////////////////////////////////////////////////////////////////////////////////
+	// Read in ConfigFile
+	///////////////////////////////////////////////////////////////////////////////////////
+	string configFile;
 	if (argc == 2) {
-		configFileName = argv[1];
+		configFile= argv[1];
 	} else {
 		cerr << "Usage:" << endl;
 		cerr << "sandbox <configFile.txt>" << endl;
 		return -1;
 	}
 	
-	TUCNConfigFile configFile(configFileName);
-	cout << argv[1] << endl;
 	
 //	TRint* theApp = new TRint("UCNSimApp", &argc, argv);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Run Simulation
+	// -- Initialise Simulation
 	///////////////////////////////////////////////////////////////////////////////////////
-	TUCNExperiment* experiment = new TUCNExperiment();
-	if (!(experiment->Initialise(configFile))) {
-		cerr << "Failed to initialise the Runs. Program aborting." << endl;
+	TUCNExperiment* experiment = new TUCNExperiment(configFile);
+	if (!(experiment->Initialise())) {
+		cerr << "Failed to initialise the Experiment. Program aborting." << endl;
 		return EXIT_FAILURE;
 	}
 	
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- Run Simulation
+	///////////////////////////////////////////////////////////////////////////////////////
+	if (!(experiment->Run())) {
+		cerr << "Experiment failed to run. Program aborting." << endl;
+		return EXIT_FAILURE;
+	}
 //	navigator->DiffuseCoefficient(0.1);
 	
 /*	for (Int_t runNumber = 0; runNumber < numberOfRuns; runNumber++) {

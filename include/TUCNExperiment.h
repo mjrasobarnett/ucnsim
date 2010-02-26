@@ -19,6 +19,9 @@ class TUCNConfigFile;
 class TUCNExperiment : public TNamed 
 {
 protected:
+	// ConfigFile
+	TUCNConfigFile*			fConfigFile;
+	TUCNConfigFile*			ConfigFile() const {return fConfigFile;}
 	// GeoManager
 	TGeoManager*				fGeoManager;
 	TGeoManager*				GeoManager() const {return fGeoManager;}
@@ -26,23 +29,31 @@ protected:
 	TUCNFieldManager*			fFieldManager;
 	TUCNFieldManager*			FieldManager() const {return fFieldManager;}
 	// Runs
-	TObjArray*					fRuns;
-	TObjArray*					RunContainer() const {return fRuns;}
-	// Source Volume
+	Int_t							fNumberOfRuns;
+	Int_t							NumberOfRuns() const {return fNumberOfRuns;}
+	// Source Volume/Matrix
 	Int_t 						fSourceVolumeIndex;
 	Int_t							fSourceMatrixIndex;
 	void							SetSourceVolume(TGeoVolume* sourceVolume);
 	TGeoVolume*					GetSourceVolume() const;
 	void							SetSourceMatrix(TGeoMatrix* sourceMatrix);
 	TGeoMatrix*					GetSourceMatrix() const;
+	// Geometry Building
+	Bool_t						BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* configFile);
 	
 	// Make UCNVolumes using TUCNGeoBuilder
 	TGeoVolume*					MakeUCNBox(const char *name, TGeoMedium *medium, Double_t dx, Double_t dy, Double_t dz);
  	TGeoVolume*					MakeUCNTube(const char *name, TGeoMedium *medium, Double_t rmin, Double_t rmax, Double_t dz);
 	
+	Bool_t						CreateRuns(TUCNConfigFile* configFile);
+	Bool_t 						GenerateParticles(TUCNRun* run);
+	
+	void							WriteToFile(TFile* file);
+	
 public:
 	// -- constructors
-   TUCNExperiment();
+	TUCNExperiment();
+	TUCNExperiment(std::string configFileName);
    TUCNExperiment(const TUCNExperiment&); 
 	TUCNExperiment& operator=(const TUCNExperiment&);
 	
@@ -50,13 +61,9 @@ public:
 	virtual ~TUCNExperiment();
 
 	// -- methods
-	Bool_t					Initialise(TUCNConfigFile& configFile);
-	Bool_t					BuildGeometry(TGeoManager& geoManager, TUCNConfigFile& configFile);
+	Bool_t					Initialise();
+	Bool_t					Run();
 	
-	Int_t						NumberOfRuns() const {return fRuns->GetEntries();}
-	TUCNRun*					GetRun(Int_t index) const;
-	Bool_t					CreateRuns(TUCNConfigFile& configFile);
-	void						WriteToFile(TFile* file);
 	
    ClassDef(TUCNExperiment, 1)      
 };

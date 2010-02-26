@@ -70,14 +70,14 @@ TUCNFieldManager::~TUCNFieldManager()
 // -- METHODS --
 
 //______________________________________________________________________________
-Bool_t TUCNFieldManager::Initialise(TUCNConfigFile& configFile)
+Bool_t TUCNFieldManager::Initialise(TUCNConfigFile* configFile)
 {
 // -- Read in the field environment for the experiment from configFile.
 	cout << "-------------------------------------------" << endl;
 	cout << "Initialising the Field Environment" << endl;
 	cout << "-------------------------------------------" << endl;
 	// Start with the Grav Field
-	if (configFile.GetBool("Presence","GravField")) {
+	if (configFile->GetBool("Presence","GravField")) {
 		Info("Initialise","Gravitational Field set to be ON. Creating...");
 		this->AddGravField();
 	} else {
@@ -85,15 +85,15 @@ Bool_t TUCNFieldManager::Initialise(TUCNConfigFile& configFile)
 	}
 	
 	// Set-up the magnetic field
-	if (configFile.GetBool("Presence","MagField")) {
+	if (configFile->GetBool("Presence","MagField")) {
 		// Field is present
-		std::string fieldType = configFile.GetString("Type","MagField");
+		std::string fieldType = configFile->GetString("Type","MagField");
 		Info("Initialise", "Magnetic Field of type: %s present. Creating...", fieldType.c_str());
-		Double_t fieldStrength = configFile.GetFloat("FieldStrength","MagField");
+		Double_t fieldStrength = configFile->GetFloat("FieldStrength","MagField");
 		if (fieldType == "Parabolic") {
 			// Creating a Rotationally symmetric, parabolically decaying field
-			Double_t fieldRadius = configFile.GetFloat("FieldRadius(m)","MagField");
-			Double_t gradient = configFile.GetFloat("ParabolicGradient","MagField");
+			Double_t fieldRadius = configFile->GetFloat("FieldRadius(m)","MagField");
+			Double_t gradient = configFile->GetFloat("ParabolicGradient","MagField");
 			this->AddParabolicMagField(fieldStrength, gradient, fieldRadius);
 		} else if (fieldType == "Uniform") {
 			// Creating a Uniform field
