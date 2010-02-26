@@ -182,11 +182,13 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 		geoManager->SetCurrentTrack(track);
 		// Propagate track
 		Bool_t propagated = this->PropagateTrack(geoManager, fieldManager);
-		if (!propagated) lostTracks.push_back(trackid);
+		if (!propagated) {
+			lostTracks.push_back(trackid);
+		}
 		// Add Final Particle State to data tree
 		this->AddParticle(static_cast<TUCNParticle*>(track->GetParticle()));
 		// Reset Track to release memory
-//		track->ResetTrack();
+		track->ResetTrack();
 	}
 	
 	if (lostTracks.size() != 0) {

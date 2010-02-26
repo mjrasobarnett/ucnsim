@@ -205,10 +205,10 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* co
 		return kFALSE;
 	}
 	// Read in value of f
-	Double_t f = configFile->GetFloat("f", "Geometry");
+	Double_t f = TMath::Abs(configFile->GetFloat("f", "Geometry"));
 	// Check values were set
-	if (f == 0.0 || V == 0.0) {
-		cout << "Boundary Material properties, f or V, have not been set! Check ConfigFile and try again." << endl;
+	if (V == 0.0) {
+		cout << "Boundary Material FermiPotential, V, has not been set! Check ConfigFile and try again." << endl;
 		return kFALSE;
 	}
 	// Determine W
@@ -233,9 +233,9 @@ Bool_t TUCNExperiment::BuildGeometry(TGeoManager* geoManager, TUCNConfigFile* co
 	geoManager->SetTopVolume(chamber);
 	
 	// -- Make a GeoTube object via the UCNGeoManager
-	Double_t rMin = 0.0, rMax = 0.236, length = 0.121; 
+	Double_t rMin = 0.0, rMax = 1.1, length = 2.1; 
 	TGeoVolume* tube = this->MakeUCNTube("tube",boundary, rMin, rMax, length/2.);
-	TGeoVolume* innerTube = this->MakeUCNTube("innerTube",vacuum, rMin, rMax-0.001, (length-0.001)/2.);
+	TGeoVolume* innerTube = this->MakeUCNTube("innerTube",vacuum, rMin, rMax-0.1, (length-0.1)/2.);
 	
 	
 	// -- Define the transformation of the volume
@@ -401,6 +401,7 @@ Bool_t TUCNExperiment::GenerateParticles(TUCNRun* run)
 		#endif
 
 		// -- 4. Determine a random direction vector on the unit sphere weighted by an additional cos(theta).
+		// d\Omega = cos(\theta)sin(\theta) d\theta d\phi  (Should be weighted towards the poles)
 		// Phi ranges from 0 to 2*Pi, Theta from 0 to Pi.
 		Double_t phi = gRandom->Uniform(0.0, 1.0)*2.0*TMath::Pi();
 		Double_t u   = gRandom->Uniform(0.0, 0.5);
@@ -502,7 +503,6 @@ Bool_t TUCNExperiment::Initialise()
 	// -- Export Geometry to File
 	///////////////////////////////////////////////////////////////////////////////////////
 	TString outputFile = this->ConfigFile()->GetString("OutputFile","I/O");
-	cout << endl << endl;
 	cout << "-------------------------------------------" << endl;
 	cout << "Exporting Geometry to DataFile: " << outputFile << endl;
 	cout << "-------------------------------------------" << endl;
@@ -564,10 +564,10 @@ Bool_t TUCNExperiment::Run()
 		}
 		
 		// Tidy up
-	//	if (!(this->ClearTracks())) {
-	//		Error("Run","Could not clean up current tracks/particles completely.");
-	//		return kFALSE;
-	//	}
+		if (!(this->ClearTracks())) {
+			Error("Run","Could not clean up current tracks/particles completely.");
+			return kFALSE;
+		}
 	}
 	
 	return kTRUE;
