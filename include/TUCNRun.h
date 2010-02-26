@@ -17,7 +17,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-class TUCNRun : public TObject 
+class TUCNRun : public TNamed 
 {
 	protected:
 		TUCNRun(const TUCNRun&); 

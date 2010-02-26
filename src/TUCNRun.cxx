@@ -31,7 +31,7 @@ ClassImp(TUCNRun)
 
 //_____________________________________________________________________________
 TUCNRun::TUCNRun()
-		  :TObject()
+		  :TNamed("Run", "Default Run")
 {
 // -- Default constructor
    Info("TUCNRun", "Default Constructor");
@@ -48,7 +48,7 @@ TUCNRun::TUCNRun()
 
 //_____________________________________________________________________________
 TUCNRun::TUCNRun(const TUCNRun& run)
-		  :TObject(run),
+		  :TNamed(run),
 			fData(run.fData),
 			fNavigatorIndex(run.fNavigatorIndex)
 {
@@ -61,7 +61,7 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& run)
 {
 // --assignment operator
 	if(this!=&run) {
-		TObject::operator=(run);
+		TNamed::operator=(run);
       fData = run.fData;
 		fNavigatorIndex = run.fNavigatorIndex;
 	}
