@@ -29,6 +29,7 @@ TUCNParabolicMagField::TUCNParabolicMagField(const char *name, Double_t maxB, Do
 	fBMax = maxB;
 	fParabolicGradient = parabolicGradient;
 	fFieldRadius = fieldRadius;
+	Info("TUCNParabolicMagField", "Field Created with BMax: %f, ParabolicGradient: %f, FieldRadius: %f",fBMax,fParabolicGradient, fFieldRadius);
 } 
 
 //_____________________________________________________________________________

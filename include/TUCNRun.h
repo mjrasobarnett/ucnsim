@@ -16,6 +16,7 @@
 // 						TUCNRun															  //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+class TUCNConfigFile;
 
 class TUCNRun : public TNamed 
 {
@@ -40,7 +41,7 @@ class TUCNRun : public TNamed
 		// -- destructor
 		virtual ~TUCNRun();
 		
-		void						Initialise(Int_t particles, Double_t totalEnergy, Double_t runTime, Double_t maxStepTime, TUCNGeoManager* geoManager, TUCNGravField* gravField=0);
+		Bool_t					Initialise(TUCNConfigFile& configFile);
 		
 		Int_t						Particles() {return fParticles;}
 		Double_t					TotalEnergy() {return fTotalEnergy;}

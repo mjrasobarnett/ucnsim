@@ -14,6 +14,7 @@
 // 						TUCNRunManager													  //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+class TUCNConfigFile;
 
 class TUCNRunManager : public TNamed 
 {
@@ -32,9 +33,10 @@ public:
 	virtual ~TUCNRunManager();
 
 	// -- methods
+	Bool_t					Initialise(TUCNConfigFile& configFile);
 	Int_t						NumberOfRuns() const {return fRuns->GetEntries();}
 	TUCNRun*					GetRun(Int_t index) const;
-	void						CreateRuns(Int_t numberOfRuns);
+	void						CreateRuns(Int_t numberOfRuns, TUCNConfigFile& configFile);
 	void						WriteToFile(TFile* file);
 	
    ClassDef(TUCNRunManager, 1)      

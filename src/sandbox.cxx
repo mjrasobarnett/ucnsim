@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string>
 #include <cassert>
+#include <cstdlib>
 #include <stdio.h> // sprintf
 
 #include "TCanvas.h"
@@ -51,11 +52,26 @@ using std::cout;
 using std::endl;
 using std::string;
 
-void BuildGeometry(TUCNGeoManager* geoManager);
+Bool_t BuildGeometry(TUCNGeoManager* geoManager, TUCNConfigFile& configFile);
+Double_t ReadFermiPotential(TUCNConfigFile& configFile);
+
 
 Int_t main(Int_t argc,Char_t **argv)
 {
-	TRint* theApp = new TRint("UCNSimApp", &argc, argv);
+	
+	string configFileName;
+	if (argc == 2) {
+		configFileName = argv[1];
+	} else {
+		cerr << "Usage:" << endl;
+		cerr << "sandbox <configFile.txt>" << endl;
+		return -1;
+	}
+	
+	TUCNConfigFile configFile(configFileName);
+	cout << argv[1] << endl;
+	
+//	TRint* theApp = new TRint("UCNSimApp", &argc, argv);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Geometry Creation
@@ -69,39 +85,37 @@ Int_t main(Int_t argc,Char_t **argv)
 	Int_t navigatorIndex = gGeoManager->AddNavigator(navigator);
 	gGeoManager->SetCurrentNavigator(navigatorIndex);
 	
-	BuildGeometry(geoManager);
+	if(!BuildGeometry(geoManager, configFile)) {
+		cerr << "Failed building geometry. Program aborting." << endl;
+		return EXIT_FAILURE;
+	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Field Creation
+	// -- Field Initialisation
 	///////////////////////////////////////////////////////////////////////////////////////
 	TUCNFieldManager* fieldManager = new TUCNFieldManager();
-	TUCNGravField* gravField =	fieldManager->AddGravField();
-	Double_t maxB = 1.0, alpha = 0.1, maxR = 0.235;
-	fieldManager->AddParabolicMagField(maxB, alpha, maxR);
+	if(!(fieldManager->Initialise(configFile))) {
+		cerr << "Failed in field initialisation. Program aborting." << endl;
+		return EXIT_FAILURE;
+	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Run Simulation
 	///////////////////////////////////////////////////////////////////////////////////////
 	TUCNRunManager* runManager = new TUCNRunManager();
+	if (!(runManager->Initialise(configFile))) {
+		cerr << "Failed to initialise the Runs. Program aborting." << endl;
+		return EXIT_FAILURE;
+	}
 	
-	Int_t numberOfRuns = 1;
-	// Need to Add the runs before we initialise the geometry (because we create the navigators with each run). 
-	// and the navigators need to be created before we close the geometry.
-	runManager->CreateRuns(numberOfRuns);
-	
-	Double_t runTime = 150.*Units::s;
-	Double_t maxStepTime = 0.5*Units::s;
-	Int_t particles = 1000;
-	Double_t diffCoeff = 0.01;
-	navigator->DiffuseCoefficient(diffCoeff);
-	
+	navigator->DiffuseCoefficient(0.1);
 	Double_t V = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->FermiPotential();
 	Double_t f = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->Eta();
 	Double_t totalEnergy = 0;
 	cout << "V: " << V << "\t" << "f: " << f << endl;
 	
 	
-	for (Int_t runNumber = 0; runNumber < numberOfRuns; runNumber++) {
+/*	for (Int_t runNumber = 0; runNumber < numberOfRuns; runNumber++) {
 		totalEnergy = 0.57*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
 		
 		TUCNRun* run = runManager->GetRun(runNumber);
@@ -147,38 +161,37 @@ Int_t main(Int_t argc,Char_t **argv)
 	
 //	benchmark.Stop("UCNSim");
 //	benchmark.Show("UCNSim");
+*/	
+//	theApp->Run();
 	
-	theApp->Run();
-	
-	return 0;
+	return EXIT_SUCCESS;
 }
 
-void BuildGeometry(TUCNGeoManager* geoManager)
+Bool_t BuildGeometry(TUCNGeoManager* geoManager, TUCNConfigFile& configFile)
 {
 	// -------------------------------------
 	// BUILDING GEOMETRY
-	cerr << "Building Geometry..." << endl;
-	// Input parameters to calculate f  -- All numbers come from Mike P (presumable from data)
-	// for a specific energy group, from which we can calculate f. 
-	Double_t observedLifetime = 150.*Units::s;
-	Double_t fermiPotential = (0.91*Units::m)*Constants::height_equivalent_conversion;
-	Double_t totalEnergy = (0.52*Units::m)*Constants::height_equivalent_conversion;
-	Double_t initialVelocity = TMath::Sqrt(2.*totalEnergy/Constants::neutron_mass);
-	Double_t meanFreePath = 0.1589*Units::m;
+	cout << "-------------------------------------------" << endl;
+	cout << "Building Geometry..." << endl;
+	cout << "-------------------------------------------" << endl;
 	
-	// Calculate f = W/V and hence W
-	Double_t X = totalEnergy/fermiPotential;
-	Double_t L = 2.0*((1./X)*TMath::ASin(TMath::Sqrt(X)) - TMath::Sqrt((1./X) - 1.));
-	Double_t f = meanFreePath/(initialVelocity*observedLifetime*L);
-	Double_t W = f*fermiPotential;
-	cerr << "Input Parameters: " << endl;
-	cerr << "E: " << totalEnergy/Units::neV << "\t" << "V: " << fermiPotential/Units::neV << "\t" << "E/V: " << X << "\t"<< "L: " << L << endl;
-	cerr << "f: " << f << "\t" << "W: " << W/Units::neV << endl;
+	// Read in value of FermiPotential
+	Double_t V = ReadFermiPotential(configFile);
+	// Read in value of f
+	Double_t f = configFile.GetFloat("f", "Geometry");
+	// Check values were set
+	if (f == 0.0 || V == 0.0) {
+		cout << "Boundary Material properties, f or V, have not been set! Check ConfigFile and try again." << endl;
+		return kFALSE;
+	}
+	// Determine W
+	Double_t W = f*V;
 	
 	// Materials
 	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);
 	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0);
-	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", fermiPotential, W);
+	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", V, W);
+	cout << "Boundary Material has been defined with V (neV): " << V/Units::neV << "  W (neV): " << W/Units::neV << endl;
 	
 	matTracking->IsTrackingMaterial(kTRUE);
 	matBlackHole->IsBlackHole(kTRUE);
@@ -194,8 +207,8 @@ void BuildGeometry(TUCNGeoManager* geoManager)
 	
 	// -- Make a GeoTube object via the UCNGeoManager
 	Double_t rMin = 0.0, rMax = 0.236, length = 0.121; 
-	TGeoVolume* tube   = geoManager->MakeUCNTube("tube",boundary, rMin, rMax, length/2.);
-	TGeoVolume* innerTube  = geoManager->MakeUCNTube("innerTube",vacuum, rMin, rMax-0.001, (length-0.001)/2.);
+	TGeoVolume* tube = geoManager->MakeUCNTube("tube",boundary, rMin, rMax, length/2.);
+	TGeoVolume* innerTube = geoManager->MakeUCNTube("innerTube",vacuum, rMin, rMax-0.001, (length-0.001)/2.);
 	
 	
 	// -- Define the transformation of the volume
@@ -221,5 +234,41 @@ void BuildGeometry(TUCNGeoManager* geoManager)
 	geoManager->SetSourceMatrix(matrix);
 	
 	// -- Arrange and close geometry
-   gGeoManager->CloseGeometry();
+	gGeoManager->CloseGeometry();
+	cout << "-------------------------------------------" << endl;
+	cout << "Geometry has been created succesfully" << endl;
+	cout << "-------------------------------------------" << endl;
+	
+	return kTRUE;
 }
+
+Double_t ReadFermiPotential(TUCNConfigFile& configFile) {
+	// Read ConfigFile for the fermiPotential. Two possible ways this can be stored (depending on units). Function checks for both
+	// and returns the one it finds. 
+	Double_t value = 0.0;
+	Double_t fermiPotentialneV  = configFile.GetFloat("FermiPotential(neV)", "Geometry")*Units::neV;
+	Double_t fermiPotentialm    = configFile.GetFloat("FermiPotential(m)", "Geometry")*Constants::height_equivalent_conversion;
+	cout << "Reading ConfigFile to determine FermiPotential..." << endl;
+	// Determine which of these two values is zero (if any) and returning the remaining value.
+	if (fermiPotentialneV == 0.0) {
+		if (fermiPotentialm == 0.0) {
+			cout << "No Fermi-potential has been set!" << endl;
+		} else {
+			value = fermiPotentialm; 
+		}
+	} else {
+		if (fermiPotentialm == 0.0) {
+			value = fermiPotentialneV;
+		} else {
+			cout << "Both possible definitions the Fermi-potential have been set! Checking to see if they differ..." << endl;
+			if (fermiPotentialneV == fermiPotentialm) {
+				cout << "Both have the same value." << endl;
+				value = fermiPotentialneV;
+			} else {
+				cout << "Both are different. No value will be set." << endl;
+			}
+		}
+	}
+	return value;
+}
+

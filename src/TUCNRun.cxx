@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "TUCNRun.h"
-
+#include "TUCNConfigFile.h"
 #include "TUCNGeoManager.h"
 #include "TUCNGeoMaterial.h"
 #include "TUCNGeoNavigator.h"
@@ -108,27 +108,54 @@ TUCNRun::~TUCNRun()
 }
 
 //_____________________________________________________________________________
-void TUCNRun::Initialise(Int_t particles, Double_t totalEnergy, Double_t runTime, Double_t maxStepTime, TUCNGeoManager* geoManager, TUCNGravField* gravField)
+Bool_t TUCNRun::Initialise(TUCNConfigFile& configFile)
 {
 	// Initialise the Run
 	// Reset the Navigator
 	gGeoManager->GetCurrentNavigator()->ResetAll();
+	
 	// Store the run parameters
-	fParticles = particles;
-	fTotalEnergy = totalEnergy;
-	fRunTime = runTime;
-	fMaxStepTime = maxStepTime;
+	// - Number of particles
+	fParticles = configFile.GetInt("Neutrons", this->GetName());
+	if (fParticles == 0) { Warning("Initialise","No number of particles has been set"); return kFALSE; }
+	// - Initial Energy
+	// Get the initial energy in units of (neV)
+	Double_t totalEnergyneV = configFile.GetFloat("InitialEnergy(neV)", this->GetName())*Units::neV;
+	// Get the initial energy in units of the FermiPotential of the boundary
+	Double_t V = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->FermiPotential();
+	Double_t totalEnergyVFermi = configFile.GetFloat("InitialEnergy(VFermi)", this->GetName())*V;
+	if (totalEnergyneV != 0.0) {
+		fTotalEnergy = totalEnergyneV;
+	} else if (totalEnergyVFermi != 0.0) {
+		fTotalEnergy = totalEnergyVFermi;
+	} else {
+		Warning("Initialise","No initial energy has been set for this Run.");
+		return kFALSE;
+	}
+	// - Run Time
+	fRunTime = configFile.GetFloat("RunTime(s)", this->GetName())*Units::s;
+	if (fRunTime == 0.0) { Warning("Initialise","No RunTime has been set"); return kFALSE; }
+	// - Max Step Time
+	fMaxStepTime = configFile.GetFloat("MaxStepTime(s)", this->GetName())*Units::s;
+	if (fMaxStepTime == 0.0) { Warning("Initialise","No max step time has been set"); return kFALSE; }
+		
+	cout << "Particles: " << fParticles << endl;
+	cout << "Total Energy: " << fTotalEnergy << endl;
+	cout << "RunTime: " << fRunTime << endl;
+	cout << "MaxStepTime: " << fMaxStepTime << endl;
+	
 	// Generating mono-energetic particles inside the source volume
-	cout << "Generating " << fParticles << " particles..."	<< endl;
-	this->GenerateMonoEnergeticParticles(geoManager, gravField);
-	cout << "Particle's created. Ready to Propagate..." << endl;
+//	cout << "Generating " << fParticles << " particles..."	<< endl;
+//	this->GenerateMonoEnergeticParticles(geoManager, gravField);
+//	cout << "Particle's created. Ready to Propagate..." << endl;
+	return kTRUE;
 }
 
 //______________________________________________________________________________
 Bool_t TUCNRun::GenerateMonoEnergeticParticles(TUCNGeoManager* geoManager, TUCNGravField* gravField)
 {
-	// Generates a uniform distribution of particles with random directions all with the same total energy (kinetic plus potential).
-	// defined at z = 0.	
+	// Generates a uniform distribution of particles with random directions all with the same total energy
+	// (kinetic plus potential) defined at z = 0.	
 	
 	Int_t totalParticles = fParticles;
 	Double_t totalEnergy = fTotalEnergy;

@@ -14,6 +14,7 @@
 #include "TUCNParticle.h"
 #include "TUCNUniformMagField.h"
 #include "TUCNParabolicMagField.h"
+#include "TUCNConfigFile.h"
 
 #include "TObjArray.h"
 #include "TRandom.h"
@@ -74,22 +75,41 @@ TUCNRunManager::~TUCNRunManager()
 // -- METHODS --
 
 //______________________________________________________________________________
+Bool_t TUCNRunManager::Initialise(TUCNConfigFile& configFile)
+{
+// -- Initialise the runManager with from the Configuration File and create the runs
+	cout << "-------------------------------------------" << endl;
+	cout << "Initialising the Runs" << endl;
+	cout << "-------------------------------------------" << endl;
+	Int_t numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
+	if (!(numberOfRuns < 1)) {
+		this->CreateRuns(numberOfRuns, configFile);
+	} else {
+		return kFALSE;
+	}
+	cout << "-------------------------------------------" << endl;
+	cout << "Runs successfully initialised" << endl;
+	cout << "-------------------------------------------" << endl;
+	return kTRUE;
+}
+
+//______________________________________________________________________________
 TUCNRun* TUCNRunManager::GetRun(Int_t index) const
 {
 	return (index<fRuns->GetEntries()) ? static_cast<TUCNRun*>(fRuns->At(index)) : 0;
 }
 
 //______________________________________________________________________________
-void TUCNRunManager::CreateRuns(Int_t numberOfRuns)
+void TUCNRunManager::CreateRuns(Int_t numberOfRuns, TUCNConfigFile& configFile)
 {
-	for(Int_t i = 0; i < numberOfRuns; i++) {
+	for(Int_t i = 1; i <= numberOfRuns; i++) {
 		Char_t name[10], title[20];
-		sprintf(name,"run%d",i); 
+		sprintf(name,"Run%d",i); 
 		sprintf(title,"Run no:%d",i);
-		cerr << "Creating Run: " << name << "\t" << "Title: " << title << endl;
-		Int_t index = this->NumberOfRuns();
+		Info("CreateRuns", "Run Name: %s,  Title: %s", name, title);
 		TUCNRun* newRun = new TUCNRun(name, title);
-	   fRuns->AddAtAndExpand(newRun , index);
+		newRun->Initialise(configFile);
+		fRuns->Add(newRun);
 	}
 }
 
