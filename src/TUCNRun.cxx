@@ -1668,9 +1668,11 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Find Next Boundary
 	if (gravField == NULL) {
-		gGeoManager->GetCurrentNavigator()->FindNextBoundaryAndStep(this->GetStepTime());
+		if (!(gGeoManager->GetCurrentNavigator()->FindNextBoundaryAndStep(this->GetStepTime()))) {
+			Error("MakeStep", "FindNextBoundaryAndStep has failed to find the next node");
+			return kFALSE;
+		}
 		// TODO: UPDATE CLASS DATA MEMBERS NOW LIKE fUCNNextNode
-		
 		// - Calculate the time travelled
 		assert(particle->Velocity() > 0.0);
 		Double_t timeTravelled = gGeoManager->GetCurrentNavigator()->GetStep()/particle->Velocity(); 
@@ -1682,14 +1684,21 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		const Double_t initialStepTime = this->GetStepTime();
 		const Double_t initialStep = gGeoManager->GetStep();
 		
-		this->FindNextBoundaryAlongParabola(track, gravField, this->GetStepTime(), this->IsUCNOnBoundary());
+		if (!(this->FindNextBoundaryAlongParabola(track, gravField, this->GetStepTime(), this->IsUCNOnBoundary()))) {
+			Error("MakeStep", "FindNextBoundaryAlongParabola has failed to find the next node");
+			return kFALSE;
+		}
 		const Double_t firstStepTime = this->GetStepTime();
 		const Double_t firstStep = gGeoManager->GetStep();
 		
 		gGeoManager->SetStep(initialStep);
 		this->SetStepTime(initialStepTime);
 		
-		this->FindNextBoundaryAndStepAlongParabola(track, gravField, this->GetStepTime());
+		if (!(this->FindNextBoundaryAndStepAlongParabola(track, gravField, this->GetStepTime()))) {
+			Error("MakeStep", "FindNextBoundaryAndStepAlongParabola has failed to find the next node");
+			return kFALSE;	
+		}
+		
 		const Double_t finalStepTime = this->GetStepTime();
 		const Double_t finalStep = gGeoManager->GetStep();
 		
