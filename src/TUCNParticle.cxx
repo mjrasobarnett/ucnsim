@@ -31,7 +31,6 @@ TUCNParticle::TUCNParticle()
 	fBounces = 0;
 	fSpecularBounces = 0;
 	fDiffuseBounces = 0;
-	fAvgMagField = 0.;
 }
 
 
@@ -51,7 +50,6 @@ TUCNParticle::TUCNParticle(Double_t* pos, Double_t* mom, Double_t kineticEnergy,
 	fBounces = 0;
 	fSpecularBounces = 0;
 	fDiffuseBounces = 0;
-	fAvgMagField = 0.;
 }
 
 //_____________________________________________________________________________
@@ -204,17 +202,11 @@ Double_t TUCNParticle::Mass_GeV_c2() const
 }
 
 //______________________________________________________________________________
-Double_t TUCNParticle::SampleMagField(const TUCNMagField* magfield, const Int_t stepNumber)
+void TUCNParticle::SampleMagField(const Double_t integratedField, const Double_t stepTime)
 {
-// Adds current field to average field
-	assert(magfield != NULL);
-	const Double_t pos[3] = {this->Vx(), this->Vy(), this->Vz()};
-	Double_t currentField = magfield->FieldStrength(pos);
-	Double_t totalField = (this->AvgMagField())*(stepNumber-1);
-	totalField += currentField;
-	assert(stepNumber != 0);
-	this->AvgMagField(totalField/stepNumber);
-	return this->AvgMagField();
+	// Adds current field to average field
+	Double_t timeAveragedField = integratedField/stepTime;
+	fAvgMagField.push_back(timeAveragedField);
 }
 
 //______________________________________________________________________________
@@ -256,3 +248,25 @@ Double_t	TUCNParticle::DiffuseProbability(const Double_t diffuseCoeff, const Dou
 	return diffuseCoeff;
 }
 
+//______________________________________________________________________________
+Double_t	TUCNParticle::AvgMagField()
+{
+	Double_t totalAvgField = 0.;
+	for (UInt_t i = 0; i < fAvgMagField.size(); i++) {
+		totalAvgField += fAvgMagField.at(i);
+	}
+	Double_t avgField = (totalAvgField/(static_cast<Double_t>(fAvgMagField.size())));
+	return avgField;
+}
+
+//______________________________________________________________________________
+Double_t	TUCNParticle::AvgMagFieldError(Double_t avgMagField)
+{
+	Double_t value = 0.;
+	UInt_t n = fAvgMagField.size();
+	for (UInt_t i = 0; i < n; i++) {
+		value += TMath::Power(avgMagField - fAvgMagField.at(i), 2.0);
+	}
+	Double_t stdError = TMath::Sqrt(value/static_cast<Double_t>(n*(n-1)));
+	return stdError;
+}

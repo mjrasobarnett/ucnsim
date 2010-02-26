@@ -1106,8 +1106,8 @@ Bool_t TUCNGeoNavigator::MakeStep(TVirtualGeoTrack* track, TUCNFieldManager* fie
 	
 	// -- Sample Magnetic Field if there is one	
 	if (magField) {
-		Double_t integratedField = magField->IntegratedField(this->GetStepTime(), particle, gravField);
-	//	cout << integratedField/this->GetStepTime() << endl;
+		const Double_t integratedField = magField->IntegratedField(this->GetStepTime(), particle, gravField);
+		particle->SampleMagField(integratedField, this->GetStepTime());	
 	}
 	
 	// -- Update track/particle properties

@@ -74,7 +74,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	TUCNFieldManager* fieldManager = new TUCNFieldManager();
 	TUCNGravField* gravField =	fieldManager->AddGravField();
 	Double_t maxB = 1.0, alpha = 0.1, maxR = 0.235;
-	TUCNMagField* magField = fieldManager->AddParabolicMagField(maxB, alpha, maxR);
+	fieldManager->AddParabolicMagField(maxB, alpha, maxR);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Run Simulation
@@ -86,7 +86,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	// and the navigators need to be created before we close the geometry.
 	runManager->CreateRuns(numberOfRuns);
 	
-	Double_t runTime = 10000.*Units::s;
+	Double_t runTime = 150.*Units::s;
 	Double_t maxStepTime = 1.00*Units::s;
 	Int_t particles = 1000;
 	Double_t diffCoeff = 0.1;
@@ -99,7 +99,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	
 	
 	for (Int_t runNumber = 0; runNumber < numberOfRuns; runNumber++) {
-		totalEnergy = 0.6*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
+		totalEnergy = 0.57*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
 		
 		TUCNRun* run = runManager->GetRun(runNumber);
 		cout << "Run number: " << runNumber << "\t" << "called: " << run->GetName() << endl;
@@ -123,7 +123,7 @@ Int_t main(Int_t argc,Char_t **argv)
 		cout << "End of run" << endl << endl;
 	}
 	
-	TString outputData = "data/datatestdata.root";
+	TString outputData = "data/datatestdata2.root";
 	cerr << "Writing out data to file: " << outputData << endl;
 	TFile* outputFile = new TFile(outputData,"RECREATE");
 	if ( !outputFile->IsOpen() ) {

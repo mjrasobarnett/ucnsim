@@ -167,7 +167,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	Histogram3->Draw("");
 	
 */	
-	///////////////////////////////////////////////////////////////////////////////////////
+/*	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Fitting
 	
 	//	void PlotWallLossFunction(TCanvas* canvas, TUCNRunManager* runManager) {
@@ -257,10 +257,39 @@ Int_t main(Int_t argc,Char_t **argv)
 	lossf->GetYaxis()->SetRangeUser(0.,3.2);
 	lossf->GetXaxis()->SetTitle("E/V");
 	lossf->GetYaxis()->SetTitle("Loss Probability");
+*/	
 	
-	file->ls(); 
-//	file->Close();
+	// -- Plot the Average Mag Field
+	TCanvas* histcanvas = new TCanvas("HistCanvas","AvgMagField",20,20,600,600);
 	
+	// Begin Fit
+	Int_t numberOfRuns = runManager->NumberOfRuns();
+	
+	for(Int_t i = 0; i < numberOfRuns; i++) {
+		// Get Run Parameters
+		TUCNRun* run = runManager->GetRun(i);
+		Int_t particles = run->Particles(); 
+		Double_t totalEnergy = run->TotalEnergy();
+		
+		Int_t nbins = 100;
+		Int_t range = 1.0;
+	
+		histcanvas->cd();
+		TH1F *Histogram = new TH1F("Histogram","Number of collisions before loss", nbins, 0.9, range);
+		cout << "Filling Histogram..." << endl;
+
+		for (Int_t j = 0; j < particles; j++) {
+			// Get each Track
+			TUCNParticle* particle = run->GetParticle(j);
+			Histogram->Fill(particle->AvgMagField());
+		}
+		
+		Histogram->SetXTitle("Step-Averaged BField seen by Neutron (Normalised)");
+		Histogram->SetYTitle("Number of Neutrons");
+		Histogram->SetTitle("E: 0.57V, DiffuseCoeff: 0.1, RunTime: 100s");
+		Histogram->Draw("E1");
+		
+	}
 	theApp->Run();
 	
 	return 0;

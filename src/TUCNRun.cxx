@@ -8,6 +8,7 @@
 #include "TUCNRun.h"
 
 #include "TUCNGeoManager.h"
+#include "TUCNGeoMaterial.h"
 #include "TUCNGeoNavigator.h"
 #include "TUCNFieldManager.h"
 #include "TUCNGravField.h"
@@ -376,6 +377,10 @@ Bool_t TUCNRun::Propagate(TVirtualGeoTrack* track, TUCNFieldManager* fieldManage
 		}
 	}	
 	// -- END OF PROPAGATION LOOP
+	Double_t avgField = particle->AvgMagField();
+	Double_t avgFieldError = particle->AvgMagFieldError(avgField);
+	
+//	cout << "AvgField: " << avgField << "\t" << "Error: " << avgFieldError << endl; 
 	
 //	cout << "FINAL STATUS: " << "Track: " << track->GetId() << "\t" << "Steps taken: " << stepNumber << "\t";
 //	cout << "Time: " << particle->T() << "s" << "\t" << "Final Medium: " << navigator->GetCurrentNode()->GetMedium()->GetName() << "\t";
