@@ -262,9 +262,7 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 	}	
 	// -- END OF PROPAGATION LOOP
 	Double_t avgField = particle->AvgMagField();
-	Double_t avgFieldError = particle->AvgMagFieldError(avgField);
-	
-//	cout << "AvgField: " << avgField << "\t" << "Error: " << avgFieldError << endl; 
+	cout << "AvgField: " << avgField << endl; 
 	
 //	cout << "FINAL STATUS: " << "Track: " << track->GetId() << "\t" << "Steps taken: " << stepNumber << "\t";
 //	cout << "Time: " << particle->T() << "s" << "\t" << "Final Medium: " << navigator->GetCurrentNode()->GetMedium()->GetName() << "\t";

@@ -24,17 +24,17 @@ class TUCNParticle :  public TParticle
 private:
 	static const Int_t 		fgNeutronPDGCode = 2112;
 	
-	Bool_t 					fDecayed;
-	Bool_t 					fLostToBoundary;
-	Bool_t 					fDetected;
-	Double_t 				fDistance;
-	Int_t 					fBounces;
-	Int_t 					fSpecularBounces;
-	Int_t 					fDiffuseBounces;
+	Bool_t 						fDecayed;
+	Bool_t 						fLostToBoundary;
+	Bool_t 						fDetected;
+	Double_t 					fDistance;
+	Int_t 						fBounces;
+	Int_t 						fSpecularBounces;
+	Int_t 						fDiffuseBounces;
 	
-	vector<Double_t>		fAvgMagField;
-	Double_t					fAvgField;
-		
+	Double_t						fAvgMagField;
+	Int_t							fFieldPointsSampled;
+	
 public:
 	// -- constructors
    TUCNParticle();
@@ -47,11 +47,11 @@ public:
 
 	// -- methods
 	inline Double_t		Distance() const 								{return fDistance;}
-	inline void 			IncreaseDistance(Double_t stepsize) 	{fDistance += stepsize;}
+	inline void				IncreaseDistance(Double_t stepsize) 	{fDistance += stepsize;}
 	
-	void 						MadeBounce() 									{fBounces++;}
-	void 						MadeSpecularBounce() 						{fSpecularBounces++;}
-	void 						MadeDiffuseBounce() 							{fDiffuseBounces++;}
+	void						MadeBounce() 									{fBounces++;}
+	void						MadeSpecularBounce() 						{fSpecularBounces++;}
+	void						MadeDiffuseBounce() 							{fDiffuseBounces++;}
 	Int_t						Bounces()										{return fBounces;}
 	Int_t						SpecularBounces()								{return fSpecularBounces;}
 	Int_t						DiffuseBounces()								{return fDiffuseBounces;}
@@ -80,9 +80,7 @@ public:
 	Double_t					Mass_GeV_c2() 	const;
 	
 	void						SampleMagField(const Double_t integratedField, const Double_t stepTime);
-	Double_t					AvgMagField();
-	Double_t					AvgMagFieldError(Double_t avgMagField);
-	
+	Double_t					AvgMagField() const {return fAvgMagField;}
 	
    ClassDef(TUCNParticle,1)   // Ultra-Cold Neutron
 };
