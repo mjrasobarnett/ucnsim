@@ -73,7 +73,6 @@ TUCNParticle::TUCNParticle(const TUCNParticle& part)
 				  fInitialSeed(part.fInitialSeed)
 {
 // -- Copy Constructor
-	Info("TUCNParticle", "Copy Constructor");
 }
 
 //_____________________________________________________________________________
