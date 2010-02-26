@@ -284,7 +284,7 @@ Bool_t TUCNRun::PropagateAllTracks(Double_t runTime, Double_t maxStepTime)
 		if (!propagated) lostTracks.push_back(trackid);
 		// Add Track to data tree
 		fData->AddParticle(particle);
-		fData->AddTrack(track);
+//		fData->AddTrack(track);
 		// Reset Track to release memory
 		track->ResetTrack();
 	}
