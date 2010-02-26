@@ -175,7 +175,7 @@ Bool_t DrawNeutronHeightDistribution(const char* fileName)
 	TH1F* histogram = new TH1F();
    file->GetObject(histogramName, histogram);
 	if (histogram == NULL) {
-		cerr << "Could not find required histogram" << endl;
+		cerr << "Could not find required histogram: " << histogramName << endl;
 		return kFALSE;
 	}
 	// --------------------------------------------------------------------------------------

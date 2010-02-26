@@ -276,7 +276,7 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 			// Add Final Particle State to data tree
 			this->AddParticle(static_cast<TUCNParticle*>(track->GetParticle()));
 		} else {
-			cout << "Track: " << track->GetId() << " has exited errorneously." << endl;
+			cout << "Track: " << track->GetId() << " has exited errorneously." << endl << endl;
 			lostTracks.push_back(trackid);
 			// Update Track to Include the final point
 	//		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
@@ -396,7 +396,7 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 		
 		// -- Make a step
 		if (!(this->MakeStep(track, gravField, magField))) {
-			Error("PropagateTrack","Error in Step Number %i. Step Failed to complete. \n", stepNumber);
+			Error("PropagateTrack","Error in Step Number %i. Step Failed to complete.", stepNumber);
 			return kFALSE;	
 		} 
 		// -- Determine Particle destination

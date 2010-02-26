@@ -278,7 +278,7 @@ Bool_t PlotFinalHeightDistribution(const TString& dataFileName)
 	///////////////////////////////////////////////////////////////////////////////////////
 	// Get the height of the tube we are in.
 	Int_t nbins = 50;
-	const char* tubeName = "innerTube";
+	const char* tubeName = "InnerTube";
 	TGeoVolume* tube = geoManager->GetVolume(tubeName);
 	if (tube == NULL) {
 		cerr << "Error: Attempt to get volume: " << tubeName << " from geoManager failed!" << endl;
