@@ -19,25 +19,30 @@ using namespace std;
 ClassImp(TUCNData)
 
 //_____________________________________________________________________________
-TUCNData::TUCNData(void) : TNamed("ucnData","Default data"), fTracks("Neutrons","Neutron tracks")
+TUCNData::TUCNData(void) 
+			: TNamed("ucnData","Default data")
 {
 	// -- Default Constructor
 	Info("TUCNData","Default Constructor");
+	fTracks = new TTree("Neutrons","Neutron tracks");
 	fCurrentTrack    = new TGeoTrack();
 	fCurrentParticle = new TUCNParticle();
-	fTracks.Branch("Tracks","TGeoTrack",&fCurrentTrack);
-	fTracks.Branch("Particles","TUCNParticle",&fCurrentParticle);
+	fTracks->Branch("Tracks","TGeoTrack",&fCurrentTrack);
+	fTracks->Branch("Particles","TUCNParticle",&fCurrentParticle);
 }
 
 //_____________________________________________________________________________
-TUCNData::TUCNData(const char * name, const char * title) : TNamed(name,title), fTracks("Neutrons","Neutron tracks")
+TUCNData::TUCNData(const char * name, const char * title) 
+			: TNamed(name,title), 
+			  fTracks()
 {
 	// -- Constructor
 	Info("TUCNData","Constructor");
+	fTracks = new TTree("Neutrons","Neutron tracks");
 	fCurrentTrack    = new TGeoTrack();
 	fCurrentParticle = new TUCNParticle();
-	fTracks.Branch("Tracks","TGeoTrack",&fCurrentTrack);
-	fTracks.Branch("Particles","TUCNParticle",&fCurrentParticle);
+	fTracks->Branch("Tracks","TGeoTrack",&fCurrentTrack);
+	fTracks->Branch("Particles","TUCNParticle",&fCurrentParticle);
 }
 
 //_____________________________________________________________________________
@@ -45,6 +50,7 @@ TUCNData::~TUCNData(void)
 {
 	// -- Destructor
 	Info("TUCNData","Destructor");
+	if(fTracks) delete fTracks;
 	if(fCurrentTrack) delete fCurrentTrack;
 	if(fCurrentParticle) delete fCurrentParticle;
 }
@@ -94,7 +100,7 @@ void TUCNData::AddTrack(TVirtualGeoTrack* track)
 	TUCNParticle * tmppa = fCurrentParticle;
 	fCurrentTrack    = static_cast<TGeoTrack*>(track);
 	fCurrentParticle = static_cast<TUCNParticle*>(fCurrentTrack->GetParticle());
-	fTracks.Fill();
+	fTracks->Fill();
 	fCurrentTrack = tmptr;
 	fCurrentParticle = tmppa;
 }
@@ -106,6 +112,6 @@ void TUCNData::AddParticle(TUCNParticle* particle)
 //	cerr << "Adding track: " << track->GetId() << " to tree" << endl;
 	TUCNParticle * tmppa = fCurrentParticle;
 	fCurrentParticle = particle;
-	fTracks.Fill();
+	fTracks->Fill();
 	fCurrentParticle = tmppa;
 }

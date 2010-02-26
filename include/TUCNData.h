@@ -16,7 +16,7 @@ using namespace std;
 class TUCNData : public TNamed {
 		protected:
 		Bool_t         fFullTrack; // Store full track or only end and beginning
-		TTree          fTracks;
+		TTree*         fTracks;
 		//TUCNGeoManager fManager;
 		
 		private:
@@ -38,7 +38,7 @@ class TUCNData : public TNamed {
 		void		StoreFullTracks(Bool_t value = kTRUE) { fFullTrack = value; }
 		void		AddTrack(TVirtualGeoTrack* track);
 		void		AddParticle(TUCNParticle* particle);
-		TTree*	GetTracks(void) { return &fTracks; }
+		TTree*	GetTracks(void) {return fTracks;}
 //		TGeoTrack* GetTrack(void);
 		
    ClassDef(TUCNData, 1) // UCN Data Object
