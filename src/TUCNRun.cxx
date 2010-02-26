@@ -1657,9 +1657,9 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			}
 			cout << "Normal To Boundary aligned with Current Direction: " << endl;
 			cout << "X:" << norm[0] << "\t" << "Y:" << norm[1] << "\t" << "Z:" << norm[2] << endl;
-			point[0] += norm[0]*TGeoShape::Tolerance(); 
-		   point[1] += norm[1]*TGeoShape::Tolerance(); 
-		   point[2] += norm[2]*TGeoShape::Tolerance();
+			point[0] += norm[0]*10.0*TGeoShape::Tolerance(); 
+		   point[1] += norm[1]*10.0*TGeoShape::Tolerance(); 
+		   point[2] += norm[2]*10.0*TGeoShape::Tolerance();
 			// Update point in the navigator
 			navigator->SetCurrentPoint(point);
 			this->UpdateParticle(particle);
@@ -1790,9 +1790,9 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 				}
 				cout << "Normal To Boundary aligned with Current Direction: " << endl;
 				cout << "X:" << norm[0] << "\t" << "Y:" << norm[1] << "\t" << "Z:" << norm[2] << endl;
-				point[0] += norm[0]*2.0*TGeoShape::Tolerance(); 
-			   point[1] += norm[1]*2.0*TGeoShape::Tolerance(); 
-			   point[2] += norm[2]*2.0*TGeoShape::Tolerance();
+				point[0] += norm[0]*10.0*TGeoShape::Tolerance(); 
+			   point[1] += norm[1]*10.0*TGeoShape::Tolerance(); 
+			   point[2] += norm[2]*10.0*TGeoShape::Tolerance();
 				// Update point in the navigator
 				navigator->SetCurrentPoint(point);
 				this->UpdateParticle(particle);
@@ -1802,6 +1802,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 				navigator->GetCurrentMatrix()->MasterToLocal(currentGlobalPoint,&nextLocalPoint[0]);
 				cout << "Local Point after micro-step: ";
 				cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t" << "Z:" << nextLocalPoint[2] << endl;
+				cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(nextLocalPoint[0]*nextLocalPoint[0] + nextLocalPoint[1]*nextLocalPoint[1]) << endl;
 				if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
 					Error("MakeStep","3. Final Point is STILL not contained in Current Node, according to Navigator::IsSameLocation");
 					cout << "Current Node: " << finalNode->GetName() << endl;
