@@ -265,6 +265,7 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 		Bool_t propagated = this->PropagateTrack(geoManager, fieldManager);
 		if (!propagated) {
 			lostTracks.push_back(trackid);
+			break;
 		}
 		// Add Final Particle State to data tree
 		this->AddParticle(static_cast<TUCNParticle*>(track->GetParticle()));
@@ -1139,16 +1140,16 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 			Warning("FindNextBoundaryAndStepAlongParabola","Branch 0. Step will not be computed if Safety > stepMax.");
 		#endif
 		fUCNIsOnBoundary = kFALSE;
-      gGeoManager->GetCurrentNavigator()->Safety();
+      Double_t safety = gGeoManager->GetCurrentNavigator()->Safety();
       // -- If proposed step less than safety, nothing to check
-      if (gGeoManager->GetCurrentNavigator()->GetSafeDistance() > gGeoManager->GetCurrentNavigator()->GetStep() + fgTolerance) return gGeoManager->GetCurrentNavigator()->GetCurrentNode();
+      if (stepMax + TGeoShape::Tolerance() < safety) return gGeoManager->GetCurrentNavigator()->GetCurrentNode();
    }   
    
 	// -- If we are on the boundary step off it by tolerance
-	Double_t extra = (fUCNIsOnBoundary)?fgTolerance:0.0;
+	Double_t extra = (fUCNIsOnBoundary) ? fgTolerance:0.0;
    
-/*	#ifdef VERBOSE_MODE
-		cout << "FNBASAP - Is On Boundary?: " << gGeoManager->GetCurrentNavigator()->IsUCNOnBoundary() << endl;
+	#ifdef VERBOSE_MODE
+		cout << "FNBASAP - Is On Boundary?: " << this->IsUCNOnBoundary() << endl;
 		cout << "FNBASAP - Current Point: X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] << "\t" << "Z: " << currentPoint[2] << endl;
 		cout << "FNBASAP - Make microstep off boundary by amount: " << extra << endl;
 	#endif
@@ -1161,10 +1162,10 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 	gGeoManager->GetCurrentNavigator()->SetCurrentPoint(currentPoint);
 	
 	#ifdef VERBOSE_MODE
-		cout << "FNBASAP - Is On Boundary?: " << gGeoManager->GetCurrentNavigator()->IsUCNOnBoundary() << endl;
+		cout << "FNBASAP - Is On Boundary?: " << this->IsUCNOnBoundary() << endl;
 		cout << "FNBASAP - New Current Point: X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] << "\t" << "Z: " << currentPoint[2] << endl;
 	#endif
-*/	
+	
 	gGeoManager->GetCurrentNavigator()->GetHMatrix()->CopyFrom(gGeoManager->GetCurrentNavigator()->GetCurrentMatrix());
    	
 	// *********************************************************************
@@ -1297,7 +1298,7 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 		cout << "FNBASAP - Branch 2. Find distance to exit current Volume: " << vol->GetName() << endl;
 		cout << "FNBASAP - Local Field: X: " << localField[0] << "\t" << "Y: " << localField[1] << "\t" << "Z: " << localField[2] << endl;
 		cout << "FNBASAP - Time to boundary: " << tnext << "\t" << "Distance to Boundary: " << snext << endl;
-		cout << "FNBASAP - snext - fStep: " << snext - gGeoManager->GetCurrentNavigator()->GetStep() << endl;
+		cout << "FNBASAP - Abs(snext - fStep): " << TMath::Abs(snext - gGeoManager->GetCurrentNavigator()->GetStep()) << endl;
 	#endif
 	// -- If distance to exiting current node is <= Tolerance value (1e-10) make a small step by gGeoManager->GetCurrentNavigator() tolerance value
 	if (snext <= fgTolerance) {
@@ -1572,6 +1573,27 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 	gGeoManager->GetCurrentNavigator()->SetStep(gGeoManager->GetCurrentNavigator()->GetStep() + extra);
 	this->SetStepTime(this->GetStepTime() + extra);
 	
+	gGeoManager->GetCurrentNavigator()->GetCurrentMatrix()->MasterToLocal(currentPoint, &localPoint[0]);
+   gGeoManager->GetCurrentNavigator()->GetCurrentMatrix()->MasterToLocalVect(currentVelocity, &localVelocity[0]);
+	
+	#ifdef VERBOSE_MODE		
+		cout << "---------------------------------------" << endl;
+		cout << "Final Global Coordinates: " << endl;
+		cout << "X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] << "\t" << "Z: " << currentPoint[2] << endl;
+		cout << "Vx: " << currentVelocity[0] << "\t" << "Vy: " << currentVelocity[1] << "\t" << "Vz: " << currentVelocity[2] << endl;
+		cout << "Current Volume: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
+		cout << "Current Volume contains: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->Contains(currentPoint) << endl;
+		cout << "---------------------------------------" << endl;
+		cout << "Final Local Coordinates: " << endl;
+		gGeoManager->GetCurrentNavigator()->GetCurrentMatrix()->Print();
+		cout << "X: " << localPoint[0] << "\t" << "Y: " << localPoint[1] << "\t" << "Z: " << localPoint[2] << endl;
+		cout << "Vx: " << localVelocity[0] << "\t" << "Vy: " << localVelocity[1] << "\t" << "Vz: " << localVelocity[2] << endl;
+		cout << "Current Volume: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
+		cout << "Current Volume contains: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->Contains(localPoint) << endl;
+		cout << "---------------------------------------" << endl;
+	#endif
+	
+	
 	// *********************************************************************
 	// -- BRANCH 4
 	// -- Final check on results of above
@@ -1600,13 +1622,18 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 		}   
       if (gGeoManager->GetCurrentNavigator()->GetLevel()) gGeoManager->GetCurrentNavigator()->CdUp();
       else        skip = 0;
-//      is_assembly = fCurrentNode->GetVolume()->IsAssembly();
-//      while (fLevel && is_assembly) {
-//         gGeoManager->GetCurrentNavigator()->CdUp();
-//         is_assembly = fCurrentNode->GetVolume()->IsAssembly();
-//         skip = fCurrentNode;
-//      }   
-      return gGeoManager->GetCurrentNavigator()->CrossBoundaryAndLocate(kFALSE, skip);
+		TGeoNode* finalNode = gGeoManager->GetCurrentNavigator()->CrossBoundaryAndLocate(kFALSE, skip);
+		#ifdef VERBOSE_MODE		
+      	cout << "FNBASAP - Final Node: " << finalNode->GetName() << endl;
+			cout << "Final Matrix: " << endl;
+			finalNode->GetMatrix()->Print();
+			Double_t finalPoint[3] = {0.,0.,0.};
+			finalNode->GetMatrix()->MasterToLocal(currentPoint, &finalPoint[0]);
+			cout << "Final Local X: " << finalPoint[0] << "\t" << "Y: " << finalPoint[1] << "\t" << "Z: " << finalPoint[2] << endl;
+			cout << "Final Volume Contains Point: " << finalNode->GetVolume()->Contains(finalPoint) << endl;
+			cout << "---------------------------------------" << endl;
+		#endif
+		return finalNode;
    }   
    current = gGeoManager->GetCurrentNavigator()->GetCurrentNode();   
    gGeoManager->GetCurrentNavigator()->CdDown(icrossed);
@@ -1658,13 +1685,21 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 	#endif
 	
 	// -- Check before step is made whether we are in the node we should be in
-	if (gGeoManager->GetCurrentNavigator()->IsSameLocation(particle->Vx(), particle->Vy(),particle->Vz()) == kFALSE) {
+/*	if (gGeoManager->GetCurrentNavigator()->IsSameLocation(particle->Vx(), particle->Vy(),particle->Vz()) == kFALSE) {
 		Error("MakeStep","BEFORE STEP: Particle is not in the correct volume!");
 		cout << "TrackId: " << gGeoManager->GetCurrentTrack()->GetId() << "\t";
 		cout << "Current Volume: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
+		gGeoManager->GetCurrentNavigator()->FindNode();
+		cout << "Actual Volume: "    << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
 		return kFALSE;
 	}
 	
+	TUCNGeoMaterial* initialMaterial = static_cast<TUCNGeoMaterial*>(gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetMedium()->GetMaterial());
+	if (initialMaterial->IsTrackingMaterial() == kFALSE) {
+		Error("MakeStep", "Initial Material is %s. Particle is inside a boundary.",initialMaterial->GetName());
+		return kFALSE;
+	}
+*/	
 	#ifdef VERBOSE_MODE	
 		cout << "------------------- START OF STEP ----------------------" << endl;
 		cout << "Initial Steptime (s): " << this->GetStepTime() << endl;
@@ -1690,48 +1725,53 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			return kFALSE;
 		}
 		// TODO: UPDATE CLASS DATA MEMBERS NOW LIKE fUCNNextNode
-		// - Calculate the time travelled
+		// - Calculate the time travelled (approximately)
 		assert(particle->Velocity() > 0.0);
 		Double_t timeTravelled = gGeoManager->GetCurrentNavigator()->GetStep()/particle->Velocity(); 
 		this->SetStepTime(timeTravelled);
 	} else {
+		TGeoNode* initialNode = gGeoManager->GetCurrentNode();
 		
-		// -- Check whether the routine FindNextBoundaryAlongParabola returns a steptime different from
-		// -- FindNextBoundaryAndStepAlongParabola
-		const Double_t initialStepTime = this->GetStepTime();
-		const Double_t initialStep = gGeoManager->GetStep();
-		
-		if (!(this->FindNextBoundaryAlongParabola(track, gravField, this->GetStepTime(), this->IsUCNOnBoundary()))) {
-			Error("MakeStep", "FindNextBoundaryAlongParabola has failed to find the next node");
-			return kFALSE;
-		}
-		const Double_t firstStepTime = this->GetStepTime();
-		const Double_t firstStep = gGeoManager->GetStep();
-		
-		gGeoManager->SetStep(initialStep);
-		this->SetStepTime(initialStepTime);
-		
-		if (!(this->FindNextBoundaryAndStepAlongParabola(track, gravField, this->GetStepTime()))) {
+		TGeoNode* boundary = this->FindNextBoundaryAndStepAlongParabola(track, gravField, this->GetStepTime());
+		if (!(boundary)) {
 			Error("MakeStep", "FindNextBoundaryAndStepAlongParabola has failed to find the next node");
 			return kFALSE;	
 		}
 		
-		const Double_t finalStepTime = this->GetStepTime();
-		const Double_t finalStep = gGeoManager->GetStep();
+		if (boundary != gGeoManager->GetCurrentNode()) {
+			Error("MakeStep","Boundary returned is not the same as current Node");
+			return kFALSE;
+		}
 		
-		if (TMath::Abs(finalStep - firstStep) > 2.*TGeoShape::Tolerance()) {
-			cout << TMath::Abs(finalStep - firstStep) << endl;
-			cout << "Test Step: " << firstStep << "\t" << "Real Step: " << finalStep << endl;
-			cout << "Test StepTime: " << firstStepTime << "\t" << "Real StepTime: " << finalStepTime << endl;
-		}	
+		Double_t* point = const_cast<Double_t*>(gGeoManager->GetCurrentNavigator()->GetCurrentPoint());
+		Double_t localPoint[3] = {0.,0.,0.};
+		TGeoMatrix* matrix = gGeoManager->GetCurrentNavigator()->GetCurrentMatrix();
+		matrix->MasterToLocal(point,&localPoint[0]);
+		
+		#ifdef VERBOSE_MODE	
+			cout << "---------------------------------------" << endl;
+			cout << "Global Point - X: " << point[0] << "\t" << "Y: " << point[1] << "\t" << "Z: " << point[2] << endl;  
+			cout << "Current Volume: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
+			matrix->Print();
+			cout << "Local Point - X: " << localPoint[0] << "\t" << "Y: " << localPoint[1] << "\t" << "Z: " << localPoint[2] << endl;  
+			cout << "Is Same Location: " << gGeoManager->GetCurrentNavigator()->IsSameLocation(particle->Vx(), particle->Vy(),particle->Vz()) << endl;
+			cout << "TrackId: " << gGeoManager->GetCurrentTrack()->GetId() << "\t" << endl;
+			cout << "---------------------------------------" << endl;
+		#endif
+		
+		if (boundary->GetVolume()->Contains(localPoint) == kFALSE) {
+			Error("MakeStep","After Step: Current Volume doesn't contain current point!");
+			cout << "Boundary: " << boundary->GetName() << "\t";
+			cout << "Contains Current Point: " << boundary->GetVolume()->Contains(const_cast<Double_t*>(gGeoManager->GetCurrentNavigator()->GetCurrentPoint())) << endl;
+			cout << "Initial Node: " << initialNode->GetName() << "\t";
+			cout << "Initial Matrix: " << endl;
+			initialNode->GetMatrix()->Print();
+			
+			cout << "Initial Contains Current Point: " << initialNode->GetVolume()->Contains(const_cast<Double_t*>(gGeoManager->GetCurrentNavigator()->GetCurrentPoint())) << endl;
+			cout << "Real Volume: "    << gGeoManager->GetCurrentNavigator()->FindNode()->GetName() << endl;
+			return kFALSE;
+		}
 	}
-	
-	// -- Sample Magnetic Field if there is one	
-	if (magField != NULL) {
-		const Double_t integratedField = magField->IntegratedField(this->GetStepTime(), particle, gravField);
-		particle->SampleMagField(integratedField, this->GetStepTime());	
-	}
-	
 	// -- Update track/particle properties
 	this->UpdateTrack(track, this->GetStepTime(), gravField);
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -1753,13 +1793,15 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		cout << "-----------------------------" << endl << endl;
 	#endif	
 	
-	cout << "Is Same Location: " << gGeoManager->GetCurrentNavigator()->IsSameLocation(particle->Vx(), particle->Vy(),particle->Vz()) << endl;
-	gGeoManager->GetCurrentNavigator()->FindNode();
-	cout << "Final Volume (Updated): "    << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
-	
-	
+	// -- Sample Magnetic Field if there is one	
+//	if (magField != NULL) {
+//		const Double_t integratedField = magField->IntegratedField(this->GetStepTime(), particle, gravField);
+//		particle->SampleMagField(integratedField, this->GetStepTime());	
+//	}
+
 	// -- Get the current material we are in to determine what to do next
 	TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetMedium()->GetMaterial());
+
 	// -- Get the normal vector to the boundary
 	Double_t* normal = 0;
 	if (gravField) {
@@ -1825,6 +1867,25 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		}
 	}
 	
+/*	cout << "-------------------------------------------------" << endl;
+	Double_t* point = const_cast<Double_t*>(gGeoManager->GetCurrentNavigator()->GetCurrentPoint());
+	cout << "Global Point - X: " << point[0] << "\t" << "Y: " << point[1] << "\t" << "Z: " << point[2] << endl;  
+	Double_t localPoint[3] = {0.,0.,0.};
+	cout << "Current Volume: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
+	TGeoMatrix* matrix = gGeoManager->GetCurrentNavigator()->GetCurrentMatrix();
+	matrix->Print();
+	matrix->MasterToLocal(point,&localPoint[0]);
+	cout << "Local Point - X: " << localPoint[0] << "\t" << "Y: " << localPoint[1] << "\t" << "Z: " << localPoint[2] << endl;  
+	
+	if (gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->Contains(localPoint) == kFALSE) {
+		Error("MakeStep","Current Volume doesn't contain current point!");
+		cout << "Current Volume: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << "\t";
+		cout << "Contains Current Point: " << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->Contains(const_cast<Double_t*>(gGeoManager->GetCurrentNavigator()->GetCurrentPoint())) << endl;
+		cout << "Real Volume: "    << gGeoManager->GetCurrentNavigator()->FindNode()->GetName() << endl;
+		return kFALSE;
+	}
+	cout << "-------------------------------------------------" << endl;
+	
 	// -- Check that the current point is where we say it is (ie: in the path we just cd() to)
 	if (gGeoManager->GetCurrentNavigator()->IsSameLocation(particle->Vx(), particle->Vy(),particle->Vz()) == kFALSE) {
 		Error("MakeStep","AFTER STEP: Particle %i is not in the correct volume!", gGeoManager->GetCurrentTrack()->GetId());
@@ -1834,7 +1895,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		cout << "Safety: " << gGeoManager->GetCurrentNavigator()->Safety() << endl;
 		return kFALSE;
 	}
-	
+*/	
 	return kTRUE;
 }
 
@@ -1911,16 +1972,6 @@ Bool_t TUCNRun::Bounce(TVirtualGeoTrack* track, const Double_t* normal, TUCNGeoM
 		norm[1] = -norm[1];
 		norm[2] = -norm[2];
 	}
-	
-	// -- Move point back into the tracking volume along the normal direction by 2*times the tolerance
-	Double_t pos[3] = {navigator->GetCurrentPoint()[0], navigator->GetCurrentPoint()[1], navigator->GetCurrentPoint()[2]};
-	pos[0] = pos[0] + norm[0]*2.0*TGeoShape::Tolerance();
-	pos[1] = pos[1] + norm[1]*2.0*TGeoShape::Tolerance();
-	pos[2] = pos[2] + norm[2]*2.0*TGeoShape::Tolerance();
-	
-	// -- Set the new point
-	navigator->SetCurrentPoint(pos);
-
 	
 	// -- Calculate Probability of diffuse reflection
 	Double_t fermiPotential = wallMaterial->FermiPotential();
