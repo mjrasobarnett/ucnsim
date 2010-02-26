@@ -67,7 +67,7 @@ Double_t TUCNUniformMagField::FieldStrength(const Double_t* /*pos*/) const
 }
 
 //_____________________________________________________________________________
-Double_t TUCNUniformMagField::IntegratedField(const Double_t stepTime, const TUCNParticle* initialState, const TUCNGravField* gravField) const
+Double_t TUCNUniformMagField::IntegratedField(const Double_t /*stepTime*/, const TUCNParticle* /*initialState*/, const TUCNGravField* /*gravField*/) const
 {
 	// Calculate the integrated field strength along the path defined by stepTime and initialState
 	// This only works for vertical Tube setup currently

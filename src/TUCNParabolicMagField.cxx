@@ -98,37 +98,7 @@ Double_t TUCNParabolicMagField::IntegratedField(const Double_t stepTime, const T
 	Double_t vx = initialState->VelocityX();
 	Double_t y0 = initialState->Vy();
 	Double_t vy = initialState->VelocityY();
-	
-	Double_t r = TMath::Sqrt(x0*x0 + y0*y0);
-//	cout << "r/R: " << r/fFieldRadius << "(r/R)^2: " << r*r/(fFieldRadius*fFieldRadius) << endl;
-	
-	// -- Calculate integrated field
-	
-	// Currently this is wrong. Needs to be corrected for the LOCAL field vector, and gx, gy, not just g. 
-	// For now we just assume the volume is set-up as normal, and use the non-grav field case (equivalent to vertical cylinder with grav field along z)
-/*	if (gravField) {
-		// Intgrate along gravitational trajectory
-		Double_t g = gravField->GravAcceleration();
-		Double_t term1 = (fBMax - alpha*(x0*x0 + y0*y0))*stepTime;
-		Double_t term2 = -1.*alpha*(x0*vx + y0*vy)*stepTime*stepTime;
-		Double_t term3 = -1.*(alpha/3.)*(vx*vx + vy*vy - g*(x0 + y0))*TMath::Power(stepTime, 3.0);
-		Double_t term4 = (alpha*g/4.)*(vx + vy)*TMath::Power(stepTime, 4.0);
-		Double_t term5 = -1.*(alpha*g/10.)*TMath::Power(stepTime, 5.0);
-		
-		integratedField = term1 + term2 + term3 + term4 + term5;
-		return integratedField;
-		
-	} else {
-		// Integrate along straight line
-		Double_t term1 = (fBMax - alpha*(x0*x0 + y0*y0))*stepTime;
-		Double_t term2 = -1.*alpha*(x0*vx + y0*vy)*stepTime*stepTime;
-		Double_t term3 = -1.*(alpha/3.)*(vx*vx + vy*vy)*TMath::Power(stepTime, 3.0);
-		
-		integratedField = term1 + term2 + term3;
-		return integratedField;
-	}
-*/
-	
+
 	// Integrate along straight line
 	Double_t term1 = (fBMax - alpha*(x0*x0 + y0*y0))*stepTime;
 	Double_t term2 = -1.*alpha*(x0*vx + y0*vy)*stepTime*stepTime;
