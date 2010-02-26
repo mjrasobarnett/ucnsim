@@ -83,7 +83,6 @@ Int_t simulation_geom() {
 		Char_t sourceMatrixName[20];
 		sprintf(sourceMatrixName, "SourceMatrix%d", segNum); 
 		segmentMat.SetName(sourceMatrixName);
-		segmentMat.RegisterYourself();
 		chamber->AddNode(sourceSeg, segNum, new TGeoHMatrix(segmentMat));
 		segmentDisplacement += 2.*sourceSegHalfLength; // Shift next segment along by length of segment
 	}
