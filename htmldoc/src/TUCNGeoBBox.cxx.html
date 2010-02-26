@@ -1,0 +1,676 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@pcroot.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Jun 18 00:10:41 2009            -->
+<!--                                             -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>TUCNGeoBBox - source file</title>
+<meta name="rating" content="General" />
+<meta name="objecttype" content="Manual" />
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, windows, c++, html, rene brun, fons rademakers, cern" />
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis." />
+<link rel="stylesheet" type="text/css" href="../ROOT.css" id="ROOTstyle" />
+<script type="text/javascript" src="../ROOT.js"></script>
+</head>
+<body  onload="javascript:SetValuesFromCookie();">
+<pre class="code">
+<span class="comment">// <a href="../TUCNGeoBBox.html">TUCNGeoBBox</a></span>
+<span class="comment">// Author: Matthew Raso-Barnett  22/05/2009</span>
+
+<span class="cpp">#include &lt;stdexcept&gt;</span>
+
+<span class="cpp">#include "TMath.h"</span>
+<span class="cpp">#include "TParticle.h"</span>
+<span class="cpp">#include "TGeoManager.h"</span>
+<span class="cpp">#include "TVirtualGeoTrack.h"</span>
+<span class="cpp">#include "TGeoBBox.h"</span>
+
+
+<span class="cpp">#include "<a href="../TUCNGeoManager.h">TUCNGeoManager.h</a>"</span>
+<span class="cpp">#include "<a href="../TUCNParticle.h">TUCNParticle.h</a>"</span>
+
+<span class="cpp">#include "<a href="../TUCNGeoBBox.h">TUCNGeoBBox.h</a>"</span>
+
+<span class="keyword">using</span> <span class="keyword">namespace</span> std;
+
+<span class="comment">//#define VERBOSE_MODE</span>
+
+ClassImp(<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>)
+   
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="sv3ExB"></a><a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../TUCNGeoBBox.html#TUCNGeoBBox:TUCNGeoBBox" title="TUCNGeoBBox TUCNGeoBBox::TUCNGeoBBox() or overloads">TUCNGeoBBox</a>()
+{
+<span class="comment">// Default constructor</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNGeoBBox"</span>, <span class="string">"Default Constructor"</span>);
+}   
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="Xx3N7"></a><a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../TUCNGeoBBox.html#TUCNGeoBBox:TUCNGeoBBox" title="TUCNGeoBBox TUCNGeoBBox::TUCNGeoBBox() or overloads">TUCNGeoBBox</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> dx, <a href="../ListOfTypes.html#Double_t">Double_t</a> dy, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz, <a href="../ListOfTypes.html#Double_t">Double_t</a> *origin)
+         	:<a href="../#TGeoBBox:TGeoBBox" title="TGeoBBox TGeoBBox::TGeoBBox() or overloads">TGeoBBox</a>(dx, dy, dz, origin)
+{
+<span class="comment">// Constructor where half-lengths are provided.</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNGeoBBox"</span>, <span class="string">"Constructor"</span>);
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="bWJi."></a><a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../TUCNGeoBBox.html#TUCNGeoBBox:TUCNGeoBBox" title="TUCNGeoBBox TUCNGeoBBox::TUCNGeoBBox() or overloads">TUCNGeoBBox</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <a href="../ListOfTypes.html#Double_t">Double_t</a> dx, <a href="../ListOfTypes.html#Double_t">Double_t</a> dy, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz, <a href="../ListOfTypes.html#Double_t">Double_t</a> *origin)
+         	:<a href="../#TGeoBBox:TGeoBBox" title="TGeoBBox TGeoBBox::TGeoBBox() or overloads">TGeoBBox</a>(name, dx, dy, dz, origin)
+{
+<span class="comment">// Constructor with shape name.</span>
+   <a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNGeoBBox"</span>, <span class="string">"Constructor"</span>);
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="NMzDo"></a><a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../TUCNGeoBBox.html#TUCNGeoBBox:TUCNGeoBBox" title="TUCNGeoBBox TUCNGeoBBox::TUCNGeoBBox() or overloads">TUCNGeoBBox</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> *param)
+         	:<a href="../#TGeoBBox:TGeoBBox" title="TGeoBBox TGeoBBox::TGeoBBox() or overloads">TGeoBBox</a>(param)
+{
+<span class="comment">// Constructor based on the array of parameters</span>
+   <a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNGeoBBox"</span>, <span class="string">"Constructor"</span>);
+
+}   
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="yKcyID"></a><a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../TUCNGeoBBox.html#TUCNGeoBBox:_TUCNGeoBBox" title="void TUCNGeoBBox::~TUCNGeoBBox()">~TUCNGeoBBox</a>()
+{
+<span class="comment">// Destructor</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNGeoBBox"</span>, <span class="string">"Destructor"</span>);
+}
+
+
+ <span class="comment">//_____________________________________________________________________________</span>
+<a name="q3_7wB"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromInsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromInsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromInsideAlongParabola</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a>* point, <a href="../ListOfTypes.html#Double_t">Double_t</a>* velocity, <a href="../ListOfTypes.html#Double_t">Double_t</a>* field, <a href="../ListOfTypes.html#Double_t">Double_t</a> boundarytime, <a href="../ListOfTypes.html#Double_t">Double_t</a> stepsize, <a href="../ListOfTypes.html#Int_t">Int_t</a> iact, <a href="../ListOfTypes.html#Double_t">Double_t</a> *safe) <span class="keyword">const</span>
+{
+	<span class="comment">// Compute distance from inside point to surface of the box.</span>
+	<span class="comment">// Boundary safe algorithm.</span>
+<span class="cpp">#ifdef VERBOSE_MODE		</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistFromInsideAlongParabola"</span>,<span class="string">"Starting Method. iact: %i - step: %f"</span>, iact, stepsize);
+<span class="cpp">#endif</span>
+
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> smin,saf[6];
+   <a href="../ListOfTypes.html#Double_t">Double_t</a> newpt[3];
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> i;
+
+	<span class="comment">// -- Determining minimum distances to all boundaries from point</span>
+   <span class="keyword">for</span> (i=0; i&lt;3; i++) newpt[i] = point[i] - fOrigin[i];
+   saf[0] = fDX+newpt[0];
+   saf[1] = fDX-newpt[0];
+   saf[2] = fDY+newpt[1];
+   saf[3] = fDY-newpt[1];
+   saf[4] = fDZ+newpt[2];
+   saf[5] = fDZ-newpt[2];
+
+   <span class="keyword">if</span> (iact&lt;3 &amp;&amp; safe) {
+      smin = saf[0];
+      <span class="comment">// compute safe distance</span>
+      <span class="keyword">for</span> (i=1;i&lt;6;i++) <span class="keyword">if</span> (saf[i] &lt; smin) smin = saf[i];
+		*safe = smin;
+      <span class="keyword">if</span> (smin&lt;0) *safe = 0.0;
+      <span class="keyword">if</span> (iact==0) <span class="keyword">return</span> TGeoShape::<a href="../#TGeoShape:Big" title="Double_t TGeoShape::Big()">Big</a>();
+      <span class="keyword">if</span> (iact==1 &amp;&amp; stepsize&lt;*safe) <span class="keyword">return</span> TGeoShape::<a href="../#TGeoShape:Big" title="Double_t TGeoShape::Big()">Big</a>();
+   }
+	
+<span class="comment">/*	// This is commented out as it appeared to cause problems and needs more checking and work before it should be included
+	
+	// -----------------------------------------------------------------
+	// Need protection in case point is actually outside the box!!!
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> check[3];
+	check[0] = fDX - TMath::Abs(newpt[0]);
+	check[1] = fDY - TMath::Abs(newpt[1]);
+	check[2] = fDZ - TMath::Abs(newpt[2]);
+	
+	<a href="../ListOfTypes.html#Bool_t">Bool_t</a> outside = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+	
+	for (<a href="../ListOfTypes.html#Int_t">Int_t</a> j=0; j&lt;3; j++) {
+		if (check[j] &gt; 0.0) {	
+			outside = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+		} else {
+			outside = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+			break;
+		}
+	}
+	
+	if (outside) {
+		return 0;
+	}
+*/</span>	<span class="comment">// -----------------------------------------------------------------</span>
+	
+	<span class="comment">// Compute distance travelled along parabola in time boundarytime</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> distance = <span class="keyword">this</span>-&gt;<a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistanceAlongParabola" title="Double_t TUCNGeoBBox::DistanceAlongParabola(Double_t* velocity,Double_t* field,Double_t time)">DistanceAlongParabola</a>(velocity, field, boundarytime);
+	
+	<span class="keyword">if</span> (distance &lt;= 0.) {
+		<span class="keyword">throw</span> runtime_error(<span class="string">"Distance calculated is negative"</span>); <span class="comment">// If distance is zero or negative then there must be a problem with calculation</span>
+	}
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+   	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistFromInsideAlongParabola"</span>,<span class="string">"End: Distance returning is: %e"</span>, distance);
+	<span class="cpp">#endif</span>
+	<span class="keyword">return</span> distance;
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="kI9cC"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromInsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromInsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromInsideAlongParabola</a>(<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> *point,<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> *dir, <a href="../ListOfTypes.html#Double_t">Double_t</a> dx, <a href="../ListOfTypes.html#Double_t">Double_t</a> dy, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz, <span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> *origin, <a href="../ListOfTypes.html#Double_t">Double_t</a> stepmax)
+{
+<span class="comment">//	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistFromInsideAlongParabola"</span>,<span class="string">"Currently has no implimentation - returning method DistFromInside"</span>);</span>
+	<span class="keyword">return</span> <a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../#TGeoBBox:DistFromInside" title="Double_t TGeoBBox::DistFromInside(Double_t* point,Double_t* dir,Int_t iact=1,Double_t step=TGeoShape::Big(),Double_t* safe=0) or overloads">DistFromInside</a>(point, dir, dx, dy, dz, origin, stepmax);
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="cGE15"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromOutsideAlongParabola</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a>* point, <a href="../ListOfTypes.html#Double_t">Double_t</a>* velocity, <a href="../ListOfTypes.html#Double_t">Double_t</a>* field, <a href="../ListOfTypes.html#Double_t">Double_t</a> boundarytime, <a href="../ListOfTypes.html#Double_t">Double_t</a> stepsize, <a href="../ListOfTypes.html#Int_t">Int_t</a> iact, <a href="../ListOfTypes.html#Double_t">Double_t</a> *safe) <span class="keyword">const</span>
+{
+	<span class="comment">// Compute distance from outside point to surface of the box.</span>
+	<span class="comment">// Boundary safe algorithm.</span>
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistFromOutsideAlongParabola"</span>,<span class="string">"Starting Method. iact: %i - step: %f"</span>, iact, stepsize);
+	<span class="cpp">#endif</span>
+	
+	<a href="../ListOfTypes.html#Bool_t">Bool_t</a> in = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+   <a href="../ListOfTypes.html#Double_t">Double_t</a> saf[3], par[3], newpt[3];
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> i;
+	
+	<span class="comment">// compute distance between point and boundaries. compare with stepsize</span>
+	<span class="keyword">for</span> (i=0; i&lt;3; i++) newpt[i] = point[i] - fOrigin[i];
+   par[0] = fDX;
+   par[1] = fDY;
+   par[2] = fDZ;
+   <span class="keyword">for</span> (i=0; i&lt;3; i++) {
+		saf[i] = TMath::Abs(newpt[i]) - par[i];       <span class="comment">// Get min. distance safety to boundary</span>
+      <span class="keyword">if</span> (saf[i] &gt;= stepsize) {
+			<span class="cpp">#ifdef VERBOSE_MODE		</span>
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistFromOutsideAlongParabola"</span>,<span class="string">"Safety &gt; Step. Returning TGeoShape::Big()"</span>);
+			<span class="cpp">#endif</span>
+			<span class="keyword">return</span> TGeoShape::<a href="../#TGeoShape:Big" title="Double_t TGeoShape::Big()">Big</a>();  <span class="comment">// If this safety is greater than the step size then just return <a href="../#TGeoShape:Big" title="Double_t TGeoShape::Big()">Big</a>()</span>
+      }
+		<span class="keyword">if</span> (in &amp;&amp; saf[i] &gt; 0) in = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;				  <span class="comment">// </span>
+   }
+   
+   <span class="keyword">if</span> (iact&lt;3 &amp;&amp; safe) {  <span class="comment">// iact &gt; 3 - compute only the distance to exiting, ignoring anything else</span>
+      <span class="comment">// compute safe distance</span>
+      <span class="keyword">if</span> (in) {
+         *safe = 0.0;
+      } <span class="keyword">else</span> {   
+         *safe = saf[0]; 
+         <span class="keyword">if</span> (saf[1] &gt; *safe) *safe = saf[1];
+         <span class="keyword">if</span> (saf[2] &gt; *safe) *safe = saf[2];     <span class="comment">// Store the largest safety?</span>
+      }   
+      <span class="keyword">if</span> (iact==0) <span class="keyword">return</span> TGeoShape::<a href="../#TGeoShape:Big" title="Double_t TGeoShape::Big()">Big</a>();      <span class="comment">// iact = 0 - compute only the safety distance and fill it at the location given by SAFE</span>
+      <span class="keyword">if</span> (iact==1 &amp;&amp; stepsize&lt;*safe) <span class="keyword">return</span> TGeoShape::<a href="../#TGeoShape:Big" title="Double_t TGeoShape::Big()">Big</a>(); 
+		<span class="comment">// iact = 1  - a proposed STEP is supplied. The safe distance is computed first. </span>
+		<span class="comment">// If this is bigger than STEP than the proposed step is approved and returned by the method </span>
+		<span class="comment">// since it does not cross the shape boundaries. Otherwise, the distance to exiting the shape is </span>
+		<span class="comment">// computed and returned.</span>
+   }
+
+<span class="comment">/*	// !!!! I dont understand this fully yet so it is commented out
+	// protection in case point is actually inside box
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> j;
+	if (in) {
+		j = 0;
+      <a href="../ListOfTypes.html#Double_t">Double_t</a> ss = saf[0];
+      if (saf[1]&gt;ss) {
+         ss = saf[1];
+         j = 1;
+      }
+      if (saf[2]&gt;ss) {
+			j = 2;
+      }
+		if (newpt[j]*velocity[j]&gt;0) {
+			<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistFromOutsideAlongParabola"</span>,<span class="string">"protection in case point is inside box. return TGeoShape::Big()"</span>);
+			return TGeoShape::<a href="../#TGeoShape:Big" title="Double_t TGeoShape::Big()">Big</a>(); // in fact exiting
+      }
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistFromOutsideAlongParabola"</span>,<span class="string">"protection in case point is inside box. return 0"</span>);
+		return 0.0;   
+   }
+*/</span> 
+	<span class="keyword">if</span> (boundarytime &lt;= 0.) {
+		<span class="cpp">#ifdef VERBOSE_MODE		</span>
+			<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistFromOutsideAlongParabola"</span>,<span class="string">"No boundary reached along parabola. Returning Big()"</span>);
+		<span class="cpp">#endif</span>
+		<span class="keyword">return</span> TGeoShape::<a href="../#TGeoShape:Big" title="Double_t TGeoShape::Big()">Big</a>();
+	}
+	
+	<span class="comment">// Compute distance travelled along parabola in time boundarytime</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> distance = <span class="keyword">this</span>-&gt;<a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistanceAlongParabola" title="Double_t TUCNGeoBBox::DistanceAlongParabola(Double_t* velocity,Double_t* field,Double_t time)">DistanceAlongParabola</a>(velocity, field, boundarytime);
+	
+	<span class="keyword">if</span> (distance &lt;= 0.) {
+		<span class="keyword">throw</span> runtime_error(<span class="string">"Distance calculated is negative"</span>); <span class="comment">// If distance is zero or negative then there must be a problem with calculation</span>
+	}
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistFromOutsideAlongParabola"</span>,<span class="string">"End: Distance returning is: %e"</span>, distance);
+   <span class="cpp">#endif</span>
+	<span class="keyword">return</span> distance;
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="sAbH6C"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromOutsideAlongParabola</a>(<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> *point,<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> *dir, <a href="../ListOfTypes.html#Double_t">Double_t</a> dx, <a href="../ListOfTypes.html#Double_t">Double_t</a> dy, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz, <span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> *origin, <a href="../ListOfTypes.html#Double_t">Double_t</a> stepmax)
+{
+<span class="comment">//	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistFromOutsideAlongParabola"</span>,<span class="string">"Currently has no implimentation - returning DistFromOutside"</span>);</span>
+	<span class="keyword">return</span> <a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../#TGeoBBox:DistFromOutside" title="Double_t TGeoBBox::DistFromOutside(Double_t* point,Double_t* dir,Int_t iact=1,Double_t step=TGeoShape::Big(),Double_t* safe=0) or overloads">DistFromOutside</a>(point, dir, dx, dy, dz, origin, stepmax);
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="hxFXxE"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistanceAlongParabola" title="Double_t TUCNGeoBBox::DistanceAlongParabola(Double_t* velocity,Double_t* field,Double_t time)">DistanceAlongParabola</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a>* velocity, <a href="../ListOfTypes.html#Double_t">Double_t</a>* field, <a href="../ListOfTypes.html#Double_t">Double_t</a> time) <span class="keyword">const</span>
+{
+	<span class="comment">// The maths for this are in notebook</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> initial_velocity = TMath::Sqrt((velocity[0]*velocity[0]) + (velocity[1]*velocity[1]) + (velocity[2]*velocity[2]));
+	
+	<span class="comment">// Calculate the constants of quadratic equation</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> a, b, c;
+	a = (field[0]*field[0]) + (field[1]*field[1]) + (field[2]*field[2]);
+	b = 2.0*((velocity[0]*field[0]) + (velocity[1]*field[1]) + (velocity[2]*field[2])); 
+	c = initial_velocity*initial_velocity;
+	
+	<span class="cpp">#ifdef VERBOSE_MODE</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistanceAlongParabola"</span>,<span class="string">"Velocity - x: %f, y: %f, z: %f"</span>, velocity[0], velocity[1], velocity[2]);
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistanceAlongParabola"</span>,<span class="string">"Field - x: %f, y: %f, z: %f"</span>, field[0], field[1], field[2]);
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistanceAlongParabola"</span>,<span class="string">"Velocity: %f "</span>, initial_velocity);
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistanceAlongParabola"</span>,<span class="string">"a: %f, b: %f, c: %f"</span>, a, b, c);
+	<span class="cpp">#endif</span>
+	
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> t = 0.; 
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> method1[2], method2[2];
+	
+	<span class="comment">// Method 1 and 2 correspond to the integral of our equation for the distance according to two equivalent methods. </span>
+	<span class="comment">// The array indices simily indicate the integral limits - values for t that we input. </span>
+	
+	<span class="comment">// Eventually kill the second method so we only calculate this once. </span>
+	method1[0] = ((2.0*a*t + b)*TMath::Sqrt(a*t*t + b*t + c))/(4.0*a) + ((4.0*a*c - b*b)*TMath::ASinH((2.0*a*t +b)/TMath::Sqrt(4.0*a*c - b*b)))/(8.0*a*TMath::Sqrt(a));
+	
+	method2[0] = ((2.0*a*t + b)*TMath::Sqrt(a*t*t + b*t + c))/(4.0*a) + ((4.0*a*c - b*b)*TMath::Log(2.0*TMath::Sqrt(a*a*t*t +a*b*t +a*c) + (2.0*a*t) + b))/(8.0*a*TMath::Sqrt(a));
+	
+	t = time;
+	method1[1] = ((2.0*a*t + b)*TMath::Sqrt(a*t*t + b*t + c))/(4.0*a) + ((4.0*a*c - b*b)*TMath::ASinH((2.0*a*t +b)/TMath::Sqrt(4.0*a*c - b*b)))/(8.0*a*TMath::Sqrt(a));
+	
+	method2[1] = ((2.0*a*t + b)*TMath::Sqrt(a*t*t + b*t + c))/(4.0*a) + ((4.0*a*c - b*b)*TMath::Log(2.0*TMath::Sqrt(a*a*t*t +a*b*t +a*c) + (2.0*a*t) + b))/(8.0*a*TMath::Sqrt(a));
+	
+	<span class="comment">// Calculate solution from integral limits</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> solution1, solution2;
+	solution1 = method1[1] - method1[0];
+	solution2 = method2[1] - method2[0];
+	
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> distance = 0.;
+	
+	<span class="keyword">if</span>(TMath::Abs(solution1 - solution2) &gt; 1.e-9) {
+		<a href="../#TObject:Error" title="void TObject::Error(const char* method,const char* msgfmt)">Error</a>(<span class="string">"DistanceAlongParabola"</span>, <span class="string">"Calculating distance along parabola failed. Method 1: %f,   Method2: %f"</span>, solution1, solution2);
+		<span class="keyword">return</span> solution1;
+	} <span class="keyword">else</span> {
+		distance = solution1;
+	}
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"DistanceAlongParabola"</span>, <span class="string">"Distance along parabola to boundary: %e"</span>, distance);
+	<span class="cpp">#endif</span>
+	<span class="keyword">return</span> distance;
+}
+
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="E7dGBD"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../TUCNGeoBBox.html#TUCNGeoBBox:TimeFromInsideAlongParabola" title="Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field)">TimeFromInsideAlongParabola</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a>* point, <a href="../ListOfTypes.html#Double_t">Double_t</a>* velocity, <a href="../ListOfTypes.html#Double_t">Double_t</a>* field) <span class="keyword">const</span>
+{
+	<span class="comment">// Calculate the constants in our quadratic equation for the time, t</span>
+	<span class="comment">// This equation all comes from my notes - just the gravitational motion for an arbitrary grav field.</span>
+	
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>,<span class="string">"Starting Method"</span>);
+	<span class="cpp">#endif</span>
+	
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> t = 0.; <span class="comment">// The smallest time to reach any boundary;</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> boundary[3] = {fDX, fDY, fDZ}; <span class="comment">// Store the coordinates of the box boundaries</span>
+		
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>,<span class="string">"Positive (Local) Boundaries - +X: %f   +Y: %f   +Z: %f"</span>, fDX, fDY, fDZ);
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>,<span class="string">"(Local) point - +X: %f   +Y: %f   +Z: %f"</span>, point[0], point[1], point[2]);
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>,<span class="string">"(Local) velocity - +X: %f   +Y: %f   +Z: %f"</span>, velocity[0], velocity[1], velocity[2]);
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>,<span class="string">"(Local) field direction - +X: %f   +Y: %f   +Z: %f"</span>, field[0], field[1], field[2]);
+	<span class="cpp">#endif</span>
+		
+	<span class="comment">// Loop over x, y, z coords</span>
+	<span class="keyword">for</span> (<a href="../ListOfTypes.html#Int_t">Int_t</a> i=0; i&lt;3; i++) {
+		<span class="comment">// Loop over +/- fDX,fDY,fDZ boundaries</span>
+		<span class="keyword">for</span> (<a href="../ListOfTypes.html#Int_t">Int_t</a> j=0; j&lt;2; j++) {
+			<span class="comment">// Potential Roots of equation</span>
+			<a href="../ListOfTypes.html#Double_t">Double_t</a> tmin = 0; <span class="comment">// Smallest Root</span>
+			<a href="../ListOfTypes.html#Bool_t">Bool_t</a> IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+			<a href="../ListOfTypes.html#Int_t">Int_t</a> numberofsolutions = 0;
+			
+			<span class="comment">// Calculate the constants of quadratic equation</span>
+			<a href="../ListOfTypes.html#Double_t">Double_t</a> a, b, c;
+			a = 0.5*field[i];
+			b = velocity[i]; 
+			c = point[i] - (TMath::Power(-1,j)*boundary[i]);
+			
+			<span class="comment">// This test appeared to be essential when first debugging program to ensure that when sitting on the boundary</span>
+			<span class="comment">// the particle actually stepped off of it, rather than making a NULL step and causing mayhem. </span>
+			<span class="keyword">if</span> (TMath::Abs(c) &lt; TGeoShape::<a href="../#TGeoShape:Tolerance" title="Double_t TGeoShape::Tolerance()">Tolerance</a>()) {
+				c = 0.;
+			}
+			
+			<span class="cpp">#ifdef VERBOSE_MODE		</span>
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>,<span class="string">"a: %e, b: %e, c: %e"</span>, a, b, c);
+			<span class="cpp">#endif</span>
+			<span class="comment">// -- Check if we have a linear, rather than quadratic equation</span>
+			<span class="keyword">if</span> (a == 0.0) {
+				<a href="../ListOfTypes.html#Double_t">Double_t</a> t0 = -c/b;
+				<span class="keyword">if</span> (t0 &lt;= 0.) { 
+					IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+					<span class="cpp">#ifdef VERBOSE_MODE		</span>
+						<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>, <span class="string">"Linear eqn.  -  t0 &lt; 0. Solution is negative!"</span>); 
+					<span class="cpp">#endif</span>
+				} <span class="keyword">else</span> {
+					tmin = t0;
+					IsSolution = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+					numberofsolutions = 1;
+					<span class="cpp">#ifdef VERBOSE_MODE		</span>
+						<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>,<span class="string">"Linear eqn.  -  i: %i, j: %i  -  a == 0 =&gt; Lin. eqn  -   tmin: %e"</span>, i, j, tmin);
+					<span class="cpp">#endif</span>
+				}
+			} <span class="keyword">else</span> {			
+				<span class="comment">// -- Have quadratic equation. Check the discriminant to determine number of roots </span>
+				<a href="../ListOfTypes.html#Double_t">Double_t</a> roottest = b*b - 4*a*c;
+				<span class="cpp">#ifdef VERBOSE_MODE		</span>
+					<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>,<span class="string">"Quad. eqn  -  i: %i, j: %i  -   a: %e, b: %e, c: %e  -  b*b - 4*a*c: %e"</span>, i, j, a, b, c, roottest);
+				<span class="cpp">#endif	</span>
+				<span class="comment">// -- Check the number of roots of equation</span>
+				<span class="comment">// --------------------------------------------------</span>
+				<span class="comment">// -- CASE 1: Two Real Roots</span>
+				<span class="comment">// --------------------------------------------------</span>
+				<span class="keyword">if</span> (roottest &gt; 0.0) {
+					<a href="../ListOfTypes.html#Double_t">Double_t</a> tplus, tminus;
+					IsSolution = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+					numberofsolutions = 2;
+					tplus = (-b + TMath::Sqrt(b*b - 4*a*c))/(2*a);
+					tminus = (-b - TMath::Sqrt(b*b - 4*a*c))/(2*a);
+					<span class="comment">// Determine which root is the smallest, positive number.</span>
+					<span class="keyword">if</span> (tplus &gt; 0. &amp;&amp; tminus &gt; 0.) {
+						<span class="comment">// If both are positive - determine which of two positive roots is the smaller</span>
+						<span class="keyword">if</span> (tminus &lt; tplus) {
+							tmin = tminus;
+						} <span class="keyword">else</span> {
+							tmin = tplus;
+						}
+					} <span class="keyword">else</span> <span class="keyword">if</span> (tplus &gt; 0.) {
+						tmin = tplus;
+					} <span class="keyword">else</span> <span class="keyword">if</span> (tminus &gt; 0.) {
+						tmin = tminus;
+					} <span class="keyword">else</span> {
+						IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+						<span class="cpp">#ifdef VERBOSE_MODE		</span>
+							<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>, <span class="string">"Quad. eqn  -  b*b &gt; 4*a*c but both solution is negative!"</span>); 
+						<span class="cpp">#endif</span>
+					}
+					<span class="cpp">#ifdef VERBOSE_MODE		</span>
+						<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>,<span class="string">"Quad. eqn  -  b*b &gt; 4*a*c   -   t+: %e, t-: %e   -   tmin: %e"</span>, tplus, tminus, tmin);
+					<span class="cpp">#endif</span>
+				} <span class="keyword">else</span> <span class="keyword">if</span> (roottest == 0.0) {
+					<span class="comment">// --------------------------------------------------</span>
+					<span class="comment">// -- CASE 2: One Real Root</span>
+					<span class="comment">// --------------------------------------------------</span>
+					<a href="../ListOfTypes.html#Double_t">Double_t</a> t0 = -b/(2*a);
+					<span class="comment">// Check if root is negative </span>
+					<span class="keyword">if</span> (t0 &lt; 0.) { 
+						<span class="cpp">#ifdef VERBOSE_MODE		</span>
+							<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>, <span class="string">"Quad. eqn  -  b*b = 4*a*c but solution is negative!"</span>); 
+						<span class="cpp">#endif</span>
+						IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+					} <span class="keyword">else</span> {
+						tmin = t0;
+						IsSolution = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+						numberofsolutions = 1;
+					}
+					<span class="cpp">#ifdef VERBOSE_MODE		</span>
+						<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>,<span class="string">"Quad. eqn  -  b*b = 4*a*c   -   t0: %e   -   tmin: %e"</span>, t0, tmin);
+					<span class="cpp">#endif</span>
+				} <span class="keyword">else</span> {
+					<span class="comment">// --------------------------------------------------</span>
+					<span class="comment">// -- CASE 3: No Real Roots</span>
+					<span class="comment">// --------------------------------------------------</span>
+					<span class="cpp">#ifdef VERBOSE_MODE		</span>
+						<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>,<span class="string">"Quad. eqn  -  b*b &lt; 4*a*c   -   tmin: %e"</span>, tmin);
+					<span class="cpp">#endif</span>
+					IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+					numberofsolutions = 0;
+				}
+			}
+			<span class="comment">// If t has no value - set it to first value</span>
+			<span class="keyword">if</span> (t &lt;= 0.) {
+				t = tmin;
+			}
+			<span class="comment">// If there exists a tmin - and tmin is less than t then make that the new shortest time to boundary</span>
+			<span class="keyword">if</span> (IsSolution &amp;&amp; tmin &lt; t) {
+				t = tmin;
+			}
+			<span class="cpp">#ifdef VERBOSE_MODE		</span>
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>,<span class="string">"End of loop  -  i: %i, j: %i   -  Current smallest time:   -   t: %e"</span>, i, j, t);			
+			<span class="cpp">#endif</span>
+		}
+	}
+	
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromInsideAlongParabola"</span>,<span class="string">"Final time:   -   t: %e"</span>, t);
+	<span class="cpp">#endif</span>
+	<span class="keyword">if</span> (t &gt; 0.) { 
+		<span class="keyword">return</span> t;
+	} <span class="keyword">else</span> {
+		<span class="keyword">throw</span> runtime_error(<span class="string">"No positive time to inner boundary found from inside box!"</span>); 
+		<span class="keyword">return</span> 0.;
+	}
+
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="whwTqC"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../TUCNGeoBBox.html#TUCNGeoBBox:TimeFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field)">TimeFromOutsideAlongParabola</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a>* point, <a href="../ListOfTypes.html#Double_t">Double_t</a>* velocity, <a href="../ListOfTypes.html#Double_t">Double_t</a>* field) <span class="keyword">const</span>
+{
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>, <span class="string">"Method implemented"</span>);
+	<span class="cpp">#endif</span>
+	<span class="comment">// Calculate the constants in our quadratic equation for the time, t</span>
+	
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> tfinal = 0.; <span class="comment">// The smallest time to reach any boundary;</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> boundary[3] = {fDX, fDY, fDZ}; <span class="comment">// Store the coordinates of the box boundaries</span>
+	
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>,<span class="string">"Positive (Local) Boundaries - +X: %f   +Y: %f   +Z: %f"</span>, fDX, fDY, fDZ);
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>,<span class="string">"(Local) point - +X: %f   +Y: %f   +Z: %f"</span>, point[0], point[1], point[2]);
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>,<span class="string">"(Local) dir - +X: %f   +Y: %f   +Z: %f"</span>, velocity[0], velocity[1], velocity[2]);
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>,<span class="string">"(Local) field - +X: %f   +Y: %f   +Z: %f"</span>, field[0], field[1], field[2]);
+	<span class="cpp">#endif</span>
+	
+	<span class="comment">// Loop over x, y, z coords</span>
+	<span class="keyword">for</span> (<a href="../ListOfTypes.html#Int_t">Int_t</a> i=0; i&lt;3; i++) {
+		<span class="comment">// Loop over + or - fDX,fDY,fDZ boundaries</span>
+		<span class="keyword">for</span> (<a href="../ListOfTypes.html#Int_t">Int_t</a> j=0; j&lt;2; j++) {
+			<span class="comment">// Potential Roots of equation</span>
+			<a href="../ListOfTypes.html#Double_t">Double_t</a> tmin = 0.; <span class="comment">// Smallest Root</span>
+			<a href="../ListOfTypes.html#Bool_t">Bool_t</a> IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+			<a href="../ListOfTypes.html#Int_t">Int_t</a> numberofsolutions = 0;
+
+			<span class="comment">// Calculate the constants of quadratic equation</span>
+			<a href="../ListOfTypes.html#Double_t">Double_t</a> a, b, c;
+			a = 0.5*field[i];
+			b = velocity[i]; 
+			c = point[i] - (TMath::Power(-1,j)*boundary[i]);
+			
+			<span class="comment">// If a = 0, then equation is linear and not quadratic. Solve. </span>
+			<span class="keyword">if</span> (a == 0.0) {
+				<a href="../ListOfTypes.html#Double_t">Double_t</a> t0 = -c/b;
+				<span class="keyword">if</span> (t0 &lt;= 0.) { 
+					<span class="cpp">#ifdef VERBOSE_MODE		</span>
+						<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>, <span class="string">"Linear eqn.  -  t0 &lt; 0. Solution is negative!"</span>); 
+					<span class="cpp">#endif</span>
+					IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+				} <span class="keyword">else</span> {	
+					<span class="comment">// If time is positive, check that the destination is on the surface and store time				</span>
+					<span class="keyword">if</span> (<a href="../TUCNGeoBBox.html#TUCNGeoBBox:IsNextPointOnSurface" title="Bool_t TUCNGeoBBox::IsNextPointOnSurface(Double_t* point,Double_t* velocity,Double_t* field,Double_t t)">IsNextPointOnSurface</a>(point, velocity, field, t0) == <a href="../ListOfTypes.html#Bool_t">kTRUE</a>) {
+						tmin = t0;
+						IsSolution = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+						numberofsolutions = 1;
+						<span class="cpp">#ifdef VERBOSE_MODE		</span>
+							<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>,<span class="string">"Linear eqn.  -  i: %i, j: %i  -  a == 0 =&gt; Lin. eqn  -   tmin: %e"</span>, i, j, tmin);
+						<span class="cpp">#endif</span>
+					} <span class="keyword">else</span> {
+						IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+					}					
+				}
+			} <span class="keyword">else</span> {			
+				<span class="comment">// Solve quadratic equation</span>
+				<a href="../ListOfTypes.html#Double_t">Double_t</a> roottest = b*b - 4*a*c;
+				<span class="cpp">#ifdef VERBOSE_MODE		</span>
+					<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>,<span class="string">"Quad. eqn - i: %i, j: %i - a: %e, b: %e, c: %e - b*b - 4*a*c: %e"</span>, i, j, a, b, c, roottest);
+				<span class="cpp">#endif</span>
+				<span class="comment">// -- Check the number of roots of equation</span>
+				<span class="keyword">if</span> (roottest &gt; 0.0) {
+					<span class="comment">// ***************************************************************</span>
+					<span class="comment">// -- Two Real Roots</span>
+					<span class="comment">// ***************************************************************</span>
+					<a href="../ListOfTypes.html#Double_t">Double_t</a> tplus = 0, tminus = 0;
+					IsSolution = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+					numberofsolutions = 2;
+					tplus = (-b + TMath::Sqrt(b*b - 4*a*c))/(2*a);
+					tminus = (-b - TMath::Sqrt(b*b - 4*a*c))/(2*a);								
+					
+					<span class="keyword">if</span> (tminus &gt; 0. &amp;&amp; tplus)
+					
+					<span class="comment">// Check to see if tplus is a viable solution. Set tmin = tminus</span>
+					<span class="keyword">if</span> (tplus &gt; 0.) {
+						<span class="keyword">if</span> (<a href="../TUCNGeoBBox.html#TUCNGeoBBox:IsNextPointOnSurface" title="Bool_t TUCNGeoBBox::IsNextPointOnSurface(Double_t* point,Double_t* velocity,Double_t* field,Double_t t)">IsNextPointOnSurface</a>(point, velocity, field, tplus) == <a href="../ListOfTypes.html#Bool_t">kTRUE</a>) {
+							IsSolution = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+							tmin = tplus;
+						} <span class="keyword">else</span> {
+							IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+						}				
+					} <span class="keyword">else</span> {
+						IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+					}
+					<span class="comment">// Check to see if tminus is also a viable solution. Set tmin = tminus if tminus is the smallest of the two solutions</span>
+					<span class="keyword">if</span> (tminus &gt; 0.) {
+						<span class="keyword">if</span> (<a href="../TUCNGeoBBox.html#TUCNGeoBBox:IsNextPointOnSurface" title="Bool_t TUCNGeoBBox::IsNextPointOnSurface(Double_t* point,Double_t* velocity,Double_t* field,Double_t t)">IsNextPointOnSurface</a>(point, velocity, field, tminus) == <a href="../ListOfTypes.html#Bool_t">kTRUE</a>) {
+							<span class="keyword">if</span> (tmin &gt; 0.) {
+								<span class="keyword">if</span> (tminus &lt; tmin) {
+									IsSolution = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+									tmin = tminus;
+								}
+							} <span class="keyword">else</span> {
+								IsSolution = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+								tmin = tminus;
+							}
+						} <span class="keyword">else</span> {
+							IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+						}				
+					} <span class="keyword">else</span> {
+						IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+					}
+					<span class="cpp">#ifdef VERBOSE_MODE		</span>
+						<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>,<span class="string">"Quad. eqn  -  b*b &gt; 4*a*c   -   t+: %e, t-: %e   -   tmin: %e"</span>, tplus, tminus, tmin);							
+					<span class="cpp">#endif</span>
+				} <span class="keyword">else</span> <span class="keyword">if</span> (roottest == 0.0) {
+					<span class="comment">// ***************************************************************</span>
+					<span class="comment">// -- One Real Root</span>
+					<span class="comment">// ***************************************************************		</span>
+					IsSolution = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+					numberofsolutions = 1;
+					<a href="../ListOfTypes.html#Double_t">Double_t</a> t0 = -b/(2*a);
+					<span class="comment">// Check if root is negative </span>
+					<span class="keyword">if</span> (t0 &lt; 0.) { 
+						<span class="cpp">#ifdef VERBOSE_MODE		</span>
+							<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>, <span class="string">"Quad. eqn  -  b*b = 4*a*c but solution is negative!"</span>); 
+						<span class="cpp">#endif</span>
+						IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+					} <span class="keyword">else</span> {
+						<span class="keyword">if</span> (<a href="../TUCNGeoBBox.html#TUCNGeoBBox:IsNextPointOnSurface" title="Bool_t TUCNGeoBBox::IsNextPointOnSurface(Double_t* point,Double_t* velocity,Double_t* field,Double_t t)">IsNextPointOnSurface</a>(point, velocity, field, t0) == <a href="../ListOfTypes.html#Bool_t">kTRUE</a>) {
+							IsSolution = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+							tmin = t0;
+						} <span class="keyword">else</span> {
+							IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+						}
+					}
+					<span class="cpp">#ifdef VERBOSE_MODE		</span>
+						<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>,<span class="string">"Quad. eqn  -  b*b = 4*a*c   -   t0: %e   -   tmin: %e"</span>, t0, tmin);
+					<span class="cpp">#endif</span>
+				} <span class="keyword">else</span> {
+					<span class="comment">// ***************************************************************</span>
+					<span class="comment">// -- No Real Roots</span>
+					<span class="comment">// ***************************************************************</span>
+					IsSolution = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+					numberofsolutions = 0;
+					<span class="cpp">#ifdef VERBOSE_MODE		</span>
+						<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>,<span class="string">"Quad. eqn  -  b*b &lt; 4*a*c   -   tmin: %e"</span>, tmin);	
+					<span class="cpp">#endif</span>
+				}
+			}
+			<span class="comment">// If t has no value - set it to first value</span>
+			<span class="keyword">if</span> (IsSolution &amp;&amp; tfinal &lt;= 0.) {
+				tfinal = tmin;
+			}
+			<span class="comment">// Else if there exists a tmin - and tmin is less than t</span>
+			<span class="keyword">if</span> (IsSolution &amp;&amp; tmin &lt; tfinal) {
+				tfinal = tmin;
+			} 
+			<span class="cpp">#ifdef VERBOSE_MODE		</span>
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>,<span class="string">"End of loop  -  i: %i, j: %i   -  Current smallest time:   -   tfinal: %e"</span>, i, j, tfinal);			
+			<span class="cpp">#endif</span>
+		}
+	}
+
+	<span class="comment">// Finally return the shortest time to hit a boundary from the outside</span>
+	<span class="keyword">if</span> (tfinal &gt; 0) {
+		<span class="cpp">#ifdef VERBOSE_MODE		</span>
+			<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>,<span class="string">"Final time:   -   tfinal: %e"</span>, tfinal); 
+		<span class="cpp">#endif</span>
+		<span class="keyword">return</span> tfinal;
+	} <span class="keyword">else</span> {
+		<span class="cpp">#ifdef VERBOSE_MODE		</span>
+			<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TimeFromOutsideAlongParabola"</span>,<span class="string">"No Boundary hit"</span>);
+		<span class="cpp">#endif</span>
+		<span class="keyword">return</span> 0;
+	}
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="l6Y4d"></a><a href="../ListOfTypes.html#Bool_t">Bool_t</a> <a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>::<a href="../TUCNGeoBBox.html#TUCNGeoBBox:IsNextPointOnSurface" title="Bool_t TUCNGeoBBox::IsNextPointOnSurface(Double_t* point,Double_t* velocity,Double_t* field,Double_t t)">IsNextPointOnSurface</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a>* point, <a href="../ListOfTypes.html#Double_t">Double_t</a>* velocity, <a href="../ListOfTypes.html#Double_t">Double_t</a>* field, <a href="../ListOfTypes.html#Double_t">Double_t</a> t) <span class="keyword">const</span>
+{
+	<span class="comment">// Calculate the proposed intersection point given a time, starting point, direction and local field. </span>
+	<span class="comment">// Check that this intersection is actually located on the surface of the box. </span>
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"IsNextPointOnSurface"</span>, <span class="string">"Calling method. t: %f"</span>, t);
+	<span class="cpp">#endif</span>
+	
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> crossedpoint[3], boundary[3];
+	
+	boundary[0] = fDX+1.e-10; <span class="comment">// Including a tolerance factor</span>
+	boundary[1] = fDY+1.e-10;
+	boundary[2] = fDZ+1.e-10;	
+	
+	<span class="comment">// Calculate the intersection point. If point coords are within limits of the boundary return TRUE, else point is outside; return FALSE.</span>
+	<span class="keyword">for</span> (<a href="../ListOfTypes.html#Int_t">Int_t</a> i = 0; i &lt; 3; ++i) {
+		crossedpoint[i] = point[i] + velocity[i]*t + 0.5*field[i]*t*t;
+		<span class="cpp">#ifdef VERBOSE_MODE		</span>
+			<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"IsNextPointOnSurface"</span>, <span class="string">"Crossing Point: i: %i  -  %f   , Boundary: %f"</span>, i, crossedpoint[i], boundary[i]);
+		<span class="cpp">#endif</span>
+		<span class="comment">// Check point is on surface</span>
+		<span class="keyword">if</span> (TMath::Abs(crossedpoint[i]) &gt; boundary[i]) {
+			<span class="cpp">#ifdef VERBOSE_MODE		</span>
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"IsNextPointOnSurface"</span>, <span class="string">"Point not on surface of box. Returning false"</span>);
+			<span class="cpp">#endif</span>
+			<span class="keyword">return</span> <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+		} 
+	}
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"IsNextPointOnSurface"</span>, <span class="string">"Point on surface of box. Return true"</span>);
+	<span class="cpp">#endif</span>
+	<span class="keyword">return</span> <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;	
+}
+</pre>
+
+<br />
+<!--SIGNATURE-->
+
+<em>Last change: Thu Jun 18 00:10:41 2009</em><br />
+<em>Last generated: 2009-06-18 00:10</em><br />
+
+<hr />
+<em>
+This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</em>
+</body>
+</html>

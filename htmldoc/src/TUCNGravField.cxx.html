@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@pcroot.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Jun 18 00:10:43 2009            -->
+<!--                                             -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>TUCNGravField - source file</title>
+<meta name="rating" content="General" />
+<meta name="objecttype" content="Manual" />
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, windows, c++, html, rene brun, fons rademakers, cern" />
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis." />
+<link rel="stylesheet" type="text/css" href="../ROOT.css" id="ROOTstyle" />
+<script type="text/javascript" src="../ROOT.js"></script>
+</head>
+<body  onload="javascript:SetValuesFromCookie();">
+<pre class="code">
+<span class="comment">// <a href="../TUCNGravField.html">TUCNGravField</a></span>
+<span class="comment">// Author: Matthew Raso-Barnett  22/05/2009</span>
+
+<span class="cpp">#include "TVector3.h"</span>
+
+<span class="cpp">#include "<a href="../TUCNGravField.h">TUCNGravField.h</a>"</span>
+
+ClassImp(<a href="../TUCNGravField.html">TUCNGravField</a>)
+
+<span class="comment">// -- Static Data Members Initialised</span>
+<a href="../TUCNGravField.html">TUCNGravField</a>* 	<a href="../TUCNGravField.html">TUCNGravField</a>::<a href="../TUCNGravField.html#TUCNGravField:fgInstance" title="TUCNGravField* TUCNGravField::fgInstance">fgInstance</a> = NULL;
+<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> 	<a href="../TUCNGravField.html">TUCNGravField</a>::<a href="../TUCNGravField.html#TUCNGravField:fGravAcceleration" title="const Double_t TUCNGravField::fGravAcceleration">fGravAcceleration</a>; <span class="comment">// Initialised in header, definition in implimentation must not specify an initial value (static const)</span>
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="RioSoE"></a><a href="../TUCNGravField.html">TUCNGravField</a>::<a href="../TUCNGravField.html#TUCNGravField:TUCNGravField" title="TUCNGravField TUCNGravField::TUCNGravField() or overloads">TUCNGravField</a>()
+				  :<a href="../TUCNGravField.html#TUCNGravField:fGlobalFieldVector" title="TVector3 TUCNGravField::fGlobalFieldVector">fGlobalFieldVector</a>()
+{
+<span class="comment">// Default constructor.</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNGravField"</span>, <span class="string">"Constructor"</span>);
+   <a href="../TUCNGravField.html#TUCNGravField:fgInstance" title="TUCNGravField* TUCNGravField::fgInstance">fgInstance</a> = <span class="keyword">this</span>;
+} 
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="qJSZCE"></a><a href="../TUCNGravField.html">TUCNGravField</a>::<a href="../TUCNGravField.html#TUCNGravField:TUCNGravField" title="TUCNGravField TUCNGravField::TUCNGravField() or overloads">TUCNGravField</a>(<span class="keyword">const</span> <a href="../TUCNGravField.html">TUCNGravField</a>&amp; other)
+              :<a href="../#TObject:TObject" title="TObject TObject::TObject() or overloads">TObject</a>(other)
+{
+<span class="comment">// <a href="../#TObject:Copy" title="void TObject::Copy(TObject&amp; object)">Copy</a> constructor.</span>
+   <a href="../#TObject:Error" title="void TObject::Error(const char* method,const char* msgfmt)">Error</a>(<span class="string">"copy constructor"</span>,<span class="string">"copying not allowed for TUCNGravField"</span>);
+} 
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="Gu1pv"></a><a href="../TUCNGravField.html">TUCNGravField</a>::<a href="../TUCNGravField.html#TUCNGravField:_TUCNGravField" title="void TUCNGravField::~TUCNGravField()">~TUCNGravField</a>()
+{
+<span class="comment">// Destructor.</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNGravField"</span>, <span class="string">"Destructor"</span>);
+	<a href="../TUCNGravField.html#TUCNGravField:fgInstance" title="TUCNGravField* TUCNGravField::fgInstance">fgInstance</a> = NULL;
+}   
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="P2amL"></a><a href="../TUCNGravField.html">TUCNGravField</a> &amp;<a href="../TUCNGravField.html">TUCNGravField</a>::<span class="keyword">operator</span>=(<span class="keyword">const</span> <a href="../TUCNGravField.html">TUCNGravField</a>&amp;)
+{
+<span class="comment">// Assignment.</span>
+   <a href="../#TObject:Error" title="void TObject::Error(const char* method,const char* msgfmt)">Error</a>(<span class="string">"Assignment"</span>,<span class="string">"assignment not allowed for TUCNGravField"</span>);
+   <span class="keyword">return</span> *<span class="keyword">this</span>;
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="IHSMHB"></a><a href="../TUCNGravField.html">TUCNGravField</a>* <a href="../TUCNGravField.html">TUCNGravField</a>::<a href="../TUCNGravField.html#TUCNGravField:Instance" title="TUCNGravField* TUCNGravField::Instance(TUCNGeoManager* geom)">Instance</a>(<a href="../TUCNGeoManager.html">TUCNGeoManager</a> *geom) 
+{
+<span class="comment">// Return pointer to singleton.   </span>
+   <span class="keyword">if</span> (!<a href="../TUCNGravField.html#TUCNGravField:fgInstance" title="TUCNGravField* TUCNGravField::fgInstance">fgInstance</a>) <a href="../TUCNGravField.html#TUCNGravField:fgInstance" title="TUCNGravField* TUCNGravField::fgInstance">fgInstance</a> = <span class="keyword">new</span> <a href="../TUCNGravField.html">TUCNGravField</a>();
+   <a href="../TUCNGravField.html#TUCNGravField:fgInstance" title="TUCNGravField* TUCNGravField::fgInstance">fgInstance</a>-><a href="../TUCNGravField.html#TUCNGravField:SetUCNGeometry" title="void TUCNGravField::SetUCNGeometry(TUCNGeoManager* geom)">SetUCNGeometry</a>(geom);
+	<span class="keyword">return</span> <a href="../TUCNGravField.html#TUCNGravField:fgInstance" title="TUCNGravField* TUCNGravField::fgInstance">fgInstance</a>;
+}   
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="SZe0B"></a><span class="keyword">void</span> <a href="../TUCNGravField.html">TUCNGravField</a>::<a href="../TUCNGravField.html#TUCNGravField:Direction" title="void TUCNGravField::Direction(Double_t nx,Double_t ny,Double_t nz)">Direction</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> nx, <a href="../ListOfTypes.html#Double_t">Double_t</a> ny, <a href="../ListOfTypes.html#Double_t">Double_t</a> nz)
+{
+<span class="comment">// Define the Field <a href="../TUCNGravField.html#TUCNGravField:Direction" title="void TUCNGravField::Direction(Double_t nx,Double_t ny,Double_t nz)">Direction</a> Vector, ensure its normalised, and return a pointer to it.	</span>
+	<a href="../TUCNGravField.html#TUCNGravField:fGlobalFieldVector" title="TVector3 TUCNGravField::fGlobalFieldVector">fGlobalFieldVector</a>.SetXYZ(nx, ny, nz);
+	<a href="../TUCNGravField.html#TUCNGravField:fGlobalFieldVector" title="TVector3 TUCNGravField::fGlobalFieldVector">fGlobalFieldVector</a> = <a href="../TUCNGravField.html#TUCNGravField:fGlobalFieldVector" title="TVector3 TUCNGravField::fGlobalFieldVector">fGlobalFieldVector</a>.Unit();
+}
+</pre>
+
+<br />
+<!--SIGNATURE-->
+
+<em>Last change: Thu Jun 18 00:10:43 2009</em><br />
+<em>Last generated: 2009-06-18 00:10</em><br />
+
+<hr />
+<em>
+This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</em>
+</body>
+</html>

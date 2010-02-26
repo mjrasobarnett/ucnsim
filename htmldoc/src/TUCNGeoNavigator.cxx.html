@@ -1,0 +1,1308 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@pcroot.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Jun 18 00:10:42 2009            -->
+<!--                                             -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>TUCNGeoNavigator - source file</title>
+<meta name="rating" content="General" />
+<meta name="objecttype" content="Manual" />
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, windows, c++, html, rene brun, fons rademakers, cern" />
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis." />
+<link rel="stylesheet" type="text/css" href="../ROOT.css" id="ROOTstyle" />
+<script type="text/javascript" src="../ROOT.js"></script>
+</head>
+<body  onload="javascript:SetValuesFromCookie();">
+<pre class="code">
+<span class="comment">// <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a></span>
+<span class="comment">// Author: Matthew Raso-Barnett  27/05/2009</span>
+<span class="cpp">#include &lt;iostream&gt;</span>
+<span class="cpp">#include &lt;cassert&gt;</span>
+<span class="cpp">#include &lt;stdexcept&gt;</span>
+
+<span class="cpp">#include "TGeoManager.h"</span>
+<span class="cpp">#include "TGeoMatrix.h"</span>
+<span class="cpp">#include "TGeoNode.h"</span>
+<span class="cpp">#include "TGeoVolume.h"</span>
+<span class="cpp">#include "TGeoPatternFinder.h"</span>
+<span class="cpp">#include "TGeoVoxelFinder.h"</span>
+<span class="cpp">#include "TVirtualGeoTrack.h"</span>
+<span class="cpp">#include "TParticle.h"</span>
+<span class="cpp">#include "TGeoNavigator.h"</span>
+<span class="cpp">#include "TRandom3.h"</span>
+<span class="cpp">#include "TMath.h"</span>
+
+<span class="cpp">#include "<a href="../TUCNGeoBBox.h">TUCNGeoBBox.h</a>"</span>
+<span class="cpp">#include "<a href="../TUCNGeoManager.h">TUCNGeoManager.h</a>"</span>
+<span class="cpp">#include "<a href="../TUCNGeoMaterial.h">TUCNGeoMaterial.h</a>"</span>
+<span class="cpp">#include "<a href="../TUCNGravField.h">TUCNGravField.h</a>"</span>
+<span class="cpp">#include "<a href="../TUCNParticle.h">TUCNParticle.h</a>"</span>
+<span class="cpp">#include "<a href="../Units.h">Units.h</a>"</span>
+
+<span class="cpp">#include "<a href="../TUCNGeoNavigator.h">TUCNGeoNavigator.h</a>"</span>
+
+<span class="keyword">using</span> std::<a href="../ListOfTypes.html#ostream">cout</a>;
+<span class="keyword">using</span> std::endl;
+<span class="keyword">using</span> std::runtime_error;
+
+<span class="comment">//#define VERBOSE_MODE</span>
+
+ClassImp(<a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>)
+
+<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> 	<a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>;
+<span class="keyword">const</span> <a href="../ListOfTypes.html#Int_t">Int_t</a> 		<a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgMaxSteps" title="const Int_t TUCNGeoNavigator::fgMaxSteps">fgMaxSteps</a>;
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="Y9c1wC"></a><a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:TUCNGeoNavigator" title="TUCNGeoNavigator TUCNGeoNavigator::TUCNGeoNavigator(const TUCNGeoNavigator&amp; ) or overloads">TUCNGeoNavigator</a>()
+              	  :<a href="../#TGeoNavigator:TGeoNavigator" title="TGeoNavigator TGeoNavigator::TGeoNavigator(const TGeoNavigator&amp; ) or overloads">TGeoNavigator</a>(),
+				      <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>(0),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a>(0),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fStepTime" title="Double_t TUCNGeoNavigator::fStepTime">fStepTime</a>(1.),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>),
+	               <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOutside" title="Bool_t TUCNGeoNavigator::fUCNIsOutside">fUCNIsOutside</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOnBoundary" title="Bool_t TUCNGeoNavigator::fUCNIsOnBoundary">fUCNIsOnBoundary</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>)
+{
+<span class="comment">// dummy constructor</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNGeoNavigator"</span>, <span class="string">"Dummy Constructor"</span>);
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="CvTE2"></a><a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:TUCNGeoNavigator" title="TUCNGeoNavigator TUCNGeoNavigator::TUCNGeoNavigator(const TUCNGeoNavigator&amp; ) or overloads">TUCNGeoNavigator</a>(<a href="../TUCNGeoManager.html">TUCNGeoManager</a>* geom)
+              	  :<a href="../#TGeoNavigator:TGeoNavigator" title="TGeoNavigator TGeoNavigator::TGeoNavigator(const TGeoNavigator&amp; ) or overloads">TGeoNavigator</a>(geom),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>(geom),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a>(0),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fStepTime" title="Double_t TUCNGeoNavigator::fStepTime">fStepTime</a>(1.),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>),
+	               <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOutside" title="Bool_t TUCNGeoNavigator::fUCNIsOutside">fUCNIsOutside</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOnBoundary" title="Bool_t TUCNGeoNavigator::fUCNIsOnBoundary">fUCNIsOnBoundary</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>)
+{
+<span class="comment">// Default constructor.</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNGeoNavigator"</span>, <span class="string">"Constructor"</span>);
+	<span class="keyword">for</span> (<a href="../ListOfTypes.html#Int_t">Int_t</a> i=0; i&lt;3; i++) {
+      <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNormal" title="Double_t TUCNGeoNavigator::fUCNNormal">fUCNNormal</a>[i] = 0.;
+   }
+}      
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="iwZwtD"></a><a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:TUCNGeoNavigator" title="TUCNGeoNavigator TUCNGeoNavigator::TUCNGeoNavigator(const TUCNGeoNavigator&amp; ) or overloads">TUCNGeoNavigator</a>(<span class="keyword">const</span> <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>&amp; gm)
+              	  :<a href="../#TGeoNavigator:TGeoNavigator" title="TGeoNavigator TGeoNavigator::TGeoNavigator(const TGeoNavigator&amp; ) or overloads">TGeoNavigator</a>(gm),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>(gm.<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a>(gm.<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a>),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fStepTime" title="Double_t TUCNGeoNavigator::fStepTime">fStepTime</a>(gm.<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fStepTime" title="Double_t TUCNGeoNavigator::fStepTime">fStepTime</a>),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a>(gm.<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a>),
+	               <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a>(gm.<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a>),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOutside" title="Bool_t TUCNGeoNavigator::fUCNIsOutside">fUCNIsOutside</a>(gm.<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOutside" title="Bool_t TUCNGeoNavigator::fUCNIsOutside">fUCNIsOutside</a>),
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOnBoundary" title="Bool_t TUCNGeoNavigator::fUCNIsOnBoundary">fUCNIsOnBoundary</a>(gm.<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOnBoundary" title="Bool_t TUCNGeoNavigator::fUCNIsOnBoundary">fUCNIsOnBoundary</a>)
+{
+<span class="comment">// <a href="../#TObject:Copy" title="void TObject::Copy(TObject&amp; object)">Copy</a> constructor.</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNGeoNavigator"</span>, <span class="string">"Copy Constructor"</span>);
+	<span class="keyword">for</span> (<a href="../ListOfTypes.html#Int_t">Int_t</a> i=0; i&lt;3; i++) {
+      <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNormal" title="Double_t TUCNGeoNavigator::fUCNNormal">fUCNNormal</a>[i] = gm.<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNormal" title="Double_t TUCNGeoNavigator::fUCNNormal">fUCNNormal</a>[i];
+   }
+}      
+
+<span class="comment">/*//_____________________________________________________________________________
+<a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>&amp; <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::operator=(const <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>&amp; gm)
+{
+   //assignment operator
+   if(this!=&amp;gm) {
+		<a href="../#TGeoNavigator:TGeoNavigator" title="TGeoNavigator TGeoNavigator::TGeoNavigator(const TGeoNavigator&amp; ) or overloads">TGeoNavigator</a>::=(gm);
+		// Placeholder for if we add member variables
+		//...
+   }
+   return *this;   
+}
+*/</span>
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="vz5XmC"></a><a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:_TUCNGeoNavigator" title="void TUCNGeoNavigator::~TUCNGeoNavigator()">~TUCNGeoNavigator</a>()
+{
+<span class="comment">// Destructor.</span>
+   <a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNGeoNavigator"</span>, <span class="string">"Destructor"</span>);
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="ReNv."></a><a href="../ListOfTypes.html#Double_t">Double_t</a>* <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:FindUCNNormal" title="Double_t* TUCNGeoNavigator::FindUCNNormal()">FindUCNNormal</a>()
+{
+<span class="comment">// WARNING: This method must be used exclusively instead of <a href="../#TGeoNavigator:TGeoNavigator" title="TGeoNavigator TGeoNavigator::TGeoNavigator(const TGeoNavigator&amp; ) or overloads">TGeoNavigator</a>::<a href="../#TGeoNavigator:FindNormal" title="Double_t* TGeoNavigator::FindNormal(Bool_t forward=kTRUE)">FindNormal</a>. Failure to do so will probably give a segfault.</span>
+
+<span class="comment">// Computes fast normal to next crossed boundary, assuming that the current point</span>
+<span class="comment">// is close enough to the boundary. Works only after calling <a href="../#TGeoNavigator:FindNextBoundary" title="TGeoNode* TGeoNavigator::FindNextBoundary(Double_t stepmax=TGeoShape::Big(),const char* path=&quot;&quot;,Bool_t frombdr=kFALSE)">FindNextBoundary</a>.</span>
+   <span class="keyword">if</span> (!<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a>) <span class="keyword">return</span> 0;
+   <a href="../ListOfTypes.html#Double_t">Double_t</a> local[3];
+   <a href="../ListOfTypes.html#Double_t">Double_t</a> ldir[3];
+   <a href="../ListOfTypes.html#Double_t">Double_t</a> lnorm[3];
+   <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;<a href="../#TGeoNavigator:MasterToLocal" title="void TGeoNavigator::MasterToLocal(const Double_t* master,Double_t* local)">MasterToLocal</a>(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentPoint" title="const Double_t* TGeoNavigator::GetCurrentPoint()">GetCurrentPoint</a>(), local);
+   <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentDirection" title="const Double_t* TGeoNavigator::GetCurrentDirection()">GetCurrentDirection</a>(), ldir);
+   <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a>-&gt;GetVolume()-&gt;GetShape()-&gt;ComputeNormal(local, ldir, lnorm);
+   <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;<a href="../#TGeoNavigator:LocalToMasterVect" title="void TGeoNavigator::LocalToMasterVect(const Double_t* local,Double_t* master)">LocalToMasterVect</a>(lnorm, <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNormal" title="Double_t TUCNGeoNavigator::fUCNNormal">fUCNNormal</a>);
+	<span class="keyword">return</span> <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNormal" title="Double_t TUCNGeoNavigator::fUCNNormal">fUCNNormal</a>;
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="OwZ1c"></a>TGeoNode* <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:FindNextDaughterBoundaryAlongParabola" title="TGeoNode* TUCNGeoNavigator::FindNextDaughterBoundaryAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Int_t&amp; idaughter,Bool_t compmatrix=kFALSE)">FindNextDaughterBoundaryAlongParabola</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a>* point, <a href="../ListOfTypes.html#Double_t">Double_t</a>* velocity, <a href="../ListOfTypes.html#Double_t">Double_t</a>* field, <a href="../ListOfTypes.html#Int_t">Int_t</a> &amp;idaughter, <a href="../ListOfTypes.html#Bool_t">Bool_t</a> compmatrix)
+{
+<span class="comment">// Computes as fStep the distance to next daughter of the current volume. </span>
+<span class="comment">// The point and direction must be converted in the coordinate system of the current volume.</span>
+<span class="comment">// The proposed step limit is fStep.</span>
+
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextDaughterBoundaryAlongParabola"</span>,<span class="string">"Entering Method"</span>);
+	<span class="cpp">#endif</span>
+	
+	<span class="comment">// -- First Get the current local and global fields</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> motherField[3] = {field[0], field[1], field[2]}; 
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> motherPoint[3] = {point[0], point[1], point[2]};
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> motherVelocity[3] = {velocity[0], velocity[1], velocity[2]};
+	
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextDaughterBoundaryAlongParabola"</span>, <span class="string">"Mother Local Field: X: %f, Y: %f, Z: %f"</span>, motherField[0], motherField[1], motherField[2]);
+	<span class="cpp">#endif</span>
+   
+	<span class="comment">// -- Initialising some important parameters</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> tnext = TGeoShape::Big();
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> snext = TGeoShape::Big();
+   idaughter = -1; <span class="comment">// nothing crossed</span>
+   TGeoNode *nodefound = 0;
+	TGeoHMatrix* globalMatrix = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>(); <span class="comment">// This has been added because we do not have access to fGlobalMatrix in <a href="../#TGeoNavigator:TGeoNavigator" title="TGeoNavigator TGeoNavigator::TGeoNavigator(const TGeoNavigator&amp; ) or overloads">TGeoNavigator</a></span>
+	
+   <span class="comment">// Get number of daughters. If no daughters we are done.</span>
+   TGeoVolume *vol = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetVolume();
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> nd = vol-&gt;GetNdaughters();
+   
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextDaughterBoundaryAlongParabola"</span>,<span class="string">"Volume: %s. Checking number of Daughters: %i"</span>, vol-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>(), nd);
+	<span class="cpp">#endif</span>
+	
+	<span class="keyword">if</span> (!nd) <span class="keyword">return</span> 0;  <span class="comment">// No daughter </span>
+   <span class="keyword">if</span> (<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>-><a href="../#TGeoManager:IsActivityEnabled" title="Bool_t TGeoManager::IsActivityEnabled()">IsActivityEnabled</a>() &amp;&amp; !vol-&gt;IsActiveDaughters()) <span class="keyword">return</span> 0;
+   <a href="../ListOfTypes.html#Double_t">Double_t</a> localPoint[3], localVelocity[3], localfield[3];
+   TGeoNode *current = 0;
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> i=0;
+   
+	<span class="comment">// ************************************************************************************</span>
+	<span class="comment">// -- BRANCH 1</span>
+	<span class="comment">// -- if current volume is divided, we are in the non-divided region. We</span>
+   <span class="comment">// -- check first if we are inside a cell in which case compute distance to next cell</span>
+   <span class="comment">// ************************************************************************************</span>
+	
+   TGeoPatternFinder *finder = vol-&gt;GetFinder();
+   <span class="keyword">if</span> (finder) {
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> ifirst = finder-&gt;GetDivIndex();
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> ilast = ifirst+finder-&gt;GetNdiv()-1;
+      current = finder-&gt;<a href="../#TGeoNavigator:FindNode" title="TGeoNode* TGeoNavigator::FindNode(Bool_t safe_start=kTRUE) or overloads">FindNode</a>(motherPoint);
+      <span class="keyword">if</span> (current) {
+         <span class="comment">// Point inside a cell: find distance to next cell</span>
+         <a href="../ListOfTypes.html#Int_t">Int_t</a> index = current-&gt;GetIndex();
+         <span class="keyword">if</span> ((index-1) &gt;= ifirst) ifirst = index-1;
+         <span class="keyword">else</span>                     ifirst = -1;
+         <span class="keyword">if</span> ((index+1) &lt;= ilast)  ilast  = index+1;
+         <span class="keyword">else</span>                     ilast  = -1;
+      }
+      <span class="keyword">if</span> (ifirst&gt;=0) {   
+         current = vol-&gt;GetNode(ifirst);
+         current-&gt;<a href="../#TGeoNavigator:cd" title="Bool_t TGeoNavigator::cd(const char* path=&quot;&quot;)">cd</a>();
+         current-&gt;<a href="../#TGeoNavigator:MasterToLocal" title="void TGeoNavigator::MasterToLocal(const Double_t* master,Double_t* local)">MasterToLocal</a>(&amp;motherPoint[0], localPoint);
+         current-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(&amp;motherVelocity[0], localVelocity);
+			current-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(&amp;motherField[0], &amp;localfield[0]);
+         <span class="comment">// ***************************************************************************************************</span>
+			<span class="cpp">#ifdef VERBOSE_MODE		</span>
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextDaughterBoundaryAlongParabola"</span>,<span class="string">"Divided Volume. Calculate distance from outside to first cell."</span>);
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextDaughterBoundaryAlongParabola"</span>, <span class="string">"Volume: %s. Local Field: X: %f, Y: %f, Z: %f"</span>, current-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>(), localfield[0], localfield[1], localfield[2]);
+			<span class="cpp">#endif</span>
+			tnext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(current-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:TimeFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field)">TimeFromOutsideAlongParabola</a>(localPoint, localVelocity, localfield);  
+			snext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(current-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromOutsideAlongParabola</a>(localPoint, localVelocity, localfield, tnext, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>(), 3);
+         <span class="keyword">if</span> (snext &lt; (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>() - <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>)) {
+            <span class="keyword">if</span> (compmatrix) {
+               <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;CopyFrom(globalMatrix);
+               <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;Multiply(current-&gt;GetMatrix());
+            }
+            <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a>  = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+            <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+            <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(snext);
+				<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(tnext);
+				<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = current;
+            nodefound = current;
+            idaughter = ifirst;
+         }
+      }   
+      <span class="keyword">if</span> (ilast==ifirst) <span class="keyword">return</span> nodefound;
+      <span class="keyword">if</span> (ilast&gt;=0) { 
+         current = vol-&gt;GetNode(ilast);
+         current-&gt;<a href="../#TGeoNavigator:cd" title="Bool_t TGeoNavigator::cd(const char* path=&quot;&quot;)">cd</a>();
+         current-&gt;<a href="../#TGeoNavigator:MasterToLocal" title="void TGeoNavigator::MasterToLocal(const Double_t* master,Double_t* local)">MasterToLocal</a>(&amp;motherPoint[0], localPoint);
+         current-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(&amp;motherVelocity[0], localVelocity);
+			current-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(&amp;motherField[0], localfield);
+			<span class="comment">// ***************************************************************************************************</span>
+			<span class="cpp">#ifdef VERBOSE_MODE		</span>
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextDaughterBoundaryAlongParabola"</span>,<span class="string">"Divided Volume. Calculate distance from outside to last cell."</span>);
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextDaughterBoundaryAlongParabola"</span>, <span class="string">"Volume: %s. Local Field: X: %f, Y: %f, Z: %f"</span>, current-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>(), localfield[0], localfield[1], localfield[2]);
+			<span class="cpp">#endif</span>
+			tnext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(current-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:TimeFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field)">TimeFromOutsideAlongParabola</a>(localPoint, localVelocity, localfield);
+			snext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(current-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromOutsideAlongParabola</a>(localPoint, localVelocity, localfield, tnext, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>(), 3);
+         <span class="keyword">if</span> (snext &lt; (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>() - <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>)) {
+            <span class="keyword">if</span> (compmatrix) {
+               <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;CopyFrom(globalMatrix);
+               <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;Multiply(current-&gt;GetMatrix());
+            }
+            <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a>  = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+            <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+            <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(snext);
+				<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(tnext);
+				<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = current;
+            nodefound = current;
+            idaughter = ilast;
+         }
+      }   
+      <span class="keyword">return</span> nodefound;
+   }
+   <span class="comment">// if only few daughters, check all and exit</span>
+   TGeoVoxelFinder *voxels = vol-&gt;GetVoxels();
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> indnext;
+   <span class="keyword">if</span> (nd&lt;5 || !voxels) {
+      <span class="keyword">for</span> (i=0; i&lt;nd; i++) {
+         current = vol-&gt;GetNode(i);
+         <span class="keyword">if</span> (<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>-><a href="../#TGeoManager:IsActivityEnabled" title="Bool_t TGeoManager::IsActivityEnabled()">IsActivityEnabled</a>() &amp;&amp; !current-&gt;GetVolume()-&gt;IsActive()) <span class="keyword">continue</span>;
+         current-&gt;<a href="../#TGeoNavigator:cd" title="Bool_t TGeoNavigator::cd(const char* path=&quot;&quot;)">cd</a>();
+         <span class="keyword">if</span> (voxels &amp;&amp; voxels-&gt;IsSafeVoxel(motherPoint, i, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>())) <span class="keyword">continue</span>;
+         current-&gt;<a href="../#TGeoNavigator:MasterToLocal" title="void TGeoNavigator::MasterToLocal(const Double_t* master,Double_t* local)">MasterToLocal</a>(motherPoint, localPoint);
+         current-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(motherVelocity, localVelocity);
+			current-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(motherField, localfield);
+         <span class="keyword">if</span> (current-&gt;IsOverlapping() &amp;&amp; current-&gt;GetVolume()-&gt;Contains(localPoint)) <span class="keyword">continue</span>;
+			<span class="comment">// ***************************************************************************************************</span>
+         <span class="cpp">#ifdef VERBOSE_MODE		</span>
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextDaughterBoundaryAlongParabola"</span>,<span class="string">"Only Few daughters. Calculate distance from outside to all."</span>);
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextDaughterBoundaryAlongParabola"</span>, <span class="string">"Volume: %s. Local Field: X: %f, Y: %f, Z: %f"</span>, current-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>(), localfield[0], localfield[1], localfield[2]);
+			<span class="cpp">#endif</span>
+			tnext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(current-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:TimeFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field)">TimeFromOutsideAlongParabola</a>(localPoint, localVelocity, localfield);
+			snext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(current-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromOutsideAlongParabola</a>(localPoint, localVelocity, localfield, tnext, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>(), 3);
+         <span class="keyword">if</span> (snext &lt; (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>() - <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>)) {
+				<span class="cpp">#ifdef VERBOSE_MODE		</span>
+					<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextDaughterBoundaryAlongParabola"</span>,<span class="string">"Distance to daughter is less than distance to exit current volume."</span>);
+            <span class="cpp">#endif</span>
+				indnext = current-&gt;GetVolume()-&gt;GetNextNodeIndex();
+				<span class="keyword">if</span> (compmatrix) {
+               <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;CopyFrom(globalMatrix);
+               <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;Multiply(current-&gt;GetMatrix());
+            }    
+            <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a>  = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+            <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+            <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(snext);
+				<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(tnext);
+				<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = current;
+            nodefound = <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a>;   
+            idaughter = i;   
+            <span class="keyword">while</span> (indnext&gt;=0) {
+               current = current-&gt;GetDaughter(indnext);
+               <span class="keyword">if</span> (compmatrix) <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;Multiply(current-&gt;GetMatrix());
+               <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = current;
+               nodefound = current;
+               indnext = current-&gt;GetVolume()-&gt;GetNextNodeIndex();
+            }
+         }
+      }
+		<span class="cpp">#ifdef VERBOSE_MODE		</span>
+			<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextDaughterBoundaryAlongParabola"</span>,<span class="string">"Return nearest Node found if any."</span>);
+      <span class="cpp">#endif</span>
+		<span class="keyword">return</span> nodefound;
+   }
+   <span class="comment">// if current volume is voxelized, first get current voxel</span>
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> ncheck = 0;
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> sumchecked = 0;
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> *vlist = 0;
+   voxels-&gt;SortCrossedVoxels(motherPoint, motherVelocity);
+   <span class="keyword">while</span> ((sumchecked&lt;nd) &amp;&amp; (vlist=voxels-&gt;GetNextVoxel(motherPoint, motherVelocity, ncheck))) {
+      <span class="keyword">for</span> (i=0; i&lt;ncheck; i++) {
+         current = vol-&gt;GetNode(vlist[i]);
+         <span class="keyword">if</span> (<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>-><a href="../#TGeoManager:IsActivityEnabled" title="Bool_t TGeoManager::IsActivityEnabled()">IsActivityEnabled</a>() &amp;&amp; !current-&gt;GetVolume()-&gt;IsActive()) <span class="keyword">continue</span>;
+         current-&gt;<a href="../#TGeoNavigator:cd" title="Bool_t TGeoNavigator::cd(const char* path=&quot;&quot;)">cd</a>();
+         current-&gt;<a href="../#TGeoNavigator:MasterToLocal" title="void TGeoNavigator::MasterToLocal(const Double_t* master,Double_t* local)">MasterToLocal</a>(motherPoint, localPoint);
+         current-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(motherVelocity, localVelocity);
+			current-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(&amp;motherField[0], &amp;localfield[0]);
+         <span class="keyword">if</span> (current-&gt;IsOverlapping() &amp;&amp; current-&gt;GetVolume()-&gt;Contains(localPoint)) <span class="keyword">continue</span>;
+			<span class="cpp">#ifdef VERBOSE_MODE		</span>
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextDaughterBoundaryAlongParabola"</span>,<span class="string">"Volume is voxelized. Calculate distance from outside to voxel."</span>);
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextDaughterBoundaryAlongParabola"</span>, <span class="string">"Volume: %s. Local Field: X: %f, Y: %f, Z: %f"</span>, current-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>(), localfield[0], localfield[1], localfield[2]);
+			<span class="cpp">#endif</span>
+			tnext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(current-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:TimeFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field)">TimeFromOutsideAlongParabola</a>(localPoint, localVelocity, localfield);
+			snext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(current-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromOutsideAlongParabola</a>(localPoint, localVelocity, localfield, tnext, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>(), 3);
+         sumchecked++;
+<span class="comment">//         printf(<span class="string">"checked %d from %d : snext=%g\n"</span>, sumchecked, nd, snext);</span>
+         <span class="keyword">if</span> (snext &lt; (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>() - <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>)) {
+            indnext = current-&gt;GetVolume()-&gt;GetNextNodeIndex();
+				<span class="keyword">if</span> (compmatrix) {
+               <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;CopyFrom(globalMatrix);
+               <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;Multiply(current-&gt;GetMatrix());
+            }
+            <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a>  = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+            <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+            <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(snext);
+				<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(tnext);
+				<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = current;
+            nodefound = <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a>;
+            idaughter = vlist[i];
+            <span class="keyword">while</span> (indnext&gt;=0) {
+               current = current-&gt;GetDaughter(indnext);
+               <span class="keyword">if</span> (compmatrix) <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;Multiply(current-&gt;GetMatrix());
+               <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = current;
+               nodefound = current;
+               indnext = current-&gt;GetVolume()-&gt;GetNextNodeIndex();
+            }
+         }
+      }
+   }
+   <span class="keyword">return</span> nodefound;
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="KKRIYB"></a>TGeoNode* <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:FindNextBoundaryAndStepAlongParabola" title="TGeoNode* TUCNGeoNavigator::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,TUCNGravField* field,Double_t stepTime,Bool_t compsafe=kFALSE)">FindNextBoundaryAndStepAlongParabola</a>(TVirtualGeoTrack* track, <a href="../TUCNGravField.html">TUCNGravField</a>* field, <a href="../ListOfTypes.html#Double_t">Double_t</a> stepTime, <a href="../ListOfTypes.html#Bool_t">Bool_t</a> compsafe)
+{
+<span class="comment">// Compute distance to next boundary within STEPMAX. If no boundary is found,</span>
+<span class="comment">// propagate current point along current direction with fStep=STEPMAX. Otherwise</span>
+<span class="comment">// propagate with fStep=SNEXT (distance to boundary) and locate/return the next </span>
+<span class="comment">// node.</span>
+	
+	<span class="comment">// -- Get the track's particle</span>
+	<a href="../TUCNParticle.html">TUCNParticle</a>* particle = <span class="keyword">static_cast</span>&lt;<a href="../TUCNParticle.html">TUCNParticle</a>*&gt;(track-&gt;GetParticle());
+	
+	<span class="comment">// -- Get the global field</span>
+	<span class="keyword">if</span> (<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>-><a href="../TUCNGeoManager.html#TUCNGeoManager:GetGravField" title="TUCNGravField* TUCNGeoManager::GetGravField()">GetGravField</a>() == NULL) {
+		<span class="keyword">throw</span> runtime_error(<span class="string">"In TUCNGeoNavigator::FindNextBoundaryAndStepAlongParabola - Grav Field has not been set"</span>);
+	}
+	
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> globalField[3] 	 = {field-&gt;Gx(), field-&gt;Gy(), field-&gt;Gz()}; 
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> globalPoint[3] 	 = {(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentPoint" title="const Double_t* TGeoNavigator::GetCurrentPoint()">GetCurrentPoint</a>())[0], (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentPoint" title="const Double_t* TGeoNavigator::GetCurrentPoint()">GetCurrentPoint</a>())[1], (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentPoint" title="const Double_t* TGeoNavigator::GetCurrentPoint()">GetCurrentPoint</a>())[2]};
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> globalDir[3]	 	 = {(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentDirection" title="const Double_t* TGeoNavigator::GetCurrentDirection()">GetCurrentDirection</a>())[0], (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentDirection" title="const Double_t* TGeoNavigator::GetCurrentDirection()">GetCurrentDirection</a>())[1], (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentDirection" title="const Double_t* TGeoNavigator::GetCurrentDirection()">GetCurrentDirection</a>())[2]};
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> globalVelocity[3]  = {particle-&gt;Velocity()*globalDir[0], particle-&gt;Velocity()*globalDir[1], particle-&gt;Velocity()*globalDir[2]};
+	
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> currentField[3]	 = {globalField[0], globalField[1], globalField[2]};
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> currentPoint[3]    = {globalPoint[0], globalPoint[1], globalPoint[2]};
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> currentDir[3]      = {globalDir[0], globalDir[1], globalDir[2]};
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> currentVelocity[3] = {globalVelocity[0], globalVelocity[1], globalVelocity[2]};
+	
+	<span class="cpp">#ifdef VERBOSE_MODE</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>, <span class="string">"Starting StepTime: %f"</span>, stepTime);
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>, <span class="string">"Velocity: %f"</span>, particle-&gt;Velocity());
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>, <span class="string">"Global Field: X: %f, Y: %f, Z: %f"</span>, globalField[0], globalField[1], globalField[2]);	
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>, <span class="string">"Global Point: X: %f, Y: %f, Z: %f"</span>, globalPoint[0], globalPoint[1], globalPoint[2]);	
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>, <span class="string">"Global Dir: X: %f, Y: %f, Z: %f"</span>, globalDir[0], globalDir[1], globalDir[2]);	
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>, <span class="string">"Global Velocity: X: %f, Y: %f, Z: %f"</span>, globalVelocity[0], globalVelocity[1], globalVelocity[2]);	
+	<span class="cpp">#endif	</span>
+	
+	<span class="comment">// Compute stepsize</span>
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> stepMax = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>-><a href="../#TGeoManager:GetTopVolume" title="TGeoVolume* TGeoManager::GetTopVolume()">GetTopVolume</a>()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistanceAlongParabola" title="Double_t TUCNGeoBBox::DistanceAlongParabola(Double_t* velocity,Double_t* field,Double_t time)">DistanceAlongParabola</a>(globalVelocity, globalField, stepTime);
+	
+	<span class="comment">// -- Some initialisations</span>
+	<span class="keyword">static</span> <a href="../ListOfTypes.html#Int_t">Int_t</a> icount = 0;
+   icount++;
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> iact = 3;
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> nextindex;
+   <a href="../ListOfTypes.html#Bool_t">Bool_t</a> is_assembly;
+   <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a>  = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+   <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+	<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOutside" title="Bool_t TUCNGeoNavigator::fUCNIsOutside">fUCNIsOutside</a> = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:IsOutside" title="Bool_t TGeoNavigator::IsOutside()">IsOutside</a>();
+	<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOnBoundary" title="Bool_t TUCNGeoNavigator::fUCNIsOnBoundary">fUCNIsOnBoundary</a> = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:IsOnBoundary" title="Bool_t TGeoNavigator::IsOnBoundary()">IsOnBoundary</a>();
+   TGeoNode *skip;
+	
+	<span class="comment">// -- Store time step and step distance -- these two should always be convertible</span>
+	<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(stepTime);
+	<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(stepMax);
+   <a href="../ListOfTypes.html#Double_t">Double_t</a> snext = TGeoShape::Big();
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> tnext = TGeoShape::Big();
+		
+	<span class="comment">// *********************************************************************</span>
+	<span class="comment">// -- BRANCH 0</span>
+	<span class="comment">// -- Compute safety</span>
+   <span class="comment">// *********************************************************************</span>
+	<span class="keyword">if</span> (compsafe) {
+      <span class="cpp">#ifdef VERBOSE_MODE		</span>
+			<a href="../#TObject:Warning" title="void TObject::Warning(const char* method,const char* msgfmt)">Warning</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 0. Step will not be computed if Safety &gt; stepMax."</span>);
+		<span class="cpp">#endif</span>
+		<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOnBoundary" title="Bool_t TUCNGeoNavigator::fUCNIsOnBoundary">fUCNIsOnBoundary</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+      <a href="../#TGeoNavigator:Safety" title="Double_t TGeoNavigator::Safety(Bool_t inside=kFALSE)">Safety</a>();
+      <span class="comment">// -- If proposed step less than safety, nothing to check</span>
+      <span class="keyword">if</span> (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetSafeDistance" title="Double_t TGeoNavigator::GetSafeDistance()">GetSafeDistance</a>() &gt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>() + <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>) <span class="keyword">return</span> <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>();
+   }   
+   
+	<span class="comment">// -- If we are on the boundary step off it by tolerance</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> extra = (<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOnBoundary" title="Bool_t TUCNGeoNavigator::fUCNIsOnBoundary">fUCNIsOnBoundary</a>)?<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>:0.0;
+   <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOnBoundary" title="Bool_t TUCNGeoNavigator::fUCNIsOnBoundary">fUCNIsOnBoundary</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+   <span class="comment">// -- Update fPoint</span>
+	currentPoint[0] += extra*currentDir[0];
+   currentPoint[1] += extra*currentDir[1];
+   currentPoint[2] += extra*currentDir[2];
+	<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetCurrentPoint" title="void TGeoNavigator::SetCurrentPoint(const Double_t* point) or overloads">SetCurrentPoint</a>(currentPoint);
+	
+	<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;CopyFrom(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>());
+   	
+	<span class="comment">// *********************************************************************</span>
+	<span class="comment">// -- BRANCH 1</span>
+	<span class="comment">// -- fIsOutside means outside TOP volume - ie: outside geometry</span>
+   <span class="comment">// *********************************************************************	</span>
+	<span class="keyword">if</span> (<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOutside" title="Bool_t TUCNGeoNavigator::fUCNIsOutside">fUCNIsOutside</a>) {
+      <span class="comment">// -- Find Distance And Time to reach TOP volume -- Time is used to make the step. </span>
+      <span class="comment">// ***************************************************************************************************</span>
+		<span class="cpp">#ifdef VERBOSE_MODE		</span>
+			<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 1. Outside TOP volume (geometry). Calculate distance to TOP."</span>);
+			<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>, <span class="string">"Global Field: X: %f, Y: %f, Z: %f"</span>, globalField[0],globalField[1],globalField[2]);	
+		<span class="cpp">#endif</span>
+		tnext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>-><a href="../#TGeoManager:GetTopVolume" title="TGeoVolume* TGeoManager::GetTopVolume()">GetTopVolume</a>()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:TimeFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field)">TimeFromOutsideAlongParabola</a>(currentPoint, currentVelocity, currentField); 
+		snext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>-><a href="../#TGeoManager:GetTopVolume" title="TGeoVolume* TGeoManager::GetTopVolume()">GetTopVolume</a>()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromOutsideAlongParabola</a>(currentPoint, currentVelocity, currentField, tnext, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>(), iact);
+		<span class="comment">// -- Check if distance to Top is less than the current Stepsize</span>
+		<span class="keyword">if</span> (snext &lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>() - <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>) {
+			<span class="keyword">if</span> (snext&lt;=0) {
+            <span class="comment">// -- Distance to top &lt;= 0. Set = 0, then make a step by extra</span>
+				snext = 0.0;
+				tnext = 0.0;
+				<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(snext);
+				<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(tnext);
+            <span class="comment">// -- Update fPoint</span>
+				currentPoint[0] -= extra*currentDir[0];
+			   currentPoint[1] -= extra*currentDir[1];
+			   currentPoint[2] -= extra*currentDir[2];
+				<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetCurrentPoint" title="void TGeoNavigator::SetCurrentPoint(const Double_t* point) or overloads">SetCurrentPoint</a>(currentPoint);
+         } <span class="keyword">else</span> {
+				<span class="comment">// -- Distance to top is greater than 0. Set stored stepsize fStep to be this distance + extra. </span>
+            <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(snext+extra);
+				<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(tnext+extra);
+         }
+   		<span class="comment">// -- Top is reachable - and distance to it is less than proposed step - hence we are Entering</span>
+         <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+         <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>-><a href="../#TGeoManager:GetTopNode" title="TGeoNode* TGeoManager::GetTopNode()">GetTopNode</a>();
+         nextindex = <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a>-&gt;GetVolume()-&gt;GetNextNodeIndex();
+			<span class="keyword">while</span> (nextindex&gt;=0) {
+            <a href="../#TGeoNavigator:CdDown" title="void TGeoNavigator::CdDown(Int_t index)">CdDown</a>(nextindex);
+            <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>();
+            nextindex = <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a>-&gt;GetVolume()-&gt;GetNextNodeIndex();
+            <span class="keyword">if</span> (nextindex &lt; 0) <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>()-&gt;CopyFrom(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>());
+         }
+   
+         <span class="comment">// -- Move global point by snext onto boundary</span>
+         <span class="comment">// ***************************************************************************************************</span>
+			<span class="cpp">#ifdef VERBOSE_MODE		</span>
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 1. Entering TOP. Updating Global Point with grav correction."</span>);
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>, <span class="string">"StepTime: %f"</span>, tnext);
+			<span class="cpp">#endif</span>
+			<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> timestep = tnext;
+			
+			currentPoint[0] += currentVelocity[0]*timestep + 0.5*currentField[0]*timestep*timestep; 
+		   currentPoint[1] += currentVelocity[1]*timestep + 0.5*currentField[1]*timestep*timestep; 
+		   currentPoint[2] += currentVelocity[2]*timestep + 0.5*currentField[2]*timestep*timestep;	
+			<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetCurrentPoint" title="void TGeoNavigator::SetCurrentPoint(const Double_t* point) or overloads">SetCurrentPoint</a>(currentPoint);
+			
+			<span class="comment">// -- Update Direction to reflect new position</span>
+			currentVelocity[0] = currentVelocity[0] + currentField[0]*timestep;
+			currentVelocity[1] = currentVelocity[1] + currentField[1]*timestep;
+			currentVelocity[2] = currentVelocity[2] + currentField[2]*timestep;
+			<a href="../ListOfTypes.html#Double_t">Double_t</a> velocityMag = TMath::Sqrt((currentVelocity[0]*currentVelocity[0]) + (currentVelocity[1]*currentVelocity[1]) + (currentVelocity[2]*currentVelocity[2])); 
+			<span class="keyword">if</span> (velocityMag == 0.) <span class="keyword">throw</span> runtime_error(<span class="string">"Velocity is zero!"</span>);
+			
+			currentDir[0] = currentVelocity[0]/velocityMag;
+			currentDir[1] = currentVelocity[1]/velocityMag;
+			currentDir[2] = currentVelocity[2]/velocityMag;
+			<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetCurrentDirection" title="void TGeoNavigator::SetCurrentDirection(const Double_t* dir) or overloads">SetCurrentDirection</a>(currentDir);
+			
+			<span class="comment">// -- Update track/particle properties</span>
+			<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:UpdateTrack" title="void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track,Double_t timeInterval=0.)">UpdateTrack</a>(track, timestep);
+						
+			<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOnBoundary" title="Bool_t TUCNGeoNavigator::fUCNIsOnBoundary">fUCNIsOnBoundary</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+         <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOutside" title="Bool_t TUCNGeoNavigator::fUCNIsOutside">fUCNIsOutside</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+         <span class="keyword">return</span> <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:CrossBoundaryAndLocate" title="TGeoNode* TGeoNavigator::CrossBoundaryAndLocate(Bool_t downwards,TGeoNode* skipnode)">CrossBoundaryAndLocate</a>(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>());
+      }
+      <span class="comment">// -- New point still outside, and the top node is not within snext, but is reachable.</span>
+		<span class="keyword">if</span> (snext&lt;TGeoShape::Big()) {
+        	<span class="comment">// -- Move global point by proposed stepsize fStep</span>
+			<span class="comment">// ***************************************************************************************************</span>
+         <span class="cpp">#ifdef VERBOSE_MODE		</span>
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 1. New Point outside but TOP is reachable. Updating Global Point."</span>);
+				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>, <span class="string">"StepTime: %f"</span>, tnext);
+			<span class="cpp">#endif</span>
+			<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>-><a href="../#TGeoManager:GetTopNode" title="TGeoNode* TGeoManager::GetTopNode()">GetTopNode</a>();
+			<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> timestep = (<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:GetStepTime" title="Double_t TUCNGeoNavigator::GetStepTime()">GetStepTime</a>())-extra;
+			
+			currentPoint[0] += currentVelocity[0]*timestep + 0.5*currentField[0]*timestep*timestep; 
+		   currentPoint[1] += currentVelocity[1]*timestep + 0.5*currentField[1]*timestep*timestep; 
+		   currentPoint[2] += currentVelocity[2]*timestep + 0.5*currentField[2]*timestep*timestep;	
+			<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetCurrentPoint" title="void TGeoNavigator::SetCurrentPoint(const Double_t* point) or overloads">SetCurrentPoint</a>(currentPoint);	
+			
+			<span class="comment">// -- Update Direction to reflect new position</span>
+			currentVelocity[0] = currentVelocity[0] + currentField[0]*timestep;
+			currentVelocity[1] = currentVelocity[1] + currentField[1]*timestep;
+			currentVelocity[2] = currentVelocity[2] + currentField[2]*timestep;
+			<a href="../ListOfTypes.html#Double_t">Double_t</a> velocityMag = TMath::Sqrt((currentVelocity[0]*currentVelocity[0]) + (currentVelocity[1]*currentVelocity[1]) + (currentVelocity[2]*currentVelocity[2])); 
+			<span class="keyword">if</span> (velocityMag == 0.) <span class="keyword">throw</span> runtime_error(<span class="string">"Velocity is zero!"</span>);
+			
+			currentDir[0] = currentVelocity[0]/velocityMag;
+			currentDir[1] = currentVelocity[1]/velocityMag;
+			currentDir[2] = currentVelocity[2]/velocityMag;
+			<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetCurrentDirection" title="void TGeoNavigator::SetCurrentDirection(const Double_t* dir) or overloads">SetCurrentDirection</a>(currentDir);
+			
+			<span class="comment">// -- Update particle properties</span>
+			<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:UpdateTrack" title="void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track,Double_t timeInterval=0.)">UpdateTrack</a>(track, timestep);
+		
+			<span class="keyword">return</span> <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a>;
+      }      
+      <span class="comment">// top node not reachable from current point/direction</span>
+      <span class="cpp">#ifdef VERBOSE_MODE		</span>
+			<a href="../#TObject:Warning" title="void TObject::Warning(const char* method,const char* msgfmt)">Warning</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 1. TOP is NOT reachable."</span>);
+		<span class="cpp">#endif</span>
+		<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = 0;
+      <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOnBoundary" title="Bool_t TUCNGeoNavigator::fUCNIsOnBoundary">fUCNIsOnBoundary</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+      <span class="keyword">return</span> 0;
+   }
+   
+	<span class="comment">// *********************************************************************</span>
+	<span class="comment">// -- BRANCH 2</span>
+	<span class="comment">// -- So we are not outside the geometry. Get point and direction in local coordinate frame and calculate distance to boundary of current node. </span>
+   <span class="comment">// *********************************************************************</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> localPoint[3], localVelocity[3], localField[3]; <span class="comment">// Containers for the local point and dir</span>
+   <a href="../ListOfTypes.html#Int_t">Int_t</a> icrossed = -2;
+   <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;<a href="../#TGeoNavigator:MasterToLocal" title="void TGeoNavigator::MasterToLocal(const Double_t* master,Double_t* local)">MasterToLocal</a>(currentPoint, &amp;localPoint[0]);
+   <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(currentVelocity, &amp;localVelocity[0]);
+	<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(currentField, &amp;localField[0]);
+   TGeoVolume *vol = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetVolume();
+   
+	<span class="comment">// -- Find distance to exiting current node</span>
+   <span class="comment">// ***************************************************************************************************</span>
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 2. Find distance to exit current Volume: %s."</span>, vol-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>());
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>, <span class="string">"Local Field: X: %f, Y: %f, Z: %f"</span>, localField[0], localField[1], localField[2]);
+	<span class="cpp">#endif</span>
+	tnext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(vol-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:TimeFromInsideAlongParabola" title="Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field)">TimeFromInsideAlongParabola</a>(localPoint, localVelocity, localField); 
+	snext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(vol-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromInsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromInsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromInsideAlongParabola</a>(localPoint, localVelocity, localField, tnext, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>(), iact);
+	<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>();
+	<span class="comment">// -- If distance to exiting current node is &lt;= Tolerance value (1e-10) make a small step by this tolerance value</span>
+	<span class="keyword">if</span> (snext &lt;= <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>) {
+      snext = <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>;
+		tnext = <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>;
+		<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(snext);
+		<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(tnext);
+      <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOnBoundary" title="Bool_t TUCNGeoNavigator::fUCNIsOnBoundary">fUCNIsOnBoundary</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+      <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+      <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+      skip = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>();
+		
+		<span class="comment">// -- Move global point by Tolerance value</span>
+		<span class="comment">// ***************************************************************************************************</span>
+      currentPoint[0] += <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>()*currentDir[0]; 
+	   currentPoint[1] += <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>()*currentDir[1]; 
+	   currentPoint[2] += <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>()*currentDir[2];	
+		<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetCurrentPoint" title="void TGeoNavigator::SetCurrentPoint(const Double_t* point) or overloads">SetCurrentPoint</a>(currentPoint);
+		
+		<span class="comment">// Update Particle</span>
+		<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:UpdateTrack" title="void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track,Double_t timeInterval=0.)">UpdateTrack</a>(track, tnext);
+		
+      is_assembly = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetVolume()-&gt;IsAssembly();
+      <span class="keyword">if</span> (!(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetLevel" title="Int_t TGeoNavigator::GetLevel()">GetLevel</a>()) &amp;&amp; !is_assembly) {
+         <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOutside" title="Bool_t TUCNGeoNavigator::fUCNIsOutside">fUCNIsOutside</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+         <span class="keyword">return</span> 0;
+      }
+      <span class="keyword">if</span> (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;IsOffset()) {
+			<span class="cpp">#ifdef VERBOSE_MODE		</span>
+				<a href="../#TObject:Warning" title="void TObject::Warning(const char* method,const char* msgfmt)">Warning</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 2. fCurrentNode-&gt;IsOffset(). Entering CrossDivisionCell()."</span>);
+			<span class="cpp">#endif</span>
+			<span class="keyword">return</span> <a href="../#TGeoNavigator:CrossDivisionCell" title="TGeoNode* TGeoNavigator::CrossDivisionCell()">CrossDivisionCell</a>();   
+      }
+		<span class="comment">// -- Cross Boundary and return new volume</span>
+		<span class="keyword">if</span> (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetLevel" title="Int_t TGeoNavigator::GetLevel()">GetLevel</a>()) <a href="../#TGeoNavigator:CdUp" title="void TGeoNavigator::CdUp()">CdUp</a>(); 
+      <span class="keyword">else</span>        skip = 0;
+      <span class="keyword">return</span> <a href="../#TGeoNavigator:CrossBoundaryAndLocate" title="TGeoNode* TGeoNavigator::CrossBoundaryAndLocate(Bool_t downwards,TGeoNode* skipnode)">CrossBoundaryAndLocate</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>, skip);
+   }   
+	
+	<span class="comment">// -- If distance to exiting current node is smaller than proposed Stepsize - then set our stepsize fStep to this distance (snext)</span>
+   <span class="keyword">if</span> (snext &lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>() - <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>) {
+      icrossed = -1;
+      <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(snext);
+		<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(tnext);
+      <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+      <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+   }
+   
+	<span class="comment">// Find next daughter boundary for the current volume</span>
+   <span class="comment">// ***************************************************************************************************</span>
+	<a href="../ListOfTypes.html#Int_t">Int_t</a> idaughter = -1;
+	TGeoNode *crossed = <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:FindNextDaughterBoundaryAlongParabola" title="TGeoNode* TUCNGeoNavigator::FindNextDaughterBoundaryAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Int_t&amp; idaughter,Bool_t compmatrix=kFALSE)">FindNextDaughterBoundaryAlongParabola</a>(localPoint, localVelocity, localField, idaughter, <a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+   <span class="keyword">if</span> (crossed) {
+      <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+      icrossed = idaughter;
+      <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+   }   
+   TGeoNode *current = 0;
+   TGeoNode *dnode = 0;
+   TGeoVolume *mother = 0;
+   
+	<span class="comment">// *********************************************************************</span>
+	<span class="comment">// -- BRANCH 3</span>
+	<span class="comment">// -- if we are in an overlapping node, check also the mother(s) - fNmany is number of overlapping nodes on current branch</span>
+   <span class="comment">// *********************************************************************</span>
+   <span class="keyword">if</span> (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetNmany" title="Int_t TGeoNavigator::GetNmany()">GetNmany</a>()) {
+      <a href="../ListOfTypes.html#Double_t">Double_t</a> motherPoint[3], motherVelocity[3], motherField[3];
+		<a href="../ListOfTypes.html#Double_t">Double_t</a> daughterPoint[3], daughterVelocity[3], daughterField[3];
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> novlps;
+      <a href="../ListOfTypes.html#Int_t">Int_t</a> safelevel = <a href="../#TGeoNavigator:GetSafeLevel" title="Int_t TGeoNavigator::GetSafeLevel()">GetSafeLevel</a>();
+      <a href="../#TGeoNavigator:PushPath" title="Int_t TGeoNavigator::PushPath(Int_t startlevel=0)">PushPath</a>(safelevel+1);
+      <span class="keyword">while</span> (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:IsCurrentOverlapping" title="Bool_t TGeoNavigator::IsCurrentOverlapping()">IsCurrentOverlapping</a>()) {
+         <a href="../ListOfTypes.html#Int_t">Int_t</a> *ovlps = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetOverlaps(novlps);
+         <a href="../#TGeoNavigator:CdUp" title="void TGeoNavigator::CdUp()">CdUp</a>();
+         mother = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetVolume();
+         <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;<a href="../#TGeoNavigator:MasterToLocal" title="void TGeoNavigator::MasterToLocal(const Double_t* master,Double_t* local)">MasterToLocal</a>(currentPoint, &amp;motherPoint[0]);
+         <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(currentVelocity, &amp;motherVelocity[0]);
+			<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(currentField, &amp;motherField[0]);
+         <span class="comment">// -- Check distance to out</span>
+         snext = TGeoShape::Big();
+			tnext = TGeoShape::Big();
+         <span class="keyword">if</span> (!mother-&gt;IsAssembly()) {
+         	<span class="comment">// ***************************************************************************************************</span>
+				<span class="cpp">#ifdef VERBOSE_MODE		</span>
+					<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 3. In overlapping Node - check distance to mother"</span>);
+					<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>, <span class="string">"Moth Local Field: X: %f, Y: %f, Z: %f"</span>, motherField[0], motherField[1], motherField[2]);
+				<span class="cpp">#endif</span>
+				tnext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(mother-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:TimeFromInsideAlongParabola" title="Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field)">TimeFromInsideAlongParabola</a>(motherPoint, motherVelocity, motherField); 
+				snext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(mother-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromInsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromInsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromInsideAlongParabola</a>(motherPoint, motherVelocity, motherField, tnext, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>(), iact);
+         }
+			<span class="keyword">if</span> (snext &lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>() - <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>) {
+            <span class="comment">// exiting mother first (extrusion)</span>
+            icrossed = -1;
+            <a href="../#TGeoNavigator:PopDummy" title="void TGeoNavigator::PopDummy(Int_t ipop=9999)">PopDummy</a>();
+            <a href="../#TGeoNavigator:PushPath" title="Int_t TGeoNavigator::PushPath(Int_t startlevel=0)">PushPath</a>(safelevel+1);
+            <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+            <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+            <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(snext);
+				<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(tnext);
+            <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;CopyFrom(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>());
+            <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>();
+         }
+         <span class="comment">// check overlapping nodes</span>
+         <span class="keyword">for</span> (<a href="../ListOfTypes.html#Int_t">Int_t</a> i=0; i&lt;novlps; i++) {
+            current = mother-&gt;GetNode(ovlps[i]);
+            <span class="keyword">if</span> (!current-&gt;IsOverlapping()) {
+               current-&gt;<a href="../#TGeoNavigator:cd" title="Bool_t TGeoNavigator::cd(const char* path=&quot;&quot;)">cd</a>();
+               current-&gt;<a href="../#TGeoNavigator:MasterToLocal" title="void TGeoNavigator::MasterToLocal(const Double_t* master,Double_t* local)">MasterToLocal</a>(&amp;motherPoint[0], &amp;daughterPoint[0]);
+               current-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(&amp;motherVelocity[0], &amp;daughterVelocity[0]);
+               current-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(&amp;motherField[0], &amp;daughterField[0]);
+					<span class="comment">// Current point may be inside the other node - geometry error that we ignore</span>
+               snext = TGeoShape::Big();
+					tnext = TGeoShape::Big();
+					<span class="keyword">if</span> (!current-&gt;GetVolume()-&gt;Contains(daughterPoint))
+						<span class="comment">// ***************************************************************************************************</span>
+			         <span class="cpp">#ifdef VERBOSE_MODE		</span>
+							<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 3. In overlapping Node - check distance to enter other nodes"</span>);
+							<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Local Field: X: %f, Y: %f, Z: %f"</span>, daughterField[0], daughterField[1], daughterField[2]);
+						<span class="cpp">#endif</span>
+						tnext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(current-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:TimeFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field)">TimeFromOutsideAlongParabola</a>(daughterPoint, daughterVelocity, daughterField); 
+						snext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(current-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromOutsideAlongParabola</a>(daughterPoint, daughterVelocity, daughterField, tnext, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>(), iact);
+               <span class="keyword">if</span> (snext &lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>() - <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>) {
+                  <a href="../#TGeoNavigator:PopDummy" title="void TGeoNavigator::PopDummy(Int_t ipop=9999)">PopDummy</a>();
+                  <a href="../#TGeoNavigator:PushPath" title="Int_t TGeoNavigator::PushPath(Int_t startlevel=0)">PushPath</a>(safelevel+1);
+                  <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;CopyFrom(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>());
+                  <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;Multiply(current-&gt;GetMatrix());
+                  <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+                  <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+                  icrossed = ovlps[i];
+                  <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(snext);
+                  <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(tnext);
+						<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = current;
+               }
+            } <span class="keyword">else</span> {
+               <span class="comment">// another many - check if point is in or out</span>
+               current-&gt;<a href="../#TGeoNavigator:cd" title="Bool_t TGeoNavigator::cd(const char* path=&quot;&quot;)">cd</a>();
+               current-&gt;<a href="../#TGeoNavigator:MasterToLocal" title="void TGeoNavigator::MasterToLocal(const Double_t* master,Double_t* local)">MasterToLocal</a>(&amp;motherPoint[0], &amp;daughterPoint[0]);
+               current-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(&amp;motherVelocity[0], &amp;daughterVelocity[0]);
+               current-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(&amp;motherField[0], &amp;daughterField[0]);
+					<span class="keyword">if</span> (current-&gt;GetVolume()-&gt;Contains(daughterPoint)) {
+                  <span class="keyword">if</span> (current-&gt;GetVolume()-&gt;GetNdaughters()) {
+                     <a href="../#TGeoNavigator:CdDown" title="void TGeoNavigator::CdDown(Int_t index)">CdDown</a>(ovlps[i]);
+                     <span class="comment">// ***************************************************************************************************</span>
+							dnode = <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:FindNextDaughterBoundaryAlongParabola" title="TGeoNode* TUCNGeoNavigator::FindNextDaughterBoundaryAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Int_t&amp; idaughter,Bool_t compmatrix=kFALSE)">FindNextDaughterBoundaryAlongParabola</a>(daughterPoint, daughterVelocity, daughterField, idaughter, <a href="../ListOfTypes.html#Bool_t">kFALSE</a>);
+                     <span class="keyword">if</span> (dnode) {
+                        <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;CopyFrom(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>());
+                        <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;Multiply(dnode-&gt;GetMatrix());
+                        icrossed = idaughter;
+                        <a href="../#TGeoNavigator:PopDummy" title="void TGeoNavigator::PopDummy(Int_t ipop=9999)">PopDummy</a>();
+                        <a href="../#TGeoNavigator:PushPath" title="Int_t TGeoNavigator::PushPath(Int_t startlevel=0)">PushPath</a>(safelevel+1);
+                        <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+                        <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+                        <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = dnode;
+                     }   
+                     <a href="../#TGeoNavigator:CdUp" title="void TGeoNavigator::CdUp()">CdUp</a>();
+                  }   
+               } <span class="keyword">else</span> {
+						<span class="comment">// ***************************************************************************************************</span>
+						<span class="cpp">#ifdef VERBOSE_MODE		</span>
+							<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 3. In overlapping Node - check distance to exit"</span>);
+							<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>, <span class="string">"Local Field: X: %f, Y: %f, Z: %f"</span>,daughterField[0],daughterField[1],daughterField[2]);
+						<span class="cpp">#endif</span>
+						tnext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(current-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:TimeFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field)">TimeFromOutsideAlongParabola</a>(daughterPoint, daughterVelocity, daughterField); 
+						snext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(current-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromOutsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromOutsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromOutsideAlongParabola</a>(daughterPoint, daughterVelocity, daughterField, tnext, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>(), iact);
+                  <span class="keyword">if</span> (snext &lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>() - <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>) {
+                     <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;CopyFrom(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetHMatrix" title="TGeoHMatrix* TGeoNavigator::GetHMatrix()">GetHMatrix</a>());
+                     <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;Multiply(current-&gt;GetMatrix());
+                     <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+                     <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+                     <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(snext);
+                     <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(tnext);
+							<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = current;
+                     icrossed = ovlps[i];
+                     <a href="../#TGeoNavigator:PopDummy" title="void TGeoNavigator::PopDummy(Int_t ipop=9999)">PopDummy</a>();
+                     <a href="../#TGeoNavigator:PushPath" title="Int_t TGeoNavigator::PushPath(Int_t startlevel=0)">PushPath</a>(safelevel+1);
+                  }               
+               }  
+            }
+         }
+      }
+      <span class="comment">// Now we are in a non-overlapping node</span>
+      <span class="keyword">if</span> (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetNmany" title="Int_t TGeoNavigator::GetNmany()">GetNmany</a>()) {
+      <span class="comment">// We have overlaps up in the branch, check distance to exit</span>
+         <a href="../ListOfTypes.html#Int_t">Int_t</a> up = 1;
+         <a href="../ListOfTypes.html#Int_t">Int_t</a> imother;
+         <a href="../ListOfTypes.html#Int_t">Int_t</a> nmany = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetNmany" title="Int_t TGeoNavigator::GetNmany()">GetNmany</a>();
+         <a href="../ListOfTypes.html#Bool_t">Bool_t</a> ovlp = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+         <a href="../ListOfTypes.html#Bool_t">Bool_t</a> nextovlp = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+         <a href="../ListOfTypes.html#Bool_t">Bool_t</a> offset = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+         TGeoNode *currentnode = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>();
+         TGeoNode *mothernode, *mup;
+         TGeoHMatrix *matrix;
+         <span class="keyword">while</span> (nmany) {
+            mothernode = <a href="../#TGeoNavigator:GetMother" title="TGeoNode* TGeoNavigator::GetMother(Int_t up=1)">GetMother</a>(up);
+            mup = mothernode;
+            imother = up+1;
+            offset = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+            <span class="keyword">while</span> (mup-&gt;IsOffset()) {
+               mup = <a href="../#TGeoNavigator:GetMother" title="TGeoNode* TGeoNavigator::GetMother(Int_t up=1)">GetMother</a>(imother++);
+               offset = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+            }   
+            nextovlp = mup-&gt;IsOverlapping();
+            <span class="keyword">if</span> (offset) {
+               mothernode = mup;
+               <span class="keyword">if</span> (nextovlp) nmany -= imother-up;
+               up = imother-1;
+            } <span class="keyword">else</span> {    
+               <span class="keyword">if</span> (ovlp) nmany--;
+            }
+            <span class="keyword">if</span> (ovlp || nextovlp) {
+               matrix = <a href="../#TGeoNavigator:GetMotherMatrix" title="TGeoHMatrix* TGeoNavigator::GetMotherMatrix(Int_t up=1)">GetMotherMatrix</a>(up);
+               matrix-&gt;<a href="../#TGeoNavigator:MasterToLocal" title="void TGeoNavigator::MasterToLocal(const Double_t* master,Double_t* local)">MasterToLocal</a>(currentPoint, daughterPoint);
+               matrix-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(currentVelocity, daughterVelocity);
+               matrix-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(currentField, daughterField);
+					snext = TGeoShape::Big();
+					tnext = TGeoShape::Big();
+					<span class="keyword">if</span> (!mothernode-&gt;GetVolume()-&gt;IsAssembly()) {
+						<span class="comment">// ***************************************************************************************************</span>
+						<span class="cpp">#ifdef VERBOSE_MODE		</span>
+							<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 3. Non-overlapping Node - checking distance to exit"</span>);	
+							<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>, <span class="string">"Local Field: X: %f, Y: %f, Z: %f"</span>,daughterField[0],daughterField[1],daughterField[2]);
+						<span class="cpp">#endif</span>
+						tnext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(mothernode-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:TimeFromInsideAlongParabola" title="Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field)">TimeFromInsideAlongParabola</a>(daughterPoint, daughterVelocity, daughterField); 
+						snext = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoBBox.html">TUCNGeoBBox</a>*&gt;(mothernode-&gt;GetVolume()-&gt;GetShape())-><a href="../TUCNGeoBBox.html#TUCNGeoBBox:DistFromInsideAlongParabola" title="Double_t TUCNGeoBBox::DistFromInsideAlongParabola(Double_t* point,Double_t* velocity,Double_t* field,Double_t boundarytime,Double_t stepsize=TGeoShape::Big(),Int_t iact=1,Double_t* safe=0) or overloads">DistFromInsideAlongParabola</a>(daughterPoint, daughterVelocity, daughterField, tnext, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>(), iact);
+					}
+               <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepEntering" title="Bool_t TUCNGeoNavigator::fUCNIsStepEntering">fUCNIsStepEntering</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+               <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsStepExiting" title="Bool_t TUCNGeoNavigator::fUCNIsStepExiting">fUCNIsStepExiting</a>  = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+               <span class="keyword">if</span> (snext &lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>() - <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>) {
+                  <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a> = mothernode;
+                  <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentMatrix" title="TGeoHMatrix* TGeoNavigator::GetCurrentMatrix()">GetCurrentMatrix</a>()-&gt;CopyFrom(matrix);
+                  <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(snext);
+                  <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(tnext);
+						<span class="keyword">while</span> (up--) <a href="../#TGeoNavigator:CdUp" title="void TGeoNavigator::CdUp()">CdUp</a>();
+                  <a href="../#TGeoNavigator:PopDummy" title="void TGeoNavigator::PopDummy(Int_t ipop=9999)">PopDummy</a>();
+                  <a href="../#TGeoNavigator:PushPath" title="Int_t TGeoNavigator::PushPath(Int_t startlevel=0)">PushPath</a>();
+                  icrossed = -1;
+                  up = 1;
+                  currentnode = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>();
+                  ovlp = currentnode-&gt;IsOverlapping();
+                  <span class="keyword">continue</span>;
+               }   
+            }   
+            currentnode = mothernode;
+            ovlp = nextovlp;
+            up++;            
+         }
+      }      
+      <a href="../#TGeoNavigator:PopPath" title="Bool_t TGeoNavigator::PopPath() or overloads">PopPath</a>();
+   }
+   <span class="cpp">#ifdef VERBOSE_MODE		</span>
+	 	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 3. Updating Global Point. fTimeStep: %f, fStep: %f"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:GetStepTime" title="Double_t TUCNGeoNavigator::GetStepTime()">GetStepTime</a>(), <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>());
+	<span class="cpp">#endif</span>
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> timestep = <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:GetStepTime" title="Double_t TUCNGeoNavigator::GetStepTime()">GetStepTime</a>();
+	currentPoint[0] += currentVelocity[0]*timestep + 0.5*currentField[0]*timestep*timestep; 
+   currentPoint[1] += currentVelocity[1]*timestep + 0.5*currentField[1]*timestep*timestep; 
+   currentPoint[2] += currentVelocity[2]*timestep + 0.5*currentField[2]*timestep*timestep;	
+	<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetCurrentPoint" title="void TGeoNavigator::SetCurrentPoint(const Double_t* point) or overloads">SetCurrentPoint</a>(currentPoint);
+	
+	<span class="comment">// -- Update Direction to reflect new position</span>
+	currentVelocity[0] = currentVelocity[0] + currentField[0]*timestep;
+	currentVelocity[1] = currentVelocity[1] + currentField[1]*timestep;
+	currentVelocity[2] = currentVelocity[2] + currentField[2]*timestep;
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> velocityMag = TMath::Sqrt((currentVelocity[0]*currentVelocity[0]) + (currentVelocity[1]*currentVelocity[1]) + (currentVelocity[2]*currentVelocity[2])); 
+	<span class="keyword">if</span> (velocityMag == 0.) <span class="keyword">throw</span> runtime_error(<span class="string">"Velocity is zero!"</span>);
+	
+	currentDir[0] = currentVelocity[0]/velocityMag;
+	currentDir[1] = currentVelocity[1]/velocityMag;
+	currentDir[2] = currentVelocity[2]/velocityMag;
+	<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetCurrentDirection" title="void TGeoNavigator::SetCurrentDirection(const Double_t* dir) or overloads">SetCurrentDirection</a>(currentDir);
+	
+	<span class="comment">// -- Update particle properties</span>
+	<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:UpdateTrack" title="void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track,Double_t timeInterval=0.)">UpdateTrack</a>(track, timestep);
+	
+	<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetStep" title="void TGeoNavigator::SetStep(Double_t step)">SetStep</a>(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetStep" title="Double_t TGeoNavigator::GetStep()">GetStep</a>() + extra);
+	<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:GetStepTime" title="Double_t TUCNGeoNavigator::GetStepTime()">GetStepTime</a>() + extra);
+	
+	<span class="comment">// *********************************************************************</span>
+	<span class="comment">// -- BRANCH 4</span>
+	<span class="comment">// -- Final check on results of above</span>
+   <span class="comment">// *********************************************************************</span>
+	<span class="keyword">if</span> (icrossed == -2) {
+      <span class="comment">// Nothing crossed within stepMax -&gt; propagate and return same location   </span>
+      <span class="cpp">#ifdef VERBOSE_MODE		</span>
+			<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 4. Nothing crossed within stepMax. Propagating point and returning same location."</span>);
+		<span class="cpp">#endif</span>
+		<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOnBoundary" title="Bool_t TUCNGeoNavigator::fUCNIsOnBoundary">fUCNIsOnBoundary</a> = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+      <span class="keyword">return</span> <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>();
+   }
+   <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOnBoundary" title="Bool_t TUCNGeoNavigator::fUCNIsOnBoundary">fUCNIsOnBoundary</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+   <span class="keyword">if</span> (icrossed == -1) {
+      <span class="cpp">#ifdef VERBOSE_MODE		</span>
+			<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 4. On Boundary. Crossing boundary and locating."</span>);
+		<span class="cpp">#endif</span>
+		skip = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>();
+      is_assembly = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetVolume()-&gt;IsAssembly();
+      <span class="keyword">if</span> (!(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetLevel" title="Int_t TGeoNavigator::GetLevel()">GetLevel</a>()) &amp;&amp; !is_assembly) {
+         <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNIsOutside" title="Bool_t TUCNGeoNavigator::fUCNIsOutside">fUCNIsOutside</a> = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+         <span class="keyword">return</span> 0;
+      }   
+      <span class="keyword">if</span> (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;IsOffset()) <span class="keyword">return</span> <a href="../#TGeoNavigator:CrossDivisionCell" title="TGeoNode* TGeoNavigator::CrossDivisionCell()">CrossDivisionCell</a>();   
+      <span class="keyword">if</span> (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetLevel" title="Int_t TGeoNavigator::GetLevel()">GetLevel</a>()) <a href="../#TGeoNavigator:CdUp" title="void TGeoNavigator::CdUp()">CdUp</a>();
+      <span class="keyword">else</span>        skip = 0;
+<span class="comment">//      is_assembly = fCurrentNode-&gt;GetVolume()-&gt;IsAssembly();</span>
+<span class="comment">//      while (fLevel &amp;&amp; is_assembly) {</span>
+<span class="comment">//         <a href="../#TGeoNavigator:CdUp" title="void TGeoNavigator::CdUp()">CdUp</a>();</span>
+<span class="comment">//         is_assembly = fCurrentNode-&gt;GetVolume()-&gt;IsAssembly();</span>
+<span class="comment">//         skip = fCurrentNode;</span>
+<span class="comment">//      }   </span>
+      <span class="keyword">return</span> <a href="../#TGeoNavigator:CrossBoundaryAndLocate" title="TGeoNode* TGeoNavigator::CrossBoundaryAndLocate(Bool_t downwards,TGeoNode* skipnode)">CrossBoundaryAndLocate</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>, skip);
+   }   
+   current = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>();   
+   <a href="../#TGeoNavigator:CdDown" title="void TGeoNavigator::CdDown(Int_t index)">CdDown</a>(icrossed);
+   nextindex = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetVolume()-&gt;GetNextNodeIndex();
+	<span class="keyword">while</span> (nextindex&gt;=0) {
+      current = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>();
+      <a href="../#TGeoNavigator:CdDown" title="void TGeoNavigator::CdDown(Int_t index)">CdDown</a>(nextindex);
+      nextindex = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetVolume()-&gt;GetNextNodeIndex();
+   }   
+	<span class="cpp">#ifdef VERBOSE_MODE		</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"FindNextBoundaryAndStepAlongParabola"</span>,<span class="string">"Branch 4. Crossing boundary and locating."</span>);
+   <span class="cpp">#endif</span>
+	<span class="keyword">return</span> <a href="../#TGeoNavigator:CrossBoundaryAndLocate" title="TGeoNode* TGeoNavigator::CrossBoundaryAndLocate(Bool_t downwards,TGeoNode* skipnode)">CrossBoundaryAndLocate</a>(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>, current);	
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="vDurc"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:DetermineNextStepTime" title="Double_t TUCNGeoNavigator::DetermineNextStepTime(TUCNParticle* particle,const Double_t runTime)">DetermineNextStepTime</a>(<a href="../TUCNParticle.html">TUCNParticle</a>* particle, <span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> runTime)			 
+{
+<span class="comment">// Placeholder for method to calculate the next step time depending on electric/magnetic field environment</span>
+	<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(0.01*Units::s);
+	
+	<span class="comment">// -- Check if we will reach the maximum runtime of the track. If so propagate only until this time.</span>
+	<span class="keyword">if</span> (particle-&gt;T() &gt; (runTime - <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:GetStepTime" title="Double_t TUCNGeoNavigator::GetStepTime()">GetStepTime</a>())) {
+		<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(runTime - particle-&gt;T());
+	}
+	<span class="keyword">return</span> <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:GetStepTime" title="Double_t TUCNGeoNavigator::GetStepTime()">GetStepTime</a>();
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="IILPJB"></a><span class="keyword">void</span> <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SetStepTime" title="void TUCNGeoNavigator::SetStepTime(Double_t stepTime)">SetStepTime</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> stepTime) 
+{
+<span class="comment">// 	</span>
+<span class="comment">//	if (stepTime &gt; <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fStepTime" title="Double_t TUCNGeoNavigator::fStepTime">fStepTime</a>) {</span>
+<span class="comment">//		<a href="../#TObject:Error" title="void TObject::Error(const char* method,const char* msgfmt)">Error</a>(<span class="string">"SetStepTime"</span>, <span class="string">"fStepTime: %f, 	stepTime: %f"</span>, <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fStepTime" title="Double_t TUCNGeoNavigator::fStepTime">fStepTime</a>, stepTime);</span>
+<span class="comment">//		throw runtime_error(<span class="string">"In TUCNGeoNavigator::SetStepTime - steptime to be set is greater than currently stored fStepTime. Check maths!!"</span>);</span>
+<span class="comment">//	} else {</span>
+		<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fStepTime" title="Double_t TUCNGeoNavigator::fStepTime">fStepTime</a> = stepTime;
+<span class="comment">//	}</span>
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="dnxsCB"></a><a href="../ListOfTypes.html#Bool_t">Bool_t</a> <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:PropagateTrack" title="Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track,const Double_t runTime)">PropagateTrack</a>(TVirtualGeoTrack* track, <span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> runTime)
+{
+<span class="comment">// Propagate track through geometry until it is either stopped or the runTime has been reached</span>
+<span class="comment">// Track passed MUST REFERENCE A TUCNPARTICLE as its particle type. </span>
+<span class="comment">// In future I will attempt to guarentee this. (4/06/09) </span>
+
+<span class="comment">// UNITS:: runTime, stepTime in Seconds</span>
+
+	<a href="../ListOfTypes.html#Int_t">Int_t</a> stepNumber;
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> stepTime;
+	<a href="../TUCNParticle.html">TUCNParticle</a>* particle = <span class="keyword">static_cast</span>&lt;<a href="../TUCNParticle.html">TUCNParticle</a>*&gt;(track-&gt;GetParticle());
+
+<span class="cpp">#ifdef VERBOSE_MODE				</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"PropagateForSetTime"</span>,<span class="string">"Starting Run - Max time (seconds): %f"</span>, runTime);
+<span class="cpp">#endif</span>
+	
+	<span class="comment">// -- Check that Particle has not been initialised inside a boundary or detector		</span>
+	<span class="keyword">if</span> (<span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoMaterial.html">TUCNGeoMaterial</a>*&gt;(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetMedium()-&gt;GetMaterial())-><a href="../TUCNGeoMaterial.html#TUCNGeoMaterial:IsTrackingMaterial" title="void TUCNGeoMaterial::IsTrackingMaterial(Bool_t istracking) or overloads">IsTrackingMaterial</a>() == <a href="../ListOfTypes.html#Bool_t">kFALSE</a>) {
+		<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetMedium()-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>() &lt;&lt; endl;
+		<span class="keyword">throw</span> runtime_error(<span class="string">"In TUCNGeoNavigator::PropagateTrack - particle initialised inside a boundary"</span>);
+	}
+	
+	<span class="comment">// -- Get the Grav Field</span>
+	<a href="../TUCNGravField.html">TUCNGravField</a>* field = <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>-><a href="../TUCNGeoManager.html#TUCNGeoManager:GetGravField" title="TUCNGravField* TUCNGeoManager::GetGravField()">GetGravField</a>();
+	
+	<span class="comment">///////////////////////////////////	</span>
+	<span class="comment">// -- Propagation Loop</span>
+	<span class="comment">///////////////////////////////////</span>
+	<span class="keyword">for</span> (stepNumber = 1 ; stepNumber &lt; <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgMaxSteps" title="const Int_t TUCNGeoNavigator::fgMaxSteps">fgMaxSteps</a> ; stepNumber++) {
+		
+		<span class="cpp">#ifdef VERBOSE_MODE		</span>
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"STEP "</span> &lt;&lt; stepNumber &lt;&lt; <span class="string">"\t"</span> &lt;&lt; particle-&gt;T() &lt;&lt; <span class="string">" s"</span> &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetMedium()-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>() &lt;&lt; endl;	
+		<span class="cpp">#endif</span>
+		
+		<span class="comment">// -- Calculate the Next StepTime</span>
+		stepTime = <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:DetermineNextStepTime" title="Double_t TUCNGeoNavigator::DetermineNextStepTime(TUCNParticle* particle,const Double_t runTime)">DetermineNextStepTime</a>(particle, runTime); 
+		
+		<span class="comment">// -- Find time to reach next boundary and step along parabola</span>
+		<span class="cpp">#ifdef VERBOSE_MODE	</span>
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"------------------- START OF STEP ----------------------"</span> &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Steptime (s): "</span> &lt;&lt; stepTime &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Initial Vertex (m): "</span> &lt;&lt; <span class="string">"X:"</span> &lt;&lt; particle-&gt;Vx() &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Y:"</span> &lt;&lt; particle-&gt;Vy()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Z:"</span> &lt;&lt; particle-&gt;Vz() &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"T:"</span> &lt;&lt; particle-&gt;T() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Initial Dir: "</span> &lt;&lt; <span class="string">"X:"</span> &lt;&lt; particle-&gt;DirX()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Y:"</span> &lt;&lt; particle-&gt;DirY()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Z:"</span> &lt;&lt; particle-&gt;DirZ() &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Mag:"</span> &lt;&lt; particle-&gt;Dir() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Initial Vel (m/s): "</span> &lt;&lt; <span class="string">"X:"</span> &lt;&lt; particle-&gt;VelocityX()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Y:"</span> &lt;&lt; particle-&gt;VelocityY()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Z:"</span> &lt;&lt; particle-&gt;VelocityZ() &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"V:"</span> &lt;&lt; particle-&gt;Velocity() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Initial Mom (eV): "</span> &lt;&lt; <span class="string">"X:"</span> &lt;&lt; particle-&gt;Px()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Y:"</span> &lt;&lt; particle-&gt;Py()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Z:"</span> &lt;&lt; particle-&gt;Pz() &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"P:"</span> &lt;&lt; particle-&gt;P() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Initial Volume: "</span>    &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentVolume" title="TGeoVolume* TGeoNavigator::GetCurrentVolume()">GetCurrentVolume</a>()-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Initial Energy (neV): "</span>    &lt;&lt; particle-&gt;Energy() /Units::neV &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"-----------------------------"</span> &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Is On Boundary?  "</span> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:IsUCNOnBoundary" title="Bool_t TUCNGeoNavigator::IsUCNOnBoundary()">IsUCNOnBoundary</a>() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Is Outside?  "</span>     &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:IsUCNOutside" title="Bool_t TUCNGeoNavigator::IsUCNOutside()">IsUCNOutside</a>() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Is Step Entering?  "</span> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:IsUCNStepEntering" title="Bool_t TUCNGeoNavigator::IsUCNStepEntering()">IsUCNStepEntering</a>()  &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Is Step Exiting?  "</span> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:IsUCNStepExiting" title="Bool_t TUCNGeoNavigator::IsUCNStepExiting()">IsUCNStepExiting</a>() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"-----------------------------"</span> &lt;&lt; endl &lt;&lt; endl;
+		<span class="cpp">#endif</span>
+		
+		
+		<span class="keyword">if</span> (field == NULL) {
+			<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:FindNextBoundaryAndStep" title="TGeoNode* TGeoNavigator::FindNextBoundaryAndStep(Double_t stepmax=TGeoShape::Big(),Bool_t compsafe=kFALSE)">FindNextBoundaryAndStep</a>(stepTime);
+			<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:UpdateTrack" title="void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track,Double_t timeInterval=0.)">UpdateTrack</a>(track, <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:GetStepTime" title="Double_t TUCNGeoNavigator::GetStepTime()">GetStepTime</a>());
+			
+			<span class="comment">// UPDATE CLASS DATA MEMBERS NOW LIKE <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNNextNode" title="TGeoNode* TUCNGeoNavigator::fUCNNextNode">fUCNNextNode</a></span>
+			
+		} <span class="keyword">else</span> {
+			<span class="comment">// -- Update Particle is called by FindNext...AlongParabola so no need to repeat that here</span>
+			<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:FindNextBoundaryAndStepAlongParabola" title="TGeoNode* TUCNGeoNavigator::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,TUCNGravField* field,Double_t stepTime,Bool_t compsafe=kFALSE)">FindNextBoundaryAndStepAlongParabola</a>(track, field, stepTime);
+		}
+		
+			
+		<span class="cpp">#ifdef VERBOSE_MODE	</span>
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"------------------- END OF STEP ----------------------"</span> &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Final Vertex (m): "</span> &lt;&lt; <span class="string">"X:"</span> &lt;&lt; particle-&gt;Vx() &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Y:"</span> &lt;&lt; particle-&gt;Vy()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Z:"</span> &lt;&lt; particle-&gt;Vz() &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"T:"</span> &lt;&lt; particle-&gt;T() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Final Dir: "</span> &lt;&lt; <span class="string">"X:"</span> &lt;&lt; particle-&gt;DirX()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Y:"</span> &lt;&lt; particle-&gt;DirY()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Z:"</span> &lt;&lt; particle-&gt;DirZ() &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Mag:"</span> &lt;&lt; particle-&gt;Dir() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Final Vel (m/s): "</span> &lt;&lt; <span class="string">"X:"</span> &lt;&lt; particle-&gt;VelocityX()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Y:"</span> &lt;&lt; particle-&gt;VelocityY()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Z:"</span> &lt;&lt; particle-&gt;VelocityZ() &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"V:"</span> &lt;&lt; particle-&gt;Velocity() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Final Mom (eV): "</span> &lt;&lt; <span class="string">"X:"</span> &lt;&lt; particle-&gt;Px()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Y:"</span> &lt;&lt; particle-&gt;Py()  &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Z:"</span> &lt;&lt; particle-&gt;Pz() &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"P:"</span> &lt;&lt; particle-&gt;P() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Final Volume: "</span>    &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentVolume" title="TGeoVolume* TGeoNavigator::GetCurrentVolume()">GetCurrentVolume</a>()-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Final Energy (neV): "</span>    &lt;&lt; particle-&gt;Energy() /Units::neV &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"-----------------------------"</span> &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Is On Boundary?  "</span> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:IsUCNOnBoundary" title="Bool_t TUCNGeoNavigator::IsUCNOnBoundary()">IsUCNOnBoundary</a>() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Is Outside?  "</span>     &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:IsUCNOutside" title="Bool_t TUCNGeoNavigator::IsUCNOutside()">IsUCNOutside</a>() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Is Step Entering?  "</span> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:IsUCNStepEntering" title="Bool_t TUCNGeoNavigator::IsUCNStepEntering()">IsUCNStepEntering</a>()  &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Is Step Exiting?  "</span> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:IsUCNStepExiting" title="Bool_t TUCNGeoNavigator::IsUCNStepExiting()">IsUCNStepExiting</a>() &lt;&lt; endl;
+			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"-----------------------------"</span> &lt;&lt; endl &lt;&lt; endl;
+		<span class="cpp">#endif	</span>
+		
+		<a href="../TUCNGeoMaterial.html">TUCNGeoMaterial</a>* currentMaterial = <span class="keyword">static_cast</span>&lt;<a href="../TUCNGeoMaterial.html">TUCNGeoMaterial</a>*&gt;(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetMedium()-&gt;GetMaterial());
+		
+		<span class="comment">// -- Determine what to do if we are on a boundary</span>
+		<span class="comment">// -- Is Track on the surface of a boundary?</span>
+		<span class="keyword">if</span> (currentMaterial-&gt;IsTrackingMaterial() == <a href="../ListOfTypes.html#Bool_t">kFALSE</a>) {
+			<span class="comment">// -- Are we on the surface of a detector?</span>
+			<span class="keyword">if</span> (currentMaterial-&gt;IsDetectorMaterial() == <a href="../ListOfTypes.html#Bool_t">kTRUE</a>) {
+				<span class="comment">// -- Was particle detected?</span>
+				<a href="../ListOfTypes.html#Double_t">Double_t</a> prob = gRandom-&gt;Uniform(0.0,1.0);
+				<span class="keyword">if</span> (prob &lt; currentMaterial-&gt;DetectionEfficiency()) {	
+					particle-&gt;Detected(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);  <span class="comment">// Set detected flag</span>
+				} <span class="keyword">else</span> {	
+				<span class="cpp">#ifdef VERBOSE_MODE	</span>
+					<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"------------------- BOUNCE ----------------------"</span> &lt;&lt; endl;
+					<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Current medium: "</span> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetMedium()-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>() &lt;&lt; endl;
+				<span class="cpp">#endif</span>
+					<span class="comment">// -- Make a <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:Bounce" title="Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track)">Bounce</a></span>
+					<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:Bounce" title="Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track)">Bounce</a>(track);	
+					<span class="comment">// -- Cross Boundary and Locate</span>
+					<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:CrossBoundaryAndLocate" title="TGeoNode* TGeoNavigator::CrossBoundaryAndLocate(Bool_t downwards,TGeoNode* skipnode)">CrossBoundaryAndLocate</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()); 	
+					<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:UpdateTrack" title="void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track,Double_t timeInterval=0.)">UpdateTrack</a>(track);
+				<span class="cpp">#ifdef VERBOSE_MODE	</span>
+					<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"-------------------------------------------------"</span> &lt;&lt; endl;
+					<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Final medium: "</span> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetMedium()-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>() &lt;&lt; endl;
+					<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"-------------------------------------------------"</span> &lt;&lt; endl &lt;&lt; endl;
+				<span class="cpp">#endif</span>
+				}
+			<span class="comment">// -- Was particle lost to boundary (absorbed/upscattered) ?</span>
+			} <span class="keyword">else</span> <span class="keyword">if</span> (<a href="../ListOfTypes.html#Bool_t">kFALSE</a>) {	
+				particle-&gt;Lost(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>); <span class="comment">// Set lost flag</span>
+			<span class="comment">// -- Are we outside the geometry heirarchy we have built - ie: in TOP</span>
+			} <span class="keyword">else</span> <span class="keyword">if</span> (currentMaterial-&gt;IsBlackhole() == <a href="../ListOfTypes.html#Bool_t">kTRUE</a>) {
+				particle-&gt;Lost(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+			<span class="comment">//	throw runtime_error(<span class="string">"In TUCNGeoNavigator::PropagateTrack - track has entered TOP/Blackhole!"</span>);</span>
+			} <span class="keyword">else</span> {
+				<span class="cpp">#ifdef VERBOSE_MODE	</span>
+					<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"------------------- BOUNCE ----------------------"</span> &lt;&lt; endl;
+					<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Current Node: "</span> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>() &lt;&lt; endl;
+				<span class="cpp">#endif	</span>
+					<span class="comment">// -- Make a <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:Bounce" title="Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track)">Bounce</a></span>
+					<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:Bounce" title="Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track)">Bounce</a>(track);	
+					<span class="comment">// -- Cross Boundary and Locate</span>
+					<span class="keyword">if</span> (<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:IsUCNStepEntering" title="Bool_t TUCNGeoNavigator::IsUCNStepEntering()">IsUCNStepEntering</a>() == <a href="../ListOfTypes.html#Bool_t">kTRUE</a>) {
+						<span class="cpp">#ifdef VERBOSE_MODE	</span>
+							<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Search Upwards - Step entering a volume so we must step back out"</span> &lt;&lt; endl;
+							<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetVolume()-&gt;GetNextNodeIndex() &lt;&lt; endl;
+						<span class="cpp">#endif</span>
+						<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:CrossBoundaryAndLocate" title="TGeoNode* TGeoNavigator::CrossBoundaryAndLocate(Bool_t downwards,TGeoNode* skipnode)">CrossBoundaryAndLocate</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()); 	
+						
+					} <span class="keyword">else</span> {
+						<span class="cpp">#ifdef VERBOSE_MODE</span>
+							<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Search Downwards - Step exited a volume so we must re-enter"</span> &lt;&lt; endl;
+							<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetVolume()-&gt;GetNextNodeIndex() &lt;&lt; endl;
+						<span class="cpp">#endif</span>
+						<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:CrossBoundaryAndLocate" title="TGeoNode* TGeoNavigator::CrossBoundaryAndLocate(Bool_t downwards,TGeoNode* skipnode)">CrossBoundaryAndLocate</a>(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>, <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>());
+					}
+					<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:UpdateTrack" title="void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track,Double_t timeInterval=0.)">UpdateTrack</a>(track);
+				<span class="cpp">#ifdef VERBOSE_MODE	</span>
+					<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"-------------------------------------------------"</span> &lt;&lt; endl;
+					<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Final Node: "</span> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>() &lt;&lt; endl;
+					<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"-------------------------------------------------"</span> &lt;&lt; endl &lt;&lt; endl;
+				<span class="cpp">#endif</span>
+			}
+		}
+		
+		<span class="comment">// -- Determine destination</span>
+		<span class="comment">// -- Has lost flag been set?</span>
+		<span class="keyword">if</span> (particle-&gt;Lost() == <a href="../ListOfTypes.html#Bool_t">kTRUE</a>) {
+			<span class="keyword">break</span>; <span class="comment">// -- End Propagtion Loop</span>
+		<span class="comment">// -- Has detected flag been set?</span>
+		} <span class="keyword">else</span> <span class="keyword">if</span> (particle-&gt;Detected() == <a href="../ListOfTypes.html#Bool_t">kTRUE</a>) {
+			<span class="keyword">break</span>; <span class="comment">// -- End Propagation Loop</span>
+		<span class="comment">// -- Has particle decayed within steptime?</span>
+		} <span class="keyword">else</span> <span class="keyword">if</span> (particle-&gt;WillDecay(stepTime) == <a href="../ListOfTypes.html#Bool_t">kTRUE</a>) {
+			particle-&gt;Decayed(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);<span class="comment">// Set Decay Flag</span>
+			<span class="keyword">break</span>; <span class="comment">// -- End Propagation Loop</span>
+		<span class="comment">// -- Have we reached the maximum runtime?</span>
+		} <span class="keyword">else</span> <span class="keyword">if</span> (particle-&gt;T() &gt;= runTime) {
+			<span class="keyword">break</span>; <span class="comment">// -- End Propagation Loop</span>
+		}
+	<span class="comment">// -- END OF PROPAGATION LOOP</span>
+	}	
+							
+	<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"FINAL STATUS: "</span> &lt;&lt; <span class="string">"Track: "</span> &lt;&lt; track-&gt;GetId() &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Steps taken: "</span> &lt;&lt; stepNumber &lt;&lt; <span class="string">"\t"</span>;
+	<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Time: "</span> &lt;&lt; particle-&gt;T() &lt;&lt; <span class="string">"s"</span> &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Final Medium: "</span> &lt;&lt; <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentNode" title="TGeoNode* TGeoNavigator::GetCurrentNode()">GetCurrentNode</a>()-&gt;GetMedium()-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>() &lt;&lt; <span class="string">"\t"</span>;
+	<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Bounces: "</span> &lt;&lt; particle-&gt;Bounces() &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Diffuse: "</span> &lt;&lt; particle-&gt;DiffuseBounces() &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Specular: "</span> &lt;&lt; particle-&gt;SpecularBounces() &lt;&lt; endl;
+	
+	<span class="keyword">return</span> <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="JdcCAE"></a><span class="keyword">void</span> <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:UpdateTrack" title="void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track,Double_t timeInterval=0.)">UpdateTrack</a>(TVirtualGeoTrack* track, <a href="../ListOfTypes.html#Double_t">Double_t</a> timeInterval)
+{
+<span class="comment">// Take the particle and update its position, momentum, time and energy with the current properties stored in the Navigator</span>
+	<a href="../TUCNParticle.html">TUCNParticle</a>* particle = <span class="keyword">static_cast</span>&lt;<a href="../TUCNParticle.html">TUCNParticle</a>*&gt;(track-&gt;GetParticle());
+	
+	<span class="cpp">#ifdef VERBOSE_MODE</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"UpdateTrack"</span>, <span class="string">"Initial X: %f, Y: %f, Z: %f, T: %f"</span>, particle-&gt;Vx(), particle-&gt;Vy(), particle-&gt;Vz(), particle-&gt;T());
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"UpdateTrack"</span>, <span class="string">"Initial Px: %f, Py: %f, Pz: %f, E: %f"</span>, particle-&gt;Px(), particle-&gt;Py(), particle-&gt;Pz(), particle-&gt;Energy()/Units::neV);
+	<span class="cpp">#endif</span>
+	
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a>* pos = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentPoint" title="const Double_t* TGeoNavigator::GetCurrentPoint()">GetCurrentPoint</a>();
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a>* dir = <span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentDirection" title="const Double_t* TGeoNavigator::GetCurrentDirection()">GetCurrentDirection</a>(); 
+	<span class="keyword">const</span> <a href="../TUCNGravField.html">TUCNGravField</a>* field = <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fUCNGeometry" title="TUCNGeoManager* TUCNGeoNavigator::fUCNGeometry">fUCNGeometry</a>-><a href="../TUCNGeoManager.html#TUCNGeoManager:GetGravField" title="TUCNGravField* TUCNGeoManager::GetGravField()">GetGravField</a>();
+	
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> heightClimbed = 0.0;
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> gravPotentialEnergy = 0.0;
+	
+	<span class="keyword">if</span> (field != NULL) {
+		<span class="comment">// Determine the height of our particle in the global coordinate system of TOP.</span>
+		<span class="comment">// Take the dot product of the point vector with the field direction unit vector to get the height of this point in the gravitational field.</span>
+		<span class="comment">// This assumes a convention that 'height' is measured along an axis that INCREASES in the opposite direction to the field direction vector</span>
+		<span class="comment">// (which is usually 'downwards')</span>
+		heightClimbed = -1.0*((pos[0] - particle-&gt;Vx())*field-&gt;Nx() + (pos[1] - particle-&gt;Vy())*field-&gt;Ny() + (pos[2] - particle-&gt;Vz())*field-&gt;Nz());
+		gravPotentialEnergy = particle-&gt;Mass_GeV_c2()*field-&gt;GravAcceleration()*heightClimbed;
+	}
+	
+	<span class="comment">// Determine current Kinetic energy of particle given the height climbed in graviational field</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> kineticEnergy = particle-&gt;Energy() - gravPotentialEnergy;
+	
+	<span class="comment">// Detemine current momentum</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> momentum = TMath::Sqrt(2.0*particle-&gt;Mass_GeV()*kineticEnergy);
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> mom[3] = {momentum*dir[0], momentum*dir[1], momentum*dir[2]};
+	
+	<span class="comment">// Update particle</span>
+	particle-&gt;SetProductionVertex(pos[0], pos[1], pos[2], particle-&gt;T() + timeInterval);
+	particle-&gt;SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
+
+	<span class="comment">// Update track</span>
+	track-&gt;AddPoint(particle-&gt;Vx(), particle-&gt;Vy(), particle-&gt;Vz(), particle-&gt;T());
+	
+	<span class="cpp">#ifdef VERBOSE_MODE</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"UpdateTrack"</span>, <span class="string">"Height climbed: %f, Kinetic Energy Gained(Lost): %f"</span>, heightClimbed, -gravPotentialEnergy/Units::neV);
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"UpdateTrack"</span>, <span class="string">"Final X: %f, Y: %f, Z: %f, T: %f"</span>, particle-&gt;Vx(), particle-&gt;Vy(), particle-&gt;Vz(), particle-&gt;T());
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"UpdateTrack"</span>, <span class="string">"FInal Px: %f, Py: %f, Pz: %f, E: %f"</span>, particle-&gt;Px(), particle-&gt;Py(), particle-&gt;Pz(), particle-&gt;Energy()/Units::neV);
+	<span class="cpp">#endif</span>
+}
+
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="B6yKs"></a><a href="../ListOfTypes.html#Bool_t">Bool_t</a> <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:Bounce" title="Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track)">Bounce</a>(TVirtualGeoTrack* track)
+{
+	<span class="comment">// -- Get particle</span>
+	<a href="../TUCNParticle.html">TUCNParticle</a>* ucnparticle = <span class="keyword">static_cast</span>&lt;<a href="../TUCNParticle.html">TUCNParticle</a>*&gt;(track-&gt;GetParticle());
+	
+	<span class="comment">// -- Direction Vector</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> dir[3] = {(<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentDirection" title="const Double_t* TGeoNavigator::GetCurrentDirection()">GetCurrentDirection</a>())[0], (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentDirection" title="const Double_t* TGeoNavigator::GetCurrentDirection()">GetCurrentDirection</a>())[1], (<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:GetCurrentDirection" title="const Double_t* TGeoNavigator::GetCurrentDirection()">GetCurrentDirection</a>())[2]};
+	
+	<span class="comment">// -- Normal Vector</span>
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> *normal = <span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:FindUCNNormal" title="Double_t* TUCNGeoNavigator::FindUCNNormal()">FindUCNNormal</a>();
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> norm[3] = {normal[0], normal[1], normal[2]};
+	
+	<span class="comment">// Check if the normal vector is actually pointing in the wrong direction </span>
+	<span class="comment">// (wrong means pointing along the direction of the track, rather than in the opposite direction)</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> dotProduct = dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2];
+	<span class="keyword">if</span> (dotProduct &gt; 0.) {
+		<span class="comment">// If so, reflect the normal to get the correct direction</span>
+		norm[0] = -norm[0];
+		norm[1] = -norm[1];
+		norm[2] = -norm[2];
+	}
+		
+	<span class="comment">// -- Calculate Probability of diffuse reflection</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> diffuseProbability = ucnparticle-&gt;DiffuseProbability(); <span class="comment">// Need to add some kind of law to determine probability</span>
+	
+	<span class="comment">// Determine Reflection Type </span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> prob = gRandom-&gt;Uniform(0.0,1.0);
+	<span class="keyword">if</span> (prob &lt;= diffuseProbability) {
+		<span class="comment">// -- Diffuse <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:Bounce" title="Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track)">Bounce</a></span>
+		<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:DiffuseBounce" title="Bool_t TUCNGeoNavigator::DiffuseBounce(Double_t* dir,const Double_t* norm)">DiffuseBounce</a>(dir, norm);
+		ucnparticle-&gt;MadeDiffuseBounce(); <span class="comment">// Update counter</span>
+	} <span class="keyword">else</span> {
+		<span class="comment">// -- Specular <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:Bounce" title="Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track)">Bounce</a></span>
+		<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SpecularBounce" title="Bool_t TUCNGeoNavigator::SpecularBounce(Double_t* dir,const Double_t* norm)">SpecularBounce</a>(dir, norm);
+		ucnparticle-&gt;MadeSpecularBounce(); <span class="comment">// Update counter</span>
+	}
+
+	<span class="comment">// -- Set New Direction</span>
+	<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:SetCurrentDirection" title="void TGeoNavigator::SetCurrentDirection(const Double_t* dir) or overloads">SetCurrentDirection</a>(dir);
+	
+	<span class="comment">// -- Update Track</span>
+	<span class="keyword">this</span>-&gt;<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:UpdateTrack" title="void TUCNGeoNavigator::UpdateTrack(TVirtualGeoTrack* track,Double_t timeInterval=0.)">UpdateTrack</a>(track);	
+
+	<span class="comment">// -- Update <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:Bounce" title="Bool_t TUCNGeoNavigator::Bounce(TVirtualGeoTrack* track)">Bounce</a> Counter</span>
+	ucnparticle-&gt;MadeBounce();
+	
+	<span class="keyword">return</span> <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+}	
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="EkfwiD"></a><a href="../ListOfTypes.html#Bool_t">Bool_t</a> <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:SpecularBounce" title="Bool_t TUCNGeoNavigator::SpecularBounce(Double_t* dir,const Double_t* norm)">SpecularBounce</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a>* dir, <span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a>* norm)
+{
+	<span class="cpp">#ifdef VERBOSE_MODE	</span>
+		<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"----------------------------"</span> &lt;&lt; endl;
+		<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Specular Bounce"</span> &lt;&lt; endl;
+		<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"BEFORE - nx: "</span> &lt;&lt; dir[0] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"ny: "</span> &lt;&lt; dir[1] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"ny: "</span> &lt;&lt; dir[2] &lt;&lt; endl;
+		<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"normx: "</span> &lt;&lt; norm[0] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"normy: "</span> &lt;&lt; norm[1] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"normz: "</span> &lt;&lt; norm[2] &lt;&lt; endl;
+	<span class="cpp">#endif</span>
+	
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> dotProduct = dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2];	
+	<span class="comment">// Reflection Law for Specular Reflection</span>
+	dir[0] = dir[0] - 2.0*dotProduct*norm[0];
+	dir[1] = dir[1] - 2.0*dotProduct*norm[1];  
+	dir[2] = dir[2] - 2.0*dotProduct*norm[2];  
+	
+	<span class="cpp">#ifdef VERBOSE_MODE	</span>
+		<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"AFTER - nx: "</span> &lt;&lt; dir[0] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"ny: "</span> &lt;&lt; dir[1] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"nz: "</span> &lt;&lt; dir[2] &lt;&lt; endl;
+	<span class="cpp">#endif	  </span>
+
+	<span class="keyword">return</span> <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="Wmj0SE"></a><a href="../ListOfTypes.html#Bool_t">Bool_t</a> <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>::<a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:DiffuseBounce" title="Bool_t TUCNGeoNavigator::DiffuseBounce(Double_t* dir,const Double_t* norm)">DiffuseBounce</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a>* dir, <span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a>* norm)
+{
+	<span class="cpp">#ifdef VERBOSE_MODE	</span>
+		<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"----------------------------"</span> &lt;&lt; endl;
+		<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Diffuse Bounce"</span> &lt;&lt; endl;
+		<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"BEFORE - nx: "</span> &lt;&lt; dir[0] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"nx: "</span> &lt;&lt; dir[1] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"nx: "</span> &lt;&lt; dir[2] &lt;&lt; endl;
+		<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"normx: "</span> &lt;&lt; norm[0] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"normx: "</span> &lt;&lt; norm[1] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"normx: "</span> &lt;&lt; norm[2] &lt;&lt; endl;
+	<span class="cpp">#endif	</span>
+	
+	<span class="comment">// First we need to pick random angles to choose the orientation of our diffuse direction vector. </span>
+	<span class="comment">// Correct method for UCN physics though is to weight these angles towards the poles by adding an extra cos(theta) - derivation of how to pick these angles is in notes</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> phi = gRandom-&gt;Uniform(0.0, 1.0)*2*TMath::Pi();
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> u = gRandom-&gt;Uniform(0.0, 0.5);		
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> theta = TMath::ACos(TMath::Sqrt(1.0 - 2*u)); <span class="comment">// We ignore the negative sqrt term, since we are only interested in theta between 0 and pi/2 </span>
+	
+	<span class="comment">// Calculate local normal vector	</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> lnorm[3] = {0.,0.,0.};
+	<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:MasterToLocalVect" title="void TGeoNavigator::MasterToLocalVect(const Double_t* master,Double_t* local)">MasterToLocalVect</a>(norm, lnorm);
+	TVector3 localNorm(lnorm[0], lnorm[1], lnorm[2]);
+	assert(TMath::Abs(localNorm.Mag() - 1.0) &lt; <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>);
+		
+	<span class="comment">// Define a preferred direction in our coordinate system - usually the z-direction - that we want to be perpendicular to the normal vector of our surface</span>
+	TVector3 upAxis(0.,0.,1.);
+		
+	<span class="comment">// Here we check to make sure that the upAxis we chose is not parallel to the normal vector. If it is, we try another one, x. </span>
+	<span class="keyword">if</span> (TMath::Abs(upAxis.Dot(localNorm)) &gt; <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>) {
+		upAxis.SetXYZ(1.,0.,0.);
+		<span class="keyword">if</span> (TMath::Abs(upAxis.Dot(localNorm)) &gt; <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>) {
+			<span class="keyword">throw</span> runtime_error(<span class="string">"In TUCNGeoNavigator::DiffuseBounce - Could not find an axis perpendicular to normal. Normal is parallel to z and x axes!!!"</span>);
+		}
+	}
+	
+	<span class="comment">// Calculate the cross product of the 'up' vector with our normal vector to get a vector guaranteed to be perpendicular to the normal. </span>
+	<span class="comment">// This is the vector we will want to rotate around initially. </span>
+	TVector3 perpAxis = localNorm.Cross(upAxis); 
+	assert(TMath::Abs(perpAxis.Mag() - 1.0) &lt; <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>);
+	
+	
+	<span class="comment">// Rotate normal vector about perpendicular axis by angle theta. Using Rodrigues' formula derived in notes. </span>
+	TVector3 rotatedNorm(0.,0.,0.);
+	{
+		TVector3 term2 = localNorm - (localNorm.Dot(perpAxis))*perpAxis; <span class="comment">// name term2 and term3 just refer to the terms as they appear in the Rodrigues' formula</span>
+		TVector3 term3 = perpAxis.Cross(localNorm);
+		rotatedNorm = localNorm + (TMath::Cos(theta) - 1.0)*term2 + TMath::Sin(theta)*term3;
+	}
+	assert(TMath::Abs(rotatedNorm.Mag() - 1.0) &lt; <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>);
+	
+	<span class="comment">// Rotate the newly rotated Normal vector, rotatedNorm, by angle phi, this time rotating about the original normal vector, norm.</span>
+	TVector3 direction(0.,0.,0.);
+	{
+		TVector3 term3 = localNorm.Cross(rotatedNorm);
+		TVector3 term2 = rotatedNorm - (rotatedNorm.Dot(localNorm))*localNorm;
+		direction = rotatedNorm + (TMath::Cos(phi) - 1.0)*term2 + TMath::Sin(phi)*term3;
+	}
+	assert(TMath::Abs(direction.Mag() - 1.0) &lt; <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>); 
+	
+	<span class="comment">// Convert the direction vector back to the global frame</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> ldir[3] = {direction.X(), direction.Y(), direction.Z()};
+	<span class="keyword">this</span>-&gt;<a href="../#TGeoNavigator:LocalToMasterVect" title="void TGeoNavigator::LocalToMasterVect(const Double_t* local,Double_t* master)">LocalToMasterVect</a>(ldir, dir);
+	
+	assert(TMath::Abs(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2] - 1.0) &lt; <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>);
+	<span class="comment">// Assert that our final direction is not perpendicular to the normal. This could result in escaping the boundary</span>
+	assert(TMath::Abs(dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2]) &gt; <a href="../TUCNGeoNavigator.html#TUCNGeoNavigator:fgTolerance" title="const Double_t TUCNGeoNavigator::fgTolerance">fgTolerance</a>); 
+	
+	<span class="cpp">#ifdef VERBOSE_MODE	</span>
+		<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"AFTER - nx: "</span> &lt;&lt; dir[0] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"nx: "</span> &lt;&lt; dir[1] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"nx: "</span> &lt;&lt; dir[2] &lt;&lt; endl;
+	<span class="cpp">#endif</span>
+	
+	<span class="keyword">return</span> <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+</pre>
+
+<br />
+<!--SIGNATURE-->
+
+<em>Last change: Thu Jun 18 00:10:42 2009</em><br />
+<em>Last generated: 2009-06-18 00:10</em><br />
+
+<hr />
+<em>
+This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</em>
+</body>
+</html>

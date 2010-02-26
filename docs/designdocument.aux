@@ -1,0 +1,56 @@
+\relax 
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Tracking Particles Under Gravity Through Parabolic Ray-Tracing}{1}}
+\newlabel{eqn:GravitationalMotion}{{1}{1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}A Typical Calculation: The Plane}{2}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces A simple geometry hierarchy of a single box, rotated with respect to the global volume.\relax }}{2}}
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:NestedBox}{{1}{2}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces An example of a single track inside the box, viewed from the local coordinate frame of the box. There will always be at least two intersections with the boundaries of the box\relax }}{3}}
+\newlabel{fig:IntersectionWithBox}{{2}{3}}
+\newlabel{eqn:SolveForBoundaryIntersection}{{4}{3}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces An example of a one-dimensional parabola crossing a single plane/line.\relax }}{4}}
+\newlabel{fig:IntersectionWithPlane}{{3}{4}}
+\newlabel{eqn:ArcLength}{{11}{5}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Approaching the volume from outside.\relax }}{5}}
+\newlabel{fig:TimeFromOutside}{{4}{5}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Designing a Particle Tracking Routine with ROOT}{6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Overview of the Stepping Algorithm}{6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}ROOT Navigation and Geometry}{6}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces The basic decisions involved in a typical propagation loop\relax }}{7}}
+\newlabel{fig:PropagationLoop}{{5}{7}}
+\newlabel{fig:Tube}{{6a}{7}}
+\newlabel{sub@fig:Tube}{{(a)}{a}}
+\newlabel{fig:Torus}{{6b}{7}}
+\newlabel{sub@fig:Torus}{{(b)}{b}}
+\newlabel{fig:Atlas}{{6c}{7}}
+\newlabel{sub@fig:Atlas}{{(c)}{c}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Some examples of ROOT geometries\relax }}{7}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(a)}{\ignorespaces {A tube}}}{7}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(b)}{\ignorespaces {A torus}}}{7}}
+\@writefile{lof}{\contentsline {subfigure}{\numberline{(c)}{\ignorespaces {Atlas Detector}}}{7}}
+\newlabel{fig:RootGeometries}{{6}{7}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Graphic depicting the inheritance tree of TGeoShape\relax }}{8}}
+\newlabel{fig:ShapeInheritance}{{7}{8}}
+\newlabel{code:DistFromInside/Outside}{{1}{9}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}The interfaces of the methods DistFromInside/Outside from TGeoShape.}{9}}
+\newlabel{code:FindNextBoundaryAndStep}{{2}{9}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}The interface of FindNextBoundaryAndStep in TGeoNavigator.}{9}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Designing a Parabolic-Tracking Engine with ROOT}{9}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Altering the Shape Hierarchy in UCNSIM}{10}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Graphic depicting the multiple-inheritance problem when trying to make a new class that inherits from TGeoShape\relax }}{11}}
+\newlabel{fig:UCNMultipleInheritance}{{8}{11}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Graphic depicting making a sub-inheritance hierarchy that breaks off from TGeoShape\relax }}{12}}
+\newlabel{fig:UCNMultipleInheritance2}{{9}{12}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Graphic depicting the final solution of making a sub-inheritance hierarchy that begins at TGeoBBox\relax }}{13}}
+\newlabel{fig:UCNShapeInheritance}{{10}{13}}
+\newlabel{code:TimeToBoundaryAlongParabola}{{3}{13}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {3}The interface of the new parabolic-boundary-intersection methods in TUCNGeoBBox.}{13}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Altering the Navigator in UCNSIM}{13}}
+\newlabel{code:FinNextBoundaryAndStepAlongParabola}{{4}{14}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {4}The interface of FindNextBoundaryAndStepAlongParabola}{14}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Overview of UCNSIM Class Structure}{14}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Class diagram for the UCNSIM program\relax }}{15}}
+\newlabel{fig:UCNSIMClassStructure}{{11}{15}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Summary}{16}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Planned Features and Future Timetable}{16}}

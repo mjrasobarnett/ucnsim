@@ -1,0 +1,246 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@pcroot.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Jun 18 00:10:41 2009            -->
+<!--                                             -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>TUCNDataParser - source file</title>
+<meta name="rating" content="General" />
+<meta name="objecttype" content="Manual" />
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, windows, c++, html, rene brun, fons rademakers, cern" />
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis." />
+<link rel="stylesheet" type="text/css" href="../ROOT.css" id="ROOTstyle" />
+<script type="text/javascript" src="../ROOT.js"></script>
+</head>
+<body  onload="javascript:SetValuesFromCookie();">
+<pre class="code">
+<span class="comment">// Dataparser.cpp</span>
+<span class="comment">// Author: Matt Barnett</span>
+<span class="comment">// Update as of 20/02/09: Code finds all instances of a specified string. Then copies out the data below that to a vector.</span>
+
+<span class="cpp">#include &lt;<a href="../TUCNDataParser.h">TUCNDataParser.h</a>&gt;</span>
+
+<span class="cpp">#include &lt;cassert&gt;    // Includes assert(v == u)</span>
+<span class="cpp">#include &lt;fstream&gt;</span>
+<span class="cpp">#include &lt;iostream&gt;</span>
+<span class="cpp">#include &lt;string&gt;</span>
+<span class="cpp">#include &lt;vector&gt;</span>
+<span class="cpp">#include &lt;sstream&gt;</span>
+
+
+<span class="keyword">using</span> <span class="keyword">namespace</span> std;
+
+<a name="NfJ5AE"></a><a href="../TUCNDataParser.html">TUCNDataParser</a>::<a href="../TUCNDataParser.html#TUCNDataParser:TUCNDataParser" title="TUCNDataParser TUCNDataParser::TUCNDataParser() or overloads">TUCNDataParser</a>()
+{
+	<span class="comment">// -- Constructor</span>
+	<a href="../TUCNDataParser.html#TUCNDataParser:fNumberOfLines" title="unsigned int TUCNDataParser::fNumberOfLines">fNumberOfLines</a> = 0;
+	<a href="../TUCNDataParser.html#TUCNDataParser:fFileName" title="string TUCNDataParser::fFileName">fFileName</a> = <span class="string">""</span>;
+}
+
+
+<span class="comment">//   *-*-*-*-*-*-*-*-*-*-*-*-*-*-METHODS-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*</span>
+<span class="comment">//								  			=======</span>
+
+
+<a name="d_zBKC"></a><span class="keyword">bool</span> <a href="../TUCNDataParser.html">TUCNDataParser</a>::<a href="../TUCNDataParser.html#TUCNDataParser:LoadFile" title="bool TUCNDataParser::LoadFile(string filename)">LoadFile</a>(string filename)
+{
+	<span class="comment">// Read in the File and store each line in a vector&lt;string&gt; while recording the number of lines. </span>
+	<a href="../TUCNDataParser.html#TUCNDataParser:fFileName" title="string TUCNDataParser::fFileName">fFileName</a> = filename;
+
+	<a href="../ListOfTypes.html#ifstream">ifstream</a> in;
+  	in.open(<a href="../TUCNDataParser.html#TUCNDataParser:fFileName" title="string TUCNDataParser::fFileName">fFileName</a>.data());
+	<span class="keyword">if</span> ( !in.is_open() ) {
+	    <a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"TUCNDataParser::Constructor: could not open file: "</span> &lt;&lt; <a href="../TUCNDataParser.html#TUCNDataParser:fFileName" title="string TUCNDataParser::fFileName">fFileName</a> &lt;&lt; endl;
+	    <a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; endl;
+	    <span class="keyword">return</span> <span class="keyword">false</span>;
+	}
+	<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Opened "</span> &lt;&lt; <a href="../TUCNDataParser.html#TUCNDataParser:fFileName" title="string TUCNDataParser::fFileName">fFileName</a> &lt;&lt; endl;
+	
+	string line;	<span class="comment">// Temp storage where each line from instream is read to. </span>
+	<span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> linecount = 1 ; getline(in , line) ; linecount++) {
+		<a href="../TUCNDataParser.html#TUCNDataParser:fFileLines" title="vector&lt;string&gt; TUCNDataParser::fFileLines">fFileLines</a>.push_back(line);
+		<a href="../TUCNDataParser.html#TUCNDataParser:fNumberOfLines" title="unsigned int TUCNDataParser::fNumberOfLines">fNumberOfLines</a> = linecount;
+	}
+	<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Number of Lines: "</span> &lt;&lt; <a href="../TUCNDataParser.html#TUCNDataParser:fNumberOfLines" title="unsigned int TUCNDataParser::fNumberOfLines">fNumberOfLines</a> &lt;&lt; endl;
+	
+	<span class="keyword">return</span> <span class="keyword">true</span>;
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="zaR8uB"></a><span class="keyword">bool</span> <a href="../TUCNDataParser.html">TUCNDataParser</a>::<a href="../TUCNDataParser.html#TUCNDataParser:GetData" title="bool TUCNDataParser::GetData(vector&lt;string&gt;&amp; data,string searchstring)">GetData</a>(vector&lt;string&gt;&amp; data, string searchstring) 
+{
+	<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span>
+	<span class="comment">// This is what we are searching the file for.</span>
+	<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span>
+	<a href="../TUCNDataParser.html#TUCNDataParser:fSearchString" title="string TUCNDataParser::fSearchString">fSearchString</a> = searchstring;	
+	<a href="../ListOfTypes.html#size_t">size_t</a> sizesearchstring = <a href="../TUCNDataParser.html#TUCNDataParser:fSearchString" title="string TUCNDataParser::fSearchString">fSearchString</a>.size();
+<span class="comment">//	<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"String to be searched for: "</span> &lt;&lt; <a href="../TUCNDataParser.html#TUCNDataParser:fSearchString" title="string TUCNDataParser::fSearchString">fSearchString</a> &lt;&lt; endl;</span>
+<span class="comment">//	<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"String size: "</span> &lt;&lt; sizesearchstring &lt;&lt; endl &lt;&lt; endl;</span>
+		
+	vector&lt;<span class="keyword">unsigned</span> <span class="keyword">int</span>&gt; instancelinenumber;  <span class="comment">// For each instance a vector stores line number, then number of tabs before instance</span>
+	vector&lt;<span class="keyword">unsigned</span> <span class="keyword">int</span>&gt; instancetabnumber;
+		
+	<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span>
+	<span class="comment">// This loop writes every line of the file to a string array. It also searches each line for a specific string and if found </span>
+	<span class="comment">// stores its position in the line and the number of tabs before it. </span>
+	<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span>
+	<span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> linecount = 0 ; linecount &lt; <a href="../TUCNDataParser.html#TUCNDataParser:fNumberOfLines" title="unsigned int TUCNDataParser::fNumberOfLines">fNumberOfLines</a> ; linecount++) {		
+		<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span>
+		<span class="comment">// Search line to find ALL instances of string. If found write out the position.</span>
+		<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		</span>
+		
+		<a href="../ListOfTypes.html#size_t">size_t</a> position = 0;		
+		<span class="keyword">while</span> (position != string::npos) {
+			position = <a href="../TUCNDataParser.html#TUCNDataParser:fFileLines" title="vector&lt;string&gt; TUCNDataParser::fFileLines">fFileLines</a>[linecount].find(<a href="../TUCNDataParser.html#TUCNDataParser:fSearchString" title="string TUCNDataParser::fSearchString">fSearchString</a>, position);
+			
+			<span class="keyword">if</span> (position != string::npos) {
+				instancelinenumber.push_back(linecount);  <span class="comment">// Storing the line number where an instance of our searchstring was found</span>
+<span class="comment">//				<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Line Number: "</span> &lt;&lt; linecount &lt;&lt; endl;</span>
+<span class="comment">//				<a href="../ListOfTypes.html#size_t">size_t</a> linesize = <a href="../TUCNDataParser.html#TUCNDataParser:fFileLines" title="vector&lt;string&gt; TUCNDataParser::fFileLines">fFileLines</a>[linecount].size();</span>
+<span class="comment">//				<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Length of Line: "</span> &lt;&lt; linesize &lt;&lt; endl;</span>
+<span class="comment">//				<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Position in line of the first character: "</span> &lt;&lt; position &lt;&lt; endl;</span>
+		
+				<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span>
+				<span class="comment">// Count the number of tabs before the string we we just found</span>
+				<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span>
+				<span class="keyword">unsigned</span> <span class="keyword">int</span> tabcounter = 0;
+				<a href="../ListOfTypes.html#size_t">size_t</a> tabposition = <a href="../TUCNDataParser.html#TUCNDataParser:fFileLines" title="vector&lt;string&gt; TUCNDataParser::fFileLines">fFileLines</a>[linecount].find(<span class="string">"\t"</span>, 0);
+			
+				<span class="keyword">if</span> (tabposition != string::npos) { <span class="comment">// npos is a static constant member of the string class that represents a nonexistent character position</span>
+<span class="comment">//					<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Tabs before string positioned at: "</span>;</span>
+					<span class="keyword">while</span> (tabposition != string::npos &amp;&amp; tabposition &lt; position) { <span class="comment">//step through line until no more tabs are found or we reach the string</span>
+						tabcounter++;
+<span class="comment">//						<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; tabposition &lt;&lt; <span class="string">", "</span>;  // Remember a string position counts from 0, so first character is at 0</span>
+						tabposition = <a href="../TUCNDataParser.html#TUCNDataParser:fFileLines" title="vector&lt;string&gt; TUCNDataParser::fFileLines">fFileLines</a>[linecount].find( <span class="string">"\t"</span> , ++tabposition); <span class="comment">// Look for next tab after this one</span>
+					} 
+					instancetabnumber.push_back(tabcounter); <span class="comment">// Storing the number of tabs before the instance of our searchstring</span>
+<span class="comment">//					<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; endl &lt;&lt; <span class="string">"No. of tabs before point: "</span> &lt;&lt; tabcounter &lt;&lt; endl &lt;&lt; endl;</span>
+				} <span class="keyword">else</span> { 
+					<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Error: NO tabs in line!"</span> &lt;&lt; endl &lt;&lt; endl; 
+				}
+				
+				position = position + sizesearchstring; <span class="comment">// Move position to the end of the string we just searched for. 			</span>
+			}
+		}
+	}
+	
+	<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span>
+	<span class="comment">// Check the number of instances, write out their data</span>
+	<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span>
+	assert( instancelinenumber.size()  == instancetabnumber.size() );
+<span class="comment">//	<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Number of instances found: "</span> &lt;&lt; instancelinenumber.size() &lt;&lt; endl;</span>
+	
+<span class="comment">//	for (<a href="../ListOfTypes.html#unsigned">unsigned</a> <a href="../ListOfTypes.html#int">int</a> i = 0 ; i &lt; instancelinenumber.size() ; i++) {</span>
+<span class="comment">//		<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Instance Line Number: "</span> &lt;&lt; instancelinenumber[i] &lt;&lt; <span class="string">"\t"</span> &lt;&lt;  <span class="string">"No. of tabs before Instance: "</span> &lt;&lt; instancetabnumber[i] &lt;&lt; endl;</span>
+<span class="comment">//	}</span>
+		
+	<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span>
+	<span class="comment">// Go to line after where instance was found. Move to start of instance using number of previously determined number of tabs before instance. </span>
+	<span class="comment">// Find position of the next tab after the instance. Copy characters between these two positions into vector</span>
+	<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	</span>
+	
+	<span class="comment">// Loop over the number of instances of the search string we found; This should eventually always be one.</span>
+	<span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> j = 0; j &lt; instancelinenumber.size(); j++) { 	
+		<span class="comment">// Loop over the number of rows/lines in our column, starting from the line right after the one we just found the column title in</span>
+		<span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> linecount = ++instancelinenumber[j]; linecount &lt; <a href="../TUCNDataParser.html#TUCNDataParser:fNumberOfLines" title="unsigned int TUCNDataParser::fNumberOfLines">fNumberOfLines</a>; linecount++) {
+			<span class="comment">// Loop over the number of tabs until we reach the start of column. Store the position of this column in firsttabposition. </span>
+			<a href="../ListOfTypes.html#size_t">size_t</a> firsttabposition = 0;
+			<span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> tabcounter = 0; tabcounter &lt; instancetabnumber[j] ; tabcounter++) {
+				firsttabposition = <a href="../TUCNDataParser.html#TUCNDataParser:fFileLines" title="vector&lt;string&gt; TUCNDataParser::fFileLines">fFileLines</a>[linecount].find(<span class="string">"\t"</span>, ++firsttabposition);
+			}
+			
+			<span class="comment">// Store the position of the next tab after the data in nexttabposition. Check that nexttabposition &gt; firsttabposition</span>
+			<a href="../ListOfTypes.html#size_t">size_t</a> nexttabposition = <a href="../TUCNDataParser.html#TUCNDataParser:fFileLines" title="vector&lt;string&gt; TUCNDataParser::fFileLines">fFileLines</a>[linecount].find(<span class="string">"\t"</span>, ++firsttabposition);
+			assert(nexttabposition &gt; firsttabposition);
+
+			<span class="comment">// Here we store in the string vector column value the characters between the tab position in <span class="string">"instancetabposition"</span>, </span>
+			<span class="comment">// and the next tab position stored in <span class="string">"position"</span> from the line given by <span class="string">"instancelinenumber"</span>.</span>
+			data.push_back(<a href="../TUCNDataParser.html#TUCNDataParser:fFileLines" title="vector&lt;string&gt; TUCNDataParser::fFileLines">fFileLines</a>[linecount].substr(firsttabposition, nexttabposition - firsttabposition)); 
+		}
+	}
+	
+	
+	<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span>
+	<span class="comment">// Write out the data we just found</span>
+	<span class="comment">////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////</span>
+	
+<span class="comment">//	<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; endl &lt;&lt; endl &lt;&lt; <span class="string">"Data Copied: "</span> &lt;&lt; data[0] &lt;&lt; endl;</span>
+<span class="comment">//	<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Number of rows of Data copied: "</span> &lt;&lt; data.size() &lt;&lt; endl ;</span>
+<span class="comment">//	for (<a href="../ListOfTypes.html#unsigned">unsigned</a> <a href="../ListOfTypes.html#int">int</a> i = 0 ; i &lt; data.size() ; i++) {</span>
+<span class="comment">//		<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; i &lt;&lt; <span class="string">": "</span> &lt;&lt; data[i] &lt;&lt; endl;</span>
+<span class="comment">//	}</span>
+			
+	<span class="keyword">return</span> <span class="keyword">true</span>;
+} 	
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="x9BDqE"></a><span class="keyword">bool</span> <a href="../TUCNDataParser.html">TUCNDataParser</a>::<a href="../TUCNDataParser.html#TUCNDataParser:ConvertVectorInt" title="bool TUCNDataParser::ConvertVectorInt(vector&lt;string&gt;&amp; data,vector&lt;unsigned int&gt;&amp; int_data)">ConvertVectorInt</a>(vector&lt;string&gt;&amp; data, vector&lt;<span class="keyword">unsigned</span> <span class="keyword">int</span>&gt;&amp; int_data)
+{
+	<span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> i = 0; i &lt; data.size(); i++) {   
+		<a href="../ListOfTypes.html#istringstream">istringstream</a> ss(data[i]); 		<span class="comment">// Using <a href="../ListOfTypes.html#istringstream">istringstream</a> to convert string to type <a href="../ListOfTypes.html#int">int</a></span>
+		<span class="keyword">unsigned</span> <span class="keyword">int</span> value;
+		ss &gt;&gt; value;	
+		<span class="keyword">if</span> (ss.fail()) {
+			int_data.push_back(0);
+<span class="comment">//	   	<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Failed to convert \""</span> &lt;&lt; data[i] &lt;&lt; <span class="string">"\""</span> &lt;&lt; endl;</span>
+			<span class="keyword">return</span> <span class="keyword">false</span>;
+	 	} <span class="keyword">else</span> {
+			int_data.push_back(value);
+<span class="comment">//			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"String:"</span> &lt;&lt; <span class="string">"\t"</span> &lt;&lt; data[i] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Integer:"</span> &lt;&lt; <span class="string">"\t"</span> &lt;&lt; int_data[i] &lt;&lt; endl;</span>
+	 	}
+	}
+	<span class="keyword">return</span> <span class="keyword">true</span>;
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="kvCJCD"></a><span class="keyword">bool</span> <a href="../TUCNDataParser.html">TUCNDataParser</a>::<a href="../TUCNDataParser.html#TUCNDataParser:ConvertVectorDouble" title="bool TUCNDataParser::ConvertVectorDouble(vector&lt;string&gt;&amp; data,vector&lt;double&gt;&amp; double_data)">ConvertVectorDouble</a>(vector&lt;string&gt;&amp; data, vector&lt;<span class="keyword">double</span>&gt;&amp; double_data)
+{
+	<span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> i = 0; i &lt; data.size(); i++) {   
+		<a href="../ListOfTypes.html#istringstream">istringstream</a> ss(data[i]); 		<span class="comment">// Using <a href="../ListOfTypes.html#istringstream">istringstream</a> to convert string to type <a href="../ListOfTypes.html#int">int</a></span>
+		<span class="keyword">double</span> value;
+		ss &gt;&gt; value;	
+		<span class="keyword">if</span> (ss.fail()) {
+			double_data.push_back(0);
+	   	<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"Failed to convert \""</span> &lt;&lt; data[i] &lt;&lt; <span class="string">"\""</span> &lt;&lt; endl;
+			<span class="keyword">return</span> <span class="keyword">false</span>;
+	 	} <span class="keyword">else</span> {
+			double_data.push_back(value);
+<span class="comment">//			<a href="../ListOfTypes.html#ostream">cout</a> &lt;&lt; <span class="string">"String:"</span> &lt;&lt; <span class="string">"\t"</span> &lt;&lt; data[i] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"Double:"</span> &lt;&lt; <span class="string">"\t"</span> &lt;&lt; double_data[i] &lt;&lt; endl;</span>
+	 	}
+	}
+	<span class="keyword">return</span> <span class="keyword">true</span>;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+
+<br />
+<!--SIGNATURE-->
+
+<em>Last change: Thu Jun 18 00:10:41 2009</em><br />
+<em>Last generated: 2009-06-18 00:10</em><br />
+
+<hr />
+<em>
+This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</em>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@pcroot.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Jun 18 00:10:41 2009            -->
+<!--                                             -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>TUCNExperiment - source file</title>
+<meta name="rating" content="General" />
+<meta name="objecttype" content="Manual" />
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, windows, c++, html, rene brun, fons rademakers, cern" />
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis." />
+<link rel="stylesheet" type="text/css" href="../ROOT.css" id="ROOTstyle" />
+<script type="text/javascript" src="../ROOT.js"></script>
+</head>
+<body  onload="javascript:SetValuesFromCookie();">
+<pre class="code">
+<span class="comment">// @(#)root/geom:$Id: $</span>
+<span class="comment">// Author: Matthew Raso-Barnett  February 2009</span>
+
+<span class="cpp">#ifndef TUCNExperiment_H</span>
+<span class="cpp">#define TUCNExperiment_H</span>
+
+<span class="comment">////////////////////////////////////////////////////////////////////////////</span>
+<span class="comment">//                                                                        //</span>
+<span class="comment">// <a href="../TUCNExperiment.html">TUCNExperiment</a> -         										 					  //</span>
+<span class="comment">//                                                                        //</span>
+<span class="comment">////////////////////////////////////////////////////////////////////////////</span>
+<span class="keyword">class</span> <a href="../TUCNGeoManager.html">TUCNGeoManager</a>;
+
+<span class="keyword">class</span> <a href="../TUCNExperiment.html">TUCNExperiment</a>
+{
+	<span class="keyword">private</span>: 
+		<a href="../ListOfTypes.html#Int_t">Int_t</a> <a href="../TUCNExperiment.html#TUCNExperiment:fIndexBlackhole" title="Int_t TUCNExperiment::fIndexBlackhole">fIndexBlackhole</a>;
+		<a href="../ListOfTypes.html#Int_t">Int_t</a> <a href="../TUCNExperiment.html#TUCNExperiment:fIndexTracking" title="Int_t TUCNExperiment::fIndexTracking">fIndexTracking</a>;
+		<a href="../ListOfTypes.html#Int_t">Int_t</a> <a href="../TUCNExperiment.html#TUCNExperiment:fIndexDetector" title="Int_t TUCNExperiment::fIndexDetector">fIndexDetector</a>;
+		<a href="../ListOfTypes.html#Int_t">Int_t</a> <a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>;
+		
+		<a href="../TUCNGeoManager.html">TUCNGeoManager</a>* <a href="../TUCNExperiment.html#TUCNExperiment:fUCNGeometry" title="TUCNGeoManager* TUCNExperiment::fUCNGeometry">fUCNGeometry</a>;
+	
+	<span class="keyword">protected</span>:
+		
+	<span class="keyword">public</span>: 
+		<span class="comment">// constructor </span>
+<a name="e6jhOE"></a>		<a href="../TUCNExperiment.html">TUCNExperiment</a>();		
+		<a href="../TUCNExperiment.html">TUCNExperiment</a>(<a href="../TUCNGeoManager.html">TUCNGeoManager</a>* geom);
+		
+		<span class="comment">// destructor</span>
+		<span class="keyword">virtual</span> <a href="../TUCNExperiment.html#TUCNExperiment:_TUCNExperiment" title="void TUCNExperiment::~TUCNExperiment()">~TUCNExperiment</a>();
+			
+		<span class="comment">// methods	</span>
+<a name="gIzlRB"></a>		<a href="../TUCNGeoManager.html">TUCNGeoManager</a>* 	<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>() <span class="keyword">const</span> {<span class="keyword">return</span> <a href="../TUCNExperiment.html#TUCNExperiment:fUCNGeometry" title="TUCNGeoManager* TUCNExperiment::fUCNGeometry">fUCNGeometry</a>;}
+			
+		<span class="keyword">void</span> 					<a href="../TUCNExperiment.html#TUCNExperiment:MakeTestVolume" title="void TUCNExperiment::MakeTestVolume()">MakeTestVolume</a>();
+		<span class="keyword">void</span> 					<a href="../TUCNExperiment.html#TUCNExperiment:MakeCuboid" title="void TUCNExperiment::MakeCuboid(Double_t dx,Double_t dy,Double_t dz)">MakeCuboid</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> dx, <a href="../ListOfTypes.html#Double_t">Double_t</a> dy, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz);
+
+		<span class="keyword">void</span> 					<a href="../TUCNExperiment.html#TUCNExperiment:MakeBox" title="void TUCNExperiment::MakeBox(Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> dx, <a href="../ListOfTypes.html#Double_t">Double_t</a> dy, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz);
+		<span class="keyword">void</span> 					<a href="../TUCNExperiment.html#TUCNExperiment:MakeTube" title="void TUCNExperiment::MakeTube(Double_t length,Double_t innerRadius,Double_t outerRadius)">MakeTube</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> length, <a href="../ListOfTypes.html#Double_t">Double_t</a> innerRadius, <a href="../ListOfTypes.html#Double_t">Double_t</a> outerRadius);
+		<span class="keyword">void</span> 					<a href="../TUCNExperiment.html#TUCNExperiment:MakeVerticalTube" title="void TUCNExperiment::MakeVerticalTube(Double_t length,Double_t innerRadius,Double_t outerRadius)">MakeVerticalTube</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> length, <a href="../ListOfTypes.html#Double_t">Double_t</a> innerRadius, <a href="../ListOfTypes.html#Double_t">Double_t</a> outerRadius);
+		<span class="keyword">void</span> 					<a href="../TUCNExperiment.html#TUCNExperiment:MakeTorus" title="void TUCNExperiment::MakeTorus(Double_t R,Double_t Rmin,Double_t Rmax,Double_t Phi1,Double_t Dphi)">MakeTorus</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> R,<a href="../ListOfTypes.html#Double_t">Double_t</a> Rmin,<a href="../ListOfTypes.html#Double_t">Double_t</a> Rmax,<a href="../ListOfTypes.html#Double_t">Double_t</a> Phi1,<a href="../ListOfTypes.html#Double_t">Double_t</a> Dphi);
+		
+		<span class="keyword">void</span> 					<a href="../TUCNExperiment.html#TUCNExperiment:CloseGeometry" title="void TUCNExperiment::CloseGeometry()">CloseGeometry</a>();
+		<span class="keyword">void</span> 					<a href="../TUCNExperiment.html#TUCNExperiment:DrawGeometry" title="void TUCNExperiment::DrawGeometry()">DrawGeometry</a>();		
+						
+	ClassDef(<a href="../TUCNExperiment.html">TUCNExperiment</a>,1)
+		
+};
+
+</pre>
+
+<br />
+<!--SIGNATURE-->
+
+<em>Last change: Thu Jun 18 00:10:41 2009</em><br />
+<em>Last generated: 2009-06-18 00:10</em><br />
+
+<hr />
+<em>
+This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</em>
+</body>
+</html>

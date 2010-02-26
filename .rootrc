@@ -1,0 +1,3 @@
+Root.Html.SourceDir:  .:src:include
+Root.Html.OutputDir:  ./htmldoc
+Root.Html.MyLib: 		 ./lib

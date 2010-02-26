@@ -1,0 +1,213 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@pcroot.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Jun 18 00:10:43 2009            -->
+<!--                                             -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>TUCNParticle - source file</title>
+<meta name="rating" content="General" />
+<meta name="objecttype" content="Manual" />
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, windows, c++, html, rene brun, fons rademakers, cern" />
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis." />
+<link rel="stylesheet" type="text/css" href="../ROOT.css" id="ROOTstyle" />
+<script type="text/javascript" src="../ROOT.js"></script>
+</head>
+<body  onload="javascript:SetValuesFromCookie();">
+<pre class="code">
+<span class="comment">// UCN class</span>
+<span class="comment">// Author: Matthew Raso-Barnett  19/01/2009</span>
+
+<span class="cpp">#include "<a href="../Constants.h">Constants.h</a>"</span>
+<span class="cpp">#include "<a href="../Units.h">Units.h</a>"</span>
+
+<span class="cpp">#include "<a href="../TUCNParticle.h">TUCNParticle.h</a>"</span>
+
+<span class="keyword">using</span> <span class="keyword">namespace</span> std;
+
+ClassImp(<a href="../TUCNParticle.html">TUCNParticle</a>) 
+
+<span class="keyword">const</span> <a href="../ListOfTypes.html#Int_t">Int_t</a> 	<a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:fgNeutronPDGCode" title="const Int_t TUCNParticle::fgNeutronPDGCode">fgNeutronPDGCode</a>;  <span class="comment">//Static Const</span>
+<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:fgDiffuseProb" title="const Double_t TUCNParticle::fgDiffuseProb">fgDiffuseProb</a>;
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="CrvNCD"></a><a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:TUCNParticle" title="TUCNParticle TUCNParticle::TUCNParticle() or overloads">TUCNParticle</a>()
+  				 :<a href="../#TParticle:TParticle" title="TParticle TParticle::TParticle() or overloads">TParticle</a>()				
+{
+<span class="comment">//	-- Default constructor</span>
+<span class="comment">//	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNParticle"</span>, <span class="string">"Default Constructor"</span>);</span>
+	<span class="keyword">this</span>-&gt;<a href="../#TParticle:SetPdgCode" title="void TParticle::SetPdgCode(Int_t pdg)">SetPdgCode</a>(<a href="../TUCNParticle.html#TUCNParticle:fgNeutronPDGCode" title="const Int_t TUCNParticle::fgNeutronPDGCode">fgNeutronPDGCode</a>);
+	<span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:Decayed" title="Bool_t TUCNParticle::Decayed() or overloads">Decayed</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>);
+	<span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:Lost" title="Bool_t TUCNParticle::Lost() or overloads">Lost</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>);
+	<span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:Detected" title="Bool_t TUCNParticle::Detected() or overloads">Detected</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>);
+	<a href="../TUCNParticle.html#TUCNParticle:fBounces" title="Int_t TUCNParticle::fBounces">fBounces</a> = 0;
+	<a href="../TUCNParticle.html#TUCNParticle:fSpecularBounces" title="Int_t TUCNParticle::fSpecularBounces">fSpecularBounces</a> = 0;
+	<a href="../TUCNParticle.html#TUCNParticle:fDiffuseBounces" title="Int_t TUCNParticle::fDiffuseBounces">fDiffuseBounces</a> = 0;
+}
+
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="uTWnW"></a><a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:TUCNParticle" title="TUCNParticle TUCNParticle::TUCNParticle() or overloads">TUCNParticle</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a>* pos, <a href="../ListOfTypes.html#Double_t">Double_t</a>* mom, <a href="../ListOfTypes.html#Double_t">Double_t</a> kineticEnergy, <a href="../ListOfTypes.html#Double_t">Double_t</a> startTime)
+  				 :<a href="../#TParticle:TParticle" title="TParticle TParticle::TParticle() or overloads">TParticle</a>() 
+{
+<span class="comment">//	-- Constructor</span>
+<span class="comment">//	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNParticle"</span>, <span class="string">"Constructor"</span>);</span>
+	<span class="keyword">this</span>-&gt;<a href="../#TParticle:SetPdgCode" title="void TParticle::SetPdgCode(Int_t pdg)">SetPdgCode</a>(<a href="../TUCNParticle.html#TUCNParticle:fgNeutronPDGCode" title="const Int_t TUCNParticle::fgNeutronPDGCode">fgNeutronPDGCode</a>);
+	<span class="keyword">this</span>-&gt;<a href="../#TParticle:SetProductionVertex" title="void TParticle::SetProductionVertex(Double_t vx,Double_t vy,Double_t vz,Double_t t) or overloads">SetProductionVertex</a>(pos[0], pos[1], pos[2], startTime);
+	<span class="keyword">this</span>-&gt;<a href="../#TParticle:SetMomentum" title="void TParticle::SetMomentum(Double_t px,Double_t py,Double_t pz,Double_t e) or overloads">SetMomentum</a>(mom[0], mom[1], mom[2], kineticEnergy);
+	<span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:Decayed" title="Bool_t TUCNParticle::Decayed() or overloads">Decayed</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>);
+	<span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:Lost" title="Bool_t TUCNParticle::Lost() or overloads">Lost</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>);
+	<span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:Detected" title="Bool_t TUCNParticle::Detected() or overloads">Detected</a>(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>);
+	<a href="../TUCNParticle.html#TUCNParticle:fBounces" title="Int_t TUCNParticle::fBounces">fBounces</a> = 0;
+	<a href="../TUCNParticle.html#TUCNParticle:fSpecularBounces" title="Int_t TUCNParticle::fSpecularBounces">fSpecularBounces</a> = 0;
+	<a href="../TUCNParticle.html#TUCNParticle:fDiffuseBounces" title="Int_t TUCNParticle::fDiffuseBounces">fDiffuseBounces</a> = 0;
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="IMhwp"></a><a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:TUCNParticle" title="TUCNParticle TUCNParticle::TUCNParticle() or overloads">TUCNParticle</a>(<span class="keyword">const</span> <a href="../TUCNParticle.html">TUCNParticle</a>&amp; part)
+             :<a href="../#TParticle:TParticle" title="TParticle TParticle::TParticle() or overloads">TParticle</a>(part)
+{
+<span class="comment">// -- <a href="../#TObject:Copy" title="void TObject::Copy(TObject&amp; object)">Copy</a> Constructor</span>
+<span class="comment">//	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNParticle"</span>, <span class="string">"Copy Constructor"</span>);</span>
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="SlmdDD"></a><a href="../TUCNParticle.html">TUCNParticle</a>&amp; <a href="../TUCNParticle.html">TUCNParticle</a>::<span class="keyword">operator</span>=(<span class="keyword">const</span> <a href="../TUCNParticle.html">TUCNParticle</a>&amp; part)
+{
+<span class="comment">// --assignment operator</span>
+	<span class="keyword">if</span>(<span class="keyword">this</span>!=&amp;part) {
+     <a href="../#TParticle:TParticle" title="TParticle TParticle::TParticle() or overloads">TParticle</a>::<span class="keyword">operator</span>=(part);
+	}
+	<span class="keyword">return</span> *<span class="keyword">this</span>;
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="ZFQ9WE"></a><a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:_TUCNParticle" title="void TUCNParticle::~TUCNParticle()">~TUCNParticle</a>()
+{ 
+<span class="comment">// -- Destructor	</span>
+<span class="comment">//	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNParticle"</span>, <span class="string">"Destructor"</span>);</span>
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="quvXC"></a><a href="../ListOfTypes.html#Bool_t">Bool_t</a> <a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:WillDecay" title="Bool_t TUCNParticle::WillDecay(Double_t timeInterval)">WillDecay</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> timeInterval)
+{
+	<span class="comment">// Placeholder for method to calculate probability particle will decay within timeInterval, and then roll the dice!</span>
+	<span class="keyword">return</span> <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="bVXxpD"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:Dir" title="Double_t TUCNParticle::Dir()">Dir</a>() <span class="keyword">const</span>
+{
+<span class="comment">// Returns x direction</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> dirX = <span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:DirX" title="Double_t TUCNParticle::DirX()">DirX</a>();
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> dirY = <span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:DirY" title="Double_t TUCNParticle::DirY()">DirY</a>();
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> dirZ = <span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:DirZ" title="Double_t TUCNParticle::DirZ()">DirZ</a>();
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> mag = TMath::Sqrt(dirX*dirX + dirY*dirY + dirZ*dirZ);
+	<span class="keyword">return</span> mag;
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="SCmVxB"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:DirX" title="Double_t TUCNParticle::DirX()">DirX</a>() <span class="keyword">const</span>
+{
+<span class="comment">// Returns x direction</span>
+	<span class="keyword">if</span> (<span class="keyword">this</span>-&gt;<a href="../#TParticle:P" title="Double_t TParticle::P()">P</a>() == 0.) {
+		<span class="keyword">return</span> 0.;
+	}
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> dirX = <span class="keyword">this</span>-&gt;<a href="../#TParticle:Px" title="Double_t TParticle::Px()">Px</a>()/<span class="keyword">this</span>-&gt;<a href="../#TParticle:P" title="Double_t TParticle::P()">P</a>();
+	<span class="keyword">return</span> dirX;
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="OHhasB"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:DirY" title="Double_t TUCNParticle::DirY()">DirY</a>() <span class="keyword">const</span>
+{
+<span class="comment">// Returns y direction</span>
+	<span class="keyword">if</span> (<span class="keyword">this</span>-&gt;<a href="../#TParticle:P" title="Double_t TParticle::P()">P</a>() == 0.) {
+		<span class="keyword">return</span> 0.;
+	}
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> dirY = <span class="keyword">this</span>-&gt;<a href="../#TParticle:Py" title="Double_t TParticle::Py()">Py</a>()/<span class="keyword">this</span>-&gt;<a href="../#TParticle:P" title="Double_t TParticle::P()">P</a>();
+	<span class="keyword">return</span> dirY;
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="KMcfnB"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:DirZ" title="Double_t TUCNParticle::DirZ()">DirZ</a>() <span class="keyword">const</span>
+{
+<span class="comment">// Returns z direction</span>
+	<span class="keyword">if</span> (<span class="keyword">this</span>-&gt;<a href="../#TParticle:P" title="Double_t TParticle::P()">P</a>() == 0.) {
+		<span class="keyword">return</span> 0.;
+	}
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> dirZ = <span class="keyword">this</span>-&gt;<a href="../#TParticle:Pz" title="Double_t TParticle::Pz()">Pz</a>()/<span class="keyword">this</span>-&gt;<a href="../#TParticle:P" title="Double_t TParticle::P()">P</a>();
+	<span class="keyword">return</span> dirZ;
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="RFaCkC"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:Velocity" title="Double_t TUCNParticle::Velocity()">Velocity</a>() <span class="keyword">const</span>
+{
+<span class="comment">// Returns velocity in units of M/S</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> mass_c2 = <span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:Mass_GeV_c2" title="Double_t TUCNParticle::Mass_GeV_c2()">Mass_GeV_c2</a>();
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> velocity = TMath::Sqrt(2.0*(<span class="keyword">this</span>-&gt;<a href="../#TParticle:Energy" title="Double_t TParticle::Energy()">Energy</a>())/mass_c2);
+	<span class="keyword">return</span> velocity;
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="XOh9UC"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:VelocityX" title="Double_t TUCNParticle::VelocityX()">VelocityX</a>() <span class="keyword">const</span>
+{
+<span class="comment">// Returns velocity in units of M/S</span>
+	<span class="keyword">return</span> <span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:Velocity" title="Double_t TUCNParticle::Velocity()">Velocity</a>()*<span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:DirX" title="Double_t TUCNParticle::DirX()">DirX</a>();
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="TOh9UC"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:VelocityY" title="Double_t TUCNParticle::VelocityY()">VelocityY</a>() <span class="keyword">const</span>
+{
+<span class="comment">// Returns velocity in units of M/S</span>
+	<span class="keyword">return</span> <span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:Velocity" title="Double_t TUCNParticle::Velocity()">Velocity</a>()*<span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:DirY" title="Double_t TUCNParticle::DirY()">DirY</a>();
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="POh9UC"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:VelocityZ" title="Double_t TUCNParticle::VelocityZ()">VelocityZ</a>() <span class="keyword">const</span>
+{
+<span class="comment">// Returns velocity in units of M/S</span>
+	<span class="keyword">return</span> <span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:Velocity" title="Double_t TUCNParticle::Velocity()">Velocity</a>()*<span class="keyword">this</span>-&gt;<a href="../TUCNParticle.html#TUCNParticle:DirZ" title="Double_t TUCNParticle::DirZ()">DirZ</a>();
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="PPKFDB"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:Mass_GeV" title="Double_t TUCNParticle::Mass_GeV()">Mass_GeV</a>() <span class="keyword">const</span>
+{
+<span class="comment">// Returns neutron mass in units of GeV</span>
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> mass_GeV = (fParticlePDG-&gt;Mass()*Units::GeV);
+	<span class="keyword">return</span> mass_GeV;
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="ZyN_DD"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:Mass_GeV_c" title="Double_t TUCNParticle::Mass_GeV_c()">Mass_GeV_c</a>() <span class="keyword">const</span>
+{
+<span class="comment">// Returns neutron mass in units of GeV/c</span>
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> mass_GeV = (fParticlePDG-&gt;Mass()*Units::GeV);
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> mass_GeV_c  = mass_GeV/(Constants::c_light);
+	<span class="keyword">return</span> mass_GeV_c;
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="GAojIB"></a><a href="../ListOfTypes.html#Double_t">Double_t</a> <a href="../TUCNParticle.html">TUCNParticle</a>::<a href="../TUCNParticle.html#TUCNParticle:Mass_GeV_c2" title="Double_t TUCNParticle::Mass_GeV_c2()">Mass_GeV_c2</a>() <span class="keyword">const</span>
+{
+<span class="comment">// Returns neutron mass in units of GeV/c^2</span>
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> mass_GeV = (fParticlePDG-&gt;Mass()*Units::GeV);
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> mass_GeV_c2 = mass_GeV/(Constants::c_squared);
+	<span class="keyword">return</span> mass_GeV_c2;
+}
+</pre>
+
+<br />
+<!--SIGNATURE-->
+
+<em>Last change: Thu Jun 18 00:10:43 2009</em><br />
+<em>Last generated: 2009-06-18 00:10</em><br />
+
+<hr />
+<em>
+This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</em>
+</body>
+</html>

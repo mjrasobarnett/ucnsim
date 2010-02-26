@@ -1,0 +1,355 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@pcroot.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Jun 18 00:10:41 2009            -->
+<!--                                             -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>TUCNExperiment - source file</title>
+<meta name="rating" content="General" />
+<meta name="objecttype" content="Manual" />
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, windows, c++, html, rene brun, fons rademakers, cern" />
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis." />
+<link rel="stylesheet" type="text/css" href="../ROOT.css" id="ROOTstyle" />
+<script type="text/javascript" src="../ROOT.js"></script>
+</head>
+<body  onload="javascript:SetValuesFromCookie();">
+<pre class="code">
+<span class="comment">// UCN <a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a> class</span>
+<span class="comment">// Author: Matthew Raso-Barnett  19/01/2009</span>
+<span class="cpp">#include &lt;iostream&gt;</span>
+
+<span class="cpp">#include "TMath.h"</span>
+<span class="cpp">#include "TGeoMedium.h"</span>
+<span class="cpp">#include "TGeoMatrix.h"</span>
+
+<span class="cpp">#include "<a href="../TUCNGeoManager.h">TUCNGeoManager.h</a>"</span>
+<span class="cpp">#include "<a href="../TUCNGeoMaterial.h">TUCNGeoMaterial.h</a>"</span>
+<span class="cpp">#include "<a href="../Constants.h">Constants.h</a>"</span>
+
+<span class="cpp">#include "<a href="../TUCNExperiment.h">TUCNExperiment.h</a>"</span>
+
+
+<span class="keyword">using</span> <span class="keyword">namespace</span> std;
+
+ClassImp(<a href="../TUCNExperiment.html">TUCNExperiment</a>) 
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="QQKU_B"></a><a href="../TUCNExperiment.html">TUCNExperiment</a>::<a href="../TUCNExperiment.html#TUCNExperiment:TUCNExperiment" title="TUCNExperiment TUCNExperiment::TUCNExperiment() or overloads">TUCNExperiment</a>()  
+{
+<span class="comment">//	Default constructor</span>
+	Info(<span class="string">"TUCNExperiment"</span>, <span class="string">"Default Constructor"</span>);
+	<a href="../TUCNExperiment.html#TUCNExperiment:fUCNGeometry" title="TUCNGeoManager* TUCNExperiment::fUCNGeometry">fUCNGeometry</a> = NULL;		
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="ATMmMC"></a><a href="../TUCNExperiment.html">TUCNExperiment</a>::<a href="../TUCNExperiment.html#TUCNExperiment:TUCNExperiment" title="TUCNExperiment TUCNExperiment::TUCNExperiment() or overloads">TUCNExperiment</a>(<a href="../TUCNGeoManager.html">TUCNGeoManager</a>* geom)
+{
+	Info(<span class="string">"TUCNExperiment"</span>, <span class="string">"Constructor"</span>);
+	<a href="../TUCNExperiment.html#TUCNExperiment:fUCNGeometry" title="TUCNGeoManager* TUCNExperiment::fUCNGeometry">fUCNGeometry</a> = geom;
+	
+	<span class="comment">// Define materials and media to be used. The indexes are for retrieving the media from the GeoManager</span>
+	<a href="../TUCNExperiment.html#TUCNExperiment:fIndexBlackhole" title="Int_t TUCNExperiment::fIndexBlackhole">fIndexBlackhole</a> = 1;
+	<a href="../TUCNExperiment.html#TUCNExperiment:fIndexTracking" title="Int_t TUCNExperiment::fIndexTracking">fIndexTracking</a> = 2;
+	<a href="../TUCNExperiment.html#TUCNExperiment:fIndexDetector" title="Int_t TUCNExperiment::fIndexDetector">fIndexDetector</a> = 3;
+	<a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a> = 4;
+	
+   <a href="../TUCNGeoMaterial.html">TUCNGeoMaterial</a> *matBlackhole = <span class="keyword">new</span> <a href="../TUCNGeoMaterial.html">TUCNGeoMaterial</a>(<span class="string">"Blackhole"</span>, 0,0,0);
+	<a href="../TUCNGeoMaterial.html">TUCNGeoMaterial</a> *matTracking = <span class="keyword">new</span> <a href="../TUCNGeoMaterial.html">TUCNGeoMaterial</a>(<span class="string">"Tracking Material"</span>, 0,0,0);
+   <a href="../TUCNGeoMaterial.html">TUCNGeoMaterial</a> *matDetector = <span class="keyword">new</span> <a href="../TUCNGeoMaterial.html">TUCNGeoMaterial</a>(<span class="string">"Detector Material"</span>, 0,0,0);
+   <a href="../TUCNGeoMaterial.html">TUCNGeoMaterial</a> *matWalls = <span class="keyword">new</span> <a href="../TUCNGeoMaterial.html">TUCNGeoMaterial</a>(<span class="string">"Walls"</span>, 0,0,0);
+	
+	<span class="comment">// Define the material properties</span>
+	matBlackhole-&gt;IsBlackhole(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	matTracking-&gt;IsTrackingMaterial(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	matDetector-&gt;IsDetectorMaterial(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	
+  	<span class="keyword">new</span> TGeoMedium(<span class="string">"Blackhole"</span>, <a href="../TUCNExperiment.html#TUCNExperiment:fIndexBlackhole" title="Int_t TUCNExperiment::fIndexBlackhole">fIndexBlackhole</a>, matBlackhole);
+	<span class="keyword">new</span> TGeoMedium(<span class="string">"Tracking Medium"</span>, <a href="../TUCNExperiment.html#TUCNExperiment:fIndexTracking" title="Int_t TUCNExperiment::fIndexTracking">fIndexTracking</a>, matTracking);
+   <span class="keyword">new</span> TGeoMedium(<span class="string">"Detector"</span>, <a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>, matWalls);
+	<span class="keyword">new</span> TGeoMedium(<span class="string">"Wall"</span>, <a href="../TUCNExperiment.html#TUCNExperiment:fIndexDetector" title="Int_t TUCNExperiment::fIndexDetector">fIndexDetector</a>, matDetector);
+	
+	<span class="comment">// Dimensions of Top Volume</span>
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> topX = 50.0*m;
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> topY = 50.0*m;
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> topZ = 50.0*m;
+   
+   <span class="comment">// Make the top container volume</span>
+	TGeoVolume *top = geom-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:MakeBox" title="void TUCNExperiment::MakeBox(Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<span class="string">"TOP"</span>, geom-&gt;GetMedium(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexBlackhole" title="Int_t TUCNExperiment::fIndexBlackhole">fIndexBlackhole</a>), topX, topY, topZ);
+   geom-&gt;SetTopVolume(top);		
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="RMylYE"></a><a href="../TUCNExperiment.html">TUCNExperiment</a>::<a href="../TUCNExperiment.html#TUCNExperiment:_TUCNExperiment" title="void TUCNExperiment::~TUCNExperiment()">~TUCNExperiment</a>()
+{ 
+<span class="comment">// Destructor	</span>
+	Info(<span class="string">"TUCNExperiment"</span>, <span class="string">"Destructor"</span>);	
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="on.KIB"></a><span class="keyword">void</span> <a href="../TUCNExperiment.html">TUCNExperiment</a>::<a href="../TUCNExperiment.html#TUCNExperiment:DrawGeometry" title="void TUCNExperiment::DrawGeometry()">DrawGeometry</a>()
+{ 
+   <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetTopVolume" title="TGeoVolume* TGeoManager::GetTopVolume()">GetTopVolume</a>()-&gt;Draw();
+	<span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:SetVisLevel" title="void TGeoManager::SetVisLevel(Int_t level=3)">SetVisLevel</a>(5);
+   <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:SetVisOption" title="void TGeoManager::SetVisOption(Int_t option=0)">SetVisOption</a>(0);
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="Iop0vB"></a><span class="keyword">void</span> <a href="../TUCNExperiment.html">TUCNExperiment</a>::<a href="../TUCNExperiment.html#TUCNExperiment:CloseGeometry" title="void TUCNExperiment::CloseGeometry()">CloseGeometry</a>()
+{
+	<span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:CloseGeometry" title="void TGeoManager::CloseGeometry(Option_t* option=&quot;d&quot;)">CloseGeometry</a>();
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="xLwdLD"></a><span class="keyword">void</span> <a href="../TUCNExperiment.html">TUCNExperiment</a>::<a href="../TUCNExperiment.html#TUCNExperiment:MakeBox" title="void TUCNExperiment::MakeBox(Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> dx, <a href="../ListOfTypes.html#Double_t">Double_t</a> dy, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz)
+{
+	TGeoVolume *outerchamber 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeBox" title="TGeoVolume* TUCNGeoManager::MakeBox(const char* name,const TGeoMedium* medium,Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<span class="string">"OuterChamber"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>), dx/2, dy/2, dz/2);
+	TGeoVolume *innerchamber 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeBox" title="TGeoVolume* TUCNGeoManager::MakeBox(const char* name,const TGeoMedium* medium,Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<span class="string">"InnerChamber"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexTracking" title="Int_t TUCNExperiment::fIndexTracking">fIndexTracking</a>), (dx-0.2)/2, (dy-0.2)/2, (dz-0.2)/2);
+	
+	outerchamber-&gt;SetLineColor(6);
+	outerchamber-&gt;SetLineWidth(1);
+	outerchamber-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	outerchamber-&gt;SetTransparency(50);
+	
+	innerchamber-&gt;SetLineColor(35);
+	innerchamber-&gt;SetLineWidth(1);
+	innerchamber-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	innerchamber-&gt;SetTransparency(50);
+	
+	outerchamber-&gt;AddNode(innerchamber, 1);
+	
+	TGeoRotation *rotation = <span class="keyword">new</span> TGeoRotation(<span class="string">"rotation"</span>,15,75,30);
+	<span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetTopVolume" title="TGeoVolume* TGeoManager::GetTopVolume()">GetTopVolume</a>()-&gt;AddNode(outerchamber,1, rotation);	
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="Vmu69D"></a><span class="keyword">void</span> <a href="../TUCNExperiment.html">TUCNExperiment</a>::<a href="../TUCNExperiment.html#TUCNExperiment:MakeTube" title="void TUCNExperiment::MakeTube(Double_t length,Double_t innerRadius,Double_t outerRadius)">MakeTube</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> length, <a href="../ListOfTypes.html#Double_t">Double_t</a> innerRadius, <a href="../ListOfTypes.html#Double_t">Double_t</a> outerRadius)
+{
+	TGeoVolume *tube 			= <span class="keyword">new</span> TGeoVolumeAssembly(<span class="string">"Tube"</span>);
+   TGeoVolume *outertube 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTube" title="TGeoVolume* TUCNGeoManager::MakeTube(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t dz)">MakeTube</a>(<span class="string">"Outertube"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>), 0, outerRadius, length);
+	TGeoVolume *innertube 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTube" title="TGeoVolume* TUCNGeoManager::MakeTube(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t dz)">MakeTube</a>(<span class="string">"Innertube"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexTracking" title="Int_t TUCNExperiment::fIndexTracking">fIndexTracking</a>), 0., innerRadius, length);
+	TGeoVolume *tubedoor 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTube" title="TGeoVolume* TUCNGeoManager::MakeTube(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t dz)">MakeTube</a>(<span class="string">"Tubedoor"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>), 0, outerRadius, 0.5); 
+	TGeoVolume *detector 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTube" title="TGeoVolume* TUCNGeoManager::MakeTube(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t dz)">MakeTube</a>(<span class="string">"Detector"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexDetector" title="Int_t TUCNExperiment::fIndexDetector">fIndexDetector</a>), 0, outerRadius, 0.5);
+	
+	TGeoTranslation *detectorposition = <span class="keyword">new</span> TGeoTranslation(<span class="string">"detectorposition"</span>,0.,0.,length+0.5);
+	TGeoTranslation *doorposition = <span class="keyword">new</span> TGeoTranslation(<span class="string">"doorposition"</span>,0.,0., -length-0.5);
+	
+	outertube-&gt;AddNode(innertube,1);
+	
+	tube-&gt;AddNode(outertube,1);
+	tube-&gt;AddNode(detector,1, detectorposition);
+	tube-&gt;AddNode(tubedoor,1, doorposition);
+		
+	outertube-&gt;SetLineColor(36); <span class="comment">// See TAttLine for Line Colours</span>
+	outertube-&gt;SetLineWidth(1);
+	outertube-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	
+	detector-&gt;SetLineColor(12);
+	detector-&gt;SetLineWidth(1);
+	detector-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	
+	tubedoor-&gt;SetLineColor(35);
+	tubedoor-&gt;SetLineWidth(1);
+	tubedoor-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+
+	innertube-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>);
+	
+	<span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetTopVolume" title="TGeoVolume* TGeoManager::GetTopVolume()">GetTopVolume</a>()-&gt;AddNode(tube,1);	
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="PJj3uD"></a><span class="keyword">void</span> <a href="../TUCNExperiment.html">TUCNExperiment</a>::<a href="../TUCNExperiment.html#TUCNExperiment:MakeVerticalTube" title="void TUCNExperiment::MakeVerticalTube(Double_t length,Double_t innerRadius,Double_t outerRadius)">MakeVerticalTube</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> length, <a href="../ListOfTypes.html#Double_t">Double_t</a> innerRadius, <a href="../ListOfTypes.html#Double_t">Double_t</a> outerRadius)
+{
+	<span class="comment">// -- Here we make a vertical tube where the zero of our gravitational potential is at the bottom of the tube</span>
+	
+	<span class="comment">//TGeoVolume *tube 			= new TGeoVolumeAssembly(<span class="string">"Tube"</span>);</span>
+   TGeoVolume *outertube 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTube" title="TGeoVolume* TUCNGeoManager::MakeTube(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t dz)">MakeTube</a>(<span class="string">"Outertube"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>), 0, outerRadius, length);
+	TGeoVolume *innertube 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTube" title="TGeoVolume* TUCNGeoManager::MakeTube(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t dz)">MakeTube</a>(<span class="string">"Innertube"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexTracking" title="Int_t TUCNExperiment::fIndexTracking">fIndexTracking</a>), 0., innerRadius, length);
+	TGeoVolume *tubedoor 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTube" title="TGeoVolume* TUCNGeoManager::MakeTube(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t dz)">MakeTube</a>(<span class="string">"Tubedoor"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>), 0, innerRadius, 0.1); 
+	TGeoVolume *detector 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTube" title="TGeoVolume* TUCNGeoManager::MakeTube(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t dz)">MakeTube</a>(<span class="string">"Detector"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexDetector" title="Int_t TUCNExperiment::fIndexDetector">fIndexDetector</a>), 0, innerRadius, 0.1);
+	
+	TGeoTranslation *detectorposition = <span class="keyword">new</span> TGeoTranslation(<span class="string">"detectorposition"</span>,0.,0.,length-0.1);
+	TGeoTranslation *doorposition = <span class="keyword">new</span> TGeoTranslation(<span class="string">"doorposition"</span>,0.,0., -length+0.1);
+	
+	outertube-&gt;AddNode(innertube,1);
+	
+	innertube-&gt;AddNode(tubedoor,1, doorposition);
+	innertube-&gt;AddNode(detector,1, detectorposition);
+	<span class="comment">//tube-&gt;AddNode(outertube,1);</span>
+	<span class="comment">//tube-&gt;AddNode(detector,1, detectorposition);</span>
+	<span class="comment">//tube-&gt;AddNode(tubedoor,1, doorposition);</span>
+	
+	TGeoRotation *rotation = <span class="keyword">new</span> TGeoRotation(<span class="string">"rotation"</span>,0,90,0);
+	TGeoCombiTrans *tubetransformation = <span class="keyword">new</span> TGeoCombiTrans(<span class="string">"tubetransfortmation"</span>, 0.0, length, 0.0, rotation);
+	
+	
+	outertube-&gt;SetLineColor(36); <span class="comment">// See TAttLine for Line Colours</span>
+	outertube-&gt;SetLineWidth(1);
+	outertube-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	
+	detector-&gt;SetLineColor(12);
+	detector-&gt;SetLineWidth(1);
+	detector-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	
+	tubedoor-&gt;SetLineColor(35);
+	tubedoor-&gt;SetLineWidth(1);
+	tubedoor-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+
+	innertube-&gt;SetLineColor(5);
+	innertube-&gt;SetLineWidth(1);
+	innertube-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	
+	<span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetTopVolume" title="TGeoVolume* TGeoManager::GetTopVolume()">GetTopVolume</a>()-&gt;AddNode(outertube,1, tubetransformation);
+	
+}
+
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="FSjSQB"></a><span class="keyword">void</span> <a href="../TUCNExperiment.html">TUCNExperiment</a>::<a href="../TUCNExperiment.html#TUCNExperiment:MakeTorus" title="void TUCNExperiment::MakeTorus(Double_t R,Double_t Rmin,Double_t Rmax,Double_t Phi1,Double_t Dphi)">MakeTorus</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> R,<a href="../ListOfTypes.html#Double_t">Double_t</a> Rmin,<a href="../ListOfTypes.html#Double_t">Double_t</a> Rmax,<a href="../ListOfTypes.html#Double_t">Double_t</a> Phi1,<a href="../ListOfTypes.html#Double_t">Double_t</a> Dphi)
+{
+	TGeoVolume *torus 			= <span class="keyword">new</span> TGeoVolumeAssembly(<span class="string">"Torus"</span>);
+   TGeoVolume *outertorus 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTorus" title="TGeoVolume* TUCNGeoManager::MakeTorus(const char* name,const TGeoMedium* medium,Double_t r,Double_t rmin,Double_t rmax,Double_t phi1=0,Double_t dphi=360)">MakeTorus</a>(<span class="string">"Outertorus"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>), R, 0, Rmax, Phi1, Dphi);
+	TGeoVolume *innertorus 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTorus" title="TGeoVolume* TUCNGeoManager::MakeTorus(const char* name,const TGeoMedium* medium,Double_t r,Double_t rmin,Double_t rmax,Double_t phi1=0,Double_t dphi=360)">MakeTorus</a>(<span class="string">"Innertorus"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexTracking" title="Int_t TUCNExperiment::fIndexTracking">fIndexTracking</a>), R, 0., Rmin, Phi1, Dphi);
+<span class="comment">//	TGeoVolume *tubedoor 	= this-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTube" title="TGeoVolume* TUCNGeoManager::MakeTube(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t dz)">MakeTube</a>(<span class="string">"Tubedoor"</span>, this-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>), 0, Rmax, 0.5); </span>
+<span class="comment">//	TGeoVolume *detector 	= this-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTube" title="TGeoVolume* TUCNGeoManager::MakeTube(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t dz)">MakeTube</a>(<span class="string">"Detector"</span>, this-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexDetector" title="Int_t TUCNExperiment::fIndexDetector">fIndexDetector</a>), 0, Rmax, 0.5);</span>
+		
+	outertorus-&gt;AddNode(innertorus,1);
+	
+	torus-&gt;AddNode(outertorus,1);
+<span class="comment">//	torus-&gt;AddNode(detector,1, detectorposition);</span>
+<span class="comment">//	torus-&gt;AddNode(tubedoor,1, doorposition);</span>
+		
+	outertorus-&gt;SetLineColor(36); <span class="comment">// See TAttLine for Line Colours</span>
+	outertorus-&gt;SetLineWidth(1);
+	outertorus-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	
+<span class="comment">//	detector-&gt;SetLineColor(12);</span>
+<span class="comment">//	detector-&gt;SetLineWidth(1);</span>
+<span class="comment">//	detector-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);</span>
+	
+<span class="comment">//	tubedoor-&gt;SetLineColor(35);</span>
+<span class="comment">//	tubedoor-&gt;SetLineWidth(1);</span>
+<span class="comment">//	tubedoor-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);</span>
+
+	innertorus-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kFALSE</a>);
+	
+	<span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetTopVolume" title="TGeoVolume* TGeoManager::GetTopVolume()">GetTopVolume</a>()-&gt;AddNode(torus,1);
+	
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="LudKID"></a><span class="keyword">void</span> <a href="../TUCNExperiment.html">TUCNExperiment</a>::<a href="../TUCNExperiment.html#TUCNExperiment:MakeTestVolume" title="void TUCNExperiment::MakeTestVolume()">MakeTestVolume</a>()
+{
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> outerchamberX = 5, outerchamberY = 5, outerchamberZ = 5;
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> innerchamber1X = 4, innerchamber1Y = 4, innerchamber1Z = 4;
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> innerchamber2X = 2, innerchamber2Y = 2, innerchamber2Z = 2;
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> innerchamber3X = 1, innerchamber3Y = 1, innerchamber3Z = 1;
+	
+	
+	TGeoVolume *outerchamber 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeBox" title="TGeoVolume* TUCNGeoManager::MakeBox(const char* name,const TGeoMedium* medium,Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<span class="string">"OuterChamber"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>), outerchamberX, outerchamberY, outerchamberZ);
+	TGeoVolume *innerchamber1 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeBox" title="TGeoVolume* TUCNGeoManager::MakeBox(const char* name,const TGeoMedium* medium,Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<span class="string">"InnerChamber1"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>), innerchamber1X, innerchamber1Y, innerchamber1Z);
+	TGeoVolume *innerchamber2  = <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeBox" title="TGeoVolume* TUCNGeoManager::MakeBox(const char* name,const TGeoMedium* medium,Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<span class="string">"InnerChamber2"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>), innerchamber2X, innerchamber2Y, innerchamber2Z);
+	TGeoVolume *innerchamber3  = <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeBox" title="TGeoVolume* TUCNGeoManager::MakeBox(const char* name,const TGeoMedium* medium,Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<span class="string">"InnerChamber3"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexDetector" title="Int_t TUCNExperiment::fIndexDetector">fIndexDetector</a>), innerchamber3X, innerchamber3Y, innerchamber3Z);
+	
+	
+	outerchamber-&gt;SetLineColor(6);
+	outerchamber-&gt;SetLineWidth(1);
+	outerchamber-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	outerchamber-&gt;SetTransparency(50);
+	
+	innerchamber1-&gt;SetLineColor(35);
+	innerchamber1-&gt;SetLineWidth(1);
+	innerchamber1-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	innerchamber1-&gt;SetTransparency(50);
+	
+	innerchamber2-&gt;SetLineColor(60);
+	innerchamber2-&gt;SetLineWidth(1);
+	innerchamber2-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	innerchamber2-&gt;SetTransparency(50);
+	
+	innerchamber3-&gt;SetLineColor(85);
+	innerchamber3-&gt;SetLineWidth(1);
+	innerchamber3-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	innerchamber3-&gt;SetTransparency(70);
+	
+	TGeoRotation *rotation1 = <span class="keyword">new</span> TGeoRotation(<span class="string">"rotation1"</span>,170,76,9);
+	TGeoRotation *rotation2 = <span class="keyword">new</span> TGeoRotation(<span class="string">"rotation2"</span>,12,42.5,140);
+	TGeoRotation *rotation3 = <span class="keyword">new</span> TGeoRotation(<span class="string">"rotation3"</span>,45,45,15);
+	
+	innerchamber2-&gt;AddNode(innerchamber3,1, rotation3);
+	innerchamber1-&gt;AddNode(innerchamber2,1, rotation2);
+	outerchamber-&gt;AddNode(innerchamber1, 1, rotation1);
+	
+	TGeoRotation *rotation = <span class="keyword">new</span> TGeoRotation(<span class="string">"rotation"</span>,15,75,30);
+	<span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetTopVolume" title="TGeoVolume* TGeoManager::GetTopVolume()">GetTopVolume</a>()-&gt;AddNode(outerchamber,1, rotation);	
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="zIDQ4C"></a><span class="keyword">void</span> <a href="../TUCNExperiment.html">TUCNExperiment</a>::<a href="../TUCNExperiment.html#TUCNExperiment:MakeCuboid" title="void TUCNExperiment::MakeCuboid(Double_t dx,Double_t dy,Double_t dz)">MakeCuboid</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> dx, <a href="../ListOfTypes.html#Double_t">Double_t</a> dy, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz)
+{
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> outerchamberX = (dx/2.)+0.025, outerchamberY = (dy/2.)+0.025, outerchamberZ = (dz/2.)+0.0001;
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> innerchamber1X = (dx/2.), innerchamber1Y = (dy/2.), innerchamber1Z = (dz/2.);
+<span class="comment">//	<a href="../ListOfTypes.html#Double_t">Double_t</a> innerchamber2X = 2, innerchamber2Y = 2, innerchamber2Z = 2;</span>
+<span class="comment">//	<a href="../ListOfTypes.html#Double_t">Double_t</a> innerchamber3X = 1, innerchamber3Y = 1, innerchamber3Z = 1;</span>
+	
+	
+	TGeoVolume *outerchamber 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeBox" title="TGeoVolume* TUCNGeoManager::MakeBox(const char* name,const TGeoMedium* medium,Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<span class="string">"OuterChamber"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>), outerchamberX, outerchamberY, outerchamberZ);
+	TGeoVolume *innerchamber1 	= <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeBox" title="TGeoVolume* TUCNGeoManager::MakeBox(const char* name,const TGeoMedium* medium,Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<span class="string">"InnerChamber1"</span>, <span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexTracking" title="Int_t TUCNExperiment::fIndexTracking">fIndexTracking</a>), innerchamber1X, innerchamber1Y, innerchamber1Z);
+<span class="comment">//	TGeoVolume *innerchamber2  = this-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeBox" title="TGeoVolume* TUCNGeoManager::MakeBox(const char* name,const TGeoMedium* medium,Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<span class="string">"InnerChamber2"</span>, this-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexWall" title="Int_t TUCNExperiment::fIndexWall">fIndexWall</a>), innerchamber2X, innerchamber2Y, innerchamber2Z);</span>
+<span class="comment">//	TGeoVolume *innerchamber3  = this-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../TUCNGeoManager.html#TUCNGeoManager:MakeBox" title="TGeoVolume* TUCNGeoManager::MakeBox(const char* name,const TGeoMedium* medium,Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<span class="string">"InnerChamber3"</span>, this-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetMedium" title="TGeoMedium* TGeoManager::GetMedium(const char* medium) or overloads">GetMedium</a>(<a href="../TUCNExperiment.html#TUCNExperiment:fIndexDetector" title="Int_t TUCNExperiment::fIndexDetector">fIndexDetector</a>), innerchamber3X, innerchamber3Y, innerchamber3Z);</span>
+	
+	
+	outerchamber-&gt;SetLineColor(1);
+	outerchamber-&gt;SetLineWidth(1);
+	outerchamber-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	outerchamber-&gt;SetTransparency(50);
+	
+	innerchamber1-&gt;SetLineColor(35);
+	innerchamber1-&gt;SetLineWidth(1);
+	innerchamber1-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	innerchamber1-&gt;SetTransparency(50);
+	
+<span class="comment">/*	innerchamber2-&gt;SetLineColor(60);
+	innerchamber2-&gt;SetLineWidth(1);
+	innerchamber2-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	innerchamber2-&gt;SetTransparency(50);
+	
+	innerchamber3-&gt;SetLineColor(85);
+	innerchamber3-&gt;SetLineWidth(1);
+	innerchamber3-&gt;SetVisibility(<a href="../ListOfTypes.html#Bool_t">kTRUE</a>);
+	innerchamber3-&gt;SetTransparency(70);
+*/</span>	
+<span class="comment">//	TGeoRotation *rotation1 = new TGeoRotation(<span class="string">"rotation1"</span>,170,76,9);</span>
+<span class="comment">//	TGeoRotation *rotation2 = new TGeoRotation(<span class="string">"rotation2"</span>,12,42.5,140);</span>
+<span class="comment">//	TGeoRotation *rotation3 = new TGeoRotation(<span class="string">"rotation3"</span>,45,45,15);</span>
+	
+<span class="comment">//	innerchamber2-&gt;AddNode(innerchamber3,1, rotation3);</span>
+<span class="comment">//	innerchamber1-&gt;AddNode(innerchamber2,1, rotation2);</span>
+	outerchamber-&gt;AddNode(innerchamber1, 1);
+	
+	TGeoRotation *rotation = <span class="keyword">new</span> TGeoRotation(<span class="string">"rotation"</span>,0.,0.,0.);
+	TGeoCombiTrans *transformation = <span class="keyword">new</span> TGeoCombiTrans(<span class="string">"transfortmation"</span>, 0.0, 0.0, outerchamberZ, rotation);
+	
+	<span class="keyword">this</span>-&gt;<a href="../TUCNExperiment.html#TUCNExperiment:Geometry" title="TUCNGeoManager* TUCNExperiment::Geometry()">Geometry</a>()-><a href="../#TGeoManager:GetTopVolume" title="TGeoVolume* TGeoManager::GetTopVolume()">GetTopVolume</a>()-&gt;AddNode(outerchamber,1, transformation);	
+}
+
+
+
+
+</pre>
+
+<br />
+<!--SIGNATURE-->
+
+<em>Last change: Thu Jun 18 00:10:41 2009</em><br />
+<em>Last generated: 2009-06-18 00:10</em><br />
+
+<hr />
+<em>
+This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</em>
+</body>
+</html>

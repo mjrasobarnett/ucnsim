@@ -1,0 +1,260 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@pcroot.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Jun 18 00:10:43 2009            -->
+<!--                                             -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>TUCNParticleCloud - source file</title>
+<meta name="rating" content="General" />
+<meta name="objecttype" content="Manual" />
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, windows, c++, html, rene brun, fons rademakers, cern" />
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis." />
+<link rel="stylesheet" type="text/css" href="../ROOT.css" id="ROOTstyle" />
+<script type="text/javascript" src="../ROOT.js"></script>
+</head>
+<body  onload="javascript:SetValuesFromCookie();">
+<pre class="code">
+<span class="comment">// <a href="../TUCNParticleCloud.html">TUCNParticleCloud</a></span>
+<span class="comment">// Author: Matthew Raso-Barnett  19/01/2009</span>
+<span class="cpp">#include &lt;iostream&gt;</span>
+<span class="cpp">#include &lt;stdexcept&gt;</span>
+<span class="cpp">#include &lt;fstream&gt;</span>
+
+<span class="cpp">#include "TMath.h"</span>
+<span class="cpp">#include "TObjArray.h"</span>
+<span class="cpp">#include "TRandom3.h"</span>
+<span class="cpp">#include "TGeoVolume.h"</span>
+<span class="cpp">#include "TGeoNode.h"</span>
+<span class="cpp">#include "TGeoMatrix.h"</span>
+<span class="cpp">#include "TGeoShape.h"</span>
+<span class="cpp">#include "TGeoBBox.h"</span>
+
+<span class="cpp">#include "<a href="../TUCNGeoManager.h">TUCNGeoManager.h</a>"</span>
+<span class="cpp">#include "<a href="../TUCNGravField.h">TUCNGravField.h</a>"</span>
+<span class="cpp">#include "<a href="../TUCNParticle.h">TUCNParticle.h</a>"</span>
+<span class="cpp">#include "<a href="../Constants.h">Constants.h</a>"</span>
+<span class="cpp">#include "<a href="../Units.h">Units.h</a>"</span>
+
+<span class="cpp">#include "<a href="../TUCNParticleCloud.h">TUCNParticleCloud.h</a>"</span>
+
+<span class="keyword">using</span> std::runtime_error;
+<span class="keyword">using</span> std::<a href="../ListOfTypes.html#ostream">cout</a>;
+<span class="keyword">using</span> std::endl;
+
+<span class="comment">//#define VERBOSE_MODE</span>
+
+ClassImp(<a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>) 
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="VkGN9"></a><a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>::<a href="../TUCNParticleCloud.html#TUCNParticleCloud:TUCNParticleCloud" title="TUCNParticleCloud TUCNParticleCloud::TUCNParticleCloud(const TUCNParticleCloud&amp; ) or overloads">TUCNParticleCloud</a>()
+{
+<span class="comment">//	-- Default constructor</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNParticleCloud"</span>, <span class="string">"Dummy Constructor"</span>);
+	<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fParticles" title="TObjArray* TUCNParticleCloud::fParticles">fParticles</a> = NULL;
+	<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fUCNGeometry" title="TUCNGeoManager* TUCNParticleCloud::fUCNGeometry">fUCNGeometry</a> = NULL;
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="QXIwQD"></a><a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>::<a href="../TUCNParticleCloud.html#TUCNParticleCloud:TUCNParticleCloud" title="TUCNParticleCloud TUCNParticleCloud::TUCNParticleCloud(const TUCNParticleCloud&amp; ) or overloads">TUCNParticleCloud</a>(<a href="../TUCNGeoManager.html">TUCNGeoManager</a>* geom)
+{
+<span class="comment">//	-- Default constructor</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNParticleCloud"</span>, <span class="string">"Constructor"</span>);
+	<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fParticles" title="TObjArray* TUCNParticleCloud::fParticles">fParticles</a> = <span class="keyword">new</span> TObjArray(256);
+	<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fUCNGeometry" title="TUCNGeoManager* TUCNParticleCloud::fUCNGeometry">fUCNGeometry</a> = geom;
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="dj2bbE"></a><a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>::<a href="../TUCNParticleCloud.html#TUCNParticleCloud:TUCNParticleCloud" title="TUCNParticleCloud TUCNParticleCloud::TUCNParticleCloud(const TUCNParticleCloud&amp; ) or overloads">TUCNParticleCloud</a>(<span class="keyword">const</span> <a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>&amp; part)
+              		:<a href="../#TObject:TObject" title="TObject TObject::TObject() or overloads">TObject</a>(part),
+               	 <a href="../TUCNParticleCloud.html#TUCNParticleCloud:fParticles" title="TObjArray* TUCNParticleCloud::fParticles">fParticles</a>(part.<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fParticles" title="TObjArray* TUCNParticleCloud::fParticles">fParticles</a>),
+               	 <a href="../TUCNParticleCloud.html#TUCNParticleCloud:fUCNGeometry" title="TUCNGeoManager* TUCNParticleCloud::fUCNGeometry">fUCNGeometry</a>(part.<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fUCNGeometry" title="TUCNGeoManager* TUCNParticleCloud::fUCNGeometry">fUCNGeometry</a>)
+{
+<span class="comment">// -- <a href="../#TObject:Copy" title="void TObject::Copy(TObject&amp; object)">Copy</a> Constructor</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNParticleCloud"</span>, <span class="string">"Copy Constructor"</span>);
+}
+
+<span class="comment">//_____________________________________________________________________________</span>
+<a name="U.fR5E"></a><a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>&amp; <a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>::<span class="keyword">operator</span>=(<span class="keyword">const</span> <a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>&amp; part)
+{
+<span class="comment">// --assignment operator</span>
+	<span class="keyword">if</span>(<span class="keyword">this</span>!=&amp;part) {
+     <a href="../#TObject:TObject" title="TObject TObject::TObject() or overloads">TObject</a>::<span class="keyword">operator</span>=(part);
+     <a href="../TUCNParticleCloud.html#TUCNParticleCloud:fParticles" title="TObjArray* TUCNParticleCloud::fParticles">fParticles</a> = part.<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fParticles" title="TObjArray* TUCNParticleCloud::fParticles">fParticles</a>;
+	  <a href="../TUCNParticleCloud.html#TUCNParticleCloud:fUCNGeometry" title="TUCNGeoManager* TUCNParticleCloud::fUCNGeometry">fUCNGeometry</a> = part.<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fUCNGeometry" title="TUCNGeoManager* TUCNParticleCloud::fUCNGeometry">fUCNGeometry</a>;
+	}
+	<span class="keyword">return</span> *<span class="keyword">this</span>;
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="VGJh1B"></a><a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>::<a href="../TUCNParticleCloud.html#TUCNParticleCloud:_TUCNParticleCloud" title="void TUCNParticleCloud::~TUCNParticleCloud()">~TUCNParticleCloud</a>()
+{ 
+<span class="comment">// -- Destructor	</span>
+	<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"TUCNParticleCloud"</span>, <span class="string">"Destructor"</span>);
+	<span class="keyword">if</span> (<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fParticles" title="TObjArray* TUCNParticleCloud::fParticles">fParticles</a>) {<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fParticles" title="TObjArray* TUCNParticleCloud::fParticles">fParticles</a>-&gt;<a href="../#TObject:Delete" title="void TObject::Delete(Option_t* option=&quot;&quot;)">Delete</a>(); <span class="keyword">delete</span> <a href="../TUCNParticleCloud.html#TUCNParticleCloud:fParticles" title="TObjArray* TUCNParticleCloud::fParticles">fParticles</a>;}
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="etmxHB"></a>TObjArray* <a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>::<a href="../TUCNParticleCloud.html#TUCNParticleCloud:UniformMonoEnergeticDistribution" title="TObjArray* TUCNParticleCloud::UniformMonoEnergeticDistribution(Int_t particles,Double_t totalEnergy,TGeoVolume* volume,TGeoMatrix* matrix=0)">UniformMonoEnergeticDistribution</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> particles, <a href="../ListOfTypes.html#Double_t">Double_t</a> totalEnergy, TGeoVolume* volume, TGeoMatrix* matrix)
+{
+<span class="comment">//	Fill the TObjArray with monoenergetic particles, uniformly distributed inside the volume passed. </span>
+<span class="comment">// Directions will be random on the unit sphere with an additional cos(theta) weighting the directions towards the poles. </span>
+
+<span class="comment">// <a href="../#TObject:Warning" title="void TObject::Warning(const char* method,const char* msgfmt)">Warning</a>: It does not at this time (04/06/2009) seem possible to extract the TGeoMatrix used to position a volume in the overall geometry heirarchy</span>
+<span class="comment">// directly from the TGeoVolume object itself. If it does become possible, then this will be added, but for now, the overall matrix used (could be a multiple</span>
+<span class="comment">// of matrices multiplied together) to position this volume in TOP must be supplied for this method to properly fill an arbitrarily translated, rotated volume.</span>
+	
+<span class="comment">//	<a href="../ListOfTypes.html#ofstream">ofstream</a> out3(<span class="string">"initialangles-1-1.txt"</span>);</span>
+<span class="comment">//	out3 &lt;&lt; <span class="string">"i"</span> &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"dx"</span>&lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"dy"</span> &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"dz"</span> &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"theta"</span> &lt;&lt; <span class="string">"\t"</span> &lt;&lt; <span class="string">"phi"</span> &lt;&lt; <span class="string">"\t"</span> &lt;&lt; endl;</span>
+	
+	<span class="keyword">if</span> (particles &lt;= 0) {
+		<span class="keyword">throw</span> runtime_error(<span class="string">"In TUCNParticleCloud::UniformMonoEnergeticDistribution - Number of particles to initialise is zero."</span>);
+	} 
+	
+	<span class="comment">// If there is a gravitational field we will need to later determine the kinetic energy from the TotalEnergy provided. </span>
+	<a href="../ListOfTypes.html#Bool_t">Bool_t</a> fieldPresent = <a href="../ListOfTypes.html#Bool_t">kFALSE</a>;
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> g = 0.0;
+	<a href="../ListOfTypes.html#Double_t">Double_t</a> fieldDir[3] = {0.,0.,0.};
+	<span class="keyword">if</span> (<span class="keyword">this</span>-&gt;<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fUCNGeometry" title="TUCNGeoManager* TUCNParticleCloud::fUCNGeometry">fUCNGeometry</a>-><a href="../TUCNGeoManager.html#TUCNGeoManager:GetGravField" title="TUCNGravField* TUCNGeoManager::GetGravField()">GetGravField</a>() != NULL) {
+		fieldPresent = <a href="../ListOfTypes.html#Bool_t">kTRUE</a>;
+		g = (<span class="keyword">this</span>-&gt;<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fUCNGeometry" title="TUCNGeoManager* TUCNParticleCloud::fUCNGeometry">fUCNGeometry</a>-><a href="../TUCNGeoManager.html#TUCNGeoManager:GetGravField" title="TUCNGravField* TUCNGeoManager::GetGravField()">GetGravField</a>()-><a href="../TUCNGravField.html#TUCNGravField:GravAcceleration" title="Double_t TUCNGravField::GravAcceleration()">GravAcceleration</a>());
+		fieldDir[0] = <span class="keyword">this</span>-&gt;<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fUCNGeometry" title="TUCNGeoManager* TUCNParticleCloud::fUCNGeometry">fUCNGeometry</a>-><a href="../TUCNGeoManager.html#TUCNGeoManager:GetGravField" title="TUCNGravField* TUCNGeoManager::GetGravField()">GetGravField</a>()-><a href="../TUCNGravField.html#TUCNGravField:Nx" title="Double_t TUCNGravField::Nx()">Nx</a>(); 
+		fieldDir[1] = <span class="keyword">this</span>-&gt;<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fUCNGeometry" title="TUCNGeoManager* TUCNParticleCloud::fUCNGeometry">fUCNGeometry</a>-><a href="../TUCNGeoManager.html#TUCNGeoManager:GetGravField" title="TUCNGravField* TUCNGeoManager::GetGravField()">GetGravField</a>()-><a href="../TUCNGravField.html#TUCNGravField:Ny" title="Double_t TUCNGravField::Ny()">Ny</a>();
+		fieldDir[2] = <span class="keyword">this</span>-&gt;<a href="../TUCNParticleCloud.html#TUCNParticleCloud:fUCNGeometry" title="TUCNGeoManager* TUCNParticleCloud::fUCNGeometry">fUCNGeometry</a>-><a href="../TUCNGeoManager.html#TUCNGeoManager:GetGravField" title="TUCNGravField* TUCNGeoManager::GetGravField()">GetGravField</a>()-><a href="../TUCNGravField.html#TUCNGravField:Nz" title="Double_t TUCNGravField::Nz()">Nz</a>();
+	}
+	
+	<span class="comment">// Determine the dimensions of the shape's bounding box, that we wish to initialise inside</span>
+	TGeoShape* shape = volume-&gt;GetShape();
+	TGeoBBox*  boundingBox = (TGeoBBox*)shape;
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> boxWallX = boundingBox-&gt;GetDX();
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> boxWallY = boundingBox-&gt;GetDY();
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> boxWallZ = boundingBox-&gt;GetDZ();
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> boxOriginX = (boundingBox-&gt;GetOrigin())[0];
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> boxOriginY = (boundingBox-&gt;GetOrigin())[1];
+	<span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> boxOriginZ = (boundingBox-&gt;GetOrigin())[2];
+	
+	<span class="cpp">#ifdef VERBOSE_MODE</span>
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"UniformMonoEnergeticDistribution"</span>, <span class="string">"Bounding Box - X: %f, Y: %f, Z: %f, in volume, %s"</span>, boxWallX, boxWallY, boxWallZ, volume-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>());
+		<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"UniformMonoEnergeticDistribution"</span>, <span class="string">"Bounding Box Origin - X: %f, Y: %f, Z: %f"</span>, boxOriginX, boxOriginY, boxOriginZ);
+	<span class="cpp">#endif</span>
+	
+	<span class="keyword">for</span> (<a href="../ListOfTypes.html#Int_t">Int_t</a> i = 0; i &lt; particles; i++) {
+		<span class="comment">// Initialise important parameters</span>
+		TGeoNode* currentNode = NULL;
+		<a href="../ListOfTypes.html#Double_t">Double_t</a> point[3] = {0.,0.,0.}, lpoint[3] = {0.,0.,0.}, dir[3] = {0.,0.,0.}, mom[3] = {0.,0.,0.};
+		<a href="../ListOfTypes.html#Double_t">Double_t</a> kineticEnergy = 0.0, momentum = 0.0, height = 0.0, startTime = 0.0;
+		
+		<span class="comment">// Create a particle object on heap</span>
+		<a href="../TUCNParticle.html">TUCNParticle</a>* particle = <span class="keyword">new</span> <a href="../TUCNParticle.html">TUCNParticle</a>();
+		
+		<span class="comment">// Find a random point inside the volume provided</span>
+		<span class="keyword">while</span> (currentNode == NULL) {
+			<span class="comment">// First generate random point inside bounding box, in the local coordinate frame of the box</span>
+			lpoint[0] = boxOriginX + boxWallX*gRandom-&gt;Uniform(-1.0, 1.0);
+			lpoint[1] = boxOriginY + boxWallY*gRandom-&gt;Uniform(-1.0, 1.0);
+			lpoint[2] = boxOriginZ + boxWallZ*gRandom-&gt;Uniform(-1.0, 1.0);
+			<span class="comment">// Next transform point to the global coordinate frame</span>
+			<span class="keyword">if</span> (matrix != NULL) {
+				matrix-&gt;LocalToMaster(lpoint, point);
+			}
+			<span class="comment">// Then test to see if this point is inside the volume</span>
+			<span class="keyword">this</span>-&gt;<a href="../TUCNParticleCloud.html#TUCNParticleCloud:Geometry" title="TUCNGeoManager* TUCNParticleCloud::Geometry()">Geometry</a>()-><a href="../#TGeoManager:SetCurrentPoint" title="void TGeoManager::SetCurrentPoint(Double_t* point) or overloads">SetCurrentPoint</a>(point);
+			currentNode = <span class="keyword">this</span>-&gt;<a href="../TUCNParticleCloud.html#TUCNParticleCloud:Geometry" title="TUCNGeoManager* TUCNParticleCloud::Geometry()">Geometry</a>()-><a href="../#TGeoManager:FindNode" title="TGeoNode* TGeoManager::FindNode(Bool_t safe_start=kTRUE) or overloads">FindNode</a>();
+						
+			<span class="keyword">if</span> (currentNode == NULL) {
+				<a href="../#TObject:Warning" title="void TObject::Warning(const char* method,const char* msgfmt)">Warning</a>(<span class="string">"UniformMonoEnergeticDistribution"</span>, <span class="string">"Point - X: %f, Y: %f, Z: %f,   not found in geometry!"</span>, point[0], point[1], point[2]);
+			} <span class="keyword">else</span> <span class="keyword">if</span> (currentNode-&gt;GetVolume() != volume) {
+				currentNode = NULL;
+			}
+		}
+		<span class="cpp">#ifdef VERBOSE_MODE</span>
+			<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"UniformMonoEnergeticDistribution"</span>, <span class="string">"Number: %i 	Point- X: %f, Y: %f, Z: %f, in volume, %s"</span>, i, point[0], point[1], point[2], currentNode-&gt;GetVolume()-&gt;<a href="../#TObject:GetName" title="const char* TObject::GetName()">GetName</a>());
+		<span class="cpp">#endif</span>
+		
+		<span class="comment">// Determine a random direction vector on the unit sphere weighted by an additional cos(theta). Phi ranges from 0 to 2*Pi, Theta from 0 to Pi.</span>
+		<a href="../ListOfTypes.html#Double_t">Double_t</a> phi = gRandom-&gt;Uniform(0.0, 1.0)*2.0*TMath::Pi();
+		<a href="../ListOfTypes.html#Double_t">Double_t</a> u   = gRandom-&gt;Uniform(0.0, 0.5);
+		<a href="../ListOfTypes.html#Double_t">Double_t</a> theta = 0.0; 
+		<span class="keyword">if</span> (gRandom-&gt;Uniform(0.0,1.0) &gt; 0.5) {
+			theta = TMath::ACos(TMath::Sqrt(1.0 - 2*u));
+		} <span class="keyword">else</span> {
+			theta = TMath::ACos(-TMath::Sqrt(1.0 - 2*u));
+		}
+		dir[0] = TMath::Cos(phi)*TMath::Sin(theta);
+		dir[1] = TMath::Sin(phi)*TMath::Sin(theta);
+		dir[2] = TMath::Cos(theta);
+		<span class="comment">// Check that it is a normalised direction vector</span>
+		<span class="keyword">if</span>(TMath::Abs(TMath::Sqrt(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]) - 1.0) &gt; 1.E-10){
+			<span class="keyword">throw</span> runtime_error(<span class="string">"In TUCNParticleCloud::UniformMonoEnergeticDistribution - Direction vector is not normalised!"</span>);
+		}
+		
+		<span class="comment">// If there is a grav field we need to calculate the height of our particle in the gravitational potential </span>
+		<span class="comment">//in order to get the particle's kinetic energy from the defined total energy. </span>
+		<span class="keyword">if</span> (fieldPresent == <a href="../ListOfTypes.html#Bool_t">kTRUE</a>) {
+			<span class="comment">// Determine the height of our particle in the global coordinate system of TOP.</span>
+			<span class="comment">// Take the dot product of the point vector with the field direction unit vector to get the height of this point in the gravitational field.</span>
+			<span class="comment">// This assumes a convention that 'height' is measured along an axis that INCREASES in the opposite direction to the field direction vector</span>
+			<span class="comment">// (which is usually 'downwards')</span>
+			height = -1.0*(point[0]*fieldDir[0] + point[1]*fieldDir[1] + point[2]*fieldDir[2]);
+			<span class="cpp">#ifdef VERBOSE_MODE</span>
+<span class="comment">//				<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"UniformMonoEnergeticDistribution"</span>, <span class="string">"Height: %f"</span>, height); </span>
+			<span class="cpp">#endif</span>
+		}
+		
+		<span class="comment">// Kinetic Energy</span>
+		kineticEnergy = totalEnergy - particle-&gt;Mass_GeV_c2()*g*height;
+		<span class="keyword">if</span> (kineticEnergy &lt;= 0.0) {
+			<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"UniformMonoEnergeticDistribution"</span>, <span class="string">"Height: %f, KE: %f"</span>, height, kineticEnergy/Units::neV); 
+			<span class="keyword">throw</span> runtime_error(<span class="string">"In TUCNParticleCloud::UniformMonoEnergeticDistribution - Attempted to initialise particles with too small a total energy for the height of container. Kinetic Energy &lt; 0!"</span>);
+		}
+		
+		<span class="comment">// Momentum</span>
+		momentum = TMath::Sqrt(2.0*particle-&gt;Mass_GeV()*kineticEnergy);
+		mom[0] = momentum*dir[0];
+		mom[1] = momentum*dir[1];
+		mom[2] = momentum*dir[2];
+		
+		<span class="cpp">#ifdef VERBOSE_MODE</span>
+<span class="comment">//			<a href="../#TObject:Info" title="void TObject::Info(const char* method,const char* msgfmt)">Info</a>(<span class="string">"UniformMonoEnergeticDistribution"</span>, <span class="string">"TotalE: %f, 	KE: %f, 		Momentum: %f"</span>, totalEnergy/Units::neV, kineticEnergy/Units::neV, momentum/Units::eV); </span>
+		<span class="cpp">#endif</span>
+		
+		<span class="comment">// Initialise particle and store in TObjArray</span>
+		particle-&gt;SetProductionVertex(point[0], point[1], point[2], startTime);
+		particle-&gt;SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
+		<span class="keyword">this</span>-&gt;<a href="../TUCNParticleCloud.html#TUCNParticleCloud:GetListOfParticles" title="TObjArray* TUCNParticleCloud::GetListOfParticles()">GetListOfParticles</a>()-&gt;Add(particle);
+		
+		<span class="comment">// <a href="../#TObject:Write" title="Int_t TObject::Write(const char* name=0,Int_t option=0,Int_t bufsize=0) or overloads">Write</a> angle data out to file</span>
+<span class="comment">//		out3 &lt;&lt; i &lt;&lt; <span class="string">"\t"</span> &lt;&lt; dir[0] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; dir[1] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; dir[2] &lt;&lt; <span class="string">"\t"</span> &lt;&lt; theta &lt;&lt; <span class="string">"\t"</span> &lt;&lt; phi &lt;&lt; <span class="string">"\t"</span> &lt;&lt; endl;</span>
+	}
+	<span class="keyword">return</span> <span class="keyword">this</span>-&gt;<a href="../TUCNParticleCloud.html#TUCNParticleCloud:GetListOfParticles" title="TObjArray* TUCNParticleCloud::GetListOfParticles()">GetListOfParticles</a>();
+}
+
+<span class="comment">//______________________________________________________________________________</span>
+<a name="ydh1vD"></a><a href="../TUCNParticle.html">TUCNParticle</a>* <a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>::<a href="../TUCNParticleCloud.html#TUCNParticleCloud:GetParticle" title="TUCNParticle* TUCNParticleCloud::GetParticle(Int_t id)">GetParticle</a>(<a href="../ListOfTypes.html#Int_t">Int_t</a> id) <span class="keyword">const</span> 
+{
+	<span class="keyword">if</span> (<span class="keyword">this</span>-&gt;<a href="../TUCNParticleCloud.html#TUCNParticleCloud:GetListOfParticles" title="TObjArray* TUCNParticleCloud::GetListOfParticles()">GetListOfParticles</a>() == NULL) {
+		<a href="../#TObject:Error" title="void TObject::Error(const char* method,const char* msgfmt)">Error</a>(<span class="string">"GetParticle"</span>, <span class="string">"No particles have been initialised!"</span>);
+		<span class="keyword">return</span> 0;
+	} <span class="keyword">else</span> <span class="keyword">if</span> (id &gt;= <span class="keyword">this</span>-&gt;<a href="../TUCNParticleCloud.html#TUCNParticleCloud:GetListOfParticles" title="TObjArray* TUCNParticleCloud::GetListOfParticles()">GetListOfParticles</a>()-&gt;GetEntriesFast()) {
+		<a href="../#TObject:Error" title="void TObject::Error(const char* method,const char* msgfmt)">Error</a>(<span class="string">"GetParticle"</span>, <span class="string">"No particle at index: %i. Only %i particles in array"</span>, id, <span class="keyword">this</span>-&gt;<a href="../TUCNParticleCloud.html#TUCNParticleCloud:GetListOfParticles" title="TObjArray* TUCNParticleCloud::GetListOfParticles()">GetListOfParticles</a>()-&gt;GetEntriesFast());
+		<span class="keyword">return</span> 0;
+	} 
+	<span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;<a href="../TUCNParticle.html">TUCNParticle</a>*&gt;(<span class="keyword">this</span>-&gt;<a href="../TUCNParticleCloud.html#TUCNParticleCloud:GetListOfParticles" title="TObjArray* TUCNParticleCloud::GetListOfParticles()">GetListOfParticles</a>()-&gt;At(id));
+}
+</pre>
+
+<br />
+<!--SIGNATURE-->
+
+<em>Last change: Thu Jun 18 00:10:43 2009</em><br />
+<em>Last generated: 2009-06-18 00:10</em><br />
+
+<hr />
+<em>
+This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</em>
+</body>
+</html>

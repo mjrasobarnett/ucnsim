@@ -1,0 +1,157 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@pcroot.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Jun 18 00:10:42 2009            -->
+<!--                                             -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>TUCNGeoManager - source file</title>
+<meta name="rating" content="General" />
+<meta name="objecttype" content="Manual" />
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, windows, c++, html, rene brun, fons rademakers, cern" />
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis." />
+<link rel="stylesheet" type="text/css" href="../ROOT.css" id="ROOTstyle" />
+<script type="text/javascript" src="../ROOT.js"></script>
+</head>
+<body  onload="javascript:SetValuesFromCookie();">
+<pre class="code">
+<span class="comment">// <a href="../TUCNGeoManager.html">TUCNGeoManager</a></span>
+<span class="comment">// Author: Matthew Raso-Barnett  22/05/2009</span>
+
+<span class="cpp">#ifndef ROOT_TUCNGeoManager</span>
+<span class="cpp">#define ROOT_TUCNGeoManager</span>
+
+<span class="cpp">#ifndef 	ROOT_TGeoManager</span>
+<span class="cpp">#include "TGeoManager.h"</span>
+<span class="cpp">#endif</span>
+
+<span class="comment">////////////////////////////////////////////////////////////////////////////</span>
+<span class="comment">//                                                                        //</span>
+<span class="comment">// 						<a href="../TUCNGeoManager.html">TUCNGeoManager</a>													  //</span>
+<span class="comment">//                                                                        //</span>
+<span class="comment">////////////////////////////////////////////////////////////////////////////</span>
+<span class="keyword">class</span> <a href="../TUCNParticle.html">TUCNParticle</a>;
+<span class="keyword">class</span> <a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>;
+<span class="keyword">class</span> TVirtualGeoTrack;
+<span class="keyword">class</span> <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>;
+<span class="keyword">class</span> <a href="../TUCNGravField.html">TUCNGravField</a>;
+<span class="keyword">class</span> TVector3;
+
+<span class="keyword">class</span> <a href="../TUCNGeoManager.html">TUCNGeoManager</a> : <span class="keyword">public</span> <a href="../#TGeoManager:TGeoManager" title="TGeoManager TGeoManager::TGeoManager(const TGeoManager&amp; ) or overloads">TGeoManager</a> 
+{
+
+<span class="keyword">protected</span>:
+	
+<span class="keyword">private</span>:
+	<a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>* 	<a href="../TUCNGeoManager.html#TUCNGeoManager:fUCNNavigator" title="TUCNGeoNavigator* TUCNGeoManager::fUCNNavigator">fUCNNavigator</a>;					<span class="comment">// The current navigator</span>
+	<a href="../TUCNGravField.html">TUCNGravField</a>*			<a href="../TUCNGeoManager.html#TUCNGeoManager:fGravField" title="TUCNGravField* TUCNGeoManager::fGravField">fGravField</a>;						<span class="comment">// The grav field direction vector</span>
+	
+	<a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>*   <a href="../TUCNGeoManager.html#TUCNGeoManager:fParticleCloud" title="TUCNParticleCloud* TUCNGeoManager::fParticleCloud">fParticleCloud</a>;
+		
+	<a href="../ListOfTypes.html#Int_t">Int_t</a> 					<a href="../TUCNGeoManager.html#TUCNGeoManager:fNavigatorIndex" title="Int_t TUCNGeoManager::fNavigatorIndex">fNavigatorIndex</a>; 				<span class="comment">// Index of Current Navigator held in <a href="../#TGeoManager:TGeoManager" title="TGeoManager TGeoManager::TGeoManager(const TGeoManager&amp; ) or overloads">TGeoManager</a></span>
+	
+<span class="keyword">public</span>:
+	
+	<span class="comment">// -- constructors</span>
+<a name="Fbes8B"></a>   <a href="../TUCNGeoManager.html">TUCNGeoManager</a>();
+   <a href="../TUCNGeoManager.html">TUCNGeoManager</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> <span class="keyword">char</span> *title);
+   
+	<span class="comment">// -- destructor</span>
+   <span class="keyword">virtual</span> <a href="../TUCNGeoManager.html#TUCNGeoManager:_TUCNGeoManager" title="void TUCNGeoManager::~TUCNGeoManager()">~TUCNGeoManager</a>();
+	
+	<span class="comment">// -- methods</span>
+	
+	<span class="comment">// Make UCNVolumes using <a href="../TUCNGeoBuilder.html">TUCNGeoBuilder</a></span>
+	TGeoVolume* 	 		   <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeBox" title="TGeoVolume* TUCNGeoManager::MakeBox(const char* name,const TGeoMedium* medium,Double_t dx,Double_t dy,Double_t dz)">MakeBox</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium, <a href="../ListOfTypes.html#Double_t">Double_t</a> dx, <a href="../ListOfTypes.html#Double_t">Double_t</a> dy, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz);
+ 	TGeoVolume*				   <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTube" title="TGeoVolume* TUCNGeoManager::MakeTube(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t dz)">MakeTube</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium, <a href="../ListOfTypes.html#Double_t">Double_t</a> rmin, <a href="../ListOfTypes.html#Double_t">Double_t</a> rmax, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz);
+	
+	TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeArb8" title="TGeoVolume* TUCNGeoManager::MakeArb8(const char* name,const TGeoMedium* medium,Double_t dz,Double_t* vertices=0)">MakeArb8</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                     <a href="../ListOfTypes.html#Double_t">Double_t</a> dz, <a href="../ListOfTypes.html#Double_t">Double_t</a> *vertices=0);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeCone" title="TGeoVolume* TUCNGeoManager::MakeCone(const char* name,const TGeoMedium* medium,Double_t dz,Double_t rmin1,Double_t rmax1,Double_t rmin2,Double_t rmax2)">MakeCone</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> dz, <a href="../ListOfTypes.html#Double_t">Double_t</a> rmin1, <a href="../ListOfTypes.html#Double_t">Double_t</a> rmax1,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> rmin2, <a href="../ListOfTypes.html#Double_t">Double_t</a> rmax2);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeCons" title="TGeoVolume* TUCNGeoManager::MakeCons(const char* name,const TGeoMedium* medium,Double_t dz,Double_t rmin1,Double_t rmax1,Double_t rmin2,Double_t rmax2,Double_t phi1,Double_t phi2)">MakeCons</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> dz, <a href="../ListOfTypes.html#Double_t">Double_t</a> rmin1, <a href="../ListOfTypes.html#Double_t">Double_t</a> rmax1,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> rmin2, <a href="../ListOfTypes.html#Double_t">Double_t</a> rmax2,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> phi1, <a href="../ListOfTypes.html#Double_t">Double_t</a> phi2);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeCtub" title="TGeoVolume* TUCNGeoManager::MakeCtub(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t dz,Double_t phi1,Double_t phi2,Double_t lx,Double_t ly,Double_t lz,Double_t tx,Double_t ty,Double_t tz)">MakeCtub</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> rmin, <a href="../ListOfTypes.html#Double_t">Double_t</a> rmax, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz, <a href="../ListOfTypes.html#Double_t">Double_t</a> phi1, <a href="../ListOfTypes.html#Double_t">Double_t</a> phi2,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> lx, <a href="../ListOfTypes.html#Double_t">Double_t</a> ly, <a href="../ListOfTypes.html#Double_t">Double_t</a> lz, <a href="../ListOfTypes.html#Double_t">Double_t</a> tx, <a href="../ListOfTypes.html#Double_t">Double_t</a> ty, <a href="../ListOfTypes.html#Double_t">Double_t</a> tz);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeEltu" title="TGeoVolume* TUCNGeoManager::MakeEltu(const char* name,const TGeoMedium* medium,Double_t a,Double_t b,Double_t dz)">MakeEltu</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> a, <a href="../ListOfTypes.html#Double_t">Double_t</a> b, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeGtra" title="TGeoVolume* TUCNGeoManager::MakeGtra(const char* name,const TGeoMedium* medium,Double_t dz,Double_t theta,Double_t phi,Double_t twist,Double_t h1,Double_t bl1,Double_t tl1,Double_t alpha1,Double_t h2,Double_t bl2,Double_t tl2,Double_t alpha2)">MakeGtra</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                   <a href="../ListOfTypes.html#Double_t">Double_t</a> dz, <a href="../ListOfTypes.html#Double_t">Double_t</a> theta, <a href="../ListOfTypes.html#Double_t">Double_t</a> phi, <a href="../ListOfTypes.html#Double_t">Double_t</a> twist, <a href="../ListOfTypes.html#Double_t">Double_t</a> h1,
+                                   <a href="../ListOfTypes.html#Double_t">Double_t</a> bl1, <a href="../ListOfTypes.html#Double_t">Double_t</a> tl1, <a href="../ListOfTypes.html#Double_t">Double_t</a> alpha1, <a href="../ListOfTypes.html#Double_t">Double_t</a> h2, <a href="../ListOfTypes.html#Double_t">Double_t</a> bl2,
+                                   <a href="../ListOfTypes.html#Double_t">Double_t</a> tl2, <a href="../ListOfTypes.html#Double_t">Double_t</a> alpha2);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakePara" title="TGeoVolume* TUCNGeoManager::MakePara(const char* name,const TGeoMedium* medium,Double_t dx,Double_t dy,Double_t dz,Double_t alpha,Double_t theta,Double_t phi)">MakePara</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                     <a href="../ListOfTypes.html#Double_t">Double_t</a> dx, <a href="../ListOfTypes.html#Double_t">Double_t</a> dy, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz,
+                                     <a href="../ListOfTypes.html#Double_t">Double_t</a> alpha, <a href="../ListOfTypes.html#Double_t">Double_t</a> theta, <a href="../ListOfTypes.html#Double_t">Double_t</a> phi);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakePcon" title="TGeoVolume* TUCNGeoManager::MakePcon(const char* name,const TGeoMedium* medium,Double_t phi,Double_t dphi,Int_t nz)">MakePcon</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> phi, <a href="../ListOfTypes.html#Double_t">Double_t</a> dphi, <a href="../ListOfTypes.html#Int_t">Int_t</a> nz);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeParaboloid" title="TGeoVolume* TUCNGeoManager::MakeParaboloid(const char* name,const TGeoMedium* medium,Double_t rlo,Double_t rhi,Double_t dz)">MakeParaboloid</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> rlo, <a href="../ListOfTypes.html#Double_t">Double_t</a> rhi, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeHype" title="TGeoVolume* TUCNGeoManager::MakeHype(const char* name,const TGeoMedium* medium,Double_t rin,Double_t stin,Double_t rout,Double_t stout,Double_t dz)">MakeHype</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> rin, <a href="../ListOfTypes.html#Double_t">Double_t</a> stin, <a href="../ListOfTypes.html#Double_t">Double_t</a> rout, <a href="../ListOfTypes.html#Double_t">Double_t</a> stout, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakePgon" title="TGeoVolume* TUCNGeoManager::MakePgon(const char* name,const TGeoMedium* medium,Double_t phi,Double_t dphi,Int_t nedges,Int_t nz)">MakePgon</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> phi, <a href="../ListOfTypes.html#Double_t">Double_t</a> dphi, <a href="../ListOfTypes.html#Int_t">Int_t</a> nedges, <a href="../ListOfTypes.html#Int_t">Int_t</a> nz);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeSphere" title="TGeoVolume* TUCNGeoManager::MakeSphere(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t themin=0,Double_t themax=180,Double_t phimin=0,Double_t phimax=360)">MakeSphere</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                     <a href="../ListOfTypes.html#Double_t">Double_t</a> rmin, <a href="../ListOfTypes.html#Double_t">Double_t</a> rmax,
+                                     <a href="../ListOfTypes.html#Double_t">Double_t</a> themin=0, <a href="../ListOfTypes.html#Double_t">Double_t</a> themax=180,
+                                     <a href="../ListOfTypes.html#Double_t">Double_t</a> phimin=0, <a href="../ListOfTypes.html#Double_t">Double_t</a> phimax=360);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTorus" title="TGeoVolume* TUCNGeoManager::MakeTorus(const char* name,const TGeoMedium* medium,Double_t r,Double_t rmin,Double_t rmax,Double_t phi1=0,Double_t dphi=360)">MakeTorus</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium, <a href="../ListOfTypes.html#Double_t">Double_t</a> r,
+                                    <a href="../ListOfTypes.html#Double_t">Double_t</a> rmin, <a href="../ListOfTypes.html#Double_t">Double_t</a> rmax, <a href="../ListOfTypes.html#Double_t">Double_t</a> phi1=0, <a href="../ListOfTypes.html#Double_t">Double_t</a> dphi=360);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTrap" title="TGeoVolume* TUCNGeoManager::MakeTrap(const char* name,const TGeoMedium* medium,Double_t dz,Double_t theta,Double_t phi,Double_t h1,Double_t bl1,Double_t tl1,Double_t alpha1,Double_t h2,Double_t bl2,Double_t tl2,Double_t alpha2)">MakeTrap</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                   <a href="../ListOfTypes.html#Double_t">Double_t</a> dz, <a href="../ListOfTypes.html#Double_t">Double_t</a> theta, <a href="../ListOfTypes.html#Double_t">Double_t</a> phi, <a href="../ListOfTypes.html#Double_t">Double_t</a> h1,
+                                   <a href="../ListOfTypes.html#Double_t">Double_t</a> bl1, <a href="../ListOfTypes.html#Double_t">Double_t</a> tl1, <a href="../ListOfTypes.html#Double_t">Double_t</a> alpha1, <a href="../ListOfTypes.html#Double_t">Double_t</a> h2, <a href="../ListOfTypes.html#Double_t">Double_t</a> bl2,
+                                   <a href="../ListOfTypes.html#Double_t">Double_t</a> tl2, <a href="../ListOfTypes.html#Double_t">Double_t</a> alpha2);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTrd1" title="TGeoVolume* TUCNGeoManager::MakeTrd1(const char* name,const TGeoMedium* medium,Double_t dx1,Double_t dx2,Double_t dy,Double_t dz)">MakeTrd1</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> dx1, <a href="../ListOfTypes.html#Double_t">Double_t</a> dx2, <a href="../ListOfTypes.html#Double_t">Double_t</a> dy, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTrd2" title="TGeoVolume* TUCNGeoManager::MakeTrd2(const char* name,const TGeoMedium* medium,Double_t dx1,Double_t dx2,Double_t dy1,Double_t dy2,Double_t dz)">MakeTrd2</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> dx1, <a href="../ListOfTypes.html#Double_t">Double_t</a> dx2, <a href="../ListOfTypes.html#Double_t">Double_t</a> dy1, <a href="../ListOfTypes.html#Double_t">Double_t</a> dy2,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> dz);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTubs" title="TGeoVolume* TUCNGeoManager::MakeTubs(const char* name,const TGeoMedium* medium,Double_t rmin,Double_t rmax,Double_t dz,Double_t phi1,Double_t phi2)">MakeTubs</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> rmin, <a href="../ListOfTypes.html#Double_t">Double_t</a> rmax, <a href="../ListOfTypes.html#Double_t">Double_t</a> dz,
+                                      <a href="../ListOfTypes.html#Double_t">Double_t</a> phi1, <a href="../ListOfTypes.html#Double_t">Double_t</a> phi2);
+   TGeoVolume*             <a href="../TUCNGeoManager.html#TUCNGeoManager:MakeXtru" title="TGeoVolume* TUCNGeoManager::MakeXtru(const char* name,const TGeoMedium* medium,Int_t nz)">MakeXtru</a>(<span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> TGeoMedium *medium,
+                                   <a href="../ListOfTypes.html#Int_t">Int_t</a> nz);
+	
+	<span class="comment">// Make <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a></span>
+	<a href="../ListOfTypes.html#Int_t">Int_t</a> 						<a href="../TUCNGeoManager.html#TUCNGeoManager:AddUCNNavigator" title="Int_t TUCNGeoManager::AddUCNNavigator(TUCNGeoNavigator* navigator)">AddUCNNavigator</a>(<a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a> *navigator);
+<a name="pjP.7D"></a>   <a href="../TUCNGeoNavigator.html">TUCNGeoNavigator</a>*			<a href="../TUCNGeoManager.html#TUCNGeoManager:GetUCNNavigator" title="TUCNGeoNavigator* TUCNGeoManager::GetUCNNavigator()">GetUCNNavigator</a>() <span class="keyword">const</span> 	{<span class="keyword">return</span> <a href="../TUCNGeoManager.html#TUCNGeoManager:fUCNNavigator" title="TUCNGeoNavigator* TUCNGeoManager::fUCNNavigator">fUCNNavigator</a>;} 
+<a name="J.LGs"></a>	<a href="../ListOfTypes.html#Int_t">Int_t</a>							<a href="../TUCNGeoManager.html#TUCNGeoManager:GetNavigatorIndex" title="Int_t TUCNGeoManager::GetNavigatorIndex()">GetNavigatorIndex</a>() <span class="keyword">const</span>	{<span class="keyword">return</span> <a href="../TUCNGeoManager.html#TUCNGeoManager:fNavigatorIndex" title="Int_t TUCNGeoManager::fNavigatorIndex">fNavigatorIndex</a>;} 		
+	
+	<span class="comment">// Navigational Methods</span>
+	TGeoNode*					<a href="../TUCNGeoManager.html#TUCNGeoManager:FindNextBoundaryAndStepAlongParabola" title="TGeoNode* TUCNGeoManager::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,TUCNGravField* field,Double_t stepTime,Bool_t compsafe=kFALSE)">FindNextBoundaryAndStepAlongParabola</a>(TVirtualGeoTrack* track, <a href="../TUCNGravField.html">TUCNGravField</a>* field, <a href="../ListOfTypes.html#Double_t">Double_t</a> stepTime, <a href="../ListOfTypes.html#Bool_t">Bool_t</a> compsafe=<a href="../ListOfTypes.html#Bool_t">kFALSE</a>); 	
+	
+	<span class="comment">// Make Gravitational Field</span>
+	<a href="../TUCNGravField.html">TUCNGravField</a>*				<a href="../TUCNGeoManager.html#TUCNGeoManager:AddGravField" title="TUCNGravField* TUCNGeoManager::AddGravField(Double_t nx,Double_t ny,Double_t nz)">AddGravField</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> nx, <a href="../ListOfTypes.html#Double_t">Double_t</a> ny, <a href="../ListOfTypes.html#Double_t">Double_t</a> nz);
+<a name="Bh74nE"></a>	<a href="../TUCNGravField.html">TUCNGravField</a>*				<a href="../TUCNGeoManager.html#TUCNGeoManager:GetGravField" title="TUCNGravField* TUCNGeoManager::GetGravField()">GetGravField</a>() <span class="keyword">const</span> {<span class="keyword">return</span> <a href="../TUCNGeoManager.html#TUCNGeoManager:fGravField" title="TUCNGravField* TUCNGeoManager::fGravField">fGravField</a>;}
+		
+	<span class="comment">// Make Particle Cloud</span>
+	<a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>*	   <a href="../TUCNGeoManager.html#TUCNGeoManager:AddParticleCloud" title="TUCNParticleCloud* TUCNGeoManager::AddParticleCloud()">AddParticleCloud</a>();
+<a name="m.3w.B"></a>	<a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>*		<a href="../TUCNGeoManager.html#TUCNGeoManager:GetParticleCloud" title="TUCNParticleCloud* TUCNGeoManager::GetParticleCloud()">GetParticleCloud</a>() <span class="keyword">const</span> {<span class="keyword">return</span> <a href="../TUCNGeoManager.html#TUCNGeoManager:fParticleCloud" title="TUCNParticleCloud* TUCNGeoManager::fParticleCloud">fParticleCloud</a>;}
+	
+	<span class="comment">// Make Tracks</span>
+	<span class="keyword">void</span>							<a href="../TUCNGeoManager.html#TUCNGeoManager:MakeTracks" title="void TUCNGeoManager::MakeTracks(TUCNParticleCloud* cloud)">MakeTracks</a>(<a href="../TUCNParticleCloud.html">TUCNParticleCloud</a>* cloud);
+	<span class="keyword">void</span>							<a href="../TUCNGeoManager.html#TUCNGeoManager:PropagateTracks" title="void TUCNGeoManager::PropagateTracks(Double_t runTime,Bool_t storeData=kFALSE,Bool_t storeTrack=kFALSE)">PropagateTracks</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> runTime, <a href="../ListOfTypes.html#Bool_t">Bool_t</a> storeData=<a href="../ListOfTypes.html#Bool_t">kFALSE</a>, <a href="../ListOfTypes.html#Bool_t">Bool_t</a> storeTrack=<a href="../ListOfTypes.html#Bool_t">kFALSE</a>); 
+	
+   ClassDef(<a href="../TUCNGeoManager.html">TUCNGeoManager</a>, 1)          <span class="comment">// UCN geometry manager</span>
+};
+
+</pre>
+
+<br />
+<!--SIGNATURE-->
+
+<em>Last change: Thu Jun 18 00:10:42 2009</em><br />
+<em>Last generated: 2009-06-18 00:10</em><br />
+
+<hr />
+<em>
+This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</em>
+</body>
+</html>

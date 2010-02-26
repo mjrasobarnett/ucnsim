@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--                                             -->
+<!-- Author: ROOT team (rootdev@pcroot.cern.ch)  -->
+<!--                                             -->
+<!--   Date: Thu Jun 18 00:10:43 2009            -->
+<!--                                             -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>TUCNGravField - source file</title>
+<meta name="rating" content="General" />
+<meta name="objecttype" content="Manual" />
+<meta name="keywords" content="software development, oo, object oriented, unix, x11, windows, c++, html, rene brun, fons rademakers, cern" />
+<meta name="description" content="ROOT - An Object Oriented Framework For Large Scale Data Analysis." />
+<link rel="stylesheet" type="text/css" href="../ROOT.css" id="ROOTstyle" />
+<script type="text/javascript" src="../ROOT.js"></script>
+</head>
+<body  onload="javascript:SetValuesFromCookie();">
+<pre class="code">
+<span class="comment">// <a href="../TUCNGravField.html">TUCNGravField</a></span>
+<span class="comment">// Author: Matthew Raso-Barnett  22/05/2009</span>
+
+<span class="cpp">#ifndef ROOT_TUCNGravField</span>
+<span class="cpp">#define ROOT_TUCNGravField</span>
+
+<span class="cpp">#include "TObject.h"</span>
+<span class="cpp">#include "TVector3.h"</span>
+
+<span class="comment">////////////////////////////////////////////////////////////////////////////</span>
+<span class="comment">//                                                                        //</span>
+<span class="comment">// 						<a href="../TUCNGravField.html">TUCNGravField</a> - Defined in the							  //</span>
+<span class="comment">//                   Global Coordinate frame of TOP							  //               </span>
+<span class="comment">//                                      											  //</span>
+<span class="comment">////////////////////////////////////////////////////////////////////////////</span>
+
+<span class="keyword">class</span> <a href="../TUCNGeoManager.html">TUCNGeoManager</a>;
+
+<span class="keyword">class</span> <a href="../TUCNGravField.html">TUCNGravField</a> : <span class="keyword">public</span> <a href="../#TObject:TObject" title="TObject TObject::TObject() or overloads">TObject</a>
+{
+
+<span class="keyword">protected</span>:
+	
+	<span class="keyword">static</span> <a href="../TUCNGravField.html">TUCNGravField</a>    *<a href="../TUCNGravField.html#TUCNGravField:fgInstance" title="TUCNGravField* TUCNGravField::fgInstance">fgInstance</a>;  
+	
+	<span class="comment">// -- constructors</span>
+   <a href="../TUCNGravField.html">TUCNGravField</a>();
+   <a href="../TUCNGravField.html">TUCNGravField</a>(<span class="keyword">const</span> <a href="../TUCNGravField.html">TUCNGravField</a>&amp;);
+	<a href="../TUCNGravField.html">TUCNGravField</a>&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> <a href="../TUCNGravField.html">TUCNGravField</a>&amp;); 
+   
+<span class="keyword">private</span>:
+	
+	TVector3 						<a href="../TUCNGravField.html#TUCNGravField:fGlobalFieldVector" title="TVector3 TUCNGravField::fGlobalFieldVector">fGlobalFieldVector</a>;
+	<span class="keyword">static</span> <span class="keyword">const</span> <a href="../ListOfTypes.html#Double_t">Double_t</a> 		<a href="../TUCNGravField.html#TUCNGravField:fGravAcceleration" title="const Double_t TUCNGravField::fGravAcceleration">fGravAcceleration</a> = 9.80665; <span class="comment">//*m/(s*s);</span>
+	<a href="../TUCNGeoManager.html">TUCNGeoManager</a>*				<a href="../TUCNGravField.html#TUCNGravField:fUCNGeometry" title="TUCNGeoManager* TUCNGravField::fUCNGeometry">fUCNGeometry</a>;
+	
+<a name="M8CtH"></a>	<span class="keyword">void</span> <a href="../TUCNGravField.html#TUCNGravField:SetUCNGeometry" title="void TUCNGravField::SetUCNGeometry(TUCNGeoManager* geom)">SetUCNGeometry</a>(<a href="../TUCNGeoManager.html">TUCNGeoManager</a> *geom) {<a href="../TUCNGravField.html#TUCNGravField:fUCNGeometry" title="TUCNGeoManager* TUCNGravField::fUCNGeometry">fUCNGeometry</a> = geom;}
+	
+<span class="keyword">public</span>:
+	
+	<span class="keyword">static</span> <a href="../TUCNGravField.html">TUCNGravField</a>* <a href="../TUCNGravField.html#TUCNGravField:Instance" title="TUCNGravField* TUCNGravField::Instance(TUCNGeoManager* geom)">Instance</a>(<a href="../TUCNGeoManager.html">TUCNGeoManager</a> *geom);
+	   
+	<span class="comment">// -- destructor</span>
+   <span class="keyword">virtual</span> <a href="../TUCNGravField.html#TUCNGravField:_TUCNGravField" title="void TUCNGravField::~TUCNGravField()">~TUCNGravField</a>();
+	
+	<span class="comment">// -- methods</span>
+	<span class="keyword">void</span> 					<a href="../TUCNGravField.html#TUCNGravField:Direction" title="void TUCNGravField::Direction(Double_t nx,Double_t ny,Double_t nz)">Direction</a>(<a href="../ListOfTypes.html#Double_t">Double_t</a> nx, <a href="../ListOfTypes.html#Double_t">Double_t</a> ny, <a href="../ListOfTypes.html#Double_t">Double_t</a> nz);
+<a name="L5kHdD"></a>	<a href="../ListOfTypes.html#Double_t">Double_t</a> 			<a href="../TUCNGravField.html#TUCNGravField:Nx" title="Double_t TUCNGravField::Nx()">Nx</a>() <span class="keyword">const</span> { <span class="keyword">return</span> <a href="../TUCNGravField.html#TUCNGravField:fGlobalFieldVector" title="TVector3 TUCNGravField::fGlobalFieldVector">fGlobalFieldVector</a>.X(); }
+<a name="jWHl."></a>	<a href="../ListOfTypes.html#Double_t">Double_t</a> 			<a href="../TUCNGravField.html#TUCNGravField:Ny" title="Double_t TUCNGravField::Ny()">Ny</a>() <span class="keyword">const</span> { <span class="keyword">return</span> <a href="../TUCNGravField.html#TUCNGravField:fGlobalFieldVector" title="TVector3 TUCNGravField::fGlobalFieldVector">fGlobalFieldVector</a>.Y(); }
+<a name="C5kHdD"></a>	<a href="../ListOfTypes.html#Double_t">Double_t</a> 			<a href="../TUCNGravField.html#TUCNGravField:Nz" title="Double_t TUCNGravField::Nz()">Nz</a>() <span class="keyword">const</span> { <span class="keyword">return</span> <a href="../TUCNGravField.html#TUCNGravField:fGlobalFieldVector" title="TVector3 TUCNGravField::fGlobalFieldVector">fGlobalFieldVector</a>.Z(); }
+<a name="viazi"></a>	<a href="../ListOfTypes.html#Double_t">Double_t</a> 			<a href="../TUCNGravField.html#TUCNGravField:Gx" title="Double_t TUCNGravField::Gx()">Gx</a>() <span class="keyword">const</span> { <span class="keyword">return</span> <a href="../TUCNGravField.html#TUCNGravField:fGravAcceleration" title="const Double_t TUCNGravField::fGravAcceleration">fGravAcceleration</a>*(<a href="../TUCNGravField.html#TUCNGravField:fGlobalFieldVector" title="TVector3 TUCNGravField::fGlobalFieldVector">fGlobalFieldVector</a>.X()); }
+<a name="f2GHf"></a>	<a href="../ListOfTypes.html#Double_t">Double_t</a> 			<a href="../TUCNGravField.html#TUCNGravField:Gy" title="Double_t TUCNGravField::Gy()">Gy</a>() <span class="keyword">const</span> { <span class="keyword">return</span> <a href="../TUCNGravField.html#TUCNGravField:fGravAcceleration" title="const Double_t TUCNGravField::fGravAcceleration">fGravAcceleration</a>*(<a href="../TUCNGravField.html#TUCNGravField:fGlobalFieldVector" title="TVector3 TUCNGravField::fGlobalFieldVector">fGlobalFieldVector</a>.Y()); }
+<a name="PKzab"></a>	<a href="../ListOfTypes.html#Double_t">Double_t</a> 			<a href="../TUCNGravField.html#TUCNGravField:Gz" title="Double_t TUCNGravField::Gz()">Gz</a>() <span class="keyword">const</span> { <span class="keyword">return</span> <a href="../TUCNGravField.html#TUCNGravField:fGravAcceleration" title="const Double_t TUCNGravField::fGravAcceleration">fGravAcceleration</a>*(<a href="../TUCNGravField.html#TUCNGravField:fGlobalFieldVector" title="TVector3 TUCNGravField::fGlobalFieldVector">fGlobalFieldVector</a>.Z()); }
+	
+<a name="R9x7l"></a>	<a href="../ListOfTypes.html#Double_t">Double_t</a> 			<a href="../TUCNGravField.html#TUCNGravField:GravAcceleration" title="Double_t TUCNGravField::GravAcceleration()">GravAcceleration</a>() <span class="keyword">const</span> { <span class="keyword">return</span> <a href="../TUCNGravField.html#TUCNGravField:fGravAcceleration" title="const Double_t TUCNGravField::fGravAcceleration">fGravAcceleration</a>; }
+		
+   ClassDef(<a href="../TUCNGravField.html">TUCNGravField</a>, 1)          <span class="comment">// Gravitational Field Vector</span>
+};
+
+</pre>
+
+<br />
+<!--SIGNATURE-->
+
+<em>Last change: Thu Jun 18 00:10:43 2009</em><br />
+<em>Last generated: 2009-06-18 00:10</em><br />
+
+<hr />
+<em>
+This page has been automatically generated. If you have any comments or suggestions about the page layout send a mail to <a href="mailto:rootdev@root.cern.ch">ROOT support</a>, or contact <a href="mailto:rootdev@root.cern.ch">the developers</a> with any questions or problems regarding ROOT.
+</em>
+</body>
+</html>
