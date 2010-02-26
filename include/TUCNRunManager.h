@@ -34,7 +34,7 @@ public:
 
 	// -- methods
 	TUCNGeoManager* 		GetGeoManager() const {return fManager;} 
-	TGeoNode*				CreateGeometry();
+	void						InitialiseGeometry();
 	
 	Int_t						GetNumberOfRuns() const {return fRuns->GetEntries();}
 	TUCNRun*					GetRun(Int_t index) const;

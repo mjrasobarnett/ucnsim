@@ -11,6 +11,7 @@
 #include "TUCNGeoNavigator.h"
 #include "TUCNGravField.h"
 #include "TUCNParticle.h"
+#include "TUCNUniformMagField.h"
 
 #include "TObjArray.h"
 #include "TRandom.h"
@@ -22,6 +23,7 @@
 
 #include "../geom/geometries.h"
 #include "Units.h"
+#include "Constants.h"
 
 using std::cout;
 using std::endl;
@@ -75,12 +77,32 @@ TUCNRunManager::~TUCNRunManager()
 // -- METHODS --
 
 //______________________________________________________________________________
-TGeoNode* TUCNRunManager::CreateGeometry()
+void TUCNRunManager::InitialiseGeometry()
 { 
 // -- 
-	Info("TUCNRunManager", "CreateGeometry");
+	Info("TUCNRunManager", "InitialiseGeometry");
+	
+	// Input parameters to calculate f and W
+	Double_t observedLifetime = 150.*Units::s;
+	Double_t fermiPotential = (0.91*Units::m)*Constants::height_equivalent_conversion;
+	Double_t totalEnergy = (0.52*Units::m)*Constants::height_equivalent_conversion;
+	Double_t initialVelocity = TMath::Sqrt(2*totalEnergy/Constants::neutron_mass);
+	Double_t meanFreePath = 0.16*Units::m;
+	
+	// Calculate f = W/V and hence W
+	Double_t X = fermiPotential/totalEnergy;
+	Double_t L = (X*TMath::ASin(TMath::Sqrt(1./X)) - TMath::Sqrt(X - 1.));
+	cout << "E: " << totalEnergy/Units::neV << "\t" << "V: " << fermiPotential/Units::neV << "\t" << "V/E: " << X << "\t"<< "L: " << L << endl;
+	Double_t f = meanFreePath/(initialVelocity*observedLifetime*L);
+	Double_t W = f*fermiPotential;
+	cout << "f: " << f << "\t" << "W: " << W/Units::neV << endl;
+	
 	// -- Create Geometry using function specified in geometries.C macro
-	return CreateGeometry_v1(fManager);
+	CreateGeometry_v5(fermiPotential, W);
+		
+	// -- Define Mag Field
+	TUCNUniformMagField* magfield = new TUCNUniformMagField("Uniform magnetic field", 0.0,1.0,1.0);
+	fManager->AddMagField(magfield);
 }
 
 //______________________________________________________________________________
@@ -97,4 +119,3 @@ Int_t TUCNRunManager::AddRun()
    fRuns->AddAtAndExpand(newRun , index);
    return index;
 }
-

@@ -133,6 +133,7 @@ namespace Constants
 	//
 	//
 	static const Double_t grav_acceleration = 9.80665*m/(s*s);
+	static const Double_t height_equivalent_conversion = grav_acceleration*neutron_mass;
 	//
 	//
 }
