@@ -57,7 +57,7 @@ TUCNGeoNavigator::TUCNGeoNavigator()
 }
 
 //_____________________________________________________________________________
-TUCNGeoNavigator::TUCNGeoNavigator(TUCNGeoManager* geom)
+TUCNGeoNavigator::TUCNGeoNavigator(TGeoManager* geom)
               	  :TGeoNavigator(geom),
 						fUCNNextNode(0),
 						fStepTime(1.),

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <cassert>
+#include <stdio.h> // sprintf
 
 #include "TCanvas.h"
 #include "TBenchmark.h"
@@ -57,12 +58,13 @@ Int_t main(Int_t argc,Char_t **argv)
 	// -- Geometry Creation
 	///////////////////////////////////////////////////////////////////////////////////////
 	// Create the geoManager
-	TUCNGeoManager* geoManager = new TUCNGeoManager("GeoManager", "Geometry Manager");
+	new TGeoManager("GeoManager", "Geometry Manager");
+	// Create the UCNGeoManager
+	TUCNGeoManager* geoManager = new TUCNGeoManager("UCNGeoManager", "UCNGeometry Manager");
 	// Create the UCNNavigator and initialise in the UCNManager
-	Info("TUCNRun", "Creating a new Navigator...");
-	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(geoManager);
-	Int_t navigatorIndex = geoManager->AddNavigator(navigator);
-	geoManager->SetCurrentNavigator(navigatorIndex);
+	TGeoNavigator* navigator = new TUCNGeoNavigator(gGeoManager);
+	Int_t navigatorIndex = gGeoManager->AddNavigator(navigator);
+	gGeoManager->SetCurrentNavigator(navigatorIndex);
 	
 	BuildGeometry(geoManager);
 	
@@ -87,8 +89,8 @@ Int_t main(Int_t argc,Char_t **argv)
 	Double_t runTime = 10000.*Units::s;
 	Double_t maxStepTime = 1.00*Units::s;
 	Int_t particles = 1000;
-	Double_t V = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->FermiPotential();
-	Double_t f = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->Eta();
+	Double_t V = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->FermiPotential();
+	Double_t f = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->Eta();
 	Double_t totalEnergy = 0;
 	cout << "V: " << V << "\t" << "f: " << f << endl;
 	
@@ -100,20 +102,20 @@ Int_t main(Int_t argc,Char_t **argv)
 		cout << "Run number: " << runNumber << "\t" << "called: " << run->GetName() << endl;
 		cout << "totalEnergy: " << totalEnergy << endl;
 		
-		run->Initialise(particles, totalEnergy, gravField);
+		run->Initialise(particles, totalEnergy, geoManager, gravField);
 	
 		// -- Propagate the tracks according to the run parameters
 		run->PropagateAllTracks(runTime, maxStepTime, gravField);	
 	
 		cout << "-------------------------------------------" << endl;
 		cout << "Propagation Results: " << endl;
-		cout << "Total Particles: " << geoManager->GetNtracks() << endl;
+		cout << "Total Particles: " << gGeoManager->GetNtracks() << endl;
 		cout << "Number Detected: " << geoManager->GetNumberDetected() << endl;
 		cout << "Number Lost: " << geoManager->GetNumberLost() << endl;
 		cout << "Number Decayed: " << geoManager->GetNumberDecayed() << endl;
 		cout << "-------------------------------------------" << endl;
 
-		geoManager->ClearTracks();
+		gGeoManager->ClearTracks();
 		
 		cout << "End of run" << endl << endl;
 	}
@@ -186,8 +188,8 @@ void BuildGeometry(TUCNGeoManager* geoManager)
 	TGeoVolume* innerVolume = innerTube;
 	
 	// -- Create the nodes	
-	volume->AddNode(innerVolume,1);
-	chamber->AddNode(volume,1, matrix);
+	volume->AddNode(innerVolume, 1);
+	chamber->AddNode(volume, 1, matrix);
 	
 	// -- Define the Source in our geometry where we will create the particles
 	geoManager->SetSourceVolume(innerVolume);

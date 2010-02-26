@@ -49,7 +49,7 @@ protected:
 public:
 	// -- constructors
    TUCNGeoNavigator();
-   TUCNGeoNavigator(TUCNGeoManager* geom);
+   TUCNGeoNavigator(TGeoManager* geom);
    
 	// -- destructor
 	virtual ~TUCNGeoNavigator();

@@ -4,21 +4,18 @@
 #ifndef ROOT_TUCNGeoManager
 #define ROOT_TUCNGeoManager
 
-#ifndef 	ROOT_TGeoManager
 #include "TGeoManager.h"
-#endif
-
 #include "TUCNGeoNavigator.h"
-#include "TGeoVolume.h"
-#include "TGeoMatrix.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
 // 						TUCNGeoManager													  //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+class TGeoVolume;
+class TGeoMatrix;
 
-class TUCNGeoManager : public TGeoManager 
+class TUCNGeoManager : public TNamed 
 {
 	
 protected:
@@ -48,9 +45,9 @@ public:
 	TGeoVolume*					MakeUCNBox(const char *name, TGeoMedium *medium, Double_t dx, Double_t dy, Double_t dz);
  	TGeoVolume*					MakeUCNTube(const char *name, TGeoMedium *medium, Double_t rmin, Double_t rmax, Double_t dz);
 	
-	Int_t 						GetNumberDetected() const {return static_cast<TUCNGeoNavigator*>(this->GetCurrentNavigator())->GetNumberDetected();}
-	Int_t 						GetNumberLost() const {return static_cast<TUCNGeoNavigator*>(this->GetCurrentNavigator())->GetNumberLost();}
-	Int_t 						GetNumberDecayed() const {return static_cast<TUCNGeoNavigator*>(this->GetCurrentNavigator())->GetNumberDecayed();}
+	Int_t 						GetNumberDetected() const {return static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->GetNumberDetected();}
+	Int_t 						GetNumberLost() const {return static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->GetNumberLost();}
+	Int_t 						GetNumberDecayed() const {return static_cast<TUCNGeoNavigator*>(gGeoManager->GetCurrentNavigator())->GetNumberDecayed();}
 					
    ClassDef(TUCNGeoManager, 1)          // UCN geometry manager
 };

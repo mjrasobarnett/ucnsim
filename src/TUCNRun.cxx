@@ -78,24 +78,24 @@ TUCNRun::~TUCNRun()
 }
 
 //_____________________________________________________________________________
-void TUCNRun::Initialise(Int_t particles, Double_t totalEnergy, TUCNGravField* gravField)
+void TUCNRun::Initialise(Int_t particles, Double_t totalEnergy, TUCNGeoManager* geoManager, TUCNGravField* gravField)
 {
 	// Generating mono-energetic particles inside the source volume
 	gGeoManager->GetCurrentNavigator()->ResetAll();
 	cout << "Generating " << particles << " particles..."	<< endl;
-	this->GenerateMonoEnergeticParticles(particles, totalEnergy, gravField);
+	this->GenerateMonoEnergeticParticles(particles, totalEnergy, geoManager, gravField);
 	cout << "Particle's created. Ready to Propagate..." << endl;
 }
 
 //______________________________________________________________________________
-Bool_t TUCNRun::GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t totalEnergy, TUCNGravField* gravField)
+Bool_t TUCNRun::GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t totalEnergy, TUCNGeoManager* geoManager, TUCNGravField* gravField)
 {
 	// Generates a uniform distribution of particles with random directions all with the same total energy (kinetic plus potential).
 	// defined at z = 0.	
 	
 	// -- 0. Get the source volume and matrix that places it in the geometry
-	TGeoVolume* sourceVolume = static_cast<TUCNGeoManager*>(gGeoManager)->GetSourceVolume();
-	TGeoMatrix* sourceMatrix = static_cast<TUCNGeoManager*>(gGeoManager)->GetSourceMatrix();
+	TGeoVolume* sourceVolume = geoManager->GetSourceVolume();
+	TGeoMatrix* sourceMatrix = geoManager->GetSourceMatrix();
 	assert(sourceVolume != NULL && sourceMatrix != NULL);
 	
 	// -- 1. Check for presence of field

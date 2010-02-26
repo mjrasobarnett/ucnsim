@@ -32,11 +32,11 @@ class TUCNRun : public TNamed
 		// -- destructor
 		virtual ~TUCNRun();
 		
-		void						Initialise(Int_t particles, Double_t totalEnergy, TUCNGravField* gravField=0);
+		void						Initialise(Int_t particles, Double_t totalEnergy, TUCNGeoManager* geoManager, TUCNGravField* gravField=0);
 		
 		void 						DrawParticles(TCanvas* canvas, TPolyMarker3D* points);
 		void						DrawTrack(TCanvas* canvas, Int_t trackID);
-		Bool_t 					GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t totalEnergy, TUCNGravField* gravField=0);
+		Bool_t 					GenerateMonoEnergeticParticles(Int_t totalParticles, Double_t totalEnergy, TUCNGeoManager* geoManager, TUCNGravField* gravField=0);
 		TGeoTrack*				GetTrack(Int_t trackID);
 		TUCNParticle*			GetParticle(Int_t particleID);
 		Bool_t 					PropagateAllTracks(Double_t runTime, Double_t maxStepTime, TUCNGravField* gravField = 0);
