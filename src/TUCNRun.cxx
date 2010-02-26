@@ -1309,10 +1309,10 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		cout << "Initial Volume: "    << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
 		cout << "Initial Energy (neV): "    << particle->Energy() /Units::neV << endl;
 		cout << "-----------------------------" << endl;
-		cout << "Is On Boundary?  " << gGeoManager->GetCurrentNavigator()->IsUCNOnBoundary() << endl;
-		cout << "Is Outside?  "     << gGeoManager->GetCurrentNavigator()->IsUCNOutside() << endl;
-		cout << "Is Step Entering?  " << gGeoManager->GetCurrentNavigator()->IsUCNStepEntering()  << endl;
-		cout << "Is Step Exiting?  " << gGeoManager->GetCurrentNavigator()->IsUCNStepExiting() << endl;
+		cout << "Is On Boundary?  " << this->IsUCNOnBoundary() << endl;
+		cout << "Is Outside?  "     << this->IsUCNOutside() << endl;
+		cout << "Is Step Entering?  " << this->IsUCNStepEntering()  << endl;
+		cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
 		cout << "-----------------------------" << endl << endl;
 	#endif
 	
@@ -1351,15 +1351,15 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		cout << "Final Volume: "    << gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetName() << endl;
 		cout << "Final Energy (neV): "    << particle->Energy() /Units::neV << endl;
 		cout << "-----------------------------" << endl;
-		cout << "Is On Boundary?  " << gGeoManager->GetCurrentNavigator()->IsUCNOnBoundary() << endl;
-		cout << "Is Outside?  "     << gGeoManager->GetCurrentNavigator()->IsUCNOutside() << endl;
-		cout << "Is Step Entering?  " << gGeoManager->GetCurrentNavigator()->IsUCNStepEntering()  << endl;
-		cout << "Is Step Exiting?  " << gGeoManager->GetCurrentNavigator()->IsUCNStepExiting() << endl;
+		cout << "Is On Boundary?  " << this->IsUCNOnBoundary() << endl;
+		cout << "Is Outside?  "     << this->IsUCNOutside() << endl;
+		cout << "Is Step Entering?  " << this->IsUCNStepEntering()  << endl;
+		cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
 		cout << "-----------------------------" << endl << endl;
 	#endif	
 	
 	// -- Get the current material we are in to determine what to do next
-	TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(gGeoManager->GetCurrentNavigator()->GetCurrentNode()->GetMedium()->GetMaterial());
+	TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(gGeoManager->GetCurrentNavigator()->GetCurrentVolume()->GetMedium()->GetMaterial());
 	// -- Get the normal vector to the boundary
 	Double_t* normal = 0;
 	if (gravField) {
@@ -1400,7 +1400,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			#ifdef VERBOSE_MODE	
 				cout << "------------------- BOUNCE ----------------------" << endl;
 				cout << "Current Node: " << boundaryNode->GetName() << endl;
-				cout << "On Boundary? " << gGeoManager->GetCurrentNavigator()->IsUCNOnBoundary() << endl;
+				cout << "On Boundary? " << this->IsUCNOnBoundary() << endl;
 			#endif	
 			// -- Make a Bounce
 			this->Bounce(track, normal, currentMaterial);
@@ -1413,7 +1413,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			#ifdef VERBOSE_MODE	
 				cout << "-------------------------------------------------" << endl;
 				cout << "Final Node: " << finalNode->GetName() << endl;
-				cout << "On Boundary? " << gGeoManager->GetCurrentNavigator()->IsUCNOnBoundary() << endl;
+				cout << "On Boundary? " << this->IsUCNOnBoundary() << endl;
 				cout << "-------------------------------------------------" << endl << endl;
 			#endif
 
