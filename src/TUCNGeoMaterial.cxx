@@ -6,6 +6,7 @@
 #include "TGeoMaterial.h"
 
 #include "TUCNGeoMaterial.h"
+#include "Units.h"
 
 using namespace std;
 
@@ -85,9 +86,9 @@ TUCNGeoMaterial::~TUCNGeoMaterial()
 //_____________________________________________________________________________
 Double_t TUCNGeoMaterial::Eta() const
 {
-	if (fFermiPotential == 0.0 && fWPotential == 0.0) {
-		cerr << this->GetName() << "\t" << fFermiPotential << "\t" << fWPotential << endl;
-		assert(fFermiPotential != 0.0 && fWPotential != 0.0);
+	if (fFermiPotential == 0.0) {
+		cerr << this->GetName() << "\t" << "FermiPotential, V(neV): " << fFermiPotential/Units::neV << "\t" << "LossPotential, W(neV): " << fWPotential/Units::neV << endl;
+		assert(fFermiPotential != 0.0);
 	}
 	return (fWPotential/fFermiPotential);
 }
