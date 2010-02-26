@@ -49,8 +49,8 @@ Int_t sandbox_plot(const char* geomFileName, const char* dataFileName, const cha
 	// Needs to be imported first because we draw the volumes in certain histograms from it, so we do not want it
 	// deleted in each function. 
 	
-	DrawInitialAndFinalPositions(dataFileName, geoManager);
 	DrawInitialAndFinalDirections(dataFileName, geoManager);
+	DrawInitialAndFinalPositions(dataFileName, geoManager);
 	
 	if (badTrackFileName) {
 		DrawBadTrack(badTrackFileName, geoManager);
@@ -182,12 +182,12 @@ Bool_t DrawBadTrack(const char* badTrackFileName, TGeoManager* geoManager)
 	trackPoints->Draw();
 	trackLine->Draw();
 	
-	cout << "Track Points: " << endl;
-	for (Int_t i = 0; i < trackPoints->GetN(); i++) {
-		Double_t point[3] = {0.,0.,0.};
-		trackPoints->GetPoint(i,point[0],point[1],point[2]);
-		cout << i << "\t" << "X: " << point[0] << "\t" << "Y: " << point[1] << "\t" << "Z: " << point[2] << endl;
-	}
+//	cout << "Track Points: " << endl;
+//	for (Int_t i = 0; i < trackPoints->GetN(); i++) {
+//		Double_t point[3] = {0.,0.,0.};
+//		trackPoints->GetPoint(i,point[0],point[1],point[2]);
+//		cout << i << "\t" << "X: " << point[0] << "\t" << "Y: " << point[1] << "\t" << "Z: " << point[2] << endl;
+//	}
 	
 	return kTRUE;
 }
