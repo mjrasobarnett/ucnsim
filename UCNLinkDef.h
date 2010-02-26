@@ -9,8 +9,6 @@
 #pragma link C++ class TUCNGeoBuilder;
 #pragma link C++ class TUCNGeoBBox;
 #pragma link C++ class TUCNGeoTube;
-#pragma link C++ class TUCNGeoTubeSeg;
-#pragma link C++ class TUCNGeoCtub;
 #pragma link C++ class TUCNGeoMaterial;
 #pragma link C++ class TUCNParticle;
 #pragma link C++ class TUCNGravField;

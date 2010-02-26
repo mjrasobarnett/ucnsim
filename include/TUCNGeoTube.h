@@ -87,3 +87,5 @@ class TUCNGeoTube : public TUCNGeoBBox
 		
    ClassDef(TUCNGeoTube, 1)     // UCNGeoTube
 };
+
+#endif

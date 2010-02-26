@@ -365,10 +365,10 @@ void TUCNGeoTube::DistToTube(Double_t rsq, Double_t nsq, Double_t rdotn, Double_
 }
 
 //_____________________________________________________________________________
-TGeoVolume *TUCNGeoTube::Divide(TGeoVolume *voldiv, const char *divname, Int_t iaxis, Int_t ndiv,
-                             Double_t start, Double_t step)
+TGeoVolume *TUCNGeoTube::Divide(TGeoVolume* /*voldiv*/, const char* /*divname*/, Int_t /*iaxis*/, Int_t /*ndiv*/,
+                             Double_t /*start*/, Double_t /*step*/)
 {
-//--- Divide this tube shape belonging to volume "voldiv" into ndiv volumes
+/*//--- Divide this tube shape belonging to volume "voldiv" into ndiv volumes
 // called divname, from start position with the given step. Returns pointer
 // to created division cell volume in case of Z divisions. For radial division
 // creates all volumes with different shapes and returns pointer to volume that
@@ -428,6 +428,9 @@ TGeoVolume *TUCNGeoTube::Divide(TGeoVolume *voldiv, const char *divname, Int_t i
          Error("Divide", "In shape %s wrong axis type for division", GetName());
          return 0;
    }
+*/
+	Error("Divide","Divide is not implemented for UCNTube. Sorry");
+	return 0;
 }
 
 //_____________________________________________________________________________
