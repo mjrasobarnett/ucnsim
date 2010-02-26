@@ -123,11 +123,10 @@ class TUCNRun : public TNamed
 
 		Bool_t						MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField=0, TUCNMagField* magField=0);
 
-		Bool_t 						Bounce(TVirtualGeoTrack* track, const Double_t* normal, TUCNGeoMaterial* wallMaterial);
+		Bool_t 						Bounce(TUCNParticle* particle, const Double_t* normal, const TUCNGeoMaterial* wallMaterial);
 		Bool_t 						SpecularBounce(Double_t* dir, const Double_t* norm);
 		Bool_t 						DiffuseBounce(Double_t* dir, const Double_t* norm);
-		void							UpdateTrack(TVirtualGeoTrack* track, Double_t timeInterval=0., TUCNGravField* gravField=0);
-
+		void							UpdateParticle(TUCNParticle* particle, const Double_t timeInterval=0., const TUCNGravField* gravField=0);
 		
 
 	ClassDef(TUCNRun, 1)      

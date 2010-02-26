@@ -1543,7 +1543,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		}
 		
 		// -- Update track/particle properties
-		this->UpdateTrack(track, this->GetStepTime(), gravField);
+		this->UpdateParticle(particle, this->GetStepTime(), gravField);
 	///////////////////////////////////////////////////////////////////////////////////////
 		
 		// -- Get the returned Node and Matrix
@@ -1662,6 +1662,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		   point[2] += norm[2]*TGeoShape::Tolerance();
 			// Update point in the navigator
 			navigator->SetCurrentPoint(point);
+			this->UpdateParticle(particle);
 			currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
 			cout << "Global Point after micro-step: ";
 			cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
@@ -1735,7 +1736,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 				cout << "On Boundary? " << this->IsUCNOnBoundary() << endl;
 			#endif	
 			// -- Make a Bounce (note: bounce calls update track, so no need to do that here)
-			this->Bounce(track, normal, currentMaterial);
+			this->Bounce(particle, normal, currentMaterial);
 
 			// -- cd back to the saved node before we made the step -- stored in 'initialPath'. 
 			if (!navigator->cd(initialPath)) {
@@ -1794,6 +1795,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			   point[2] += norm[2]*2.0*TGeoShape::Tolerance();
 				// Update point in the navigator
 				navigator->SetCurrentPoint(point);
+				this->UpdateParticle(particle);
 				currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
 				cout << "Global Point after micro-step: ";
 				cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
@@ -1814,19 +1816,19 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 			// End of Bounce. We should have returned to the original node, and guarenteed that the current point is located within it.
 		}
 	}
+	// Add Vertex to Track
+	track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
 	// End of MakeStep.
 	return kTRUE;
 }
 
 //_____________________________________________________________________________
-void TUCNRun::UpdateTrack(TVirtualGeoTrack* track, const Double_t timeInterval, TUCNGravField* gravField)
+void TUCNRun::UpdateParticle(TUCNParticle* particle, const Double_t timeInterval, const TUCNGravField* gravField)
 {
-// Take the particle and update its position, momentum, time and energy with the current properties stored in the Navigator
-	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-	
+	// -- Take the particle and update its position, momentum, time and energy with the current properties stored in the Navigator
 	#ifdef VERBOSE_MODE
-		cout << "UpdateTrack -- Initial X: " << particle->Vx() << "\t" << "Y: " << particle->Vy() << "\t" <<  "Z: " << particle->Vz() << "\t" <<  "T: " << particle->T() << endl;
-		cout << "UpdateTrack -- Initial PX: " << particle->Px() << "\t" << "PY: " << particle->Py() << "\t" <<  "PZ: " << particle->Pz() << "\t" <<  "E: " << particle->Energy()/Units::neV << endl;
+		cout << "UpdateParticle -- Initial X: " << particle->Vx() << "\t" << "Y: " << particle->Vy() << "\t" <<  "Z: " << particle->Vz() << "\t" <<  "T: " << particle->T() << endl;
+		cout << "UpdateParticle -- Initial PX: " << particle->Px() << "\t" << "PY: " << particle->Py() << "\t" <<  "PZ: " << particle->Pz() << "\t" <<  "E: " << particle->Energy()/Units::neV << endl;
 	#endif
 	
 	const Double_t* pos = gGeoManager->GetCurrentNavigator()->GetCurrentPoint();
@@ -1855,23 +1857,20 @@ void TUCNRun::UpdateTrack(TVirtualGeoTrack* track, const Double_t timeInterval, 
 	particle->SetProductionVertex(pos[0], pos[1], pos[2], particle->T() + timeInterval);
 	particle->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
 	particle->IncreaseDistance(gGeoManager->GetCurrentNavigator()->GetStep()); // Increase the distance travelled stored in the particle
-	
-	// Update track
-	track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
-		
+			
 	#ifdef VERBOSE_MODE
-		cout << "UpdateTrack -- Height climbed: " << heightClimbed << "\t" << "Kinetic Energy Gained(Lost): " << -gravPotentialEnergy/Units::neV << endl;
-		cout << "UpdateTrack -- Final X: " << particle->Vx() << "\t" << "Y: " << particle->Vy() << "\t" <<  "Z: " << particle->Vz() << "\t" <<  "T: " << particle->T() << endl;
-		cout << "UpdateTrack -- Final PX: " << particle->Px() << "\t" << "PY: " << particle->Py() << "\t" <<  "PZ: " << particle->Pz() << "\t" <<  "E: " << particle->Energy()/Units::neV << endl;
+		cout << "UpdateParticle -- Height climbed: " << heightClimbed << "\t" << "Kinetic Energy Gained(Lost): " << -gravPotentialEnergy/Units::neV << endl;
+		cout << "UpdateParticle -- Final X: " << particle->Vx() << "\t" << "Y: " << particle->Vy() << "\t" <<  "Z: " << particle->Vz() << "\t" <<  "T: " << particle->T() << endl;
+		cout << "UpdateParticle -- Final PX: " << particle->Px() << "\t" << "PY: " << particle->Py() << "\t" <<  "PZ: " << particle->Pz() << "\t" <<  "E: " << particle->Energy()/Units::neV << endl;
 	#endif
 }
 
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::Bounce(TVirtualGeoTrack* track, const Double_t* normal, TUCNGeoMaterial* wallMaterial)
+Bool_t TUCNRun::Bounce(TUCNParticle* particle, const Double_t* normal, const TUCNGeoMaterial* wallMaterial)
 {
-	// -- Get particle
-	TUCNParticle* ucnparticle = static_cast<TUCNParticle*>(track->GetParticle());
+	// -- Make a reflection off of the current boundary
+	
 	// -- GetNavigator
 	TGeoNavigator* navigator = gGeoManager->GetCurrentNavigator();
 	
@@ -1895,28 +1894,28 @@ Bool_t TUCNRun::Bounce(TVirtualGeoTrack* track, const Double_t* normal, TUCNGeoM
 	// -- Calculate Probability of diffuse reflection
 	Double_t fermiPotential = wallMaterial->FermiPotential();
 	Double_t diffuseCoefficient = wallMaterial->RoughnessCoeff();
-	Double_t diffuseProbability = ucnparticle->DiffuseProbability(diffuseCoefficient, normal, fermiPotential);
+	Double_t diffuseProbability = particle->DiffuseProbability(diffuseCoefficient, normal, fermiPotential);
 	
 	// Determine Reflection Type 
 	Double_t prob = gRandom->Uniform(0.0,1.0);
 	if (prob <= diffuseProbability) {
 		// -- Diffuse Bounce
 		this->DiffuseBounce(dir, norm);
-		ucnparticle->MadeDiffuseBounce(); // Update counter
+		particle->MadeDiffuseBounce(); // Update counter
 	} else {
 		// -- Specular Bounce
 		this->SpecularBounce(dir, norm);
-		ucnparticle->MadeSpecularBounce(); // Update counter
+		particle->MadeSpecularBounce(); // Update counter
 	}
 
 	// -- Set New Direction
 	gGeoManager->GetCurrentNavigator()->SetCurrentDirection(dir);
 	
 	// -- Update Track
-	this->UpdateTrack(track);	
+	this->UpdateParticle(particle);	
 
 	// -- Update Bounce Counter
-	ucnparticle->MadeBounce();
+	particle->MadeBounce();
 	
 	return kTRUE;
 }	
