@@ -14,7 +14,7 @@
 #include "TGraphErrors.h"
 
 #include "TGeoManager.h"
-#include "TUCNRunManager.h"
+#include "TUCNExperiment.h"
 #include "TUCNFieldManager.h"
 #include "TUCNRun.h"
 
@@ -29,7 +29,7 @@ const Double_t total_energy = 200*neV;
 Double_t lossFunc(Double_t* x, Double_t* par);
 Double_t densityf(Double_t* x, Double_t* par);
 
-void		PlotFinalPositions(TCanvas* canvas, TUCNRunManager* runManager);
+void		PlotFinalPositions(TCanvas* canvas, TUCNExperiment* experiment);
 
 Int_t main(Int_t argc,Char_t **argv)
 {
@@ -73,9 +73,9 @@ Int_t main(Int_t argc,Char_t **argv)
 		printf("key: %s points to an object of class: %s at %i , with cycle number: %i \n", key->GetName(), key->GetClassName(),key->GetSeekKey(),key->GetCycle());
 	}
 	cout << "-------------------------------------------" << endl;
-	// Get the FieldManager and the RunManager From the File
-	TUCNRunManager* runManager = 0;
-	file->GetObject("RunManager;1", runManager);
+	// Get the FieldManager and the Experiment From the File
+	TUCNExperiment* experiment = 0;
+	file->GetObject("Experiment;1", experiment);
 	TUCNFieldManager* fieldManager = 0;
 	file->GetObject("FieldManager;1", fieldManager);
 	
@@ -89,7 +89,7 @@ Int_t main(Int_t argc,Char_t **argv)
 		
 	// Draw Final Positions 
 	TCanvas * canvas1 = new TCanvas("canvas1", "Final Particle Positions", 800, 10, 600, 600);
-	PlotFinalPositions(canvas1, runManager);
+	PlotFinalPositions(canvas1, experiment);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- FITTING 
@@ -170,7 +170,7 @@ Int_t main(Int_t argc,Char_t **argv)
 /*	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Fitting
 	
-	//	void PlotWallLossFunction(TCanvas* canvas, TUCNRunManager* runManager) {
+	//	void PlotWallLossFunction(TCanvas* canvas, TUCNExperiment* experiment) {
 		
 	// First we plot the number of bounces before particle was lost. Fitting this to an exponential gives the lifetime, and hence the probability of loss
 	// averaged over all collisions (which should, for enough particles and uniform distributions..., be the probability of loss averaged over all angles-of-incidence)
@@ -181,7 +181,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	TCanvas* histcanvas = new TCanvas("HistCanvas","CollisonsBeforeLoss",600,20,600,600);
 	
 	// Begin Fit
-	Int_t numberOfRuns = runManager->NumberOfRuns();
+	Int_t numberOfRuns = experiment->NumberOfRuns();
 	static const Double_t V = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->FermiPotential();
 	static const Double_t f = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->Eta();
 	
@@ -189,7 +189,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	
 	for(Int_t i = 0; i < numberOfRuns; i++) {
 		// Get Run Parameters
-		TUCNRun* run = runManager->GetRun(i);
+		TUCNRun* run = experiment->GetRun(i);
 		Int_t particles = run->Particles(); 
 		Double_t totalEnergy = run->TotalEnergy();
 		
@@ -263,11 +263,11 @@ Int_t main(Int_t argc,Char_t **argv)
 	TCanvas* histcanvas = new TCanvas("HistCanvas","AvgMagField",20,20,600,600);
 	
 	// Begin Fit
-	Int_t numberOfRuns = runManager->NumberOfRuns();
+	Int_t numberOfRuns = experiment->NumberOfRuns();
 	
 	for(Int_t i = 0; i < numberOfRuns; i++) {
 		// Get Run Parameters
-		TUCNRun* run = runManager->GetRun(i);
+		TUCNRun* run = experiment->GetRun(i);
 		Int_t particles = run->Particles();
 		cout << "Total Particles: " << run->Particles() << "\t"
 			  << "Lost To Boundary: " << run->LostToBoundary() << "\t"
@@ -318,15 +318,15 @@ Double_t lossFunc(Double_t* x, Double_t* /*par*/) {
 }
 
 // -------------------------------------------------------------------------------------- 
-void	PlotFinalPositions(TCanvas* canvas, TUCNRunManager* runManager) {
+void	PlotFinalPositions(TCanvas* canvas, TUCNExperiment* experiment) {
 	// Take canvas, divide into segments proportional to number of runs. Then plot final positions onto canvas.
-	Int_t nRuns = runManager->NumberOfRuns();
+	Int_t nRuns = experiment->NumberOfRuns();
 	// If more than one run, divide the canvas appropriately
 	if (nRuns != 1) 	canvas->Divide((nRuns%2 == 0 ? nRuns/2:(nRuns/2+1)),2);
 	// Draw the final positions of the particles on the canvas
 	for (Int_t plotNumber = 1; plotNumber <= nRuns; plotNumber++) {
 		canvas->cd(plotNumber);
 		TPolyMarker3D* finalPoints = new TPolyMarker3D(gGeoManager->GetNtracks(), 1);
-		runManager->GetRun(0)->DrawParticles(canvas, finalPoints);
+		experiment->GetRun(0)->DrawParticles(canvas, finalPoints);
 	}
 }

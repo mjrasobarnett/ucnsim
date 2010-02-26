@@ -1,4 +1,4 @@
-// TUCNRunManager
+// TUCNExperiment
 // Author: Matthew Raso-Barnett  01/08/2009
 
 #include <iostream>
@@ -6,7 +6,7 @@
 #include <vector>
 #include <stdio.h>
 
-#include "TUCNRunManager.h"
+#include "TUCNExperiment.h"
 
 #include "TUCNGeoManager.h"
 #include "TUCNGeoNavigator.h"
@@ -33,28 +33,28 @@ using std::cerr;
 
 //#define VERBOSE_MODE
 
-ClassImp(TUCNRunManager)
+ClassImp(TUCNExperiment)
 
 //_____________________________________________________________________________
-TUCNRunManager::TUCNRunManager()
-					:TNamed("RunManager", "Default Run Manager")
+TUCNExperiment::TUCNExperiment()
+					:TNamed("Experiment", "Default Run Manager")
 {
 // -- Default constructor
-   Info("TUCNRunManager", "Constructor");
+   Info("TUCNExperiment", "Constructor");
 	fRuns = new TObjArray();
 } 
 
 //_____________________________________________________________________________
-TUCNRunManager::TUCNRunManager(const TUCNRunManager& runm)
+TUCNExperiment::TUCNExperiment(const TUCNExperiment& runm)
 					:TNamed(runm),
 					 fRuns(runm.fRuns)
 {
 // -- Copy Constructor
-	Info("TUCNRunManager", "Copy Constructor");
+	Info("TUCNExperiment", "Copy Constructor");
 }
 
 //_____________________________________________________________________________
-TUCNRunManager& TUCNRunManager::operator=(const TUCNRunManager& runm)
+TUCNExperiment& TUCNExperiment::operator=(const TUCNExperiment& runm)
 {
 // --assignment operator
 	if(this!=&runm) {
@@ -65,17 +65,17 @@ TUCNRunManager& TUCNRunManager::operator=(const TUCNRunManager& runm)
 }
 
 //______________________________________________________________________________
-TUCNRunManager::~TUCNRunManager()
+TUCNExperiment::~TUCNExperiment()
 { 
 // -- Destructor
-	Info("TUCNRunManager", "Destructor");
+	Info("TUCNExperiment", "Destructor");
 	if (fRuns) fRuns->Delete();
 }
 
 // -- METHODS --
 
 //______________________________________________________________________________
-Bool_t TUCNRunManager::Initialise(TUCNConfigFile& configFile)
+Bool_t TUCNExperiment::Initialise(TUCNConfigFile& configFile)
 {
 // -- Initialise the runManager with from the Configuration File and create the runs
 	cout << "-------------------------------------------" << endl;
@@ -94,13 +94,13 @@ Bool_t TUCNRunManager::Initialise(TUCNConfigFile& configFile)
 }
 
 //______________________________________________________________________________
-TUCNRun* TUCNRunManager::GetRun(Int_t index) const
+TUCNRun* TUCNExperiment::GetRun(Int_t index) const
 {
 	return (index<fRuns->GetEntries()) ? static_cast<TUCNRun*>(fRuns->At(index)) : 0;
 }
 
 //______________________________________________________________________________
-void TUCNRunManager::CreateRuns(Int_t numberOfRuns, TUCNConfigFile& configFile)
+void TUCNExperiment::CreateRuns(Int_t numberOfRuns, TUCNConfigFile& configFile)
 {
 	for(Int_t i = 1; i <= numberOfRuns; i++) {
 		Char_t name[10], title[20];
@@ -114,7 +114,7 @@ void TUCNRunManager::CreateRuns(Int_t numberOfRuns, TUCNConfigFile& configFile)
 }
 
 //_____________________________________________________________________________
-void	TUCNRunManager::WriteToFile(TFile* file)
+void	TUCNExperiment::WriteToFile(TFile* file)
 {
 	assert(file->IsOpen());
 	cout << "Writing data to file: " << file->GetName() << endl;

@@ -1,8 +1,8 @@
-// TUCNRunManager
+// TUCNExperiment
 // Author: Matthew Raso-Barnett  01/08/2009
 
-#ifndef ROOT_TUCNRunManager
-#define ROOT_TUCNRunManager
+#ifndef ROOT_TUCNExperiment
+#define ROOT_TUCNExperiment
 
 #include "TNamed.h"
 
@@ -11,26 +11,26 @@
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-// 						TUCNRunManager													  //
+// 						TUCNExperiment													  //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 class TUCNConfigFile;
 
-class TUCNRunManager : public TNamed 
+class TUCNExperiment : public TNamed 
 {
 
 protected:
-	TUCNRunManager(const TUCNRunManager&); 
-	TUCNRunManager& operator=(const TUCNRunManager&);
+	TUCNExperiment(const TUCNExperiment&); 
+	TUCNExperiment& operator=(const TUCNExperiment&);
 
 	TObjArray*						fRuns;
 	
 public:
 	// -- constructors
-   TUCNRunManager();
+   TUCNExperiment();
    
 	// -- destructor
-	virtual ~TUCNRunManager();
+	virtual ~TUCNExperiment();
 
 	// -- methods
 	Bool_t					Initialise(TUCNConfigFile& configFile);
@@ -39,7 +39,7 @@ public:
 	void						CreateRuns(Int_t numberOfRuns, TUCNConfigFile& configFile);
 	void						WriteToFile(TFile* file);
 	
-   ClassDef(TUCNRunManager, 1)      
+   ClassDef(TUCNExperiment, 1)      
 };
 
 #endif

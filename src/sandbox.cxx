@@ -38,7 +38,7 @@
 #include "TUCNGeoMaterial.h"
 #include "TUCNGravField.h"
 #include "TUCNParticle.h"
-#include "TUCNRunManager.h"
+#include "TUCNExperiment.h"
 #include "TUCNMagField.h"
 #include "TUCNUniformMagField.h"
 #include "TUCNRun.h"
@@ -102,18 +102,13 @@ Int_t main(Int_t argc,Char_t **argv)
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Run Simulation
 	///////////////////////////////////////////////////////////////////////////////////////
-	TUCNRunManager* runManager = new TUCNRunManager();
-	if (!(runManager->Initialise(configFile))) {
+	TUCNExperiment* experiment = new TUCNExperiment();
+	if (!(experiment->Initialise(configFile))) {
 		cerr << "Failed to initialise the Runs. Program aborting." << endl;
 		return EXIT_FAILURE;
 	}
 	
 	navigator->DiffuseCoefficient(0.1);
-	Double_t V = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->FermiPotential();
-	Double_t f = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("Boundary Material"))->Eta();
-	Double_t totalEnergy = 0;
-	cout << "V: " << V << "\t" << "f: " << f << endl;
-	
 	
 /*	for (Int_t runNumber = 0; runNumber < numberOfRuns; runNumber++) {
 		totalEnergy = 0.57*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
