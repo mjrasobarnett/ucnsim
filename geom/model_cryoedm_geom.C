@@ -1,3 +1,6 @@
+// This is a model of the 'Real' cryoEDM experiment, using dimensions from the model created by
+// Vishal Francis. 
+// 9/01/2010 - Model covers the source tube down to the neutron detector
 #include "TGLViewer.h"
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
@@ -8,7 +11,7 @@
 Int_t simulation_geom();
 Int_t visualisation_geom();
 
-Int_t model_edm_geom()
+Int_t model_cryoedm_geom()
 {
 	// Build and write to file the simulation geom
 	simulation_geom();
@@ -19,10 +22,6 @@ Int_t model_edm_geom()
 
 //__________________________________________________________________________
 Int_t simulation_geom() {
-	// This is a model of the 'Real' cryoEDM experiment, using dimensions from the model created by
-	// Vishal Francis. 
-	// 9/01/2010 - Model covers the source tube down to the neutron detector
-	
 	// Create the geoManager
 	TGeoManager* geoManager = new TGeoManager("GeoManager", "Geometry Manager");
 	// Create the UCNNavigator and initialise in the UCNManager
@@ -69,7 +68,7 @@ Int_t simulation_geom() {
 	sourceSeg->SetLineColor(kAzure-4);
 	sourceSeg->SetLineWidth(1);
 	sourceSeg->SetVisibility(kTRUE);
-	sourceSeg->SetTransparency(60);
+	sourceSeg->SetTransparency(20);
 	
 	Double_t sourceAngle = 90.0;
 	Double_t segmentDisplacement = 125.*Units::mm;
@@ -98,7 +97,7 @@ Int_t simulation_geom() {
 	valveVolEntrance->SetLineColor(kTeal-3);
 	valveVolEntrance->SetLineWidth(1);
 	valveVolEntrance->SetVisibility(kTRUE);
-	valveVolEntrance->SetTransparency(60);
+	valveVolEntrance->SetTransparency(20);
 	// -- Define the Valve volume entrance
 	Double_t valveVolEntranceAngle = 90.0;
 	Double_t valveVolEntranceDisplacement = 13.0*2.0*sourceSegHalfLength 
@@ -117,7 +116,7 @@ Int_t simulation_geom() {
 	valveVolFront->SetLineColor(kTeal-4);
 	valveVolFront->SetLineWidth(1);
 	valveVolFront->SetVisibility(kTRUE);
-	valveVolFront->SetTransparency(60);
+	valveVolFront->SetTransparency(20);
 	// -- Define the Valve volume front
 	Double_t valveVolFrontAngle = 90.0;
 	Double_t valveVolFrontDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + valveVolFrontHalfLength;
@@ -163,7 +162,7 @@ Int_t simulation_geom() {
 	valveVol->SetLineColor(kTeal-5);
 	valveVol->SetLineWidth(1);
 	valveVol->SetVisibility(kTRUE);
-	valveVol->SetTransparency(60);// -- Define the Valve volume transformation
+	valveVol->SetTransparency(20);// -- Define the Valve volume transformation
 	Double_t valveVolAngle = 0.0;
 	Double_t valveVolYDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + 
 												2.0*valveVolFrontHalfLength + valveVolBackHalfLength;
@@ -193,7 +192,7 @@ Int_t simulation_geom() {
 	bendVol->SetLineColor(kYellow-3);
 	bendVol->SetLineWidth(1);
 	bendVol->SetVisibility(kTRUE);
-	bendVol->SetTransparency(60);
+	bendVol->SetTransparency(20);
 	// -- Define the transformation of the bend
 	Double_t bendVolAngle = 90.0;
 	Double_t bendVolYDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + 
@@ -214,7 +213,7 @@ Int_t simulation_geom() {
 	detectorValveVol->SetLineColor(kRed-7);
 	detectorValveVol->SetLineWidth(1);
 	detectorValveVol->SetVisibility(kTRUE);
-	detectorValveVol->SetTransparency(60);
+	detectorValveVol->SetTransparency(20);
 	// -- Define the Valve volume back
 	Double_t detectorValveVolAngle = 0.0;
 	Double_t detectorValveVolXDisplacement = (bendRMin + bendRMax)/2.0 + detectorValveVolHalfX;
@@ -237,7 +236,7 @@ Int_t simulation_geom() {
 	detectorTubeTop->SetLineColor(kOrange+1);
 	detectorTubeTop->SetLineWidth(1);
 	detectorTubeTop->SetVisibility(kTRUE);
-	detectorTubeTop->SetTransparency(60);
+	detectorTubeTop->SetTransparency(20);
 	// -- Define the Valve volume back
 	Double_t detectorTubeTopAngle = 0.0;
 	Double_t detectorTubeTopYDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + 
@@ -261,7 +260,7 @@ Int_t simulation_geom() {
 	detectorTube->SetLineColor(kOrange+1);
 	detectorTube->SetLineWidth(1);
 	detectorTube->SetVisibility(kTRUE);
-	detectorTube->SetTransparency(60);
+	detectorTube->SetTransparency(20);
 	// -- Define the Valve volume back
 	Double_t detectorTubeAngle = 0.0;
 	Double_t detectorTubeYDisplacement = 13.0*2.0*sourceSegHalfLength + 2.0*valveVolEntranceHalfLength + 
