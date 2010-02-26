@@ -297,7 +297,7 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 			badTrack->SetLineColor(2);
 			badTrack->SetLineWidth(2);
 			// -- Write the points to the File
-			badTrackPoints->SetName("BadTrackPoints");
+			badTrackPoints->SetName("TrackPoints");
 			cout << "-------------------------------------------" << endl;
 			cout << "Track: " << track->GetId() << " has exited errorneously. Writing to file: temp/badtrackpoints.root" << endl;
 			TFile *f = TFile::Open("temp/badtrackpoints.root","recreate");
@@ -314,6 +314,42 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 			// Exit the loop
 	//		break;
 		}
+		
+/*		//------------------------------------
+      // Write out the track points for a 'good' track
+		TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+		track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
+		// Add Track to the data tree
+		this->AddTrack(track);
+		// Write the current track's points to file for debugging
+		TPolyMarker3D* goodTrackPoints = new TPolyMarker3D(track->GetNpoints(), 1); // 1 is marker style
+		TPolyLine3D* goodTrack = new TPolyLine3D();
+		for (Int_t i = 0; i < track->GetNpoints(); i++) {
+			const Double_t* point = track->GetPoint(i);
+			goodTrackPoints->SetPoint(i, point[0], point[1], point[2]);
+			goodTrack->SetPoint(i, point[0], point[1], point[2]);
+		}
+		goodTrackPoints->SetMarkerColor(2);
+		goodTrackPoints->SetMarkerStyle(7);
+		goodTrack->SetLineColor(2);
+		goodTrack->SetLineWidth(2);
+		// -- Write the points to the File
+		goodTrackPoints->SetName("TrackPoints");
+		cout << "-------------------------------------------" << endl;
+		cout << "Track: " << track->GetId() << " has exited Correctly. Writing to file: temp/goodtrackpoints.root" << endl;
+		TFile *f = TFile::Open("temp/goodtrackpoints.root","recreate");
+		if (!f || f->IsZombie()) {
+		   Error("Propagate","Cannot open file");
+		   return kFALSE;
+		}
+		goodTrackPoints->Write();
+		goodTrack->Write();
+		f->ls();
+		f->Delete();
+		cout << "Track: " << track->GetId() << " was successfully written to file" << endl;
+		cout << "-------------------------------------------" << endl;
+		//------------------------------------
+*/      
 		// Add Track to the data tree
 //		this->AddTrack(track);
       // Reset Track to release memory

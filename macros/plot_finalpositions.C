@@ -44,7 +44,7 @@ using std::vector;
 
 Bool_t DrawInitialAndFinalPositions(const char* fileName, TGeoManager* geoManager);
 Bool_t DrawInitialAndFinalDirections(const char* fileName, TGeoManager* geoManager); 
-Bool_t DrawBadTrack(const char* badTrackFileName, TGeoManager* geoManager); 
+Bool_t DrawTrack(const char* trackFileName, TGeoManager* geoManager); 
 
 // -------------------------------------------------------------------------------------- 
 Int_t plot_finalpositions(const char* geomFileName, const char* dataFileName, const char* badTrackFileName = 0) {
@@ -58,7 +58,7 @@ Int_t plot_finalpositions(const char* geomFileName, const char* dataFileName, co
 	DrawInitialAndFinalPositions(dataFileName, geoManager);
 	
 	if (badTrackFileName) {
-		DrawBadTrack(badTrackFileName, geoManager);
+		DrawTrack(badTrackFileName, geoManager);
 	}
 	
 	return 0;
@@ -152,36 +152,35 @@ Bool_t DrawInitialAndFinalDirections(const char* fileName, TGeoManager* geoManag
 	return kTRUE;
 }
 
-
 // -------------------------------------------------------------------------------------- 
-Bool_t DrawBadTrack(const char* badTrackFileName, TGeoManager* geoManager) 
+Bool_t DrawTrack(const char* trackFileName, TGeoManager* geoManager) 
 {
 	// -- Open File
 	TFile *file = 0;
-	file = TFile::Open(badTrackFileName, "read");
+	file = TFile::Open(trackFileName, "read");
 	if (!file || file->IsZombie()) {
-	   cerr << "Cannot open file: " << fileName << endl;
+	   cerr << "Cannot open file: " << trackFileName << endl;
 	   return 0;
 	}
 	// -- Extract Initial and Final Positions in TPolyMarker3D
-	const char* badTrackName = "BadTrackPoints;1";
+	const char* trackName = "TrackPoints;1";
 	TPolyMarker3D* trackPoints = new TPolyMarker3D();
-	file->GetObject(badTrackName, trackPoints);
+	file->GetObject(trackName, trackPoints);
 	if (trackPoints == NULL) {
-		cerr << "Could not find TPolyMarker3D: " << badTrackName << endl;
+		cerr << "Could not find TPolyMarker3D: " << trackName << endl;
 		return kFALSE;
 	}
 	
-	const char* badTrackLineName = "TPolyLine3D;1";
+	const char* trackLineName = "TPolyLine3D;1";
 	TPolyLine3D* trackLine = new TPolyLine3D();
-	file->GetObject(badTrackLineName, trackLine);
+	file->GetObject(trackLineName, trackLine);
 	if (trackLine == NULL) {
-		cerr << "Could not find TPolyMarker3D: " << badTrackLineName << endl;
+		cerr << "Could not find TPolyMarker3D: " << trackLineName << endl;
 		return kFALSE;
 	}
 	
 	// -- Draw Track
-	TCanvas *canvas = new TCanvas("BadTrackCanvas","Bad Track Points",60,0,400,400);
+	TCanvas *canvas = new TCanvas("TrackCanvas","Track Points",60,0,400,400);
 	canvas->cd();
 	geoManager->GetTopVolume()->Draw();
 	geoManager->SetVisLevel(4);
