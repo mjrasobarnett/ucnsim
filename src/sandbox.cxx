@@ -103,7 +103,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	// -- Run Analysis of Data
 	///////////////////////////////////////////////////////////////////////////////////////
 	
-	TUCNConfigFile configFile(configFileName);
+/*	TUCNConfigFile configFile(configFileName);
 	TString dataFile(configFile.GetString("OutputFile","I/O"));
 	
 	cout << endl << endl;
@@ -113,7 +113,7 @@ Int_t main(Int_t argc,Char_t **argv)
 	
 	PlotInitialAndFinalPositions(dataFile, "Run1;1");
 	PlotInitialAndFinalAngularDistribution(dataFile, "Run1;1");
-	
+*/	
 	return EXIT_SUCCESS;
 }
 
@@ -236,5 +236,7 @@ Bool_t PlotInitialAndFinalAngularDistribution(const TString& dataFileName, const
 	
 	return kTRUE;
 }
+
+
 
 

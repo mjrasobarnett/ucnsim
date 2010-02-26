@@ -42,12 +42,13 @@
 
 using std::vector;
 
+Bool_t DrawInitialAndFinalPhaseSpace(const char* fileName); 
 Bool_t DrawInitialAndFinalPositions(const char* fileName, TGeoManager* geoManager);
-Bool_t DrawInitialAndFinalDirections(const char* fileName, TGeoManager* geoManager); 
+Bool_t DrawInitialAndFinalDirections(const char* fileName); 
 Bool_t DrawTrack(const char* trackFileName, TGeoManager* geoManager); 
 
 // -------------------------------------------------------------------------------------- 
-Int_t plot_finalpositions(const char* geomFileName, const char* dataFileName, const char* badTrackFileName = 0) {
+Int_t draw_rundata(const char* geomFileName, const char* dataFileName, const char* badTrackFileName = 0) {
 	
 	// -- Import Geometry
 	TGeoManager* geoManager = TGeoManager::Import(geomFileName); 
@@ -55,13 +56,103 @@ Int_t plot_finalpositions(const char* geomFileName, const char* dataFileName, co
 	// deleted in each function. 
 	
 	DrawInitialAndFinalDirections(dataFileName, geoManager);
-	DrawInitialAndFinalPositions(dataFileName, geoManager);
+   DrawInitialAndFinalPhaseSpace(dataFileName);
 	
+	DrawInitialAndFinalPositions(dataFileName, geoManager);
 	if (badTrackFileName) {
 		DrawTrack(badTrackFileName, geoManager);
 	}
 	
 	return 0;
+}
+
+// -------------------------------------------------------------------------------------- 
+Bool_t DrawInitialAndFinalPhaseSpace(const char* fileName) 
+{
+	// -- Open File
+	TFile *file = 0;
+	file = TFile::Open(fileName, "read");
+	if (!file || file->IsZombie()) {
+	   cerr << "Cannot open file: " << fileName << endl;
+	   return 0;
+	}
+	file->ls();
+   
+   // -- Extract Histogram Objects
+   const char* initialEnergyHistName = "InitialEnergyHist;1";
+   const char* initialPxHistName = "InitialPxHist;1";
+   const char* initialPyHistName = "InitialPyHist;1";
+   const char* initialPzHistName = "InitialPzHist;1";
+   const char* initialTimeHistName = "InitialTimeHist;1";
+   const char* initialDistHistName = "InitialDistHist;1";
+   const char* finalEnergyHistName = "FinalEnergyHist;1";
+   const char* finalPxHistName = "FinalPxHist;1";
+   const char* finalPyHistName = "FinalPyHist;1";
+   const char* finalPzHistName = "FinalPzHist;1";
+   const char* finalTimeHistName = "FinalTimeHist;1";
+   const char* finalDistHistName = "FinalDistHist;1";
+   
+   TH1F* initialEnergyHist = new TH1F();
+   TH1F* initialPxHist = new TH1F();
+   TH1F* initialPyHist = new TH1F();
+   TH1F* initialPzHist = new TH1F();
+   TH1F* initialTimeHist = new TH1F();
+   TH1F* initialDistHist = new TH1F();
+   TH1F* finalEnergyHist = new TH1F();
+   TH1F* finalPxHist = new TH1F();
+   TH1F* finalPyHist = new TH1F();
+   TH1F* finalPzHist = new TH1F();
+   TH1F* finalTimeHist = new TH1F();
+   TH1F* finalDistHist = new TH1F();
+   
+   file->GetObject(initialEnergyHistName, initialEnergyHist);
+   file->GetObject(initialPxHistName,initialPxHist);
+   file->GetObject(initialPyHistName,initialPyHist);
+   file->GetObject(initialPzHistName,initialPzHist);
+   file->GetObject(initialTimeHistName,initialTimeHist);
+   file->GetObject(initialDistHistName,initialDistHist);
+   file->GetObject(finalEnergyHistName,finalEnergyHist);
+   file->GetObject(finalPxHistName,finalPxHist);
+   file->GetObject(finalPyHistName,finalPyHist);
+   file->GetObject(finalPzHistName,finalPzHist);
+   file->GetObject(finalTimeHistName,finalTimeHist);
+   file->GetObject(finalDistHistName,finalDistHist);
+   
+   // -- Draw Histograms
+	TCanvas *canvas1 = new TCanvas("InitialPhaseSpace","Initial Phase Space",60,0,1000,800);
+	canvas1->Divide(3,2);
+	canvas1->cd(1);
+	initialEnergyHist->Draw();
+	canvas1->cd(2);
+	initialPxHist->Draw();
+	canvas1->cd(3);
+	initialPyHist->Draw();
+	canvas1->cd(4);
+	initialPzHist->Draw();
+	canvas1->cd(5);
+	initialTimeHist->Draw();
+	canvas1->cd(6);
+	initialDistHist->Draw();
+	
+	TCanvas *canvas2 = new TCanvas("FinalPhaseSpace","Final Phase Space",60,0,1000,800);
+	canvas2->Divide(3,2);
+	canvas2->cd(1);
+	finalEnergyHist->Draw();
+	canvas2->cd(2);
+	finalPxHist->Draw();
+	canvas2->cd(3);
+	finalPyHist->Draw();
+	canvas2->cd(4);
+	finalPzHist->Draw();
+	canvas2->cd(5);
+	// -- Fit Emptying Time
+	TF1* expo = new TF1();
+   file->GetObject("Expo", expo);
+   finalTimeHist->Fit("Expo","R");
+	canvas2->cd(6);
+	finalDistHist->Draw();
+	
+	return kTRUE;
 }
 
 // -------------------------------------------------------------------------------------- 
@@ -74,6 +165,7 @@ Bool_t DrawInitialAndFinalPositions(const char* fileName, TGeoManager* geoManage
 	   cerr << "Cannot open file: " << fileName << endl;
 	   return 0;
 	}
+   file->ls();
 	// -- Extract Initial and Final Positions in TPolyMarker3D
 	const char* initialFileName = "NeutronInitialPositions;1";
 	const char* finalFileName = "NeutronFinalPositions;1";
@@ -120,7 +212,8 @@ Bool_t DrawInitialAndFinalDirections(const char* fileName, TGeoManager* geoManag
 	   cerr << "Cannot open file: " << fileName << endl;
 	   return 0;
 	}
-	// -- Extract Histogram Objects
+	file->ls();
+   // -- Extract Histogram Objects
 	const char* initialThetaHistName = "InitialThetaHist;1";
 	const char* initialPhiHistName = "InitialPhiHist;1";
 	const char* finalThetaHistName = "FinalThetaHist;1";
