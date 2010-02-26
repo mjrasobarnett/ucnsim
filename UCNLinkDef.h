@@ -21,5 +21,6 @@
 #pragma link C++ class TUCNMagField;
 #pragma link C++ class TUCNUniformMagField;
 #pragma link C++ class TUCNRun;
+#pragma link C++ class TUCNParabolicMagField;
 
 #endif

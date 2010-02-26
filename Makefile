@@ -64,7 +64,8 @@ TUCNUNIFORMMAGFIELDO	= src/TUCNUniformMagField.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNUNIFORMMAGFIELDS	= src/TUCNUniformMagField.$(SrcSuf) UCNDict.$(SrcSuf)
 TUCNRUNO					= src/TUCNRun.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNRUNS					= src/TUCNRun.$(SrcSuf)  UCNDict.$(SrcSuf)
-
+TUCNPARABOLICMAGFIELDO = src/TUCNParabolicMagField.$(ObjSuf) UCNDict.$(ObjSuf)
+TUCNPARABOLICMAGFIELDS = src/TUCNParabolicMagField.$(SrcSuf) UCNDict.$(SrcSuf)
 
 #------------------------------------------------------------------------------
 # my library with my classes
@@ -75,7 +76,7 @@ UCNLIB			= -L./lib -lUCN -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter
 #------------------------------------------------------------------------------
 OBJS         =	$(SANDBOXO) $(UCNSIMO) $(FITDATAO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) \
 					$(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO)
+					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO) $(TUCNPARABOLICMAGFIELDO)
 PROGRAMS     = $(UCNSO) $(UCNSIM) $(FITDATA) $(SANDBOX)
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
@@ -88,7 +89,8 @@ clean:
 
 $(SANDBOX):		$(SANDBOXO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) \
 					$(TUCNGEOTUBEO) $(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO)
+					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO) \
+					$(TUCNPARABOLICMAGFIELDO)
 					$(LD) $(LDFLAGS) $(SANDBOXO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
@@ -96,7 +98,8 @@ $(SANDBOX):		$(SANDBOXO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDE
 
 $(UCNSIM):		$(UCNSIMO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) \
 					$(TUCNGEOTUBEO) $(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO)
+					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO) \
+					$(TUCNPARABOLICMAGFIELDO)
 					$(LD) $(LDFLAGS) $(UCNSIMO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
@@ -111,7 +114,8 @@ $(FITDATA):		$(FITDATAO) $(TUCNDATAPARSERO)
 UCN:				$(UCNSO)
 $(UCNSO):		$(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) \
 					$(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO)
+					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO) \
+					$(TUCNPARABOLICMAGFIELDO)
 
 ifeq ($(ARCH),aix)
 		/usr/ibmcxx/bin/makeC++SharedLib $(OutPutOpt) $@ $(LIBS) -p 0 $^
@@ -153,13 +157,14 @@ TUCNDATAO:						include/TUCNData.h
 TUCNMAGFIELDO:					include/TUCNMagField.h
 TUCNUNIFORMMAGFIELDO:		include/TUCNUniformMagField.h
 TUCNRUNO:						include/TUCNRun.h
+TUCNPARABOLICMAGFIELDO:		include/TUCNParabolicMagField.h
 
 UCNDict.$(SrcSuf):		include/TUCNGeoManager.h include/TUCNGeoNavigator.h include/TUCNGeoBuilder.h \
 								include/TUCNGeoBBox.h include/TUCNGeoTube.h include/TUCNGeoMaterial.h \
 								include/TUCNGravField.h include/TUCNParticle.h \
 								include/TUCNDataParser.h include/TUCNPolynomial.h include/TUCNParabola.h \
 								include/TUCNRunManager.h include/TUCNData.h include/TUCNMagField.h include/TUCNUniformMagField.h \
-								include/TUCNRun.h $(LINKDEF)
+								include/TUCNParabolicMagField.h include/TUCNRun.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 
