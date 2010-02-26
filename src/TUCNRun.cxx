@@ -47,6 +47,23 @@ TUCNRun::TUCNRun()
 } 
 
 //_____________________________________________________________________________
+TUCNRun::TUCNRun(const char *name, const char *title)
+		  :TNamed(name, title)
+{
+// -- Default constructor
+   Info("TUCNRun", "Constructor");
+	
+	// Create the UCNNavigator and initialise in the UCNManager
+	Info("TUCNRun", "Creating a new Navigator...");
+	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(static_cast<TUCNGeoManager*>(gGeoManager));
+	fNavigatorIndex = gGeoManager->AddNavigator(navigator);
+	gGeoManager->SetCurrentNavigator(fNavigatorIndex);
+	
+	// Create the data object
+	fData = new TUCNData("ucndata", "ucndata");
+}
+
+//_____________________________________________________________________________
 TUCNRun::TUCNRun(const TUCNRun& run)
 		  :TNamed(run),
 			fData(run.fData),
@@ -267,7 +284,7 @@ Bool_t TUCNRun::PropagateAllTracks(Double_t runTime, Double_t maxStepTime)
 		if (!propagated) lostTracks.push_back(trackid);
 		// Add Track to data tree
 		fData->AddParticle(particle);
-//		fData->AddTrack(track);
+		fData->AddTrack(track);
 		// Reset Track to release memory
 		track->ResetTrack();
 	}

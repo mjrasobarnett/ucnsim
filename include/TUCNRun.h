@@ -28,8 +28,8 @@ class TUCNRun : public TNamed
 		
 	public:
 		// -- constructors
-	   TUCNRun();
-	   
+		TUCNRun();
+		TUCNRun(const char *name, const char *title);
 		// -- destructor
 		virtual ~TUCNRun();
 		
