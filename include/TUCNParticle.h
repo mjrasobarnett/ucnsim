@@ -6,6 +6,7 @@
 #define TUCNPARTICLE_H
 
 #include "TParticle.h"
+#include "TUCNMagField.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -28,6 +29,7 @@ private:
 	Int_t 					fDiffuseBounces;
 	
 	Double_t 				fDistance;
+	Double_t					fAvgMagField;
 		
 public:
 	// -- constructors
@@ -74,7 +76,9 @@ public:
 	Double_t					Mass_GeV_c() 	const;
 	Double_t					Mass_GeV_c2() 	const;
 	
-	
+	Double_t					SampleMagField(const TUCNMagField* magfield, const Int_t stepNumber);
+	Double_t					AvgMagField() const							{return fAvgMagField;}
+	void						AvgMagField(Double_t avgMagField)		{fAvgMagField = avgMagField;}
    ClassDef(TUCNParticle,1)   // Ultra-Cold Neutron
 };
 

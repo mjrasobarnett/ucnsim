@@ -1,5 +1,7 @@
 // UCN class
 // Author: Matthew Raso-Barnett  19/01/2009
+#include <iostream>
+#include <cassert>
 
 #include "Constants.h"
 #include "Units.h"
@@ -28,6 +30,7 @@ TUCNParticle::TUCNParticle()
 	fBounces = 0;
 	fSpecularBounces = 0;
 	fDiffuseBounces = 0;
+	fAvgMagField = 0.;
 }
 
 
@@ -47,6 +50,7 @@ TUCNParticle::TUCNParticle(Double_t* pos, Double_t* mom, Double_t kineticEnergy,
 	fBounces = 0;
 	fSpecularBounces = 0;
 	fDiffuseBounces = 0;
+	fAvgMagField = 0.;
 }
 
 //_____________________________________________________________________________
@@ -180,4 +184,18 @@ Double_t TUCNParticle::Mass_GeV_c2() const
 	const Double_t mass_GeV = (fParticlePDG->Mass()*Units::GeV);
 	Double_t mass_GeV_c2 = mass_GeV/(Constants::c_squared);
 	return mass_GeV_c2;
+}
+
+//______________________________________________________________________________
+Double_t TUCNParticle::SampleMagField(const TUCNMagField* magfield, const Int_t stepNumber)
+{
+// Adds current field to average field
+	assert(magfield != NULL);
+	const Double_t pos[3] = {this->Vx(), this->Vy(), this->Vz()};
+	Double_t currentField = magfield->FieldStrength(pos);
+	Double_t totalField = (this->AvgMagField())*(stepNumber-1);
+	totalField += currentField;
+	assert(stepNumber != 0);
+	this->AvgMagField(totalField/stepNumber);
+	return this->AvgMagField();
 }
