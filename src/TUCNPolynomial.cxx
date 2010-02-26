@@ -30,7 +30,7 @@ TUCNPolynomial::TUCNPolynomial()
 				 	:TObject()
 {
 // -- Default constructor.
-   Info("TUCNPolynomial", "Constructor");
+//   Info("TUCNPolynomial", "Constructor");
 	fgPolynomial = this;
 } 
 

@@ -22,7 +22,7 @@ TUCNParabola::TUCNParabola()
 				 :TObject()
 {
 // Default constructor.
-   Info("TUCNParabola", "Constructor");
+//   Info("TUCNParabola", "Constructor");
 	fgParabola = this;
 } 
 
