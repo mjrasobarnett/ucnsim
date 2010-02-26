@@ -35,13 +35,6 @@ TUCNRun::TUCNRun()
 {
 // -- Default constructor
    Info("TUCNRun", "Default Constructor");
-	
-	// Create the UCNNavigator and initialise in the UCNManager
-	Info("TUCNRun", "Creating a new Navigator...");
-	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(static_cast<TUCNGeoManager*>(gGeoManager));
-	fNavigatorIndex = gGeoManager->AddNavigator(navigator);
-	gGeoManager->SetCurrentNavigator(fNavigatorIndex);
-	
 	// Create the data object
 	fData = new TUCNData("ucndata", "ucndata");
 } 
@@ -52,13 +45,6 @@ TUCNRun::TUCNRun(const char *name, const char *title)
 {
 // -- Default constructor
    Info("TUCNRun", "Constructor");
-	
-	// Create the UCNNavigator and initialise in the UCNManager
-	Info("TUCNRun", "Creating a new Navigator...");
-	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(static_cast<TUCNGeoManager*>(gGeoManager));
-	fNavigatorIndex = gGeoManager->AddNavigator(navigator);
-	gGeoManager->SetCurrentNavigator(fNavigatorIndex);
-	
 	// Create the data object
 	fData = new TUCNData("ucndata", "ucndata");
 }
@@ -66,8 +52,7 @@ TUCNRun::TUCNRun(const char *name, const char *title)
 //_____________________________________________________________________________
 TUCNRun::TUCNRun(const TUCNRun& run)
 		  :TNamed(run),
-			fData(run.fData),
-			fNavigatorIndex(run.fNavigatorIndex)
+			fData(run.fData)
 {
 // -- Copy Constructor
 	Info("TUCNRunManager", "Copy Constructor");
@@ -80,7 +65,6 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& run)
 	if(this!=&run) {
 		TNamed::operator=(run);
       fData = run.fData;
-		fNavigatorIndex = run.fNavigatorIndex;
 	}
    return *this;
 }
@@ -96,10 +80,8 @@ TUCNRun::~TUCNRun()
 //_____________________________________________________________________________
 void TUCNRun::Initialise(Int_t particles, Double_t totalEnergy)
 {
-	// SetCurrentNavigator
-	gGeoManager->SetCurrentNavigator(fNavigatorIndex);
 	// Generating mono-energetic particles inside the source volume
-	gGeoManager->GetCurrentNavigator()->Print();
+	gGeoManager->GetCurrentNavigator()->ResetAll();
 	cout << gGeoManager->GetCurrentNode() << endl;
 	cout << "Generating " << particles << " particles..."	<< endl;
 	this->GenerateMonoEnergeticParticles(particles, totalEnergy);

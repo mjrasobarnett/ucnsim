@@ -24,7 +24,6 @@ class TUCNRun : public TNamed
 	 	TUCNRun& operator=(const TUCNRun&);
 
 		TUCNData*				fData;
-		Int_t						fNavigatorIndex;
 		
 	public:
 		// -- constructors

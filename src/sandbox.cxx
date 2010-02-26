@@ -1,5 +1,3 @@
-#ifndef __CINT__
-
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -50,33 +48,70 @@ using std::endl;
 
 Int_t main(Int_t argc,Char_t **argv)
 {
+	// -- Read in File name
+	TString geomfile;
+/*	if (argc == 2) {
+		geomfile = argv[1];
+	} else {
+		cerr << "Usage:" << endl;
+		cerr << "sandbox <geom.root> " << endl;
+		return -1;
+	}
+*/	
 	TRint *theApp = new TRint("UCNSimApp", &argc, argv);
-#else 
-Int_t ucnstandalone() {	
-	gSystem->Load("libPhysics");
-	gSystem->Load("libGeom");
-	gSystem->Load("libEG");
-	gSystem->Load("libUCN");
-#endif
-	
 	TBenchmark benchmark;
 	benchmark.Start("UCNSim");
+	
+	geomfile = "geom/geom.root";
+	
+	// -- Read the file into memory
+	cerr << "Reading geometry from " << geomfile << endl;
+	TFile * inputFile = new TFile(geomfile,"UPDATE");
+	if ( !inputFile->IsOpen() ) {
+		cerr << "Could not open file " << geomfile << endl;
+		cerr << "Exiting..." << endl;
+		exit(-1);
+	}
+	// -- Check contents of the file
+	inputFile->ls();	
+	TIter next(inputFile->GetListOfKeys()); 
+	TKey* key;
+	while ((key=(TKey*)next())) {
+		printf("key: %s points to an object of class: %s at %i , with cycle number: %i \n", key->GetName(), key->GetClassName(),key->GetSeekKey(),key->GetCycle());
+	}
+	
+	// Get the GeoManager From the File
+	TUCNGeoManager* geoManager = 0;
+	inputFile->GetObject("GeoManager;1", geoManager);
+	inputFile->ls();
+//	inputFile->Close();
+	
+	geoManager->GetCurrentNode()->Print();
+	cout << geoManager->GetListOfNavigators()->GetEntries() << endl;
+	geoManager->GetCurrentNode()->Print();
+	
+	inputFile->ls();
+	
+	geoManager->GetSourceMatrix()->GetTranslation();
+	
+	cout << geoManager->GetListOfMatrices()->GetEntries() << endl;
+	TObjArray* objarray = geoManager->GetListOfMatrices();
+	for (Int_t i = 0; i < geoManager->GetListOfMatrices()->GetEntries(); i++) {
+		static_cast<TGeoMatrix*>(objarray->At(i))->Print();
+	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	// -- Geometry Creation
 	
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- Run Simulation
 	TUCNRunManager* runManager = new TUCNRunManager();
-	TUCNGeoManager* geoManager = new TUCNGeoManager("GeoManager", "Geometry Manager");
 	
 	Int_t numberOfRuns = 1;
 	// Need to Add the runs before we initialise the geometry (because we create the navigators with each run). 
 	// and the navigators need to be created before we close the geometry.
 	runManager->CreateRuns(numberOfRuns);
 	
-	runManager->InitialiseGeometry();
-	
-	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Run Simulation
 	Double_t runTime = 10000.*Units::s;
 	Double_t maxStepTime = 1.00*Units::s;
 	Int_t particles = 1000;
@@ -104,38 +139,37 @@ Int_t ucnstandalone() {
 		cout << "Number Lost: " << geoManager->GetNumberLost() << endl;
 		cout << "Number Decayed: " << geoManager->GetNumberDecayed() << endl;
 		cout << "-------------------------------------------" << endl;
-				
-		// -- Write out data to file
-		// Warning - introducing TFile here is causing program to crash on exit. Needs closer examination before we do this.
-		///////////////////////////////////////////////////////////////////////////////////////
-		// -- Create a file to store the tracks
-	//	TFile* file = new TFile("tracks_test.root","RECREATE");
-	//	if ( file->IsOpen() ) {
-	//		cerr << "Opened tracks.root" << endl;
-	//	}
-	//	else {
-	//		cerr << "Could not open tracks.root" << endl;
-	//		return 1;
-	//	}
-	//	run->WriteOutData(file); 
-		
+
 		geoManager->ClearTracks();
 		
 		cout << "End of run" << endl << endl;
 	}
 	
-	TFile* file = new TFile("runs-0.95V.root","RECREATE");
-	runManager->WriteToFile(file);
+	geoManager->GetCurrentNode()->Print();
+	cout << geoManager->GetListOfNavigators()->GetEntries() << endl;
+	cout << geoManager->GetCurrentNavigator() << endl;
 	
-
+/*	TFile* outputFile = new TFile("runs-0.95V.root","RECREATE");
+	if ( !outputFile->IsOpen() ) {
+		cerr << "Could not open output file " << endl;
+		cerr << "Exiting..." << endl;
+		exit(-1);
+	}
+	
+	runManager->Write();
+//	outputFile->ls();
+	inputFile->ls();
+	
+	geoManager->Write();
+//	outputFile->ls();
+	inputFile->ls();
+	inputFile->Close();
+//	outputFile->Close();
+*/
 	benchmark.Stop("UCNSim");
 	benchmark.Show("UCNSim");
 	
-	#ifndef __CINT__
-		theApp->Run();
-	#endif
-	///////////////////////////////////////////////////////////////////////////////////////
-//	runManager->Delete();
+	theApp->Run();
 	
 	return 0;
 }

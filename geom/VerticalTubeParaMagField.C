@@ -13,8 +13,11 @@ Int_t VerticalTubeParaMagField()
 	
 	// Create the geoManager
 	TUCNGeoManager* geoManager = new TUCNGeoManager("GeoManager", "Geometry Manager");
-	// Create a file which we will store the geometry in
-	TFile* file = new TFile("geom.root","RECREATE");
+	// Create the UCNNavigator and initialise in the UCNManager
+	Info("TUCNRun", "Creating a new Navigator...");
+	TUCNGeoNavigator* navigator = new TUCNGeoNavigator(geoManager);
+	Int_t navigatorIndex = geoManager->AddNavigator(navigator);
+	geoManager->SetCurrentNavigator(navigatorIndex);
 	
 	// -------------------------------------
 	// BUILDING GEOMETRY
@@ -83,13 +86,18 @@ Int_t VerticalTubeParaMagField()
 	// -- Arrange and close geometry
    geoManager->CloseGeometry();
 	
-	// -- Write out geometry to file
-	cerr << "Geometry Built... Writing to file: " << file->GetName() << endl;
-	geoManager->Write();
-	file->ls();
-	file->Close();
 	
-	geoManager->GetTopVolume()->Draw();
+/*	// Turn on/off gravity
+	geoManager->SetGravity(kTRUE);
+
+	// -- Define Mag Field
+	//	TUCNUniformMagField* magField = new TUCNUniformMagField("Uniform magnetic field", 0.0,1.0,1.0);
+	TUCNParabolicMagField* magField = new TUCNParabolicMagField("Parabolic magnetic field",0.1,1.0,0.235);
+	geoManager->AddMagField(magField);
+*/	
+	// -- Write out geometry to file
+	cerr << "Geometry Built... Writing to file: " << endl;
+	geoManager->Export("geom.root");
 	
 	return 0;
 }
