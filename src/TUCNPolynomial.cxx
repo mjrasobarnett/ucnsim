@@ -168,14 +168,27 @@ Int_t TUCNPolynomial::QuadraticRootFinder(const Double_t* params, Double_t* root
 			cout << "QuadraticRootFinder - 0 Solutions" << endl;
 		#endif
 	}
-	
-//	// -- Finally check to see if any solutions are errorneously small. 
-//	for(Int_t i=0; i < numberOfSolutions; i++) {
-//		if (TMath::Abs(roots[i]) < TGeoShape::Tolerance()) {
-//			roots[i] = 0.0;
-//		}
-//	}
+
 	return numberOfSolutions; 	
+	
+/*	ROOT::Math::Polynomial quadratic(a,b,c);
+	std::vector<Double_t> realroots = quadratic.FindRealRoots();
+	#ifdef VERBOSE_MODE
+		cout << "---------------------------" << endl;
+		cout << "ROOT::MATHMORE::Solver -- Quadratic" << endl;
+		cout << "No. of Roots: " << realroots.size() << endl;
+	#endif
+	for (UInt_t i = 0; i < realroots.size(); i++) {
+		#ifdef VERBOSE_MODE	
+			cout << i << "\t" << realroots[i] << "\t";
+		#endif
+		roots[i] = realroots[i];
+	}
+	#ifdef VERBOSE_MODE
+		cout << endl << "---------------------------" << endl;
+	#endif
+	return realroots.size();
+*/	
 }
 
 //_____________________________________________________________________________
