@@ -1344,8 +1344,8 @@ Bool_t TUCNGeoNavigator::DiffuseBounce(Double_t* dir, const Double_t* norm)
 	// First we need to pick random angles to choose the orientation of our diffuse direction vector. 
 	// Correct method for UCN physics though is to weight these angles towards the poles by adding an extra cos(theta)
 	// derivation of how to pick these angles is in notes
+	// Overall solid angle used is dOmega = cos(theta)sin(theta) dtheta dphi
 	Double_t phi = gRandom->Uniform(0.0, 1.0)*2*TMath::Pi();
-	
 	// We do not want the full range of theta from 0 to pi/2 however. An angle of pi/2 would imply moving iff the boundary exactly parallel to
 	// the current surface.Therefore we should restrict theta to a slightly smaller proportion of angles - letting u be between
 	// 0 and 0.499, ensures theta between 0 and ~89 degrees. 
