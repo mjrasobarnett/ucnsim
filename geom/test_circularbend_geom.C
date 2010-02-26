@@ -207,7 +207,7 @@ Int_t visualisation_geom() {
 	TGeoHMatrix bendm = c1;
 	TGeoHMatrix *bendmatrix = new TGeoHMatrix(bendm);
 	bendmatrix->SetName("BendMatrix");
-	// -- Define the transformation of the guide
+	// -- Define the transformation of the source
 	TGeoRotation r2;
 	r2.SetAngles(0,90,0);
 	TGeoTranslation t2(0.,-0.5.,0.1);
@@ -229,19 +229,6 @@ Int_t visualisation_geom() {
 	chamber->AddNode(sourceguide,1,sourceguidematrix);
 	chamber->AddNode(detectorguide,1,detectorguidematrix);
 	chamber->AddNode(bend,1,bendmatrix);
-	
-	// -- Define the general transformation of the source volume
-	TGeoRotation r1,r2;
-	r1.SetAngles(0,90,0); // rotation defined by Euler angles
-	r2.SetAngles(0,0,0);
-	TGeoTranslation t1(0.,-0.5.,0.1);
-	TGeoTranslation t2(0.,0.,0.);
-	TGeoCombiTrans c1(t1,r1);
-	TGeoCombiTrans c2(t2,r2);
-	TGeoHMatrix hm = c1 * c2; // composition is done via TGeoHMatrix class 
-	TGeoHMatrix *matrix = new TGeoHMatrix(hm);
-	matrix->SetName("SourceMatrix");
-	matrix->RegisterYourself();
 	
 	// -- Arrange and close geometry
 	geoManager->CloseGeometry();

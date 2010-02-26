@@ -32,6 +32,10 @@
 #include "TPolyMarker3D.h"
 #include "TVectorD.h"
 
+#include "TGLViewer.h"
+#include "TGLCamera.h"
+#include "TGLPerspectiveCamera.h"
+
 #include "include/Constants.h"
 #include "include/Units.h"
 #include "include/FitSuite.h"
@@ -42,7 +46,7 @@ Bool_t DrawInitialAndFinalPositions(const char* fileName, TGeoManager* geoManage
 Bool_t DrawInitialAndFinalDirections(const char* fileName, TGeoManager* geoManager); 
 Bool_t DrawBadTrack(const char* badTrackFileName, TGeoManager* geoManager); 
 
-Int_t sandbox_plot(const char* geomFileName, const char* dataFileName, const char* badTrackFileName = 0) {
+Int_t plot_finalpositions(const char* geomFileName, const char* dataFileName, const char* badTrackFileName = 0) {
 	
 	// -- Import Geometry
 	TGeoManager* geoManager = TGeoManager::Import(geomFileName); 
@@ -91,7 +95,8 @@ Bool_t DrawInitialAndFinalPositions(const char* fileName, TGeoManager* geoManage
 	geoManager->GetTopVolume()->Draw();
 	geoManager->SetVisLevel(4);
 	geoManager->SetVisOption(0);
-	initialPositions->Draw();
+   initialPositions->Draw();
+	
 	// -- Draw Final Points
 	TCanvas *canvas2 = new TCanvas("FinalPositionsCanvas","Neutron Final Positions",460,0,400,400);
 	canvas2->cd();
@@ -99,6 +104,7 @@ Bool_t DrawInitialAndFinalPositions(const char* fileName, TGeoManager* geoManage
 	geoManager->SetVisLevel(4);
 	geoManager->SetVisOption(0);
 	finalPositions->Draw();
+	
 	
 	return kTRUE;
 }
