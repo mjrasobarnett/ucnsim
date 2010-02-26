@@ -1348,41 +1348,49 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 
    TGeoNode *current = 0;
    
+   // -- If we are in an overlapping node, return an error as we are no longer supporting this.
+   // -- Geometries must be constructed with no overlaps beyond common boundaries. Use composites instead
+	if (gGeoManager->GetCurrentNavigator()->GetNmany()) {
+      Error("FNBASAP","In overlapping node - implementation of this removed");
+      return 0;
+   }
 	// *********************************************************************
 	// -- BRANCH 3
-	// -- if we are in an overlapping node, check also the mother(s) - fNmany is number of overlapping nodes on current branch
+	// -- Updating the Particle's position and momentum
    // *********************************************************************
-   if (gGeoManager->GetCurrentNavigator()->GetNmany()) {
-		Error("FNBASAP","In overlapping node - implementation of this removed");
-		return 0;
+  	const Double_t timestep = this->GetStepTime();
+   #ifdef VERBOSE_MODE		
+      cout << "FNBASAP - Branch 3. Updating Global Point. fTimeStep: " << this->GetStepTime() << "\t" << "fStep: " << gGeoManager->GetCurrentNavigator()->GetStep() << endl;
+      cout << "FNBASAP - Initial X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] <<  "\t" << "Z: " << currentPoint[2] << endl;
+      cout << "FNBASAP - Initial Vx: " << currentVelocity[0] << "\t" << "Vy: " << currentVelocity[1] <<  "\t" << "Vz: " << currentVelocity[2] << endl;
+      cout << "FNBASAP - Initial Gx: " << currentField[0] << "\t" << "Gy: " << currentField[1] <<  "\t" << "Gz: " << currentField[2] << endl;
+      cout << "FNBASAP - Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[1],2)) << endl;
+      cout << "FNBASAP - Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[2],2)) << endl;
+   #endif
+   // -- Update Position and Direction according to the timestep
+   for (Int_t i = 0; i < 3; i++) {
+      currentPoint[i] += currentVelocity[i]*timestep + 0.5*currentField[i]*timestep*timestep;
+      currentVelocity[i] += currentField[i]*timestep;
    }
-   
-
-	#ifdef VERBOSE_MODE		
-		cout << "FNBASAP - Branch 3. Updating Global Point. fTimeStep: " << this->GetStepTime() << "\t" << "fStep: " << gGeoManager->GetCurrentNavigator()->GetStep() << endl;
-	#endif
-	
-	const Double_t timestep = this->GetStepTime();
-	currentPoint[0] += currentVelocity[0]*timestep + 0.5*currentField[0]*timestep*timestep; 
-   currentPoint[1] += currentVelocity[1]*timestep + 0.5*currentField[1]*timestep*timestep; 
-   currentPoint[2] += currentVelocity[2]*timestep + 0.5*currentField[2]*timestep*timestep;	
+   // Calculate the magnitude of velocity
+   Double_t velocityMag = TMath::Sqrt((TMath::Power(currentVelocity[0],2) + TMath::Power(currentVelocity[1],2) + TMath::Power(currentVelocity[2],2)));
+   // Check that velocity is not zero
+   assert(velocityMag != 0.); 
+   // Update Current Point
 	gGeoManager->GetCurrentNavigator()->SetCurrentPoint(currentPoint);
-	
-	// -- Update Direction to reflect new position
-	currentVelocity[0] = currentVelocity[0] + currentField[0]*timestep;
-	currentVelocity[1] = currentVelocity[1] + currentField[1]*timestep;
-	currentVelocity[2] = currentVelocity[2] + currentField[2]*timestep;
-	Double_t velocityMag = TMath::Sqrt((currentVelocity[0]*currentVelocity[0]) + (currentVelocity[1]*currentVelocity[1]) + (currentVelocity[2]*currentVelocity[2])); 
-	if (velocityMag == 0.) throw runtime_error("Velocity is zero!");
-	
-	currentDir[0] = currentVelocity[0]/velocityMag;
-	currentDir[1] = currentVelocity[1]/velocityMag;
-	currentDir[2] = currentVelocity[2]/velocityMag;
+	// Update Current Direction
+   for (Int_t i = 0; i < 3; i++) currentDir[i] = currentVelocity[i]/velocityMag;
 	gGeoManager->GetCurrentNavigator()->SetCurrentDirection(currentDir);
-	
-	gGeoManager->GetCurrentNavigator()->SetStep(gGeoManager->GetCurrentNavigator()->GetStep());
+	// Update stepsize and steptime
+   gGeoManager->GetCurrentNavigator()->SetStep(gGeoManager->GetCurrentNavigator()->GetStep());
 	this->SetStepTime(this->GetStepTime());
-	
+	#ifdef VERBOSE_MODE		
+      cout << "FNBASAP - Final X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] <<  "\t" << "Z: " << currentPoint[2] << endl;
+      cout << "FNBASAP - Final Vx: " << currentVelocity[0] << "\t" << "Vy: " << currentVelocity[1] <<  "\t" << "Vz: " << currentVelocity[2] << endl;
+      cout << "FNBASAP - Field Gx: " << currentField[0] << "\t" << "Gy: " << currentField[1] <<  "\t" << "Gz: " << currentField[2] << endl;
+      cout << "FNBASAP - Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[1],2)) << endl;
+      cout << "FNBASAP - Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[2],2)) << endl;
+   #endif
 	// *********************************************************************
 	// -- BRANCH 4
 	// -- Final check on results of above
