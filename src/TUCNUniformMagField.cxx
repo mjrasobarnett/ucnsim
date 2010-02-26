@@ -1,5 +1,6 @@
 // TUCNUniformMagField
 // Author: Matthew Raso-Barnett  22/05/2009
+#include "TMath.h"
 
 #include "TUCNUniformMagField.h"
 
@@ -51,10 +52,16 @@ TUCNUniformMagField::~TUCNUniformMagField()
 }   
 
 //_____________________________________________________________________________
-void TUCNUniformMagField::Field(const Double_t *pos, Double_t *field)
+void TUCNUniformMagField::Field(const Double_t* /*pos*/, Double_t* field)
 {
 	field[0] = fBField[0];
 	field[1] = fBField[1];
 	field[2] = fBField[2];
 }   
 
+//_____________________________________________________________________________
+Double_t TUCNUniformMagField::FieldStrength(const Double_t* /*pos*/) const
+{
+	Double_t fieldStrength = TMath::Sqrt(fBField[0]*fBField[0] + fBField[1]*fBField[1] + fBField[2]*fBField[2]);
+	return fieldStrength;
+}

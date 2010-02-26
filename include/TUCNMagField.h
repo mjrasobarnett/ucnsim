@@ -22,7 +22,8 @@ public:
    virtual ~TUCNMagField();
    
    virtual void Field(const Double_t *pos, Double_t *field) = 0;
-   
+	virtual Double_t FieldStrength(const Double_t *pos) const = 0;
+	
    ClassDef(TUCNMagField, 1)              // Abstract base Mag field class
 };
 
