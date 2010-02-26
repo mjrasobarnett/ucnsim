@@ -915,15 +915,16 @@ TGeoNode* TUCNGeoNavigator::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrac
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoNavigator::DetermineNextStepTime(TUCNParticle* particle, const Double_t runTime)			 
+Double_t TUCNGeoNavigator::DetermineNextStepTime(TUCNParticle* particle, const Double_t maxStepTime, const Double_t runTime)			 
 {
 // Placeholder for method to calculate the next step time depending on electric/magnetic field environment
-	if (this->GetStepTime() == 0.0) {
-		this->SetStepTime(0.01*Units::s);
-	}
+	// Start with the maximum stepTime 
+	this->SetStepTime(maxStepTime);
 	
 	// -- Check if we will reach the maximum runtime of the track. If so propagate only until this time.
-	if (particle->T() > (runTime - this->GetStepTime())) {
+	if (runTime == 0.0) {
+		return this->GetStepTime();
+	} else if (particle->T() > (runTime - this->GetStepTime())) {
 		this->SetStepTime((runTime - particle->T()) + fgTolerance);
 	}
 	return this->GetStepTime();
@@ -974,8 +975,7 @@ Bool_t TUCNGeoNavigator::PropagateTrack(TVirtualGeoTrack* track, const Double_t 
 		#endif
 		
 		// -- Calculate the Next StepTime
-		this->SetStepTime(maxStepTime); // Start with the default value
-		this->DetermineNextStepTime(particle, runTime); // Check if there are any factors that will reduce this time
+		this->DetermineNextStepTime(particle, maxStepTime, runTime);
 		
 		// -- Find time to reach next boundary and step along parabola
 		#ifdef VERBOSE_MODE	

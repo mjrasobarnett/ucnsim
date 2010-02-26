@@ -70,7 +70,7 @@ public:
  	TGeoNode*					FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track, TUCNGravField* field,
  																							Double_t stepTime, Bool_t compsafe=kFALSE);
 		
-	Double_t                DetermineNextStepTime(TUCNParticle* particle, const Double_t runTime);
+	Double_t                DetermineNextStepTime(TUCNParticle* particle, const Double_t maxStepTime, const Double_t runTime=0.);
 	Double_t 					GetStepTime() const {return fStepTime;}
 	void							SetStepTime(Double_t stepTime); 
 		
