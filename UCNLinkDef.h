@@ -24,5 +24,10 @@
 #pragma link C++ class TUCNParabolicMagField;
 #pragma link C++ class TUCNFieldManager;
 #pragma link C++ class TUCNConfigFile;
+#pragma link C++ class TUCNGeoCompositeShape;
+#pragma link C++ class TUCNGeoBoolNode;
+#pragma lind C++ class TUCNGeoUnion
+#pragma lind C++ class TUCNGeoSubtraction
+#pragma lind C++ class TUCNGeoIntersection
 
 #endif
