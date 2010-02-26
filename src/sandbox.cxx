@@ -39,6 +39,7 @@
 #include "TUCNMagField.h"
 #include "TUCNUniformMagField.h"
 #include "TUCNRun.h"
+#include "TUCNFieldManager.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -46,9 +47,14 @@
 using std::cout;
 using std::endl;
 
+void BuildGeometry(TUCNGeoManager* geoManager);
+
 Int_t main(Int_t argc,Char_t **argv)
 {
 	TRint* theApp = new TRint("UCNSimApp", &argc, argv);
+	
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- Geometry Creation
 	
 	// Create the geoManager
 	TUCNGeoManager* geoManager = new TUCNGeoManager("GeoManager", "Geometry Manager");
@@ -58,6 +64,67 @@ Int_t main(Int_t argc,Char_t **argv)
 	Int_t navigatorIndex = geoManager->AddNavigator(navigator);
 	geoManager->SetCurrentNavigator(navigatorIndex);
 	
+	BuildGeometry(geoManager);
+	
+	cout << static_cast<TUCNGeoManager*>(gGeoManager)->GetSourceVolume()->GetName() << endl;
+	cout << static_cast<TUCNGeoManager*>(gGeoManager)->GetSourceMatrix()->GetName() << endl;
+	
+	TUCNFieldManager* fieldManager = new TUCNFieldManager();
+	
+	///////////////////////////////////////////////////////////////////////////////////////
+	// -- Run Simulation
+	TUCNRunManager* runManager = new TUCNRunManager();
+	
+	Int_t numberOfRuns = 1;
+	// Need to Add the runs before we initialise the geometry (because we create the navigators with each run). 
+	// and the navigators need to be created before we close the geometry.
+	runManager->CreateRuns(numberOfRuns);
+	
+	Double_t runTime = 10000.*Units::s;
+	Double_t maxStepTime = 1.00*Units::s;
+	Int_t particles = 1000;
+	Double_t V = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->FermiPotential();
+	Double_t f = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->Eta();
+	Double_t totalEnergy = 0;
+	cout << "V: " << V << "\t" << "f: " << f << endl;
+	
+	TUCNGravField* gravField = new TUCNGravField();
+	
+	for (Int_t runNumber = 0; runNumber < numberOfRuns; runNumber++) {
+		totalEnergy = 0.95*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
+		
+		TUCNRun* run = runManager->GetRun(runNumber);
+		cout << "Run number: " << runNumber << "\t" << "called: " << run->GetName() << endl;
+		cout << "totalEnergy: " << totalEnergy << endl;
+		
+		run->Initialise(particles, totalEnergy, gravField);
+	
+		// -- Propagate the tracks according to the run parameters
+		run->PropagateAllTracks(runTime, maxStepTime, gravField);	
+	
+		cout << "-------------------------------------------" << endl;
+		cout << "Propagation Results: " << endl;
+		cout << "Total Particles: " << geoManager->GetNtracks() << endl;
+		cout << "Number Detected: " << geoManager->GetNumberDetected() << endl;
+		cout << "Number Lost: " << geoManager->GetNumberLost() << endl;
+		cout << "Number Decayed: " << geoManager->GetNumberDecayed() << endl;
+		cout << "-------------------------------------------" << endl;
+
+		geoManager->ClearTracks();
+		
+		cout << "End of run" << endl << endl;
+	}
+	
+//	benchmark.Stop("UCNSim");
+//	benchmark.Show("UCNSim");
+	
+	theApp->Run();
+	
+	return 0;
+}
+
+void BuildGeometry(TUCNGeoManager* geoManager)
+{
 	// -------------------------------------
 	// BUILDING GEOMETRY
 	cerr << "Building Geometry..." << endl;
@@ -125,61 +192,4 @@ Int_t main(Int_t argc,Char_t **argv)
 	
 	// -- Arrange and close geometry
    geoManager->CloseGeometry();
-	
-	cout << static_cast<TUCNGeoManager*>(gGeoManager)->GetSourceVolume()->GetName() << endl;
-	cout << static_cast<TUCNGeoManager*>(gGeoManager)->GetSourceMatrix()->GetName() << endl;
-	
-	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Geometry Creation
-	
-	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Run Simulation
-	TUCNRunManager* runManager = new TUCNRunManager();
-	
-	Int_t numberOfRuns = 1;
-	// Need to Add the runs before we initialise the geometry (because we create the navigators with each run). 
-	// and the navigators need to be created before we close the geometry.
-	runManager->CreateRuns(numberOfRuns);
-	
-	Double_t runTime = 10000.*Units::s;
-	Double_t maxStepTime = 1.00*Units::s;
-	Int_t particles = 1000;
-	Double_t V = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->FermiPotential();
-//	Double_t f = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->Eta();
-//	Double_t totalEnergy = 0;
-	cout << "V: " << V << "\t" << "f: " << f << endl;
-	
-	TUCNGravField* gravField = new TUCNGravField();
-	
-	for (Int_t runNumber = 0; runNumber < numberOfRuns; runNumber++) {
-		totalEnergy = 0.95*V; // (1.0/10.0)*(runNumber+1)*V; //(0.12*Units::m)*Constants::height_equivalent_conversion; 
-		
-		TUCNRun* run = runManager->GetRun(runNumber);
-		cout << "Run number: " << runNumber << "\t" << "called: " << run->GetName() << endl;
-		cout << "totalEnergy: " << totalEnergy << endl;
-		
-		run->Initialise(particles, totalEnergy, gravField);
-	
-		// -- Propagate the tracks according to the run parameters
-		run->PropagateAllTracks(runTime, maxStepTime, gravField);	
-	
-		cout << "-------------------------------------------" << endl;
-		cout << "Propagation Results: " << endl;
-		cout << "Total Particles: " << geoManager->GetNtracks() << endl;
-		cout << "Number Detected: " << geoManager->GetNumberDetected() << endl;
-		cout << "Number Lost: " << geoManager->GetNumberLost() << endl;
-		cout << "Number Decayed: " << geoManager->GetNumberDecayed() << endl;
-		cout << "-------------------------------------------" << endl;
-
-		geoManager->ClearTracks();
-		
-		cout << "End of run" << endl << endl;
-	}
-	
-//	benchmark.Stop("UCNSim");
-//	benchmark.Show("UCNSim");
-	
-	theApp->Run();
-	
-	return 0;
 }
