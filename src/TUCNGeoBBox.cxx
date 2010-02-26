@@ -70,7 +70,7 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point, Double_t* vel
 	// Method then compares the times found and returns the smallest, non-zero value. 
 	
 	#ifdef VERBOSE_MODE		
-		Info("TimeFromInsideAlongParabola","iact: %i - stepmax: %f", iact, stepmax);
+		cout << "TimeFromInsideAlongParabola - iact: " << iact << "\t" << "stepmax: " << stepmax << endl;
 	#endif
 	// ----------------------------------------------------------------------
 	// -- For efficiency calculate the safety distance along straight line to surface. If this distance is greater than the proposed stepmax, then just return Big()
@@ -103,10 +103,10 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point, Double_t* vel
 	Double_t boundary[3] = {fDX, fDY, fDZ}; // Store the coordinates of the box boundaries
 		
 	#ifdef VERBOSE_MODE		
-		Info("TimeFromInsideAlongParabola","Positive (Local) Boundaries - +X: %f   +Y: %f   +Z: %f", boundary[0], boundary[1], boundary[2]);
-		Info("TimeFromInsideAlongParabola","(Local) point - +X: %f   +Y: %f   +Z: %f", newpt[0], newpt[1], newpt[2]);
-		Info("TimeFromInsideAlongParabola","(Local) velocity - +X: %f   +Y: %f   +Z: %f", velocity[0], velocity[1], velocity[2]);
-		Info("TimeFromInsideAlongParabola","(Local) field direction - +X: %f   +Y: %f   +Z: %f", field[0], field[1], field[2]);
+		cout << "TimeFromInsideAlongParabola - (Local) +Boundaries - +X: " << boundary[0] << "\t" << "+Y: " << boundary[1] << "\t" <<  "+Z: " << boundary[2] << endl;
+		cout << "TimeFromInsideAlongParabola - (Local) point - +X: " << newpt[0] << "\t" << "+Y: " << newpt[1] << "\t" <<  "+Z: " << newpt[2] << endl;
+		cout << "TimeFromInsideAlongParabola - (Local) velocity - +X: " << velocity[0] << "\t" << "+Y: " << velocity[1] << "\t" <<  "+Z: " << velocity[2] << endl;
+		cout << "TimeFromInsideAlongParabola - (Local) field direction - +X: " << field[0] << "\t" << "+Y: " << field[1] << "\t" <<  "+Z: " << field[2] << endl;
 	#endif
 			
 	// ----------------------------------------------------------------------	
@@ -152,7 +152,7 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point, Double_t* vel
 					tmin = roots[1];
 				} else {
 					#ifdef VERBOSE_MODE		
-						Info("TimeFromInsideAlongParabola", "Both roots are negative or zero."); 
+						cout << "TimeFromInsideAlongParabola - Both roots are negative or zero." << endl; 
 					#endif
 				}
 			} else if (solutions == 1) {
@@ -181,7 +181,7 @@ Double_t TUCNGeoBBox::TimeFromInsideAlongParabola(Double_t* point, Double_t* vel
 	// -- Analyse the final value for the time to nearest boundary from inside
 	if (t > 0.) { 
 		#ifdef VERBOSE_MODE		
-			Info("TimeFromInsideAlongParabola", "Time to nearest boundary: %f", t); 
+			cout << "TimeFromInsideAlongParabola - time to nearest boundary: " << t << endl; 
 		#endif
 		return t;
 	} else if (t == 0.) {
@@ -312,7 +312,7 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 	// on the box. From these valid solutions, the method	returns the smallest, non-zero value.
 	
 	#ifdef VERBOSE_MODE		
-		Info("TimeFromOutsideAlongParabola","iact: %i - stepmax: %f", iact, stepmax);
+		cout << "TimeFromOutsideAlongParabola - iact: " << iact << "\t" << "stepmax: " << stepmax << endl;
 	#endif
 	// ----------------------------------------------------------------------
 	// -- For efficiency calculate the safety distance along straight line to surface. If this distance is greater than the proposed stepmax, then just return Big()
@@ -329,7 +329,7 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 		saf[i] = TMath::Abs(newpt[i]) - par[i];       // Get min. distance safety to boundary
       if (saf[i] >= stepmax) {
 			#ifdef VERBOSE_MODE		
-				Info("TimeFromOutsideAlongParabola","Safety > Step. Returning TGeoShape::Big()");
+				cout << "TimeFromOutsideAlongParabola - Safety > Step. Returning TGeoShape::Big()" << endl;
 			#endif
 			return TGeoShape::Big();  // If this safety is greater than the stepsize then just return Big()
       }
@@ -375,10 +375,10 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 	Double_t boundary[3] = {fDX, fDY, fDZ}; // Store the coordinates of the box boundaries
 	
 	#ifdef VERBOSE_MODE		
-		Info("TimeFromOutsideAlongParabola","Positive (Local) Boundaries - +X: %f   +Y: %f   +Z: %f", boundary[0], boundary[1], boundary[2]);
-		Info("TimeFromOutsideAlongParabola","(Local) point - +X: %f   +Y: %f   +Z: %f", newpt[0], newpt[1], newpt[2]);
-		Info("TimeFromOutsideAlongParabola","(Local) dir - +X: %f   +Y: %f   +Z: %f", velocity[0], velocity[1], velocity[2]);
-		Info("TimeFromOutsideAlongParabola","(Local) field - +X: %f   +Y: %f   +Z: %f", field[0], field[1], field[2]);
+		cout << "TimeFromOutsideAlongParabola - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
+		cout << "TimeFromOutsideAlongParabola - (Local) point - +X: " << newpt[0] << "  +Y: " << newpt[1] << "  +Z: " << newpt[2] << endl;
+		cout << "TimeFromOutsideAlongParabola - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
+		cout << "TimeFromOutsideAlongParabola - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
 	#endif
 		
 	// ----------------------------------------------------------------------	
@@ -425,7 +425,7 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 						tmin = roots[1];
 					} else {
 						#ifdef VERBOSE_MODE		
-							Info("TimeFromOutsideAlongParabola", "Both roots are negative, zero or invalid"); 
+							cout << "TimeFromOutsideAlongParabola - Both roots are negative, zero or invalid" << endl; 
 						#endif
 					}
 				}
@@ -455,12 +455,12 @@ Double_t TUCNGeoBBox::TimeFromOutsideAlongParabola(Double_t* point, Double_t* ve
 	// -- Analyse the final value of the shortest time to hit the boundary from outside
 	if (tfinal > 0.) { 
 		#ifdef VERBOSE_MODE		
-			Info("TimeFromOutsideAlongParabola", "Time to nearest boundary: %e", tfinal); 
+			cout << "TimeFromOutsideAlongParabola - Time to nearest boundary: " << tfinal << endl; 
 		#endif
 		return tfinal;
 	} else if (tfinal == 0.) {
 		#ifdef VERBOSE_MODE		
-			Info("TimeFromOutsideAlongParabola","No Boundary hit");
+			cout << "TimeFromOutsideAlongParabola - No Boundary hit" << endl;
 		#endif
 		return TGeoShape::Big();
 	} else {

@@ -1,5 +1,6 @@
 // TUCNParabola
 // Author: Matthew Raso-Barnett  06/07/2009
+#include <iostream>
 #include <stdexcept>
 #include <cassert>
 
