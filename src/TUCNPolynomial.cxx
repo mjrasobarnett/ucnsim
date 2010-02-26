@@ -251,7 +251,7 @@ Int_t TUCNPolynomial::QuarticRootFinder(const Double_t* params, Double_t* roots)
 	if (TMath::Abs(d) < TGeoShape::Tolerance()) {
 		d = 0.;
 	}
-	if (TMath::Abs(e) < TGeoShape::Tolerance()) {
+	if (TMath::Abs(e) < 10.*TGeoShape::Tolerance()) {
 		#ifdef VERBOSE_MODE
 			cout << "e < Tolerance: " << e << endl;
 		#endif
