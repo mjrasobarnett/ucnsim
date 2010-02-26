@@ -9,6 +9,7 @@
 #endif
 
 #include "TUCNGeoNavigator.h"
+#include "TUCNMagField.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -18,10 +19,11 @@
 
 class TUCNGeoManager : public TGeoManager 
 {
-
-protected:
 	Bool_t						fGravity;						// The grav field direction vector
-			
+	
+protected:
+	TObjArray*					fMagFields;
+	
 public:
 	
 	// -- constructors
@@ -34,10 +36,13 @@ public:
    virtual ~TUCNGeoManager();
 	
 	// -- methods
+	Int_t							AddMagField(TUCNMagField *field);
+	TObjArray*					GetListOfMagFields() const       {return fMagFields;}
+	TUCNMagField*				GetMagField(const char* name) const;
 	
 	// Make UCNVolumes using TUCNGeoBuilder
-	TGeoVolume* 	 		   MakeUCNBox(const char *name, TGeoMedium *medium, Double_t dx, Double_t dy, Double_t dz);
- 	TGeoVolume*				   MakeUCNTube(const char *name, TGeoMedium *medium, Double_t rmin, Double_t rmax, Double_t dz);
+	TGeoVolume*					MakeUCNBox(const char *name, TGeoMedium *medium, Double_t dx, Double_t dy, Double_t dz);
+ 	TGeoVolume*					MakeUCNTube(const char *name, TGeoMedium *medium, Double_t rmin, Double_t rmax, Double_t dz);
 		
 	// Make Gravitational Field
 	void							SetGravity(Bool_t gravityPresent) {fGravity = gravityPresent;}
