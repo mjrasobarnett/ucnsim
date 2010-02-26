@@ -429,7 +429,6 @@ Bool_t TUCNExperiment::GenerateParticles(TUCNRun* run)
 		// Initialise particle 
 		particle->SetProductionVertex(point[0], point[1], point[2], startTime);
 		particle->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
-//		particle->Print();
 		
 		// -- 7. Create the track in the geoManager
 		// Make track and add to list
@@ -440,6 +439,10 @@ Bool_t TUCNExperiment::GenerateParticles(TUCNRun* run)
 		this->GeoManager()->AddTrack(track);
 		// Add initial point to track
 		track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
+		
+		// -- 8. Add initial particle to the Run's Data
+		run->AddInitialParticle(particle); 
+		
 	}
 	cout << "Successfully generated " << this->GeoManager()->GetNtracks() << " particles." << endl;
 	cout << "-------------------------------------------" << endl;	

@@ -171,7 +171,7 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 		Bool_t propagated = this->PropagateTrack(geoManager, fieldManager);
 		if (!propagated) lostTracks.push_back(trackid);
 		// Add Final Particle State to data tree
-		this->GetData()->AddFinalParticleState(static_cast<TUCNParticle*>(track->GetParticle()));
+		this->AddParticle(static_cast<TUCNParticle*>(track->GetParticle()));
 		// Reset Track to release memory
 //		track->ResetTrack();
 	}
@@ -332,7 +332,25 @@ Bool_t TUCNRun::Export(TString& outputFile)
 }
 
 //_____________________________________________________________________________
-TVirtualGeoTrack* TUCNRun::GetTrack(Int_t trackID)
+Bool_t TUCNRun::AddTrack(TGeoTrack* track)
+{
+	return this->GetData()->AddTrack(track);
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNRun::AddInitialParticle(TUCNParticle* particle) 
+{
+	return this->GetData()->AddFinalParticleState(particle);
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNRun::AddParticle(TUCNParticle* particle)
+{
+	return this->GetData()->AddInitialParticleState(particle);
+}
+
+//_____________________________________________________________________________
+TGeoTrack* TUCNRun::GetTrack(Int_t trackID)
 {
 	// -- Retrieve the requested track from the Data
 	return this->GetData()->GetTrack(trackID);
