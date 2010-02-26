@@ -21,13 +21,6 @@ FITDATAO			= src/fitdata.$(ObjSuf)
 FITDATA			= bin/fitdata$(ExeSuf)
 
 #------------------------------------------------------------------------------
-# root that knows about my classes
-#------------------------------------------------------------------------------
-#NEWROOTS	 = src/new_root.$(SrcSuf)
-#NEWROOTO	 = src/new_root.$(ObjSuf)
-#NEWROOT	 = bin/new_root$(ExeSuf)
-
-#------------------------------------------------------------------------------
 # my classes
 #------------------------------------------------------------------------------
 TUCNGEOMANAGERO		= src/TUCNGeoManager.$(ObjSuf)  UCNDict.$(ObjSuf)
@@ -87,19 +80,13 @@ all:         $(PROGRAMS)
 clean:
 		@rm -f $(OBJS) $(PROGRAMS) ./lib/* UCNDict.* core *Dict* ./*.txt
 
-$(SANDBOX):		$(SANDBOXO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) \
-					$(TUCNGEOTUBEO) $(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO) \
-					$(TUCNPARABOLICMAGFIELDO)
+$(SANDBOX):		$(SANDBOXO) $(UCNSO)
 					$(LD) $(LDFLAGS) $(SANDBOXO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
 					@echo "$@ done"
 
-$(UCNSIM):		$(UCNSIMO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) \
-					$(TUCNGEOTUBEO) $(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNRUNMANAGERO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO) \
-					$(TUCNPARABOLICMAGFIELDO)
+$(UCNSIM):		$(UCNSIMO) $(UCNSO)
 					$(LD) $(LDFLAGS) $(UCNSIMO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
