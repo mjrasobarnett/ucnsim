@@ -515,6 +515,7 @@ Double_t TUCNGeoUnion::DistFromInside(Double_t *point, Double_t *dir, Int_t iact
    }      
    return snxt;
 }
+
 //_____________________________________________________________________________
 Double_t TUCNGeoUnion::DistFromOutside(Double_t *point, Double_t *dir, Int_t iact,
                               Double_t step, Double_t *safe) const
@@ -544,12 +545,14 @@ Double_t TUCNGeoUnion::DistFromOutside(Double_t *point, Double_t *dir, Int_t iac
    }      
    return snxt;
 }
+
 //_____________________________________________________________________________
 Int_t TUCNGeoUnion::GetNpoints() const
 {
 // Returns number of vertices for the composite shape described by this union.
    return 0;
 }
+
 //_____________________________________________________________________________
 void TUCNGeoUnion::SetPoints(Double_t * /*points*/) const
 {
@@ -594,6 +597,7 @@ void TUCNGeoUnion::SetPoints(Float_t * /*points*/) const
 {
 // Fill buffer with shape vertices.
 }
+
 //_____________________________________________________________________________
 void TUCNGeoUnion::Sizeof3D() const
 {
@@ -602,22 +606,221 @@ void TUCNGeoUnion::Sizeof3D() const
 }
 
 //_____________________________________________________________________________
-Double_t TUCNGeoUnion::TimeFromOutsideAlongParabola(const Double_t* /*point*/, const Double_t* /*velocity*/, const Double_t* /*field*/,
-                                 const Double_t /*stepTime*/, const Bool_t /*onBoundary*/) const
-{
-// Compute the time from outside point to this composite shape along parabola.
-// Check if the bounding box is crossed within the requested distance
-	Error("TimeFromInsideAlongParabola","Subtractions have not been implemented yet!");
-	return 0.0;
-}   
-
-//_____________________________________________________________________________
-Double_t TUCNGeoUnion::TimeFromInsideAlongParabola(const Double_t* /*point*/, const Double_t* /*velocity*/, const Double_t* /*field*/,
-                                 const Double_t /*stepTime*/, const Bool_t /*onBoundary*/) const
+Double_t TUCNGeoUnion::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field,
+                                 const Double_t stepTime, const Bool_t onBoundary) const
 {
 // Compute time from inside point to outside of this composite shape along parabola.
-	Error("TimeFromInsideAlongParabola","Subtractions have not been implemented yet!");
-	return 0.0;
+// Refering to 'left' shape and 'right' shape, I am refering to the two terms in the equation for
+// this particular BoolNode: left + right. 
+   #ifdef VERBOSE_MODE
+      Info("TimeFromInsideAlongParabola","Start");
+   #endif
+   TUCNGeoBoolNode *node = (TUCNGeoBoolNode*)this;
+   Int_t i;
+   Double_t leftTime=0., rightTime=0., finalTime=0.;
+   // Create some temporary storage for the master point and velocity
+   Double_t masterPoint[3], masterVel[3], pushed[3];
+   memcpy(masterPoint, point, 3*sizeof(Double_t));
+   memcpy(masterVel, velocity, 3*sizeof(Double_t));
+   // Perform coordinate transformations from Global to the local coords of ('+') & ('-')
+   Double_t leftPoint[3], leftVel[3], leftField[3], rightPoint[3], rightVel[3], rightField[3];
+   fLeftMat->MasterToLocal(point, &leftPoint[0]);
+   fLeftMat->MasterToLocalVect(velocity, &leftVel[0]);
+   fLeftMat->MasterToLocalVect(field, &leftField[0]);
+   fRightMat->MasterToLocal(point, &rightPoint[0]);
+   fRightMat->MasterToLocalVect(velocity, &rightVel[0]);
+   fRightMat->MasterToLocalVect(field, &rightField[0]);
+   // Calculate Time to each Node
+   Bool_t insideLeft = fLeft->Contains(leftPoint);
+   if (insideLeft) leftTime = dynamic_cast<TUCNGeoBBox*>(fLeft)->TimeFromInsideAlongParabola(leftPoint, leftVel, \
+                                                                                 leftField, stepTime, onBoundary);
+   Bool_t insideRight = fRight->Contains(rightPoint);
+   if (insideRight) rightTime = dynamic_cast<TUCNGeoBBox*>(fRight)->TimeFromInsideAlongParabola(rightPoint, rightVel, \
+                                                                                    rightField, stepTime, onBoundary);
+   #ifdef VERBOSE_MODE
+      Info("TimeFromInsideAlongParabola","Are we Inside Left? %i. Are we inside Right? %i",insideLeft,insideRight);
+      Info("TimeFromInsideAlongParabola","LeftTime: %f. RightTime: %f",leftTime,rightTime);
+   #endif
+   while (insideLeft || insideRight) {
+      if (insideLeft && insideRight) {
+         #ifdef VERBOSE_MODE
+            Info("TimeFromInsideAlongParabola","We are inside both Left and Right. Determining which we exit first.");
+         #endif
+         if (leftTime < rightTime) {      
+            finalTime += leftTime;
+            node->SetSelected(1);
+            // propagate to exit of left shape
+            #ifdef VERBOSE_MODE
+               Info("TimeFromInsideAlongParabola","Exit Left First. Propagating outside Left.");
+            #endif
+            insideLeft = kFALSE;
+            for (i=0; i<3; i++) {
+               masterPoint[i] += velocity[i]*leftTime + 0.5*field[i]*leftTime*leftTime;
+               masterVel[i] += field[i]*leftTime;
+            }
+            // check if propagated point is in right shape        
+            fRightMat->MasterToLocal(masterPoint, rightPoint);
+            fRightMat->MasterToLocalVect(masterVel, rightVel);
+            insideRight = fRight->Contains(rightPoint);
+            #ifdef VERBOSE_MODE
+               Info("TimeFromInsideAlongParabola","Propagated Point inside Right? %i",insideRight);
+            #endif
+            if (!insideRight) {
+               #ifdef VERBOSE_MODE
+                  Info("TimeFromInsideAlongParabola","Returning finalTime: %f",finalTime);
+               #endif
+               return finalTime;
+            }
+            rightTime = dynamic_cast<TUCNGeoBBox*>(fRight)->TimeFromInsideAlongParabola(rightPoint, rightVel, \
+                                                                           rightField, stepTime, onBoundary);
+            #ifdef VERBOSE_MODE
+               Info("TimeFromInsideAlongParabola","Time to Exit Right: %f",rightTime);
+            #endif
+            if (rightTime < TGeoShape::Tolerance()) return finalTime;
+         } else {
+            finalTime += rightTime;
+            node->SetSelected(2);
+            // propagate to exit of right shape
+            #ifdef VERBOSE_MODE
+               Info("TimeFromInsideAlongParabola","Exit Right First. Propagating outside Right.");
+            #endif
+            insideRight = kFALSE;
+            for (i=0; i<3; i++) {
+               masterPoint[i] += velocity[i]*rightTime + 0.5*field[i]*rightTime*rightTime;
+               masterVel[i] += field[i]*rightTime;
+            }
+            // check if propagated point is in left shape        
+            fLeftMat->MasterToLocal(masterPoint, leftPoint);
+            fLeftMat->MasterToLocalVect(masterVel, leftVel);
+            insideLeft = fLeft->Contains(leftPoint);
+            #ifdef VERBOSE_MODE
+               Info("TimeFromInsideAlongParabola","Propagated Point inside Left? %i",insideLeft);
+            #endif
+            if (!insideLeft) {
+               #ifdef VERBOSE_MODE
+                  Info("TimeFromInsideAlongParabola","Returning finalTime: %f",finalTime);
+               #endif
+               return finalTime;
+            }
+            leftTime = dynamic_cast<TUCNGeoBBox*>(fLeft)->TimeFromInsideAlongParabola(leftPoint, leftVel, \
+                                                                           leftField, stepTime, onBoundary);
+            #ifdef VERBOSE_MODE
+               Info("TimeFromInsideAlongParabola","Time to Exit Left? %f",leftTime);
+            #endif
+            if (leftTime < TGeoShape::Tolerance()) return finalTime;
+         }
+      } 
+      if (insideLeft) {
+         finalTime += leftTime;
+         node->SetSelected(1);
+         // propagate to exit of left shape
+         #ifdef VERBOSE_MODE
+            Info("TimeFromInsideAlongParabola","Currently Only Inside Left. Propagating to Exit Left.");
+         #endif
+         insideLeft = kFALSE;
+         for (i=0; i<3; i++) {
+            masterPoint[i] += velocity[i]*leftTime + 0.5*field[i]*leftTime*leftTime;
+            masterVel[i] += field[i]*leftTime;
+            pushed[i] = masterPoint[i]+(1.+leftTime)*TGeoShape::Tolerance()*velocity[i];
+         }   
+         // check if propagated point is in right shape
+         fRightMat->MasterToLocal(pushed, rightPoint);
+         insideRight = fRight->Contains(rightPoint);
+         #ifdef VERBOSE_MODE
+            Info("TimeFromInsideAlongParabola","Propagated Point inside Right? %i",insideRight);
+         #endif
+         if (!insideRight) return finalTime;
+         rightTime = dynamic_cast<TUCNGeoBBox*>(fRight)->TimeFromInsideAlongParabola(rightPoint, rightVel, \
+                                                                           rightField, stepTime, onBoundary);
+         if (rightTime < TGeoShape::Tolerance()) {
+            #ifdef VERBOSE_MODE
+               Info("TimeFromInsideAlongParabola","Returning finalTime: %f",finalTime);
+            #endif
+            return finalTime;
+         }
+         rightTime += (1.+leftTime)*TGeoShape::Tolerance();
+         #ifdef VERBOSE_MODE
+            Info("TimeFromInsideAlongParabola","Time to Exit Right? %f",rightTime);
+         #endif
+      }   
+      if (insideRight) {
+         finalTime += rightTime;
+         node->SetSelected(2);
+         // propagate to exit of right shape
+         #ifdef VERBOSE_MODE
+            Info("TimeFromInsideAlongParabola","Currently Only Inside Right. Propagating to Exit Right.");
+         #endif
+         insideRight = kFALSE;
+         for (i=0; i<3; i++) {
+            masterPoint[i] += velocity[i]*rightTime + 0.5*field[i]*rightTime*rightTime;
+            masterVel[i] += field[i]*rightTime;
+            pushed[i] = masterPoint[i]+(1.+rightTime)*TGeoShape::Tolerance()*velocity[i];
+         }   
+         // check if propagated point is in left shape        
+         fLeftMat->MasterToLocal(pushed, leftPoint);
+         insideLeft = fLeft->Contains(leftPoint);
+         #ifdef VERBOSE_MODE
+            Info("TimeFromInsideAlongParabola","Propagated Point inside Left? %i",insideLeft);
+         #endif
+         if (!insideLeft) return finalTime;
+         leftTime = dynamic_cast<TUCNGeoBBox*>(fLeft)->TimeFromInsideAlongParabola(leftPoint, leftVel, \
+                                                                        leftField, stepTime, onBoundary);
+         if (leftTime < TGeoShape::Tolerance()) {
+            #ifdef VERBOSE_MODE
+               Info("TimeFromInsideAlongParabola","Returning finalTime: %f",finalTime);
+            #endif
+            return finalTime;
+         }
+         leftTime += (1.+rightTime)*TGeoShape::Tolerance();
+         #ifdef VERBOSE_MODE
+            Info("TimeFromInsideAlongParabola","Time to Exit Left? %f",leftTime);
+         #endif
+      }
+   }
+   #ifdef VERBOSE_MODE
+      Info("TimeFromInsideAlongParabola","FinalTime: %f",finalTime);
+   #endif      
+   return finalTime;
+}
+
+//_____________________________________________________________________________
+Double_t TUCNGeoUnion::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field,
+                                 const Double_t stepTime, const Bool_t onBoundary) const
+{
+// Compute the time from outside point to this composite shape along parabola.
+   #ifdef VERBOSE_MODE
+      Info("TimeFromOutsideAlongParabola","Start");
+   #endif
+   TUCNGeoBoolNode *node = (TUCNGeoBoolNode*)this;
+   Double_t leftTime, rightTime, finalTime;
+   // Perform coordinate transformations from Global to the local coords of ('+') & ('-')
+   Double_t leftPoint[3], leftVel[3], leftField[3], rightPoint[3], rightVel[3], rightField[3];
+   fLeftMat->MasterToLocal(point, &leftPoint[0]);
+   fLeftMat->MasterToLocalVect(velocity, &leftVel[0]);
+   fLeftMat->MasterToLocalVect(field, &leftField[0]);
+   fRightMat->MasterToLocal(point, &rightPoint[0]);
+   fRightMat->MasterToLocalVect(velocity, &rightVel[0]);
+   fRightMat->MasterToLocalVect(field, &rightField[0]);
+   // Calculate time from outside to both shapes
+   leftTime = dynamic_cast<TUCNGeoBBox*>(fLeft)->TimeFromOutsideAlongParabola(leftPoint, leftVel, \
+                                                               leftField, stepTime, onBoundary);
+   rightTime = dynamic_cast<TUCNGeoBBox*>(fRight)->TimeFromOutsideAlongParabola(rightPoint, rightVel, \
+                                                               rightField, stepTime, onBoundary);
+   #ifdef VERBOSE_MODE
+      Info("TimeFromOutsideAlongParabola","LeftTime: %f. RightTime: %f",leftTime,rightTime);
+   #endif
+   // Simply choose the shape that is hit first
+   if (leftTime < rightTime) {
+      finalTime = leftTime;
+      node->SetSelected(1);
+   } else {
+      finalTime = rightTime;
+      node->SetSelected(2);
+   }
+   #ifdef VERBOSE_MODE
+      Info("TimeFromOutsideAlongParabola","FinalTime: %f",finalTime);
+   #endif      
+   return finalTime;
 }
 
 //_____________________________________________________________________________
@@ -919,6 +1122,9 @@ Double_t TUCNGeoSubtraction::TimeFromInsideAlongParabola(const Double_t* point, 
                                        field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 // Compute time from inside point to outside of this composite shape along parabola.
+   #ifdef VERBOSE_MODE
+      Info("TimeFromInsideAlongParabola","Start");
+   #endif
    TUCNGeoBoolNode *node = (TUCNGeoBoolNode*)this;
    Double_t leftTime, rightTime, finalTime=0.;
    // Perform coordinate transformations from Global to the local coords of ('+') & ('-')
@@ -936,6 +1142,9 @@ Double_t TUCNGeoSubtraction::TimeFromInsideAlongParabola(const Double_t* point, 
    // Now we want to find the time to the boundary of the ('-') from Outside
    rightTime= dynamic_cast<TUCNGeoBBox*>(fRight)->TimeFromOutsideAlongParabola(&rightPoint[0], &rightVel[0], &rightField[0], \
                                                                                  stepTime, onBoundary);
+   #ifdef VERBOSE_MODE
+      Info("TimeFromInsideAlongParabola","LeftTime: %f, RightTime: %f",leftTime,rightTime);
+   #endif
    // Compare the two times for which boundary will be intersected first
    if (leftTime < rightTime) {
       finalTime = leftTime;
@@ -944,6 +1153,9 @@ Double_t TUCNGeoSubtraction::TimeFromInsideAlongParabola(const Double_t* point, 
       finalTime = rightTime;
       node->SetSelected(2);
    }
+   #ifdef VERBOSE_MODE
+      Info("TimeFromInsideAlongParabola","FinalTime: %f", finalTime);
+   #endif
    return finalTime;
 }
 
@@ -952,6 +1164,9 @@ Double_t TUCNGeoSubtraction::TimeFromOutsideAlongParabola(const Double_t* point,
                                        field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 // Compute the time from outside point to this composite shape along parabola.
+   #ifdef VERBOSE_MODE
+		Info("TimeFromOutsideAlongParabola","Start");
+   #endif
    TUCNGeoBoolNode *node = (TUCNGeoBoolNode*)this;
    Int_t i;
    Double_t leftTime, rightTime, finalTime=0.;
@@ -972,49 +1187,72 @@ Double_t TUCNGeoSubtraction::TimeFromOutsideAlongParabola(const Double_t* point,
    Bool_t inside = fRight->Contains(&rightPoint[0]);
    Double_t epsil = 0.;
    while (1) {
+      #ifdef VERBOSE_MODE
+         Info("TimeFromOutsideAlongParabola","Currently Outside Left. Are we Inside Right? %i",inside);
+      #endif
       if (inside) {
          // We are inside '-' so propagate outside of this
          node->SetSelected(2);
          rightTime = dynamic_cast<TUCNGeoBBox*>(fRight)->TimeFromInsideAlongParabola(&rightPoint[0], &rightVel[0], \
                                                                               &rightField[0], stepTime, onBoundary);
+         #ifdef VERBOSE_MODE
+            Info("TimeFromOutsideAlongParabola","Currently Inside Right. Propagating outside Right. RightTime: %f",rightTime);
+         #endif
          finalTime += rightTime+epsil;
          for (i=0; i<3; i++) {
-            masterPoint[i] += rightVel[i]*(rightTime+1E-8) + 0.5*rightField[i]*(rightTime+1E-8)*(rightTime+1E-8);
-            masterVel[i] += rightField[i]*(rightTime+1E-8);
+            masterPoint[i] += velocity[i]*(rightTime+1E-8) + 0.5*field[i]*(rightTime+1E-8)*(rightTime+1E-8);
+            masterVel[i] += field[i]*(rightTime+1E-8);
          }
          epsil = 1.E-8;
          // now masterPoint outside '-'; check if inside '+'
          fLeftMat->MasterToLocal(&masterPoint[0], &leftPoint[0]);
-         if (fLeft->Contains(&leftPoint[0])) return finalTime;
+         if (fLeft->Contains(&leftPoint[0])) {
+            #ifdef VERBOSE_MODE
+               Info("TimeFromOutsideAlongParabola","We are inside Left. Returning finalTime: %f",finalTime);
+            #endif
+            return finalTime;
+         }
       }
       // masterPoint is outside '-' and outside '+' ;  find times to both
+      #ifdef VERBOSE_MODE
+         Info("TimeFromOutsideAlongParabola","Currently outside both Left and Right.");
+      #endif
       node->SetSelected(1);
       fLeftMat->MasterToLocal(&masterPoint[0], &leftPoint[0]);
-      fLeftMat->MasterToLocal(&masterVel[0], &leftVel[0]);
+      fLeftMat->MasterToLocalVect(&masterVel[0], &leftVel[0]);
       leftTime = dynamic_cast<TUCNGeoBBox*>(fLeft)->TimeFromOutsideAlongParabola(&leftPoint[0], &leftVel[0], \
                                                                            &leftField[0], stepTime, onBoundary);
       if (leftTime > 1E20) return TGeoShape::Big();
       
       fRightMat->MasterToLocal(&masterPoint[0], &rightPoint[0]);
-      fRightMat->MasterToLocal(&masterVel[0], &rightVel[0]);
+      fRightMat->MasterToLocalVect(&masterVel[0], &rightVel[0]);
       rightTime = dynamic_cast<TUCNGeoBBox*>(fRight)->TimeFromOutsideAlongParabola(&rightPoint[0], &rightVel[0], \
                                                                               &rightField[0], stepTime, onBoundary);
+      #ifdef VERBOSE_MODE
+         Info("TimeFromOutsideAlongParabola","LeftTime: %f. RightTime: %f",leftTime, rightTime);
+      #endif
       // If we reach '+' first then return this time
       if (leftTime < rightTime-TGeoShape::Tolerance()) {
          finalTime += leftTime+epsil;
+         #ifdef VERBOSE_MODE
+            Info("TimeFromOutsideAlongParabola","Propagating to Left. Returning finalTime: %f",finalTime);
+         #endif
          return finalTime;
       }
       // Otherwise propagate to '-' and start the loop again
       finalTime += rightTime+epsil;
       for (i=0; i<3; i++) {
-         masterPoint[i] += rightVel[i]*(rightTime+1E-8) + 0.5*rightField[i]*(rightTime+1E-8)*(rightTime+1E-8);
-         masterVel[i] += rightField[i]*(rightTime+1E-8);
+         masterPoint[i] += velocity[i]*(rightTime+1E-8) + 0.5*field[i]*(rightTime+1E-8)*(rightTime+1E-8);
+         masterVel[i] += field[i]*(rightTime+1E-8);
       }
       epsil = 1.E-8;
       // now inside '-' and not inside '+'
       fRightMat->MasterToLocal(&masterPoint[0], &rightPoint[0]);
-      fRightMat->MasterToLocal(&masterVel[0], &rightVel[0]);
+      fRightMat->MasterToLocalVect(&masterVel[0], &rightVel[0]);
       inside = kTRUE;
+      #ifdef VERBOSE_MODE
+         Info("TimeFromOutsideAlongParabola","Propagated to Right. finalTime: %f", finalTime);
+      #endif
    }
 }
 
