@@ -1,6 +1,4 @@
 #include "TUCNGeoManager.h"
-#include "TUCNGeoNavigator.h"
-#include "TUCNGeoBuilder.h"
 #include "TUCNGeoBBox.h"
 #include "TUCNGeoMaterial.h"
 #include "TGeoManager.h"
@@ -10,14 +8,12 @@
 
 using namespace std;
 
+//_____________________________________________________________________________
 TGeoNode* CreateGeometry_v1(TUCNGeoManager* myManager)
 {
+	// -- Horizontal Guide Tube with a source volume at one end, and a flat rectangular detector at the other end on the floor of the guide.
+	
 	// -- Making Materials
-	// Every material made should be a TUCNMaterial. This class includes specific methods that identify the 
-	// material as a one of three types: Tracking Material, Boundary Material, and BlackHole Material. All the
-	// usual properties of materials can be set, but at the moment are not current required for navigation. In
-	// the future expect to set the material element type, scattering length (or effective potential) and other
-	// quantities. 
    TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);
 	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0);
 	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0);
@@ -38,10 +34,6 @@ TGeoNode* CreateGeometry_v1(TUCNGeoManager* myManager)
 	myManager->SetTopVolume(chamber);
 			
 	// -- Make a GeoBBox object via the UCNGeoManager
-	//	MakeBox has been overridden here. If you can tell me how this is possible without throwing a warning
-	// or anything (seeing as this is a non-virtual method) I would be really interested to know. 
-	// In any case, ALL make Volume methods have been overridden in the UCNManager to only build volumes from 
-	// UCNShapes which contain the new tracking methods.
 	Double_t boxX = 0.11, boxY = 0.11, boxZ = 1.01; 
 	TGeoVolume* box   = myManager->MakeUCNBox("box",boundary, boxX, boxY, boxZ);
 	TGeoVolume* innerBox  = myManager->MakeUCNBox("innerbox",vacuum, boxX-0.01, boxY-0.01, boxZ-0.01);
@@ -70,7 +62,6 @@ TGeoNode* CreateGeometry_v1(TUCNGeoManager* myManager)
 	detector->SetTransparency(0);
 	
 	// -- Define the transformation of the volume
-	// Here is a general set-up of rotations and translations to be applied to a single volume. 
 	TGeoRotation r1,r2; 
 	r1.SetAngles(0,90,0);          	//	rotation defined by Euler angles 
 	r2.SetAngles(0,0,0); 	 
@@ -107,11 +98,12 @@ TGeoNode* CreateGeometry_v1(TUCNGeoManager* myManager)
 	cout << "Detector: " << static_cast<TUCNGeoMaterial*>(detector->GetMedium()->GetMaterial())->IsDetectorMaterial() << endl;
 	TGeoNode* sourceBoxNode = static_cast<TGeoNode*>(innerBox->GetNodes()->First());	
 	// -- Arrange and close geometry
-    myManager->CloseGeometry();
+	myManager->CloseGeometry();
 
 	return sourceBoxNode;
 }
 
+//_____________________________________________________________________________
 TGeoNode* CreateGeometry_v2(TUCNGeoManager* myManager) {
 	// -- Making Materials
    TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);
@@ -169,6 +161,7 @@ TGeoNode* CreateGeometry_v2(TUCNGeoManager* myManager) {
 	return innerTubeNode;
 }
 
+//_____________________________________________________________________________
 TGeoNode* CreateGeometry_v3(TUCNGeoManager* myManager) {
 	// -- Making Materials
    TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);
@@ -226,14 +219,10 @@ TGeoNode* CreateGeometry_v3(TUCNGeoManager* myManager) {
 	return innerTubeNode;
 }
 
+//_____________________________________________________________________________
 TGeoNode* CreateGeometry_v4(TUCNGeoManager* myManager)
 {
 	// -- Making Materials
-	// Every material made should be a TUCNMaterial. This class includes specific methods that identify the 
-	// material as a one of three types: Tracking Material, Boundary Material, and BlackHole Material. All the
-	// usual properties of materials can be set, but at the moment are not current required for navigation. In
-	// the future expect to set the material element type, scattering length (or effective potential) and other
-	// quantities. 
 	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);
 	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0);
 	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", 0,0);
@@ -254,10 +243,6 @@ TGeoNode* CreateGeometry_v4(TUCNGeoManager* myManager)
 	myManager->SetTopVolume(chamber);
 			
 	// -- Make a GeoBBox object via the UCNGeoManager
-	//	MakeBox has been overridden here. If you can tell me how this is possible without throwing a warning
-	// or anything (seeing as this is a non-virtual method) I would be really interested to know. 
-	// In any case, ALL make Volume methods have been overridden in the UCNManager to only build volumes from 
-	// UCNShapes which contain the new tracking methods.
 	Double_t boxX = 0.11, boxY = 0.11, boxZ = 1.01; 
 	TGeoVolume* box   = myManager->MakeUCNBox("box",boundary, boxX, boxY, boxZ);
 	TGeoVolume* innerBox  = myManager->MakeUCNBox("innerbox",vacuum, boxX-0.01, boxY-0.01, boxZ-0.01);	
@@ -282,21 +267,6 @@ TGeoNode* CreateGeometry_v4(TUCNGeoManager* myManager)
 	TGeoHMatrix *matrix1 = new TGeoHMatrix(hm1);
 	matrix1->Print();
 	
-/*	TGeoRotation r2; 
-	r2.SetAngles(0,90,0);          	//	rotation defined by Euler angles 
-	TGeoTranslation t2(0.,-0.1,0.9); 
-	TGeoCombiTrans c2(t2,r2); 
-	TGeoHMatrix hm2 = c2;        // composition is done via TGeoHMatrix class 
-	TGeoHMatrix *matrix2 = new TGeoHMatrix(hm2);
-	
-	TGeoRotation r3; 
-	r3.SetAngles(0,0,0);          	//	rotation defined by Euler angles 
-	TGeoTranslation t3(0.,0.,-0.9); 
-	TGeoCombiTrans c3(t3,r3); 
-	TGeoHMatrix hm3 = c3;        // composition is done via TGeoHMatrix class 
-	TGeoHMatrix *matrix3 = new TGeoHMatrix(hm3);
-*/	
-	
 	// -- Create the nodes
 	box->AddNode(innerBox,1);
 	chamber->AddNode(box,1, matrix1);
@@ -306,4 +276,56 @@ TGeoNode* CreateGeometry_v4(TUCNGeoManager* myManager)
     myManager->CloseGeometry();
 
 	return sourceBoxNode;
+}
+
+//_____________________________________________________________________________
+void CreateGeometry_v5(Double_t V, Double_t W)
+{
+	// Materials
+	TUCNGeoMaterial* matTracking  = new TUCNGeoMaterial("Tracking Material", 0,0);
+	TUCNGeoMaterial* matBlackHole = new TUCNGeoMaterial("BlackHole", 0,0);
+	TUCNGeoMaterial* matBoundary  = new TUCNGeoMaterial("Boundary Material", V, W);
+	
+	matTracking->IsTrackingMaterial(kTRUE);
+	matBlackHole->IsBlackHole(kTRUE);
+	
+	// -- Making Mediums
+	TGeoMedium* vacuum = new TGeoMedium("Vacuum",1, matTracking);
+	TGeoMedium* blackHole = new TGeoMedium("BlackHole",2, matBlackHole);
+	TGeoMedium* boundary = new TGeoMedium("Boundary",3, matBoundary);
+	
+	// -- Making Top Volume
+ 	TGeoVolume* chamber = static_cast<TUCNGeoManager*>(gGeoManager)->MakeUCNBox("TOP",blackHole,20,20,20);
+	gGeoManager->SetTopVolume(chamber);
+				
+	// -- Make a GeoTube object via the UCNGeoManager
+	Double_t rMin = 0.0, rMax = 0.236, halfLength = 0.121; 
+	TGeoVolume* tube   = static_cast<TUCNGeoManager*>(gGeoManager)->MakeUCNTube("tube",boundary, rMin, rMax, halfLength);
+	TGeoVolume* innerTube  = static_cast<TUCNGeoManager*>(gGeoManager)->MakeUCNTube("innerTube",vacuum, rMin, rMax-0.001, halfLength-0.001);
+	
+	
+	// -- Define the transformation of the volume
+	TGeoRotation r1,r2; 
+	r1.SetAngles(0,0,0);          //rotation defined by Euler angles 
+	r2.SetAngles(0,0,0); 	 
+	TGeoTranslation t1(0.,0.,0.); 
+	TGeoTranslation t2(0.,0.,0.); 
+	TGeoCombiTrans c1(t1,r1); 
+	TGeoCombiTrans c2(t2,r2); 
+	TGeoHMatrix hm = c1 * c2;        // composition is done via TGeoHMatrix class 
+	TGeoHMatrix *matrix = new TGeoHMatrix(hm);
+	
+	TGeoVolume* volume = tube;
+	TGeoVolume* innerVolume = innerTube;
+	
+	// -- Create the nodes	
+	volume->AddNode(innerVolume,1);
+	chamber->AddNode(volume,1, matrix);
+	
+	// -- Define the Source in our geometry where we will create the particles
+	static_cast<TUCNGeoManager*>(gGeoManager)->SetSourceVolume(innerVolume);
+	static_cast<TUCNGeoManager*>(gGeoManager)->SetSourceMatrix(matrix);
+	
+	// -- Arrange and close geometry
+   gGeoManager->CloseGeometry();
 }
