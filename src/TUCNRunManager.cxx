@@ -92,7 +92,7 @@ void TUCNRunManager::InitialiseGeometry()
 	// Calculate f = W/V and hence W
 	Double_t X = totalEnergy/fermiPotential;
 	Double_t L = 2.0*((1./X)*TMath::ASin(TMath::Sqrt(X)) - TMath::Sqrt((1./X) - 1.));
-	cout << "E: " << totalEnergy/Units::neV << "\t" << "V: " << fermiPotential/Units::neV << "\t" << "V/E: " << X << "\t"<< "L: " << L << endl;
+	cout << "E: " << totalEnergy/Units::neV << "\t" << "V: " << fermiPotential/Units::neV << "\t" << "E/V: " << X << "\t"<< "L: " << L << endl;
 	Double_t f = meanFreePath/(initialVelocity*observedLifetime*L);
 	Double_t W = f*fermiPotential;
 	cout << "f: " << f << "\t" << "W: " << W/Units::neV << endl;
@@ -119,4 +119,12 @@ void TUCNRunManager::AddRuns(Int_t numberOfRuns)
 		TUCNRun* newRun = new TUCNRun();
 	   fRuns->AddAtAndExpand(newRun , index);
 	}
+}
+
+//_____________________________________________________________________________
+void	TUCNRunManager::WriteRunsToFile()
+{
+	TFile f("runs.root","recreate");
+	fRuns->Write();
+	f.Close();
 }
