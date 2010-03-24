@@ -64,8 +64,6 @@ private:
    Bool_t      fLostToBoundary;
    Bool_t      fDetected;
    
-   
-   TGeoNode*   fUCNNextNode;
    Double_t    fStepTime;
    Bool_t      fUCNIsStepEntering;
    Bool_t      fUCNIsStepExiting;
@@ -92,11 +90,12 @@ private:
    Bool_t            MakeStep(Double_t stepTime, TGeoNavigator* navigator, 
                                     TUCNFieldManager* fieldManager);
    Bool_t            LocateInGeometry(TGeoNavigator* navigator, const TGeoNode* initialNode,
-                                          const TGeoMatrix* initialMatrix);
+                           const TGeoMatrix* initialMatrix, const TGeoNode* crossedNode);
    Bool_t            AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, 
-                                    const TGeoNode* initialNode, const TGeoMatrix* initialMatrix);
+                           const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
+                           const TGeoNode* crossedNode);
    TGeoNode*         ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator,
-                                                   TUCNGravField* field);
+                                          TGeoNode* crossedNode, TUCNGravField* field);
    TGeoNode*         ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator,
                                     Double_t* point, Double_t* velocity, Double_t* field,
                                     Int_t &idaughter, Bool_t compmatrix=kFALSE);
@@ -110,7 +109,7 @@ private:
    Bool_t            SpecularBounce(Double_t* dir, const Double_t* norm);
    Bool_t            DiffuseBounce(const TGeoNavigator* navigator, Double_t* dir, 
                                     const Double_t* norm);
-   Bool_t            FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator);
+   Bool_t            FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator, const TGeoNode* crossedNode);
    
    Bool_t            IsUCNOnBoundary() const {return fUCNIsOnBoundary;}
    Bool_t            IsUCNStepEntering() const {return fUCNIsStepEntering;}

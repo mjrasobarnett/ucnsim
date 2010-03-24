@@ -65,7 +65,7 @@ TUCNParticle::TUCNParticle()
               fX(0.), fY(0.), fZ(0.), fT(0.), fPx(0.), fPy(0.), fPz(0.), fE(0.),
               fDistance(0.), fId(0), fBounces(0), fSpecularBounces(0), fDiffuseBounces(0),
               fRandomSeed(0), fDecayed(kFALSE), fLostToBoundary(kFALSE), fDetected(kFALSE),
-              fUCNNextNode(0), fStepTime(0), fUCNIsStepEntering(kFALSE), fUCNIsStepExiting(kFALSE),
+              fStepTime(0), fUCNIsStepEntering(kFALSE), fUCNIsStepExiting(kFALSE),
               fUCNIsOutside(kFALSE), fUCNIsOnBoundary(kFALSE)
 {
 // -- Default constructor
@@ -79,7 +79,7 @@ TUCNParticle::TUCNParticle(Int_t id, Double_t* pos, Double_t* mom, Double_t ener
               fX(pos[0]), fY(pos[1]), fZ(pos[2]), fT(t), fPx(mom[0]), fPy(mom[1]), fPz(mom[2]),
               fE(energy), fDistance(0.), fId(id), fBounces(0), fSpecularBounces(0),
               fDiffuseBounces(0), fRandomSeed(0), fDecayed(kFALSE), fLostToBoundary(kFALSE),
-              fDetected(kFALSE), fUCNNextNode(0), fStepTime(0), fUCNIsStepEntering(kFALSE),
+              fDetected(kFALSE), fStepTime(0), fUCNIsStepEntering(kFALSE),
               fUCNIsStepExiting(kFALSE), fUCNIsOutside(kFALSE), fUCNIsOnBoundary(kFALSE)
 {
 // -- Constructor
@@ -94,7 +94,7 @@ TUCNParticle::TUCNParticle(const TUCNParticle& p)
               fBounces(p.fBounces), fSpecularBounces(p.fSpecularBounces),
               fDiffuseBounces(p.fDiffuseBounces), fRandomSeed(p.fRandomSeed),
               fDecayed(p.fDecayed), fLostToBoundary(p.fLostToBoundary),
-              fDetected(p.fDetected), fUCNNextNode(p.fUCNNextNode), fStepTime(p.fStepTime),
+              fDetected(p.fDetected), fStepTime(p.fStepTime),
               fUCNIsStepEntering(p.fUCNIsStepEntering), fUCNIsStepExiting(p.fUCNIsStepExiting),
               fUCNIsOutside(p.fUCNIsOutside), fUCNIsOnBoundary(p.fUCNIsOnBoundary)
 {
@@ -124,7 +124,6 @@ TUCNParticle& TUCNParticle::operator=(const TUCNParticle& p)
       fDecayed = p.fDecayed;
       fLostToBoundary = p.fLostToBoundary;
       fDetected = p.fDetected;
-      fUCNNextNode = p.fUCNNextNode; 
       fStepTime = p.fStepTime;
       fUCNIsStepEntering = p.fUCNIsStepEntering;
       fUCNIsStepExiting = p.fUCNIsStepExiting;
@@ -436,6 +435,10 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- STEP 2 - Find Next Boundary
    ///////////////////////////////////////////////////////////////////////////////////////      
+   // Store pointer to boundary node - i.e: the node which contains the boundary we just crossed
+   // This will sometimes be different from the final node, such as when we cross from a daughter
+   // into the parent volume. 
+   TGeoNode* crossedNode = navigator->GetCurrentNode();
    // Choice of propagation algorithm depends on whether there is a grav field or not
    if (gravField == NULL) {
       // CASE 1; No Gravitational Field - Straight line tracking
@@ -449,12 +452,13 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
    } else {
       // CASE 2; Grav Field present - tracking along parabolic trajectories
       // -- Propagate Point by StepTime along Parabola
-      TGeoNode* nextNode = this->ParabolicBoundaryFinder(stepTime, navigator, gravField);
+      TGeoNode* nextNode = this->ParabolicBoundaryFinder(stepTime, navigator, crossedNode, gravField);
       if (nextNode == NULL) {
          Error("MakeStep", "FindNextBoundaryAndStepAlongParabola has failed to find the next node");
          return kFALSE;	
       }
-      assert(nextNode == navigator->GetCurrentNode());   
+      // Assert that the returned node is also the current node
+      assert(nextNode == navigator->GetCurrentNode());
    }
    
    // -- Update particle properties
@@ -478,7 +482,7 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
    // -- the current volume is the point's true container
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Attempt to locate particle within the current node
-   Bool_t locatedParticle = this->LocateInGeometry(navigator, initialNode, initialMatrix);
+   Bool_t locatedParticle = this->LocateInGeometry(navigator, initialNode, initialMatrix, crossedNode);
    if (locatedParticle == kFALSE) {
       cout << "Error - After Step - Unable to locate particle correctly in Geometry" << endl;
       return kFALSE;
@@ -501,7 +505,7 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
    // -- Get the normal vector to the boundary
    Double_t normal[3] = {0.,0.,0.};
    if (gravField) {
-      this->FindBoundaryNormal(normal,navigator);
+      this->FindBoundaryNormal(normal, navigator, crossedNode);
    } else {
       throw runtime_error("Need to sort out behaviour of normals in particle");     
       //normal = navigator->FindNormal();
@@ -572,7 +576,7 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
          // -- the current volume is the point's true container
          ///////////////////////////////////////////////////////////////////////////////////////
          // -- Attempt to locate particle within the current node
-         Bool_t locatedParticle = this->LocateInGeometry(navigator, boundaryNode, boundaryMatrix);
+         Bool_t locatedParticle = this->LocateInGeometry(navigator, boundaryNode, boundaryMatrix, crossedNode);
          if (locatedParticle == kFALSE) {
             cout << "Error - After Bounce - Unable to locate particle correctly in Geometry"<< endl;
             return kFALSE;
@@ -582,13 +586,13 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
       }
    }
    // Add Vertex to Track
-// track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
+   // track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
    // End of MakeStep.
    return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNParticle::LocateInGeometry(TGeoNavigator* navigator, const TGeoNode* initialNode, const TGeoMatrix* initialMatrix)
+Bool_t TUCNParticle::LocateInGeometry(TGeoNavigator* navigator, const TGeoNode* initialNode, const TGeoMatrix* initialMatrix, const TGeoNode* crossedNode)
 {
    // -- We want to determine whether the current coordinates of our particle is
    // -- located in the correct volume in the geometry. If this isn't the case - 
@@ -679,7 +683,7 @@ Bool_t TUCNParticle::LocateInGeometry(TGeoNavigator* navigator, const TGeoNode* 
       #endif
       // We must now try to understand why we are not where we should be, and if necessary
       // make a small shift to the particle to put it in the correct volume.
-      Bool_t locatedParticle = this->AttemptRelocationIntoCurrentNode(navigator, initialNode, initialMatrix);
+      Bool_t locatedParticle = this->AttemptRelocationIntoCurrentNode(navigator, initialNode, initialMatrix, crossedNode);
       
       // Check whether shift has helped to locate particle in correct volume
       if (locatedParticle == kFALSE) {
@@ -703,7 +707,7 @@ Bool_t TUCNParticle::LocateInGeometry(TGeoNavigator* navigator, const TGeoNode* 
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNParticle::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, const TGeoNode* initialNode, const TGeoMatrix* initialMatrix)
+Bool_t TUCNParticle::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, const TGeoNode* initialNode, const TGeoMatrix* initialMatrix, const TGeoNode* crossedNode)
 {
    // At this point we know that the point is not exclusively contained by the current volume.
    // There could be 2 reasons for this:
@@ -787,7 +791,7 @@ Bool_t TUCNParticle::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, 
    // -- Get the normal vector to the boundary
    const Double_t* dir = navigator->GetCurrentDirection();
    Double_t normal[3] = {0.,0.,0.};
-   this->FindBoundaryNormal(&normal[0], navigator);
+   this->FindBoundaryNormal(&normal[0], navigator, crossedNode);
    // Check if the normal vector is pointing along or against our current path
    Double_t dotProduct = dir[0]*normal[0] + dir[1]*normal[1] + dir[2]*normal[2];
    if (dotProduct < 0.) {
@@ -860,27 +864,22 @@ Bool_t TUCNParticle::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, 
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNParticle::FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator)
+Bool_t TUCNParticle::FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator, const TGeoNode* crossedNode)
 {
 // Computes normal to the crossed boundary, assuming that the current point
 // is close enough to the boundary. This method is the same as ROOT's except that we are using
 // our own currentNode be used exclusively instead of TGeoNavigator::FindNormal when gravity is present.
 
-   if (fUCNNextNode == NULL) {
-      Error("FindUCNNormal","No next node set");
+   if (crossedNode == NULL) {
+      Error("FindBoundaryNormal","No boundary has been set");
       return kFALSE;
    }
-   
-//   cout << "In FindNormal" << endl;
-//   cout << "NextNode: " << fUCNNextNode->GetName() << "\t";
-//   cout << "Navigator Node: " << navigator->GetCurrentNode()->GetName() << endl << endl;
-   
    Double_t local[3];
    Double_t ldir[3];
    Double_t lnorm[3];
    navigator->GetHMatrix()->MasterToLocal(navigator->GetCurrentPoint(), local);
    navigator->GetHMatrix()->MasterToLocalVect(navigator->GetCurrentDirection(), ldir);
-   fUCNNextNode->GetVolume()->GetShape()->ComputeNormal(local, ldir, lnorm);
+   crossedNode->GetVolume()->GetShape()->ComputeNormal(local, ldir, lnorm);
    navigator->GetHMatrix()->LocalToMasterVect(lnorm, normal);
    return kTRUE;
 }
@@ -975,7 +974,6 @@ TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeo
             fUCNIsStepEntering = kTRUE;
             navigator->SetStep(snext);
             stepTime = tnext;
-            fUCNNextNode = current;
             nodefound = current;
             idaughter = ifirst;
          }
@@ -1008,7 +1006,6 @@ TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeo
             fUCNIsStepEntering = kTRUE;
             navigator->SetStep(snext);
             stepTime = tnext;
-            fUCNNextNode = current;
             nodefound = current;
             idaughter = ilast;
          }
@@ -1053,13 +1050,11 @@ TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeo
             fUCNIsStepEntering = kTRUE;
             navigator->SetStep(snext);
             stepTime = tnext;
-            fUCNNextNode = current;
-            nodefound = fUCNNextNode;   
+            nodefound = current;   
             idaughter = i;   
             while (indnext>=0) {
                current = current->GetDaughter(indnext);
                if (compmatrix) navigator->GetHMatrix()->Multiply(current->GetMatrix());
-               fUCNNextNode = current;
                nodefound = current;
                indnext = current->GetVolume()->GetNextNodeIndex();
             }
@@ -1108,13 +1103,11 @@ TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeo
             fUCNIsStepEntering = kTRUE;
             navigator->SetStep(snext);
             stepTime = tnext;
-            fUCNNextNode = current;
-            nodefound = fUCNNextNode;
+            nodefound = current;
             idaughter = vlist[i];
             while (indnext>=0) {
                current = current->GetDaughter(indnext);
                if (compmatrix) navigator->GetHMatrix()->Multiply(current->GetMatrix());
-               fUCNNextNode = current;
                nodefound = current;
                indnext = current->GetVolume()->GetNextNodeIndex();
             }
@@ -1125,7 +1118,7 @@ TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeo
 }
 
 //_____________________________________________________________________________
-TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator, TUCNGravField* field)
+TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator, TGeoNode* crossedNode, TUCNGravField* field)
 {
 // Compute distance to next boundary within STEPMAX. If no boundary is found,
 // propagate current point along current direction with fStep=STEPMAX. Otherwise
@@ -1205,7 +1198,8 @@ TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigato
       return NULL;
    }
    snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
-   fUCNNextNode = navigator->GetCurrentNode();
+   crossedNode = navigator->GetCurrentNode();
+   
    #ifdef VERBOSE_MODE
       cout << "PBF - Branch 2. Find distance to exit current Volume: " << vol->GetName() << endl;
       cout << "PBF - Local Field: X: " << localField[0] << "\t" << "Y: " << localField[1] << "\t";
@@ -1270,8 +1264,11 @@ TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigato
       fUCNIsStepExiting = kFALSE;
       icrossed = idaughter;
       fUCNIsStepEntering = kTRUE;
+      // If we crossed a daughter volume, set this node to be the new crossedNode,
+      // since in this case it is the daughter's boundary we are crossing, rather than
+      // the current volume's boundary.
+      crossedNode = crossed;
    }
-   TGeoNode *current = 0;
    // -- If we are in an overlapping node, return an error as we are no longer supporting this.
    // -- Geometries must be constructed with no overlaps beyond common boundaries.
    if (navigator->GetNmany()) {
@@ -1325,6 +1322,7 @@ TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigato
    // -- BRANCH 4
    // -- Final check on results of above
    // *********************************************************************
+   TGeoNode *current = 0;
    if (icrossed == -2) {
       // Nothing crossed within stepMax -> propagate and return same location   
       #ifdef VERBOSE_MODE
@@ -1357,6 +1355,7 @@ TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigato
       }
       TGeoNode* finalNode = navigator->CrossBoundaryAndLocate(kFALSE, skip);
       #ifdef VERBOSE_MODE
+         cout << "PBF - Branch 4. Crossing boundary Upwards." << endl;
          cout << "PBF - Final Node: " << finalNode->GetName() << endl;
          cout << "---------------------------------------" << endl;
       #endif
@@ -1371,7 +1370,7 @@ TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigato
       nextindex = navigator->GetCurrentNode()->GetVolume()->GetNextNodeIndex();
    }
    #ifdef VERBOSE_MODE
-      cout << "ParabolicBoundaryFinder - Branch 4. Crossing boundary and locating." << endl;
+      cout << "PBF - Branch 4. Crossing boundary Downwards." << endl;
    #endif
    return navigator->CrossBoundaryAndLocate(kTRUE, current);
 }
