@@ -45,25 +45,18 @@ using std::vector;
 Bool_t DrawInitialAndFinalPhaseSpace(const char* fileName); 
 Bool_t DrawInitialAndFinalPositions(const char* fileName, TGeoManager* geoManager);
 Bool_t DrawInitialAndFinalDirections(const char* fileName); 
-Bool_t DrawTrack(const char* trackFileName, TGeoManager* geoManager); 
 
 // -------------------------------------------------------------------------------------- 
-Int_t draw_rundata(const char* geomFileName, const char* dataFileName, const char* badTrackFileName = 0) {
-	
-	// -- Import Geometry
-	TGeoManager* geoManager = TGeoManager::Import(geomFileName); 
-	// Needs to be imported first because we draw the volumes in certain histograms from it, so we do not want it
-	// deleted in each function. 
-	
-	DrawInitialAndFinalDirections(dataFileName, geoManager);
+Int_t draw_rundata(const char* geomFileName, const char* dataFileName) {
+   // -- Import Geometry
+   TGeoManager* geoManager = TGeoManager::Import(geomFileName); 
+   // Needs to be imported first because we draw the volumes in certain histograms
+   // from it, so we do not want it deleted in each function. 
+   
+   DrawInitialAndFinalDirections(dataFileName, geoManager);
    DrawInitialAndFinalPhaseSpace(dataFileName);
-	
-	DrawInitialAndFinalPositions(dataFileName, geoManager);
-	if (badTrackFileName) {
-		DrawTrack(badTrackFileName, geoManager);
-	}
-	
-	return 0;
+   DrawInitialAndFinalPositions(dataFileName, geoManager);
+   return 0;
 }
 
 // -------------------------------------------------------------------------------------- 
