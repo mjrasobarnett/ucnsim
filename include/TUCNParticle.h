@@ -22,6 +22,13 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 class TUCNGeoMaterial;
+class TUCNFieldManager;
+class TUCNGravField;
+class TUCNRun;
+
+class TGeoNode;
+class TGeoNavigator;
+
 //class TUCNParticleState;
 
 class TUCNParticle : public TObject
@@ -56,26 +63,68 @@ private:
    Bool_t      fLostToBoundary;
    Bool_t      fDetected;
    
+   
+   TGeoNode*   fUCNNextNode;
+   Double_t    fStepTime;
+   Bool_t      fUCNIsStepEntering;
+   Bool_t      fUCNIsStepExiting;
+   Bool_t      fUCNIsOutside;        //! flag that current point is outside geometry
+   Bool_t      fUCNIsOnBoundary;     //! flag that current point is on some boundary
+   
    // -- State
 //   friend class TUCNParticleState;
 //   TUCNParticleState    *fState;
    
-   // -- private methods
+   // -- Private Methods
+   //_____________________________________________________________________________
+   
+   // State Change
 //   void        ChangeState(TUCNParticleState* state);
    
+   // Decay Probability
+   Bool_t               IsLostToWall(const TUCNGeoMaterial* wall, const Double_t* normal) const;
+   Double_t             DiffuseProbability(const Double_t diffuseCoeff, const Double_t* normal,
+                                                   const Double_t fermiPotential) const;
+   Bool_t               WillDecay(const Double_t timeInterval);
+
+   // Propagation
+   Bool_t      MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNFieldManager* fieldManager);
+   
+   TGeoNode*   ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator, TUCNGravField* field);
+   TGeoNode*   ParabolicDaughterBoundaryFinder(TGeoNavigator* navigator, Double_t* point,
+                  Double_t* velocity, Double_t* field, Int_t &idaughter, Bool_t compmatrix=kFALSE);
+   
+   Double_t    DetermineNextStepTime(const Double_t maxStepTime, const Double_t runTime=0.);   
+   Double_t    GetStepTime() const {return fStepTime;}
+   void        SetStepTime(Double_t stepTime); 
+   
+   
+   Bool_t      Bounce(TGeoNavigator* navigator, const Double_t* normal, const TUCNGeoMaterial* wallMaterial);
+   Bool_t      SpecularBounce(Double_t* dir, const Double_t* norm);
+   Bool_t      DiffuseBounce(const TGeoNavigator* navigator, Double_t* dir, const Double_t* norm);
+   void        Update(const TGeoNavigator* navigator, const Double_t timeInterval=0., const TUCNGravField* gravField=0);
+
+   Bool_t      FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator);
+   
+   
+   Bool_t      IsUCNOnBoundary() const {return fUCNIsOnBoundary;}
+   Bool_t      IsUCNStepEntering() const {return fUCNIsStepEntering;}
+   Bool_t      IsUCNStepExiting() const {return fUCNIsStepExiting;}
+   Bool_t      IsUCNOutside() const {return fUCNIsOutside;}
+   
 public:
-   // -- constructors
+   // -- Constructors
    TUCNParticle();
    TUCNParticle(Int_t id, Double_t* pos, Double_t* mom, Double_t energy, Double_t t=0);
    TUCNParticle(const TUCNParticle &part);
    TUCNParticle& operator=(const TUCNParticle&);
 
-   // -- destructor
+   // -- Destructor
    virtual ~TUCNParticle();
 
-   // -- methods
-   
-   // -- Get/Setters
+   // -- Methods
+   //_____________________________________________________________________________
+   // Get/Setters
    Int_t                Id()     const {return fId;}
    Double_t             X()      const {return fX;}
    Double_t             Y()      const {return fY;}
@@ -106,29 +155,26 @@ public:
                                        const Double_t t);
    void                 SetMomentum(const Double_t px, const Double_t py, const Double_t pz, 
                                        const Double_t energy);
-   // -- Random Seed Storage 
-   // -- (Used for setting the random number generator to the exact point
-   // -- when simulation was started)
+   
+   void                 Print(const Option_t* option="") const;
+   
+   // Random Seed Storage 
+   // (Used for setting the random number generator to the exact point
+   // when simulation was started)
    void                 SetRandomSeed(const Int_t seed)        {fRandomSeed = seed;}
    Int_t                GetRandomSeed() const                  {return fRandomSeed;}
    
-   // -- Distance Counter
+   // Distance Counter
    Double_t             Distance() const                       {return fDistance;}
    inline void          IncreaseDistance(Double_t stepsize)    {fDistance += stepsize;}
    
-   // -- Bounce Counters
+   // Bounce Counters
    void                 MadeBounce()                           {fBounces++;}
    void                 MadeSpecularBounce()                   {fSpecularBounces++;}
    void                 MadeDiffuseBounce()                    {fDiffuseBounces++;}
    Int_t                Bounces()                              {return fBounces;}
    Int_t                SpecularBounces()                      {return fSpecularBounces;}
    Int_t                DiffuseBounces()                       {return fDiffuseBounces;}
-   
-   // -- Decay Probability
-   Bool_t               IsLostToWall(const TUCNGeoMaterial* wall, const Double_t* normal) const;
-   Double_t             DiffuseProbability(const Double_t diffuseCoeff, const Double_t* normal,
-                                                   const Double_t fermiPotential) const;
-   Bool_t               WillDecay(const Double_t timeInterval);
    
    // -- Mag Field Tracking
 //   void                 SampleMagField(const Double_t integratedField, const Double_t stepTime);
@@ -141,27 +187,10 @@ public:
    Bool_t   Decayed()  {return fDecayed;}
    void     Decayed(Bool_t decayed)   {fDecayed = decayed;}
    
-/*   // -- Propagation
-   TGeoNode*   FindNextDaughterBoundaryAlongParabola(TGeoNavigator* navigator,
-                           const Double_t* field, Int_t &idaughter, Bool_t compmatrix=kFALSE);
-   TGeoNode*   FindNextBoundaryAndStepAlongParabola(TGeoNavigtor* navigator, TUCNGravField* field, Double_t stepTime, Bool_t compsafe=kFALSE);
-   TGeoNode*   FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGravField* field,
-                           Double_t stepTime, Bool_t onBoundary);
-   Double_t    DetermineNextStepTime(TUCNParticle* particle, const Double_t maxStepTime, 
-                           const Double_t runTime=0.);
-   Double_t    GetStepTime() const {return fStepTime;}
-   void        SetStepTime(Double_t stepTime); 
+   // -- Propagation
+   Bool_t      Propagate(TUCNRun* run, TGeoNavigator* navigator, TUCNFieldManager* fieldManager);
+   
 
-   Bool_t      MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField=0, 
-                           TUCNMagField* magField=0);
-
-   Bool_t      Bounce(TUCNParticle* particle, const Double_t* normal, 
-                           const TUCNGeoMaterial* wallMaterial);
-   Bool_t      SpecularBounce(Double_t* dir, const Double_t* norm);
-   Bool_t      DiffuseBounce(Double_t* dir, const Double_t* norm);
-   void        UpdateParticle(TUCNParticle* particle, const Double_t timeInterval=0., 
-                           const TUCNGravField* gravField=0);
-*/
    ClassDef(TUCNParticle,1)   // Ultra-Cold Neutron
 };
 
