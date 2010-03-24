@@ -27,6 +27,7 @@ class TUCNGravField;
 class TUCNRun;
 
 class TGeoNode;
+class TGeoMatrix;
 class TGeoNavigator;
 
 //class TUCNParticleState;
@@ -82,35 +83,42 @@ private:
 //   void        ChangeState(TUCNParticleState* state);
    
    // Decay Probability
-   Bool_t               IsLostToWall(const TUCNGeoMaterial* wall, const Double_t* normal) const;
-   Double_t             DiffuseProbability(const Double_t diffuseCoeff, const Double_t* normal,
+   Bool_t            IsLostToWall(const TUCNGeoMaterial* wall, const Double_t* normal) const;
+   Double_t          DiffuseProbability(const Double_t diffuseCoeff, const Double_t* normal,
                                                    const Double_t fermiPotential) const;
-   Bool_t               WillDecay(const Double_t timeInterval);
+   Bool_t            WillDecay(const Double_t timeInterval);
 
    // Propagation
-   Bool_t      MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNFieldManager* fieldManager);
+   Bool_t            MakeStep(Double_t stepTime, TGeoNavigator* navigator, 
+                                    TUCNFieldManager* fieldManager);
+   Bool_t            LocateInGeometry(TGeoNavigator* navigator, const TGeoNode* initialNode,
+                                          const TGeoMatrix* initialMatrix);
+   Bool_t            AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, 
+                                    const TGeoNode* initialNode, const TGeoMatrix* initialMatrix);
+   TGeoNode*         ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator,
+                                                   TUCNGravField* field);
+   TGeoNode*         ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator,
+                                    Double_t* point, Double_t* velocity, Double_t* field,
+                                    Int_t &idaughter, Bool_t compmatrix=kFALSE);
    
-   TGeoNode*   ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator, TUCNGravField* field);
-   TGeoNode*   ParabolicDaughterBoundaryFinder(TGeoNavigator* navigator, Double_t* point,
-                  Double_t* velocity, Double_t* field, Int_t &idaughter, Bool_t compmatrix=kFALSE);
+   Double_t          DetermineNextStepTime(const Double_t maxStepTime, const Double_t runTime=0.);   
+   Double_t          GetStepTime() const {return fStepTime;}
+   void              SetStepTime(Double_t stepTime); 
    
-   Double_t    DetermineNextStepTime(const Double_t maxStepTime, const Double_t runTime=0.);   
-   Double_t    GetStepTime() const {return fStepTime;}
-   void        SetStepTime(Double_t stepTime); 
+   Bool_t            Bounce(TGeoNavigator* navigator, const Double_t* normal, 
+                                    const TUCNGeoMaterial* wallMaterial);
+   Bool_t            SpecularBounce(Double_t* dir, const Double_t* norm);
+   Bool_t            DiffuseBounce(const TGeoNavigator* navigator, Double_t* dir, 
+                                    const Double_t* norm);
+   Bool_t            FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator);
    
+   Bool_t            IsUCNOnBoundary() const {return fUCNIsOnBoundary;}
+   Bool_t            IsUCNStepEntering() const {return fUCNIsStepEntering;}
+   Bool_t            IsUCNStepExiting() const {return fUCNIsStepExiting;}
+   Bool_t            IsUCNOutside() const {return fUCNIsOutside;}
    
-   Bool_t      Bounce(TGeoNavigator* navigator, const Double_t* normal, const TUCNGeoMaterial* wallMaterial);
-   Bool_t      SpecularBounce(Double_t* dir, const Double_t* norm);
-   Bool_t      DiffuseBounce(const TGeoNavigator* navigator, Double_t* dir, const Double_t* norm);
-   void        Update(const TGeoNavigator* navigator, const Double_t timeInterval=0., const TUCNGravField* gravField=0);
-
-   Bool_t      FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator);
-   
-   
-   Bool_t      IsUCNOnBoundary() const {return fUCNIsOnBoundary;}
-   Bool_t      IsUCNStepEntering() const {return fUCNIsStepEntering;}
-   Bool_t      IsUCNStepExiting() const {return fUCNIsStepExiting;}
-   Bool_t      IsUCNOutside() const {return fUCNIsOutside;}
+   void              Update(const TGeoNavigator* navigator, const Double_t timeInterval=0.,
+                                    const TUCNGravField* gravField=0);
    
 public:
    // -- Constructors

@@ -349,8 +349,9 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
 {
    // -- Find time to reach next boundary and step along parabola
    
-   ///////////////////////////////////////////////////////////////////////////////////////	
-   // -- Get the Fields
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Step 1 - Get the initial parameters
+   ///////////////////////////////////////////////////////////////////////////////////////
    TUCNGravField* gravField = 0;
    gravField = fieldManager->GravField();
    /*   
@@ -364,37 +365,41 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
       }
    }
    */
+   
+   // -- Store the Initial Node and Initial Matrix
+   const TGeoNode* initialNode = navigator->GetCurrentNode();
+   TGeoHMatrix initMatrix = *(navigator->GetCurrentMatrix()); // Store the initial matrix here
+   TGeoMatrix* initialMatrix = &initMatrix; // Create pointer to the stored matrix
+   // N.B: We do this because I have noticed that just storing a pointer to the navigator's
+   // current matrix here actually leads to the initialMatrix changing later on in some cases.
+   // Not sure what is causing this, as the initialNode seems to stay the same, but I think
+   // it has something to do with the cache in the navigator, and restoring the matrix from there
+   // rather than from a list of all the matrices, which would be more constant in time.
+   
+   // -- Determine the current local coordinates
+   Double_t* currentGlobalPoint = 0;
+   Double_t initialLocalPoint[3] = {0.,0.,0.};
+   
+   currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
+   initialMatrix->MasterToLocal(currentGlobalPoint,&initialLocalPoint[0]);
+   
    #ifdef VERBOSE_MODE	
       cout << endl << "------------------- START OF STEP ----------------------" << endl;
       this->Print(); // Print verbose
       cout << "Steptime (s): " << stepTime << endl;
       cout << "-----------------------------" << endl;
-      cout << "Navigator's Current Node: " << navigator->GetCurrentNode()->GetName() << endl;
+      cout << "Navigator's Initial Node: " << initialNode->GetName() << endl;
+      cout << "Initial Matrix: " << endl;
+      initialMatrix->Print();
+      initMatrix.Print();
       cout << "Is On Boundary?  " << this->IsUCNOnBoundary() << endl;
       cout << "Is Outside?  "     << this->IsUCNOutside() << endl;
       cout << "Is Step Entering?  " << this->IsUCNStepEntering()  << endl;
       cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
       cout << "-----------------------------" << endl << endl;
    #endif
-   
-   // -- Store the Initial Node and Initial Matrix
-   TGeoNode* initialNode = 0;
-   TGeoMatrix* initialMatrix = 0;
-   TGeoNode* nextNode = 0;
-   TGeoMatrix* nextMatrix = 0;
-   
-   initialNode = navigator->GetCurrentNode();
-   initialMatrix = navigator->GetCurrentMatrix();
-   
-   // -- Determine the current local coordinates
-   Double_t* currentGlobalPoint = 0;
-   Double_t initialLocalPoint[3] = {0.,0.,0.};
-   Double_t nextLocalPoint[3] = {0.,0.,0.};
-   
-   currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
-   initialMatrix->MasterToLocal(currentGlobalPoint,&initialLocalPoint[0]);
-   
-   // -- Check that current point is located within the current volume
+     
+/*   // -- Check that current point is located within the current volume
    if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
       Error("MakeStep","1. Initial Point is not contained in Current Node, according to Navigator::IsSameLocation");
       cout << "Current Node: " << initialNode->GetName() << endl;
@@ -407,7 +412,7 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
       cout << "Find Node Result: "    << navigator->FindNode()->GetName() << endl;
       return kFALSE;
    }
-
+   
    if (!initialNode->GetVolume()->GetShape()->Contains(initialLocalPoint)) {
       Error("MakeStep","1. Initial Point is not contained in Current Node, according to Shape::Contains");
       cout << "Current Node: " << initialNode->GetName() << endl;
@@ -417,10 +422,10 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
       cout << "Y:" << initialLocalPoint[1] << "\t" << "Z:" << initialLocalPoint[2] << endl;
       cout << "Current Volume Contains Local Point: ";
       cout << initialNode->GetVolume()->GetShape()->Contains(initialLocalPoint) << endl;
-      cout << "Find Node Result: "    << navigator->FindNode()->GetName() << endl;
+      cout << "Find Node Result: " << navigator->FindNode()->GetName() << endl;
       return kFALSE;
    }
-   
+*/   
    // -- We now should be sure we have begun in the current volume. 	
    // -- Save Path to current node - we will want to return to this in the event we make a bounce
    const char* initialPath = navigator->GetPath();
@@ -429,7 +434,9 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
    #endif
    
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Find Next Boundary
+   // -- STEP 2 - Find Next Boundary
+   ///////////////////////////////////////////////////////////////////////////////////////      
+   // Choice of propagation algorithm depends on whether there is a grav field or not
    if (gravField == NULL) {
       // CASE 1; No Gravitational Field - Straight line tracking
       if (navigator->FindNextBoundaryAndStep(stepTime) == NULL) {
@@ -442,13 +449,14 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
    } else {
       // CASE 2; Grav Field present - tracking along parabolic trajectories
       // -- Propagate Point by StepTime along Parabola
-      if (this->ParabolicBoundaryFinder(stepTime, navigator, gravField) == NULL) {
+      TGeoNode* nextNode = this->ParabolicBoundaryFinder(stepTime, navigator, gravField);
+      if (nextNode == NULL) {
          Error("MakeStep", "FindNextBoundaryAndStepAlongParabola has failed to find the next node");
          return kFALSE;	
       }
+      assert(nextNode == navigator->GetCurrentNode());   
    }
    
-   stepTime = this->GetStepTime();
    // -- Update particle properties
    this->Update(navigator, stepTime, gravField);
    
@@ -466,154 +474,29 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
    #endif
    
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Now we need to determine where we have ended up, and to examine whether
+   // -- STEP 3 - Now we need to determine where we have ended up, and to examine whether
    // -- the current volume is the point's true container
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Get the returned Node and Matrix
-   nextNode = navigator->GetCurrentNode();
-   nextMatrix = navigator->GetCurrentMatrix();
-
-   // -- If we are in the same node as before, then we have not crossed any boundary
-   if (nextNode == initialNode) {
-      // -- If the returned node is the same as before, the matrices should match up
-      assert(nextMatrix == initialMatrix);
+   // -- Attempt to locate particle within the current node
+   Bool_t locatedParticle = this->LocateInGeometry(navigator, initialNode, initialMatrix);
+   if (locatedParticle == kFALSE) {
+      cout << "Error - After Step - Unable to locate particle correctly in Geometry" << endl;
+      return kFALSE;
    }
-   
-   // -- Get the current coordinates
-   currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
-   nextMatrix->MasterToLocal(currentGlobalPoint,&nextLocalPoint[0]);
-   Double_t tempLocalPoint[3] = {0.,0.,0.};
-   initialMatrix->MasterToLocal(currentGlobalPoint,&tempLocalPoint[0]);
-   
-   #ifdef VERBOSE_MODE	
-      cout << "-----------------------------" << endl;
-      cout << "Final Node: " << nextNode->GetName() << endl;
-      cout << "Coords local to Final Node: " << endl;
-      cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t";
-      cout << "Z:" << nextLocalPoint[2] << endl;
-      cout << "Final Node Contains Current Point: ";
-      cout << nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint) << endl;
-      cout << "-----------------------------" << endl;
-      cout << "Initial Node: " << initialNode->GetName() << endl;
-      cout << "Coords local to Initial Node: " << endl;
-      cout << "X:" << tempLocalPoint[0] << "\t" << "Y:" << tempLocalPoint[1] << "\t";
-      cout << "Z:" << tempLocalPoint[2] << endl;
-      cout << "Sqrt(X^2 + Y^2): ";
-      cout << TMath::Sqrt(tempLocalPoint[0]*tempLocalPoint[0]+tempLocalPoint[1]*tempLocalPoint[1]) << endl;
-      cout << "Initial Node Contains Current Point: ";
-      cout << initialNode->GetVolume()->GetShape()->Contains(tempLocalPoint) << endl;
-      cout << "-----------------------------" << endl;
-      cout << "Initial is Parent of Final: ";
-      cout << (nextNode->GetMotherVolume() == initialNode->GetVolume() ? 1 : 0) << endl;
-      cout << "Initial is Daughter of Final: ";
-      cout << (initialNode->GetMotherVolume() == nextNode->GetVolume() ? 1 : 0) << endl;
-      cout << "-----------------------------" << endl << endl;
-   #endif
-   
-   // -- Now check that current point is exclusively located within the current volume
-   if ( !(navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) ) {
-      #ifdef VERBOSE_MODE
-         Warning("MakeStep","2. Next Point is not contained in Current Node, according to Navigator::IsSameLocation");
-         cout << "Current Node: " << nextNode->GetName() << endl;
-         cout << "Global Point: ";
-         cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t";
-         cout << "Z:" << currentGlobalPoint[2] << endl;
-         cout << "Local Point: ";
-         cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t";
-         cout << "Z:" << nextLocalPoint[2] << endl;
-         cout << "Sqrt(X^2 + Y^2): ";
-         cout << TMath::Sqrt(TMath::Power(nextLocalPoint[0],2) + TMath::Power(nextLocalPoint[1],2)) << endl;
-         cout << "Sqrt(X^2 + Z^2): ";
-         cout << TMath::Sqrt(TMath::Power(nextLocalPoint[0],2) + TMath::Power(nextLocalPoint[2],2)) << endl;
-         cout << "Current Volume Contains Local Point: ";
-         cout << nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint) << endl;
-      #endif
-      // At this point we know that the point is contained by the current volume,
-      // but there must be a daughter volume that contains the point as well.
-      // If we are sitting right on the boundary, so that the current point is still
-      // contained by the initialnode, lets try making a tiny step along our current path,
-      // so that we are within the current volume
-      // To do this we shall use the normal vector of the current boundary
-      Double_t dir[3] = {navigator->GetCurrentDirection()[0], navigator->GetCurrentDirection()[1], navigator->GetCurrentDirection()[2]};
-      // -- Get the normal vector to the boundary
-      Double_t normal[3] = {0.,0.,0.};
-      this->FindBoundaryNormal(&normal[0], navigator);
-      Double_t norm[3] = {normal[0], normal[1], normal[2]};
-      // Check if the normal vector is pointing along or against our current path
-      Double_t dotProduct = dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2];
-      if (dotProduct < 0.) {
-         // Normal is pointing in the opposite direction to our current track
-         // so reflect the normal to get the correct direction
-         norm[0] = -norm[0];
-         norm[1] = -norm[1];
-         norm[2] = -norm[2];
-      }
-      #ifdef VERBOSE_MODE
-         cout << "Normal To Boundary aligned with Current Direction: " << endl;
-         cout << "X:" << norm[0] << "\t" << "Y:" << norm[1] << "\t" << "Z:" << norm[2] << endl;
-      #endif
-      // Make up to 100 micro-steps (equivalent to a 1E-8 step). This size of step
-      // should be sufficient to cover for inaccuracies in our boundary finder, and thus
-      // our boundaries form a ±1E-8 zone, rather than a purely discrete line
-      for (Int_t i = 1; i <= 100; i++) {
-         Double_t point[3] = {navigator->GetCurrentPoint()[0], navigator->GetCurrentPoint()[1], navigator->GetCurrentPoint()[2]};
-         point[0] += norm[0]*1.0*TGeoShape::Tolerance(); 
-         point[1] += norm[1]*1.0*TGeoShape::Tolerance(); 
-         point[2] += norm[2]*1.0*TGeoShape::Tolerance();
-         // Update point in the navigator
-         navigator->SetCurrentPoint(point);
-         this->Update(navigator);
-         currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
-         initialMatrix->MasterToLocal(currentGlobalPoint,&nextLocalPoint[0]);
-         #ifdef VERBOSE_MODE
-            cout << i << "\t" << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
-            cout << "Global Point after micro-step: ";
-            cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t";
-            cout << "Z:" << currentGlobalPoint[2] << endl;
-            cout << "Point Local to initial volume after micro-step: ";
-            cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1] << "\t";
-            cout << "Z:" << nextLocalPoint[2] << endl;
-            cout << "Sqrt(X^2 + Y^2): ";
-            cout << TMath::Sqrt(TMath::Power(nextLocalPoint[0],2) + TMath::Power(nextLocalPoint[1],2)) << endl;
-            cout << "Sqrt(X^2 + Z^2): ";
-            cout << TMath::Sqrt(TMath::Power(nextLocalPoint[0],2) + TMath::Power(nextLocalPoint[2],2)) << endl;
-         #endif
-         if (navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
-            break;
-         }
-         #ifdef VERBOSE_MODE
-            cout << "Current Node: " << nextNode->GetName() << endl;
-            cout << "Global Point: ";
-            cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-            cout << "Current Volume Contains Local Point: ";
-            cout << nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint) << endl;
-         #endif
-      }
-      
-      if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
-         Error("MakeStep","2. Next Point is STILL not contained in Current Node, according to Navigator::IsSameLocation");
-         cout << "Current Node: " << nextNode->GetName() << endl;
-         cout << "Global Point: ";
-         cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-         cout << "Current Volume Contains Local Point: " << nextNode->GetVolume()->GetShape()->Contains(nextLocalPoint) << endl;
-         cout << "Find Node Result: "    << navigator->FindNode()->GetName() << endl;
-         return kFALSE;
-      }
-      
-      #ifdef VERBOSE_MODE
-         cout << "Particle is now correctly located in: " << navigator->GetCurrentNode()->GetName() << endl;
-      #endif
-   }
-   
    // -- We should now have propagated our point by some stepsize and be inside the correct volume 
-   // -- Sample Magnetic Field if there is one	
+   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Step 4 - Sample Magnetic Field if there is one	
+   ///////////////////////////////////////////////////////////////////////////////////////   
 // if (magField != NULL) {
 //    const Double_t integratedField = magField->IntegratedField(this->GetStepTime(), particle, gravField);
 //    particle->SampleMagField(integratedField, this->GetStepTime());	
 // }
    
-   // -- Get the current material we are in to determine what to do next
-   TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(navigator->GetCurrentVolume()->GetMedium()->GetMaterial());
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Step 5 - Get the current material we are in to determine what to do next
+   ///////////////////////////////////////////////////////////////////////////////////////
+   TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(navigator->GetCurrentVolume()->GetMaterial());
 
    // -- Get the normal vector to the boundary
    Double_t normal[3] = {0.,0.,0.};
@@ -648,11 +531,14 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
          this->LostToBoundary(kTRUE); // Set lost flag
       // -- Are we outside the geometry heirarchy we have built - ie: in TOP
       } else if (currentMaterial->IsBlackHole() == kTRUE) {
-         Error("MakeStep","Particle is in `BlackHole' material region. Particle has been lost through the wall!");
+         Error("MakeStep","Particle is in `BlackHole' material region.");
          return kFALSE;
       } else {
-         // -- PARTICLE ON SURFACE OF BOUNDARY
+         ///////////////////////////////////////////////////////////////////////////////////////
+         // -- STEP 6 - Particle reflects from boundary
+         ///////////////////////////////////////////////////////////////////////////////////////
          TGeoNode* boundaryNode = navigator->GetCurrentNode();
+         TGeoMatrix* boundaryMatrix = navigator->GetCurrentMatrix();
          #ifdef VERBOSE_MODE	
             cout << "------------------- BOUNCE ----------------------" << endl;
             cout << "Boundary Node: " << boundaryNode->GetName() << endl;
@@ -668,7 +554,6 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
          }
 
          TGeoNode* finalNode = navigator->GetCurrentNode();
-         TGeoMatrix* finalMatrix = navigator->GetCurrentMatrix();
          #ifdef VERBOSE_MODE	
             cout << "-------------------------------------------------" << endl;
             cout << "Final Node: " << finalNode->GetName() << endl;
@@ -677,104 +562,301 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
          #endif
          // -- Check if the particle is still registered as being on the boundary
          if (finalNode == boundaryNode) {
-            cout << "Initial Node: " << boundaryNode->GetName() << "\t" << "Final Node: " << finalNode->GetName() << endl;
+            cout << "Initial Node: " << boundaryNode->GetName() << "\t";
+            cout << "Final Node: " << finalNode->GetName() << endl;
             return kFALSE;
          }
-         // -- Check that the final point is within the final node
-         Double_t finalLocalPoint[3] = {0.,0.,0.};
-         currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
-         finalMatrix->MasterToLocal(currentGlobalPoint,&finalLocalPoint[0]);
-         // -- Check that current point is exclusively located within the current volume
-         if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
-            #ifdef VERBOSE_MODE
-               Warning("MakeStep","3. Final Point is not contained in Current Node, according to Navigator::IsSameLocation");
-               cout << "Current Node: " << finalNode->GetName() << endl;
-               cout << "Global Point: ";
-               cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1];
-               cout << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-               cout << "Local Point: ";
-               cout << "X:" << finalLocalPoint[0] << "\t" << "Y:" << finalLocalPoint[1];
-               cout << "\t" << "Z:" << finalLocalPoint[2] << endl;
-               cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(finalLocalPoint[0],2) + TMath::Power(finalLocalPoint[1],2)) << endl;
-               cout << "Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(finalLocalPoint[0],2) + TMath::Power(finalLocalPoint[2],2)) << endl;
-               cout << "Current Volume Contains Local Point: ";
-               cout << finalNode->GetVolume()->GetShape()->Contains(finalLocalPoint) << endl;
-            #endif
-            // Now, we know that the point is not in the volume that it should be, and that
-            // volume may not actually contain the point. Either way, we will now make a microstep
-            // back along the way we came (since the direction has been reversed).
-            // To do this we shall use the normal vector of the current boundary
-            Double_t dir[3] = {navigator->GetCurrentDirection()[0], navigator->GetCurrentDirection()[1], navigator->GetCurrentDirection()[2]};
-            Double_t norm[3] = {normal[0], normal[1], normal[2]};
-            // Check if the normal vector is pointing along or against our current path
-            Double_t dotProduct = dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2];
-            if (dotProduct < 0.) {
-               // Normal is pointing in the opposite direction to our current track so reflect
-               // the normal to get the correct direction
-               norm[0] = -norm[0];
-               norm[1] = -norm[1];
-               norm[2] = -norm[2];
-            }
-            #ifdef VERBOSE_MODE
-               cout << "Normal To Boundary aligned with Current Direction: " << endl;
-               cout << "X:" << norm[0] << "\t" << "Y:"<< norm[1] << "\t" << "Z:" << norm[2] << endl;
-            #endif
-            for (Int_t i = 1; i <= 100; i++) {
-               Double_t point[3] = {navigator->GetCurrentPoint()[0], navigator->GetCurrentPoint()[1], navigator->GetCurrentPoint()[2]};
-               point[0] += norm[0]*1.0*TGeoShape::Tolerance(); 
-               point[1] += norm[1]*1.0*TGeoShape::Tolerance(); 
-               point[2] += norm[2]*1.0*TGeoShape::Tolerance();
-               // Update point in the navigator
-               navigator->SetCurrentPoint(point);
-               this->Update(navigator);
-               currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
-               navigator->GetCurrentMatrix()->MasterToLocal(currentGlobalPoint,&nextLocalPoint[0]);
-               #ifdef VERBOSE_MODE
-                  cout << i << "\t" << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
-                  cout << "Global Point after micro-step: ";
-                  cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1];
-                  cout << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-                  cout << "Local Point after micro-step: ";
-                  cout << "X:" << nextLocalPoint[0] << "\t" << "Y:" << nextLocalPoint[1];
-                  cout << "\t" << "Z:" << nextLocalPoint[2] << endl;
-                  cout << "Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(nextLocalPoint[0],2) + TMath::Power(nextLocalPoint[1],2)) << endl;
-                  cout << "Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(nextLocalPoint[0],2) + TMath::Power(nextLocalPoint[2],2)) << endl;
-               #endif
-               if (navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
-                  break;
-               }
-               #ifdef VERBOSE_MODE
-                  cout << "Current Node: " << finalNode->GetName() << endl;
-                  cout << "Global Point: ";
-                  cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1];
-                  cout << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-                  cout << "Current Volume Contains Local Point: ";
-                  cout << finalNode->GetVolume()->GetShape()->Contains(finalLocalPoint) << endl;
-               #endif
-            }
-            if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
-               Error("MakeStep","3. Final Point is STILL not contained in Current Node, according to Navigator::IsSameLocation");
-               cout << "Current Node: " << finalNode->GetName() << endl;
-               cout << "Global Point: ";
-               cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1];
-               cout << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-               cout << "Current Volume Contains Local Point: ";
-               cout << finalNode->GetVolume()->GetShape()->Contains(finalLocalPoint) << endl;
-               cout << "Find Node Result: "    << navigator->FindNode()->GetName() << endl;
-               return kFALSE;
-            }
-            #ifdef VERBOSE_MODE
-            cout << "Particle is now correctly located in: ";
-            cout << navigator->GetCurrentNode()->GetName() << endl;
-            #endif
-         }
-      // End of Bounce. We should have returned to the original node, and guarenteed that the current point is located within it.
+        
+         ///////////////////////////////////////////////////////////////////////////////////////
+         // -- STEP 7 - Now we need to determine where we have ended up, and to examine whether
+         // -- the current volume is the point's true container
+         ///////////////////////////////////////////////////////////////////////////////////////
+         // -- Attempt to locate particle within the current node
+         Bool_t locatedParticle = this->LocateInGeometry(navigator, boundaryNode, boundaryMatrix);
+         if (locatedParticle == kFALSE) {
+            cout << "Error - After Bounce - Unable to locate particle correctly in Geometry"<< endl;
+            return kFALSE;
+         } 
+         // End of Bounce. We should have returned to the original node, 
+         // and guarenteed that the current point is located within it.
       }
    }
    // Add Vertex to Track
 // track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
    // End of MakeStep.
    return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNParticle::LocateInGeometry(TGeoNavigator* navigator, const TGeoNode* initialNode, const TGeoMatrix* initialMatrix)
+{
+   // -- We want to determine whether the current coordinates of our particle is
+   // -- located in the correct volume in the geometry. If this isn't the case - 
+   // -- for example, if we are sitting on the boundary, but just inside/outside where
+   // -- we expect to be, perhaps because our boundary finder has returned a time to
+   // -- boundary that is out by a small amount - then we make a number of small
+   // -- microsteps, along the normal vector of the boundary, back to where we should be.
+   // -- If these microsteps still fail to locate the particle, we return an error.
+   #ifdef VERBOSE_MODE
+      cout << "Locating Current Point in Geometry..." << endl;
+   #endif
+   // - 1. Find the current Point, Node and Matrix
+   Double_t* currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
+   TGeoNode* currentNode = navigator->GetCurrentNode();
+   TGeoMatrix* currentMatrix = navigator->GetCurrentMatrix();
+
+   // - 1.1 Find current point, local to the current matrix
+   Double_t currentLocalPoint[3] = {0.,0.,0.};
+   currentMatrix->MasterToLocal(currentGlobalPoint,&currentLocalPoint[0]);
+   // - 1.2 Find current point, local to the initial matrix
+   Double_t tempLocalPoint[3] = {0.,0.,0.};
+   initialMatrix->MasterToLocal(currentGlobalPoint,&tempLocalPoint[0]);
+   
+   // -- If we are in the same node as before, then we have not crossed any boundary
+   if (currentNode == initialNode) {
+      #ifdef VERBOSE_MODE
+         cout << "Particle didn't not cross a boundary in last step." << endl;
+         cout << "Current Node: " << currentNode->GetName() << endl;
+         cout << "Initial Node: " << initialNode->GetName() << endl;
+         currentMatrix->Print();
+         initialMatrix->Print();
+      #endif
+      // -- Assert that we didn't cross a boundary
+      assert(fUCNIsOnBoundary == kFALSE);
+      // -- If the returned node is the same as before, the matrices should match up
+//      assert(currentMatrix == initialMatrix); -- This no longer works since we make a copy of the
+//      the initial matrix at the start, and the current is taken from cache, which leads to some
+//      problem here. The matrices are for all intents and purposes the same, but doing equality on
+//      them here fails in some way.
+   }
+   
+   // - 2. Now check that current point is 'exclusively' located within the current volume
+   // - We want to know whether the current node contains the current point, and whether it is
+   // - the ONLY node that contains that point!
+   if (navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE) == kFALSE) {
+      // Point is not contained exclusively in Current Node
+      #ifdef VERBOSE_MODE
+         cout.precision(16);
+         cout << "------------------------------------------------------" << endl;
+         cout << "Warning! Current Point is not exclusively contained in Current Node!" << endl;
+         cout << "Current Global Point: " << endl;
+         cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t";
+         cout << "Z:" << currentGlobalPoint[2] << endl;
+         cout << "-----------------------------" << endl;
+         cout << "Current Node: " << currentNode->GetName() << endl;
+         cout << "Current Matrix: " << endl;
+         currentMatrix->Print();
+         currentNode->GetMatrix()->Print();
+         cout << "Coords local to Final Node: " << endl;
+         cout << "X:" << currentLocalPoint[0] << "\t" << "Y:" << currentLocalPoint[1] << "\t";
+         cout << "Z:" << currentLocalPoint[2] << endl;
+         cout << "Sqrt(X^2 + Y^2): ";
+         cout << TMath::Sqrt(TMath::Power(currentLocalPoint[0],2) + TMath::Power(currentLocalPoint[1],2)) << endl;
+         cout << "Sqrt(X^2 + Z^2): ";
+         cout << TMath::Sqrt(TMath::Power(currentLocalPoint[0],2) + TMath::Power(currentLocalPoint[2],2)) << endl;
+         cout << "Does Current Node Contain Current Point? ";
+         cout << currentNode->GetVolume()->GetShape()->Contains(currentLocalPoint) << endl;
+         cout << "-----------------------------" << endl;
+         cout << "Initial Node: " << initialNode->GetName() << endl;
+         cout << "Initial Matrix: " << endl;
+         initialMatrix->Print();
+         initialNode->GetMatrix()->Print();
+         cout << "Coords local to Initial Node: " << endl;
+         cout << "X:" << tempLocalPoint[0] << "\t" << "Y:" << tempLocalPoint[1] << "\t";
+         cout << "Z:" << tempLocalPoint[2] << endl;
+         cout << "Sqrt(X^2 + Y^2): ";
+         cout << TMath::Sqrt(TMath::Power(tempLocalPoint[0],2) + TMath::Power(tempLocalPoint[1],2)) << endl;
+         cout << "Sqrt(X^2 + Z^2): ";
+         cout << TMath::Sqrt(TMath::Power(tempLocalPoint[0],2) + TMath::Power(tempLocalPoint[2],2)) << endl;
+         cout << "Does Initial Node Contain Current Point? ";
+         cout << initialNode->GetVolume()->GetShape()->Contains(tempLocalPoint) << endl;
+         cout << "-----------------------------" << endl;
+         cout << "Initial Node is Parent of Current Node? ";
+         cout << (currentNode->GetMotherVolume() == initialNode->GetVolume() ? 1 : 0) << endl;
+         cout << "Initial Node is Daughter of Current Node? ";
+         cout << (initialNode->GetMotherVolume() == currentNode->GetVolume() ? 1 : 0) << endl;
+         cout << "------------------------------------------------------" << endl;
+      #endif
+      // We must now try to understand why we are not where we should be, and if necessary
+      // make a small shift to the particle to put it in the correct volume.
+      Bool_t locatedParticle = this->AttemptRelocationIntoCurrentNode(navigator, initialNode, initialMatrix);
+      
+      // Check whether shift has helped to locate particle in correct volume
+      if (locatedParticle == kFALSE) {
+         cout << "Error - Attempt to relocate particle inside current volume has failed. ";
+         cout << "Particle must be debugged to determine what has gone wrong"<< endl;
+         return kFALSE;
+      } else {
+         // Otherwise we should have successfully moved our particle into the correct volume
+         #ifdef VERBOSE_MODE
+            cout << "Shift was succesfull. Particle is located correctly." << endl;
+         #endif
+         return kTRUE;
+      } 
+   } else {
+      // Particle is correctly located in current volume without any shifting required
+      #ifdef VERBOSE_MODE
+         cout << "Particle is located correctly. Nothing to be done." << endl;
+      #endif
+      return kTRUE;
+   } 
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNParticle::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, const TGeoNode* initialNode, const TGeoMatrix* initialMatrix)
+{
+   // At this point we know that the point is not exclusively contained by the current volume.
+   // There could be 2 reasons for this:
+   // (1.) The point is not contained by the current volume at all
+   // (2.) The point is contained by the current volume, but one of its daughters 
+   //      also contains the current point.
+   // 
+
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // CASE (1) = If this case applies then there are three posibilities:
+   // 1a.) We are inside the initial node still, which is the parent of the current node
+   //      (Likely right after a bounce when initial node is the wall, and current node
+   //       has just been set to the inner tracking region)
+   //      -- This scenario is largely benevolant and we should proceed
+   // 1b.) We are inside the initial node still, which is the daughter of the current node
+   //      (Likely in the case that we just made a step, but failed to cross the boundary
+   //       for some reason)
+   //      -- This scenario is not desirable and for now we will raise and error
+   // 1c.) We are in neither the current, nor the initial node.
+   //      -- Major problem here.
+   ///////////////////////////////////////////////////////////////////////////////////////
+   
+   // - Find the current Point, Node and Matrix
+   Double_t* currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
+   TGeoNode* currentNode = navigator->GetCurrentNode();
+   TGeoMatrix* currentMatrix = navigator->GetCurrentMatrix();
+   // - Find current point, local to the current matrix
+   Double_t currentLocalPoint[3] = {0.,0.,0.};
+   currentMatrix->MasterToLocal(currentGlobalPoint,&currentLocalPoint[0]);
+   // - Find current point, local to the initial matrix
+   Double_t tempLocalPoint[3] = {0.,0.,0.};
+   initialMatrix->MasterToLocal(currentGlobalPoint,&tempLocalPoint[0]);
+   // - Check whether point is contained by current node
+   if (currentNode->GetVolume()->GetShape()->Contains(currentLocalPoint) == kFALSE) {
+      // Current point not inside current volume
+      #ifdef VERBOSE_MODE
+         cout << "Warning - Current Point is not contained in Current Node: ";
+         cout << currentNode->GetName() << endl;
+      #endif
+      // Check for whether we are still inside the initial node
+      // i.e: cases (1a.) and (1b.) -- see above comments
+      if (initialNode->GetVolume()->GetShape()->Contains(tempLocalPoint) == kTRUE) {   
+         // Case (1a.)
+         if (currentNode->GetMotherVolume() == initialNode->GetVolume()) {
+            // Initial Node is parent of current node -- likely we just made a bounce
+            // We will want to try to make micro-steps into the current volume.
+            assert(fUCNIsOnBoundary == kTRUE);
+         } else if (initialNode->GetMotherVolume() == currentNode->GetVolume()) {
+            // Current node is parent of initial node -- likely we just made a step onto boundary
+            // For now we want to catch this case. Generally we want our boundary finder to always
+            // put us over the boundary, so if this case occurs I want to know about it.
+            assert(fUCNIsOnBoundary == kTRUE);
+            cout << "Error - Current point still contained by initial node" << endl;
+            cout << "Initial Node: " << initialNode->GetName() << endl;
+            cout << "Does Initial Node Contain Current Point? ";
+            cout << initialNode->GetVolume()->GetShape()->Contains(tempLocalPoint) << endl;
+            cout << "Actual Node: " << navigator->FindNode()->GetName() << endl;
+            return kFALSE;
+         } else {
+            // Initial and current node are unrelated -- likely that they are sitting next to
+            // each other and have a common boundary. (Think of the source tube segments)
+            // We will want to try to make micro-steps into the current volume.
+            #ifdef VERBOSE_MODE
+               cout << "Initial and Current nodes are unrelated." << endl;
+            #endif
+         }
+      } else {
+         // Not inside initial node either! Case (1c.)
+         cout << "Error - Particle not contained in Initial Node either!" << endl;
+         cout << "Actual Node: " << navigator->FindNode()->GetName() << endl;
+         return kFALSE;
+      }
+   }
+   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // CASE (2) - There must be a daughter volume that contains the point as well.
+   // If we are sitting right on the boundary, so that the current point is still
+   // contained by the initialnode, lets try making a tiny step along the normal vector
+   // of the boundary, aligned along the direction we are currently moving.
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Get the normal vector to the boundary
+   const Double_t* dir = navigator->GetCurrentDirection();
+   Double_t normal[3] = {0.,0.,0.};
+   this->FindBoundaryNormal(&normal[0], navigator);
+   // Check if the normal vector is pointing along or against our current path
+   Double_t dotProduct = dir[0]*normal[0] + dir[1]*normal[1] + dir[2]*normal[2];
+   if (dotProduct < 0.) {
+      // Normal is pointing in the opposite direction to our current track
+      // so reflect the normal to get the correct direction
+      #ifdef VERBOSE_MODE
+         cout << "Reversing Normal to align with Current Direction" << endl;
+      #endif
+      normal[0] = -normal[0];
+      normal[1] = -normal[1];
+      normal[2] = -normal[2];
+   }
+   #ifdef VERBOSE_MODE
+      cout << "Normal To Boundary aligned with Current Direction: " << endl;
+      cout << "X:" << normal[0] <<"\t"<< "Y:" << normal[1] <<"\t"<< "Z:" << normal[2] << endl;
+   #endif
+   // Make up to 100 micro-steps, each of size 1E-10 -- (equivalent to a 1E-8 step).
+   // This size of step defines a range that under which we assume there could be inaccuracies
+   // in our boundary finder. Thus for this strategy to work, we need to ensure that we can
+   // find the correct time to the next boundary to within 1E-8. Thus
+   // our boundaries form a ±1E-8 zone, rather than a purely discrete line
+   for (Int_t stepNumber = 1; stepNumber <= 100; stepNumber++) {
+      // Increment the current point
+      for (Int_t i = 0; i < 3; i++) {currentGlobalPoint[i] += normal[i]*TGeoShape::Tolerance();} 
+      // Update point in the navigator
+      navigator->SetCurrentPoint(currentGlobalPoint);
+      // Get the new current point, local to the current volume
+      currentMatrix->MasterToLocal(currentGlobalPoint, currentLocalPoint);
+      // Get the new current point, local to the initial volume for comparison
+      initialMatrix->MasterToLocal(currentGlobalPoint, tempLocalPoint);
+      #ifdef VERBOSE_MODE
+         cout << stepNumber << "\t" << "Making micro-step along current direction to try and locate particle within correct volume." << endl;
+         cout << "Current Node: " << currentNode->GetName() << endl;
+         cout << "Current point after micro-step: ";
+         cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t";
+         cout << "Z:" << currentGlobalPoint[2] << endl;
+         cout << "Current point local to current volume after micro-step: ";
+         cout << "X:" << currentLocalPoint[0] << "\t" << "Y:" << currentLocalPoint[1] << "\t";
+         cout << "Z:" << currentLocalPoint[2] << endl;
+         cout << "Sqrt(X^2 + Y^2): ";
+         cout << TMath::Sqrt(TMath::Power(currentLocalPoint[0],2) + TMath::Power(currentLocalPoint[1],2)) << endl;
+         cout << "Sqrt(X^2 + Z^2): ";
+         cout << TMath::Sqrt(TMath::Power(currentLocalPoint[0],2) + TMath::Power(currentLocalPoint[2],2)) << endl;
+         cout << "Current Node Contains Point? ";
+         cout << currentNode->GetVolume()->GetShape()->Contains(currentLocalPoint) << endl;
+         cout << "Initial Node Contains Point? ";
+         cout << initialNode->GetVolume()->GetShape()->Contains(tempLocalPoint) << endl;
+      #endif
+      // Check whether this new point is exclusively located in the current volume
+      if (navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE) == kTRUE) {
+         // Point is correctly located - exit the loop
+         #ifdef VERBOSE_MODE
+            cout << "Particle is now correctly located in: " << currentNode->GetName() << endl;
+         #endif   
+         // Update particle and exit
+         this->Update(navigator);
+         return kTRUE;
+      }
+      // Otherwise, try another microstep
+   }
+   
+   // Loop has finished and we have not been able to push the particle back into the
+   // correct volume. This suggests a major problem so we highlight the error and return
+   // a failure.
+   cout << "Point is STILL not exclusively contained in Current Node after relocation" << endl;
+   cout << "Current Node: " << currentNode->GetName() << endl;
+   cout << "Initial Node: " << initialNode->GetName() << endl;
+   cout << "Actual Node: " << navigator->FindNode()->GetName() << endl;
+   return kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -789,6 +871,10 @@ Bool_t TUCNParticle::FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigat
       return kFALSE;
    }
    
+//   cout << "In FindNormal" << endl;
+//   cout << "NextNode: " << fUCNNextNode->GetName() << "\t";
+//   cout << "Navigator Node: " << navigator->GetCurrentNode()->GetName() << endl << endl;
+   
    Double_t local[3];
    Double_t ldir[3];
    Double_t lnorm[3];
@@ -800,7 +886,7 @@ Bool_t TUCNParticle::FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigat
 }
 
 //_____________________________________________________________________________
-TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(TGeoNavigator* navigator, Double_t* point, Double_t* velocity, Double_t* field, Int_t &idaughter, Bool_t compmatrix)
+TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator, Double_t* point, Double_t* velocity, Double_t* field, Int_t &idaughter, Bool_t compmatrix)
 {
 // Computes as fStep the distance to next daughter of the current volume. 
 // The point and direction must be converted in the coordinate system of the current volume.
@@ -874,7 +960,7 @@ TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(TGeoNavigator* navigator
             cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
             cout << "Z: " << localField[2] << endl;
          #endif
-         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, this->GetStepTime(), fUCNIsOnBoundary);  
+         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fUCNIsOnBoundary);  
          if (tnext <= 0.0) {
             Error("ParabolicDaughterBoundaryFinder", "Failed to find boundary");
             return NULL;
@@ -888,7 +974,7 @@ TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(TGeoNavigator* navigator
             fUCNIsStepExiting  = kFALSE;
             fUCNIsStepEntering = kTRUE;
             navigator->SetStep(snext);
-            this->SetStepTime(tnext);
+            stepTime = tnext;
             fUCNNextNode = current;
             nodefound = current;
             idaughter = ifirst;
@@ -907,7 +993,7 @@ TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(TGeoNavigator* navigator
             cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
             cout << "Z: " << localField[2] << endl;
          #endif
-         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, this->GetStepTime(), fUCNIsOnBoundary);
+         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fUCNIsOnBoundary);
          if (tnext <= 0.0) {
             Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
             return NULL;
@@ -921,7 +1007,7 @@ TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(TGeoNavigator* navigator
             fUCNIsStepExiting  = kFALSE;
             fUCNIsStepEntering = kTRUE;
             navigator->SetStep(snext);
-            this->SetStepTime(tnext);
+            stepTime = tnext;
             fUCNNextNode = current;
             nodefound = current;
             idaughter = ilast;
@@ -948,7 +1034,7 @@ TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(TGeoNavigator* navigator
             cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
             cout << "Z: " << localField[2] << endl;
             #endif
-         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, this->GetStepTime(), fUCNIsOnBoundary);
+         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fUCNIsOnBoundary);
          if (tnext <= 0.0) {
             Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
             return NULL;
@@ -966,7 +1052,7 @@ TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(TGeoNavigator* navigator
             fUCNIsStepExiting  = kFALSE;
             fUCNIsStepEntering = kTRUE;
             navigator->SetStep(snext);
-            this->SetStepTime(tnext);
+            stepTime = tnext;
             fUCNNextNode = current;
             nodefound = fUCNNextNode;   
             idaughter = i;   
@@ -1004,7 +1090,7 @@ TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(TGeoNavigator* navigator
             cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
             cout << "Z: " << localField[2] << endl;
          #endif
-         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, this->GetStepTime(), fUCNIsOnBoundary);
+         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fUCNIsOnBoundary);
          if (tnext <= 0.0) {
             Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
             return NULL;
@@ -1021,7 +1107,7 @@ TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(TGeoNavigator* navigator
             fUCNIsStepExiting  = kFALSE;
             fUCNIsStepEntering = kTRUE;
             navigator->SetStep(snext);
-            this->SetStepTime(tnext);
+            stepTime = tnext;
             fUCNNextNode = current;
             nodefound = fUCNNextNode;
             idaughter = vlist[i];
@@ -1070,13 +1156,13 @@ TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigato
    TGeoNode *skip;
    
    // -- Store time step and step distance -- these two should always be convertible
-   this->SetStepTime(stepTime);
+//   this->SetStepTime(stepTime);
    navigator->SetStep(stepMax);
    Double_t snext = TGeoShape::Big();
    Double_t tnext = TGeoShape::Big();
    
    #ifdef VERBOSE_MODE
-      cout << "PBF - Starting StepTime: " << this->GetStepTime() << "\t";
+      cout << "PBF - Starting StepTime: " << stepTime << "\t";
       cout << "Starting StepSize: " << navigator->GetStep() << endl;
       cout << "PBF - Velocity: " << this->V() << endl;
       cout << "PBF - Global Field: X: " << globalField[0] << "\t" << "Y: " << globalField[1];
@@ -1113,7 +1199,7 @@ TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigato
    TGeoVolume *vol = navigator->GetCurrentNode()->GetVolume();
    
    // -- Find distance to exiting current node
-   tnext = static_cast<TUCNGeoBBox*>(vol->GetShape())->TimeFromInsideAlongParabola(localPoint, localVelocity, localField, this->GetStepTime(), fUCNIsOnBoundary); 
+   tnext = static_cast<TUCNGeoBBox*>(vol->GetShape())->TimeFromInsideAlongParabola(localPoint, localVelocity, localField, stepTime, fUCNIsOnBoundary); 
    if (tnext <= 0.0) {
       Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
       return NULL;
@@ -1134,7 +1220,8 @@ TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigato
       snext = TGeoShape::Tolerance();
       tnext = TGeoShape::Tolerance();
       navigator->SetStep(snext);
-      this->SetStepTime(tnext);
+      stepTime = tnext;
+//      this->SetStepTime(tnext);
       fUCNIsOnBoundary = kTRUE;
       fUCNIsStepEntering = kFALSE;
       fUCNIsStepExiting = kTRUE;
@@ -1170,22 +1257,21 @@ TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigato
    if (snext < navigator->GetStep() - TGeoShape::Tolerance()) {
       icrossed = -1;
       navigator->SetStep(snext);
-      this->SetStepTime(tnext);
+      stepTime = tnext;
+//      this->SetStepTime(tnext);
       fUCNIsStepEntering = kFALSE;
       fUCNIsStepExiting = kTRUE;
    }
    
    // Find next daughter boundary for the current volume
    Int_t idaughter = -1;
-   TGeoNode *crossed = this->ParabolicDaughterBoundaryFinder(navigator, localPoint, localVelocity, localField, idaughter, kTRUE);
+   TGeoNode *crossed = this->ParabolicDaughterBoundaryFinder(stepTime, navigator, localPoint, localVelocity, localField, idaughter, kTRUE);
    if (crossed) {
       fUCNIsStepExiting = kFALSE;
       icrossed = idaughter;
       fUCNIsStepEntering = kTRUE;
    }
-   
    TGeoNode *current = 0;
-   
    // -- If we are in an overlapping node, return an error as we are no longer supporting this.
    // -- Geometries must be constructed with no overlaps beyond common boundaries.
    if (navigator->GetNmany()) {
@@ -1196,9 +1282,9 @@ TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigato
    // -- BRANCH 3
    // -- Updating the Particle's position and momentum
    // *********************************************************************
-   const Double_t timestep = this->GetStepTime();
+   const Double_t timestep = stepTime;
    #ifdef VERBOSE_MODE
-      cout << "PBF - Branch 3. Updating Global Point. fTimeStep: " << this->GetStepTime();
+      cout << "PBF - Branch 3. Updating Global Point. fTimeStep: " << stepTime;
       cout << "\t" << "fStep: " << navigator->GetStep() << endl;
       cout << "PBF - Initial X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] <<  "\t";
       cout << "Z: " << currentPoint[2] << endl;
@@ -1224,8 +1310,8 @@ TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigato
    for (Int_t i = 0; i < 3; i++) currentDir[i] = currentVelocity[i]/velocityMag;
    navigator->SetCurrentDirection(currentDir);
    // Update stepsize and steptime
-   navigator->SetStep(navigator->GetStep());
-   this->SetStepTime(this->GetStepTime());
+//   navigator->SetStep(navigator->GetStep());
+//   this->SetStepTime(this->GetStepTime());
    #ifdef VERBOSE_MODE
       cout << "PBF - Final X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] <<  "\t";
       cout << "Z: " << currentPoint[2] << endl;
@@ -1296,15 +1382,15 @@ Double_t TUCNParticle::DetermineNextStepTime(const Double_t maxStepTime, const D
    // Placeholder for method to calculate the next step time depending on 
    // electric/magnetic field environment
    // Start with the maximum stepTime 
-   this->SetStepTime(maxStepTime);
    
    // Check if we will reach the maximum runtime of the track. If so propagate only until this time.
    if (runTime == 0.0) {
-      return this->GetStepTime();
-   } else if (this->T() > (runTime - this->GetStepTime())) {
-      this->SetStepTime((runTime - this->T()) + TGeoShape::Tolerance());
+      return 0.0;
+   } else if (this->T() > (runTime - maxStepTime)) {
+      return ((runTime - this->T()) + TGeoShape::Tolerance());
+   } else {
+      return maxStepTime;
    }
-   return this->GetStepTime();
 }
 
 //_____________________________________________________________________________
@@ -1320,7 +1406,9 @@ void TUCNParticle::Update(const TGeoNavigator* navigator, const Double_t timeInt
    // -- Take the particle and update its position, momentum, time and energy
    // -- with the current properties stored in the Navigator
    #ifdef VERBOSE_MODE
-      cout << "Update -- Initial X: " << this->X() << "\t" << "Y: " << this->Y();
+      cout << "-------------------------------------------" << endl;
+      cout << "Time step: " << timeInterval << endl;
+		cout << "Update -- Initial X: " << this->X() << "\t" << "Y: " << this->Y();
       cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
       cout << "Update -- Initial PX: " << this->Px() << "\t" << "PY: " << this->Py();
       cout << "\t" <<  "PZ: " << this->Pz() << "\t";
@@ -1355,13 +1443,14 @@ void TUCNParticle::Update(const TGeoNavigator* navigator, const Double_t timeInt
    this->IncreaseDistance(navigator->GetStep()); // Increase the distance travelled
    
    #ifdef VERBOSE_MODE
-      cout << "UpdateParticle -- Height climbed: " << heightClimbed << "\t";
+      cout << "Update -- Height climbed: " << heightClimbed << "\t";
       cout << "Kinetic Energy Gained(Lost): " << -gravPotentialEnergy/Units::neV << endl;
-      cout << "UpdateParticle -- Final X: " << this->X() << "\t" << "Y: " << this->Y();
+      cout << "Update -- Final X: " << this->X() << "\t" << "Y: " << this->Y();
       cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
-      cout << "UpdateParticle -- Final PX: " << this->Px() << "\t" << "PY: " << this->Py();
+      cout << "Update -- Final PX: " << this->Px() << "\t" << "PY: " << this->Py();
       cout << "\t" <<  "PZ: " << this->Pz() << "\t";
       cout <<  "E: " << this->Energy()/Units::neV << endl;
+      cout << "-------------------------------------------" << endl;
    #endif
 }
 
