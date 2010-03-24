@@ -42,7 +42,7 @@ TUCNGeoCompositeShape::TUCNGeoCompositeShape(const char *name, const char *expre
                       :TUCNGeoBBox(0, 0, 0)
 {
 // Default constructor
-   Info("TUCNGeoCompositeShape", "Default Constructor");
+   Info("TUCNGeoCompositeShape", "Constructor");
 	SetShapeBit(TGeoShape::kGeoComb);
    SetName(name);
    fNode  = 0;
@@ -59,7 +59,7 @@ TUCNGeoCompositeShape::TUCNGeoCompositeShape(const char *expression)
                       :TUCNGeoBBox(0, 0, 0)
 {
 // Default constructor
-   Info("TUCNGeoCompositeShape", "Default Constructor");
+   Info("TUCNGeoCompositeShape", "Constructor");
    SetShapeBit(TGeoShape::kGeoComb);
    fNode  = 0;
    MakeNode(expression);
