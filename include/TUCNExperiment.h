@@ -15,6 +15,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 class TUCNConfigFile;
+class TUCNFieldManager;
 
 class TUCNExperiment : public TNamed 
 {

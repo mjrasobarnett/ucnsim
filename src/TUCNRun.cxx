@@ -56,7 +56,6 @@ TUCNRun::TUCNRun()
 // -- Default constructor
    Info("TUCNRun", "Default Constructor");
    // Create the data object
-   fParticles = 0;
    fData = 0;
    fRunTime = 0.0;
    fMaxStepTime = 0.0;
@@ -76,7 +75,6 @@ TUCNRun::TUCNRun(const char *name, const char *title)
 // -- Default constructor
    Info("TUCNRun", "Constructor");
    // Create the data object
-   fParticles = new TObjArray(256);
    fData = new TUCNData("ucndata", "ucndata");
    fRunTime = 0.0;
    fMaxStepTime = 0.0;
@@ -87,14 +85,11 @@ TUCNRun::TUCNRun(const char *name, const char *title)
    fDetectedCounter = 0;
    fDecayedCounter = 0;
    fLostCounter = 0;
-   // Set ownership over the particles
-   fParticles->SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
 TUCNRun::TUCNRun(const TUCNRun& run)
 		  :TNamed(run),
-			fParticles(run.fParticles),
 			fData(run.fData),
 			fRunTime(run.fRunTime),
 			fMaxStepTime(run.fMaxStepTime),
@@ -117,8 +112,7 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& run)
 // --assignment operator
 	if(this!=&run) {
 		TNamed::operator=(run);
-      fParticles = run.fParticles;
-		fData = run.fData;
+      fData = run.fData;
 		fRunTime = run.fRunTime;
 		fMaxStepTime = run.fMaxStepTime;
 		fDiffuseCoeff = run.fDiffuseCoeff;
@@ -137,8 +131,7 @@ TUCNRun::~TUCNRun()
 {
 // -- Destructor
 	Info("TUCNRun", "Destructor");
-   fParticles->Delete();
-	fData->Delete();
+   fData->Delete();
 }
 
 //_____________________________________________________________________________
@@ -164,14 +157,16 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
       Error("Export","Cannot open file");
       return kFALSE;
    }
-   TUCNData* initialParticles = 0;
-   f->GetObject("InitialParticleData;1",initialParticles);
+   TUCNData* importedData = 0;
+   f->ls();
+   f->GetObject("RunData;1",importedData);
    delete f;
-   // copy particles into Run's particle list
-   for(Int_t i = 0;i < initialParticles->InitialParticles(); i++) {
-      this->AddParticle(initialParticles->GetInitialParticleState(i));
-   }
-   cout << this->GetParticles()->GetEntriesFast() << " Particles loaded succesfully" << endl;
+   if (!importedData) return kFALSE;
+   // Set imported Data File as the Run's data
+   if (fData) delete fData;
+   fData = importedData;
+   cout << fData << "\t" << importedData << endl;
+   cout << this->GetData()->InitialParticles() << " Particles loaded succesfully" << endl;
    cout << "-------------------------------------------" << endl;
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Get the FermiPotential of the Wall 
@@ -212,7 +207,7 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
       boundaryMaterial->WPotential(W);
    }
    ///////////////////////////////////////////////////////////////////////////////////////
-   cout << "Particles: " << this->GetParticles()->GetEntriesFast() << endl;
+   cout << "Particles: " << this->GetData()->InitialParticles() << endl;
    cout << "RunTime(s): " << fRunTime << endl;
    cout << "MaxStepTime(s): " << fMaxStepTime << endl;
    cout << "DiffuseCoeff: " << fDiffuseCoeff << endl;
@@ -228,7 +223,7 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManager)
 {
    // -- Propagate all tracks stored in the GeoManager for a set period of time
-   Int_t numberOfTracks = this->GetParticles()->GetEntriesFast();
+   Int_t numberOfTracks = this->GetData()->InitialParticles();
    // Container to store Ids of lost tracks;
    std::vector<Int_t> lostTracks;
    
@@ -238,11 +233,12 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
          PrintProgress(trackid, numberOfTracks);
       #endif
       // Get Particle from list
-      TUCNParticle* particle = static_cast<TUCNParticle*>(this->GetParticles()->At(trackid));
+      TUCNParticle* particle = static_cast<TUCNParticle*>(this->GetInitialParticle(trackid));
       // Store the random number seed in particle
       particle->SetRandomSeed(gRandom->GetSeed());
       // Add Initial Particle State to data tree
-      this->SaveInitialParticle(particle);
+   //   this->SaveInitialParticle(particle);
+   //   this->SaveParticle(particle);
       // Attempt to Propagate track
       try {
          particle->Propagate(this, geoManager->GetCurrentNavigator(), fieldManager);
@@ -262,37 +258,13 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
    
    cout << "-------------------------------------------" << endl;
    cout << "Propagation Results: " << endl;
-   cout << "Total Particles: " << this->GetParticles()->GetEntriesFast() << endl;
+   cout << "Total Particles: " << this->GetData()->InitialParticles() << endl;
    cout << "Number Detected: " << this->Detected() << endl;
    cout << "Number Absorbed by Boundary: " << this->Absorbed() << endl;
    cout << "Number Decayed: " << this->Decayed() << endl;
    cout << "Number Lost To Outer Geometry: " << this->Lost() << endl;
    cout << "-------------------------------------------" << endl;
    return kTRUE;
-}
-
-//_____________________________________________________________________________
-void TUCNRun::DrawParticles(TCanvas* canvas, TPolyMarker3D* points)
-{
-	// -- Draw Volumes
-	canvas->Draw();
-	gGeoManager->GetTopVolume()->Draw();
-	gGeoManager->SetVisLevel(4);
-	gGeoManager->SetVisOption(0);
-	
-	// -- Number of particles
-	Int_t particles = this->GetParticles()->GetEntriesFast();
-	
-	// -- Draw Particles
-	for (Int_t i = 0; i < particles; i++) {
-		TUCNParticle* particle = this->GetParticle(i);
-		assert(particle != NULL);
-		points->SetPoint(i, particle->Vx(), particle->Vy(), particle->Vz());
-	}
-	
-	points->SetMarkerColor(2);
-	points->SetMarkerStyle(6);
-	points->Draw();
 }
 
 //_____________________________________________________________________________
@@ -327,21 +299,6 @@ Bool_t TUCNRun::Export(TString& outputFile)
 	return kTRUE;
 }
 
-/*//_____________________________________________________________________________
-Bool_t TUCNRun::AddTrack(TVirtualGeoTrack* track)
-{
-	return this->GetData()->AddTrack(static_cast<TGeoTrack*>(track));
-}
-*/
-//_____________________________________________________________________________
-Bool_t TUCNRun::AddParticle(TUCNParticle* particle)
-{
-   // Add particle to the particle array
-   Int_t index = particle->Id();
-   this->GetParticles()->AddAtAndExpand(particle, index);
-   return kTRUE;
-}
-
 //_____________________________________________________________________________
 Bool_t TUCNRun::SaveInitialParticle(TUCNParticle* particle) 
 {
@@ -354,13 +311,6 @@ Bool_t TUCNRun::SaveParticle(TUCNParticle* particle)
 	return this->GetData()->AddFinalParticleState(particle);
 }
 
-/*//_____________________________________________________________________________
-TGeoTrack* TUCNRun::GetTrack(Int_t trackID)
-{
-	// -- Retrieve the requested track from the Data
-	return this->GetData()->GetTrack(trackID);
-}
-*/
 //_____________________________________________________________________________
 TUCNParticle* TUCNRun::GetParticle(Int_t particleID)
 {
@@ -483,10 +433,4 @@ void TUCNRun::PrintProgress(Int_t entry, Float_t nEntriesF, Int_t mintime)
   if (entry == nEntries) {
     cout << endl;
   }
-}
-
-//_____________________________________________________________________________
-Int_t TUCNRun::Neutrons() const
-{
-   return fParticles->GetEntriesFast();
 }

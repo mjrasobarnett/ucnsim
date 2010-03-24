@@ -8,7 +8,10 @@
 #include "TGeoTrack.h"
 #include "TUCNParticle.h"
 
+#include <iostream>
 #include <cassert>
+
+using namespace std;
 
 ClassImp(TUCNData)
 
@@ -19,34 +22,41 @@ TUCNData::TUCNData()
 	// -- Default Constructor
 	Info("TUCNData","Default Constructor");
 	// -- Create the Trees
-	fTracks = 0;
 	fInitialParticleStates = 0;
 	fFinalParticleStates = 0;
-	// -- Create storage for filling the trees
-	fCurrentTrack    = 0;
-	fInitialParticle = 0;
-	fCurrentParticle = 0;
 }
 
 //_____________________________________________________________________________
 TUCNData::TUCNData(const char * name, const char * title) 
-			: TNamed(name,title), 
-			  fTracks()
+			: TNamed(name,title)
 {
 	// -- Constructor
 	Info("TUCNData","Constructor");
 	// -- Create the Trees
-	fTracks = new TTree("ParticleTracks","Tree of Particle Tracks");
 	fInitialParticleStates = new TTree("InitialParticleStates","Tree of Initial Particles");
-	fFinalParticleStates = new TTree("FinalParticleStates","Tree of Final Particles");
-	// -- Create storage for filling the trees
-	fCurrentTrack    = new TGeoTrack();
-	fInitialParticle = new TUCNParticle();
-	fCurrentParticle = new TUCNParticle();
-	// -- Create the Branches in the Trees where we will store the objects
-	fTracks->Branch("Tracks","TGeoTrack",&fCurrentTrack);
-	fInitialParticleStates->Branch("InitialParticles","TUCNParticle",&fInitialParticle);
-	fFinalParticleStates->Branch("FinalParticles","TUCNParticle",&fCurrentParticle);
+   fFinalParticleStates = new TTree("FinalParticleStates","Tree of Final Particles");
+}
+
+//_____________________________________________________________________________
+TUCNData::TUCNData(const TUCNData& d)
+         :TNamed(d), fInitialParticleStates(d.fInitialParticleStates),
+          fFinalParticleStates(d.fFinalParticleStates)
+{
+   // Copy Constructor
+   Info("TUCNData","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNData& TUCNData::operator=(const TUCNData& d)
+{
+// --assignment operator
+   Info("TUCNData","Assignment");
+   if(this!=&d) {
+      TNamed::operator=(d);
+      fInitialParticleStates = d.fInitialParticleStates;
+      fFinalParticleStates = d.fFinalParticleStates;
+   }
+   return *this;
 }
 
 //_____________________________________________________________________________
@@ -54,12 +64,8 @@ TUCNData::~TUCNData(void)
 {
 	// -- Destructor
 	Info("TUCNData","Destructor");
-	if(fTracks) delete fTracks;
 	if(fInitialParticleStates) delete fInitialParticleStates;
 	if(fFinalParticleStates) delete fFinalParticleStates;
-	if(fCurrentTrack) delete fCurrentTrack;
-	if(fInitialParticle) delete fInitialParticle;
-	if(fCurrentParticle) delete fCurrentParticle;
 }
 
 //_____________________________________________________________________________
@@ -77,50 +83,29 @@ Bool_t TUCNData::ChecksOut()
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNData::AddTrack(TGeoTrack* track)
-{
-	// Add the Track to the the Track Tree
-	TGeoTrack *tmptr = fCurrentTrack;
-	fCurrentTrack = track;
-	this->GetTracksTree()->Fill();
-	fCurrentTrack = tmptr;
-	return kTRUE;
-}
-
-//_____________________________________________________________________________
 Bool_t TUCNData::AddInitialParticleState(TUCNParticle* particle)
 {
-	// Add the particle to the InitialParticleState Tree
-	TUCNParticle *tmppa = fInitialParticle;
-	fInitialParticle = particle;
+	// -- Create the Branches in the Trees where we will store the objects
+   if (fInitialParticleStates->GetBranch("InitialParticles") == NULL) {
+      fInitialParticleStates->Branch("InitialParticles","TUCNParticle",&particle);
+   }
+   // Add the particle to the InitialParticleState Tree
+	this->GetInitialParticlesTree()->SetBranchAddress("InitialParticles",&particle);
 	this->GetInitialParticlesTree()->Fill();
-	fInitialParticle = tmppa;
 	return kTRUE;
 }
 
 //_____________________________________________________________________________
 Bool_t TUCNData::AddFinalParticleState(TUCNParticle* particle)
 {
-	// Add the particle to the FinalParticleState Tree
-	TUCNParticle *tmppa = fCurrentParticle;
-	fCurrentParticle = particle;
+	// -- Create the Branches in the Trees where we will store the objects
+   if (fFinalParticleStates->GetBranch("FinalParticles") == NULL) {
+      fFinalParticleStates->Branch("FinalParticles","TUCNParticle",&particle);
+   }
+   // Add the particle to the FinalParticleState Tree
+	this->GetFinalParticlesTree()->SetBranchAddress("FinalParticles",&particle);
 	this->GetFinalParticlesTree()->Fill();
-	fCurrentParticle = tmppa;
 	return kTRUE;
-}
-
-//_____________________________________________________________________________
-TGeoTrack* TUCNData::GetTrack(Int_t trackID) {
-	// -- Retrieve the track from the TTree
-	TGeoTrack* track = 0;
-	if (trackID > this->GetTracksTree()->GetEntries() || trackID < 0) {
-		Error("GetTrack","No Entry exists for Track: %i",trackID);
-		return 0;
-	}
-	this->GetTracksTree()->SetBranchAddress("Tracks", &track);
-	this->GetTracksTree()->GetEntry(trackID);
-	assert(track != NULL);
-	return track;
 }
 
 //_____________________________________________________________________________

@@ -68,7 +68,7 @@ Int_t main(Int_t argc,Char_t **argv)
    TGeoMatrix* neutronBeamAreaMatrix = new TGeoHMatrix(neutronBeamAreaMat);
    
    // -- Generate the particles
-   TUCNData* dataTree = new TUCNData("InitialParticleData","InitialParticleData");
+   TUCNData* dataTree = new TUCNData("RunData","RunData");
    GenerateParticles(1000, neutronBeamArea, neutronBeamAreaMatrix, dataTree);
    
    // -- Write out the particle tree
@@ -77,7 +77,7 @@ Int_t main(Int_t argc,Char_t **argv)
       Error("Export","Cannot open file");
       return kFALSE;
    }
-   dataTree->Write("InitialParticleData");
+   dataTree->Write("RunData");
    cout << dataTree->GetName() << " was successfully written to file" << endl;
    cout << "-------------------------------------------" << endl;
    f->ls(); // List the contents of the file

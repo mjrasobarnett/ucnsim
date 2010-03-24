@@ -61,7 +61,7 @@ Bool_t PlotAvgMagField(const TString& dataFileName);
 
 Int_t main(Int_t argc,Char_t ** argv)
 {
-	
+/*	
 	TRint *theApp = new TRint("FittingApp", &argc, argv);
 	
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -117,11 +117,11 @@ Int_t main(Int_t argc,Char_t ** argv)
 	
 	cout << endl << endl << "ANALYSIS COMPLETE" << endl << endl << endl;
 	theApp->Run();
-	
+*/	
 	return EXIT_SUCCESS;
 }
 
-
+/*
 // -------------------------------------------------------------------------------------- 
 Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& runName) 
 {
@@ -311,11 +311,11 @@ Bool_t PlotFinalHeightDistribution(const TString& dataFileName)
 	
 	return kTRUE;
 }
-
+*/
 // -------------------------------------------------------------------------------------- 
 Bool_t PlotLossFunction(const TString& dataFileName)
 {
-	cout << "-------------------------------------------" << endl;
+/*	cout << "-------------------------------------------" << endl;
 	cout << "PlotLossFunction" <<  endl;
 	cout << "-------------------------------------------" << endl;
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -417,7 +417,7 @@ Bool_t PlotLossFunction(const TString& dataFileName)
 	delete experiment; 
 	// Note that deleting the experiment will delete the geoManager as well, even though we store
 	// (sort of needed to store) the geoManager seperately in the file.
-	
+*/	
 	return kTRUE;
 }
 
