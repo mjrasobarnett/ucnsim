@@ -17,6 +17,7 @@
 #include "TUCNGeoMaterial.h"
 #include "TUCNParticle.h"
 #include "TUCNData.h"
+#include "TUCNRun.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -68,8 +69,8 @@ Int_t main(Int_t argc,Char_t **argv)
    TGeoMatrix* neutronBeamAreaMatrix = new TGeoHMatrix(neutronBeamAreaMat);
    
    // -- Generate the particles
-   TUCNData* dataTree = new TUCNData("RunData","RunData");
-   GenerateParticles(1000, neutronBeamArea, neutronBeamAreaMatrix, dataTree);
+   TUCNRun* run = new TUCNRun("Run1","Run no: 1");
+   GenerateParticles(1000, neutronBeamArea, neutronBeamAreaMatrix, run->GetData());
    
    // -- Write out the particle tree
    TFile *f = TFile::Open("temp/initialparticles.root","recreate");
@@ -77,8 +78,9 @@ Int_t main(Int_t argc,Char_t **argv)
       Error("Export","Cannot open file");
       return kFALSE;
    }
-   dataTree->Write("RunData");
-   cout << dataTree->GetName() << " was successfully written to file" << endl;
+   run->Write("Run1");
+   cout << "Initial Particle Data for: " << run->GetName();
+   cout << " was successfully written to file" << endl;
    cout << "-------------------------------------------" << endl;
    f->ls(); // List the contents of the file
    cout << "-------------------------------------------" << endl;

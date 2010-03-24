@@ -44,6 +44,7 @@ using std::cout;
 using std::endl;
 using std::cerr;
 using std::string;
+using std::vector;
 using std::runtime_error;
 
 //#define VERBOSE_MODE
@@ -299,30 +300,90 @@ Bool_t TUCNRun::LoadParticles(TUCNConfigFile& configFile)
       Error("Initialise","Cannot open file");
       return kFALSE;
    }
-   TUCNData* importedData = 0;
+   TUCNRun* importedRun = 0;
    f->ls();
-   f->GetObject("RunData;1",importedData);
+   f->GetObject(inputDataName,importedRun);
    delete f;
-   if (!importedData) {
-      Error("LoadParticles","Could not find Data object named 'RunData;1' in %s", particlesFile.Data());
+   if (!importedRun) {
+      Error("LoadParticles","Could not find Run object named: %s in %s", inputDataName.Data(), particlesFile.Data());
       return kFALSE;
    }
-   // Check Configuration for whether we will simulate all the particles in the Tree
-   if (!(configFile.GetBool("AllParticles",this->GetName()))) {
-      // If NOT, then we need to extract the list of which particles are to be simulated
-      /*
-         ... Needs implementing
-         Produce an array of integers representing the particleIDs we wish to include
-      */
-      this->SaveInitialParticle(importedData->GetInitialParticleState(0));
-      delete importedData;
-   } else {
-      // If we want all particles, just set imported DataFile as the Run's data
-      if (fData) delete fData;
-      fData = importedData;
+   TUCNData* importedData = importedRun->GetData();
+   cout << "Located Data: " << importedData->GetName();
+   cout << " inside " << importedRun->GetName() << endl;
+   cout << "GeoManager: " << importedRun->GetExperiment()->GeoManager() << endl;
+   cout << "Determining which particles to load..." << endl;
+   
+   ///////////////////////////////////////////////////////////////////////
+   // Check Config for which particle Tree we wish to load as our initial particles here
+   TString whichParticles = configFile.GetString("WhichParticles",this->GetName());
+   if (particlesFile == "") { 
+      Warning("LoadParticles","No Particle Tree specified in ConfigFile, 'WhichParticles'. Taking 'Initial' Tree by default.");
+      whichParticles = "Initial";
    }
+   // Fetch the specified Tree
+   TTree* inputTree = importedData->FetchTree(whichParticles);
+   if (inputTree == NULL) {
+      Error("LoadParticles","Could not find Tree by searching for %s", whichParticles.Data());
+      return kFALSE;
+   }
+   cout << "Loading particles stored in Tree: " << inputTree->GetName() << endl;
+   // Define where we will store the particleID's from this Tree
+   vector<Int_t> particleIDs;
+   ///////////////////////////////////////////////////////////////////////
+   // - Check Config for whether we will take all of the particles in the Tree specified
+   Bool_t allParticles = configFile.GetBool("AllParticles",this->GetName());
+   if (allParticles == kFALSE) {
+      // Not using all particles -> We need to read in the particleIDs stated
+      Error("LoadParticles","Not using All Particles. Not Implemented Yet");
+      return kFALSE;
+   } else {
+      // Using all particles in Tree.
+      for (Int_t i=0;i<inputTree->GetEntriesFast();i++) {
+         // Fetch all particles
+         TUCNParticle* particle = importedData->GetParticleState(*inputTree, i);
+         // Add Particle ID to the list
+         particleIDs.push_back(particle->Id());
+      }
+   }
+   
+   ///////////////////////////////////////////////////////////////////////
+   // - Check Config for whether we will re-start the particles specified above from their initial
+   // - state or not. This will always be done, except for those particles in the Propagating Tree,
+   // - where we can either re-start, or continue to propagate from their final state
+   Bool_t fromBeginning = configFile.GetBool("FromBeginning",this->GetName());
+   if (fromBeginning == kFALSE && TString(inputTree->GetName()) == "PropagatingParticles") {
+      // - In this case, we are continuing to propagate the particles from their states in the
+      // - 'propagating' tree, so we will store this tree. 
+      // Loop over all entries in the Propagating Tree
+      cout << "Loading still Propagating particles into this Run to continue their motion" << endl;
+      cout << "Initial particles will be initialised to that of the previous final states" << endl;
+      for (Int_t i = 0; i < inputTree->GetEntriesFast(); i++) {
+         // Get the particle for each entry in Tree
+         TUCNParticle* particle = importedData->GetPropagatingParticleState(i);
+         // Check whether this particle's ID matches any in our particleID vector
+         for (UInt_t j = 0; j < particleIDs.size(); j++) {
+            if (particle->Id() == particleIDs[j]) {
+               // If so, save that particle
+               this->SaveInitialParticle(particle);
+            }
+         }
+      }
+   } else {
+      // - Otherwise, we want to fetch the initialStates of the particles specified in particleIDs
+      // For all entries specified in our particleID vector, fetch and save
+      // the particle corresponding to that
+      cout << "Storing Loaded particles as the Initial Particles for this Run..." << endl;
+      for (UInt_t i = 0; i < particleIDs.size(); i++) {
+         TUCNParticle* particle = importedData->GetInitialParticleState(particleIDs[i]);
+         this->SaveInitialParticle(particle);
+      }
+   }
+   // - We should now have a Tree stored in Run, that has its InitialParticles Tree filled
+   // - with whatever particles were specified in the configuration file.
    cout << fData->InitialParticles() << " particles have been loaded succesfully" << endl;
    cout << "-------------------------------------------" << endl;
+   delete importedRun;
    return kTRUE;
 }
 
