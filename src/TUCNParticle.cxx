@@ -42,12 +42,11 @@ TUCNParticle::TUCNParticle()
              :TObject(),
               fX(0.), fY(0.), fZ(0.), fT(0.), fPx(0.), fPy(0.), fPz(0.), fE(0.),
               fDistance(0.), fId(0), fBounces(0), fSpecularBounces(0), fDiffuseBounces(0),
-              fRandomSeed(0), fDecayed(kFALSE), fLostToBoundary(kFALSE), fDetected(kFALSE),
-              fUCNIsStepEntering(kFALSE), fUCNIsStepExiting(kFALSE),
-              fUCNIsOutside(kFALSE), fUCNIsOnBoundary(kFALSE)
+              fRandomSeed(0)
 {
-// -- Default constructor
-//   fState = TUCNStatePropagate::Instance();
+   // -- Default constructor
+//   Info("TUCNParticle","Default Constructor");
+   fState = 0;
 }
 
 
@@ -56,12 +55,11 @@ TUCNParticle::TUCNParticle(Int_t id, Double_t* pos, Double_t* mom, Double_t ener
              :TObject(),
               fX(pos[0]), fY(pos[1]), fZ(pos[2]), fT(t), fPx(mom[0]), fPy(mom[1]), fPz(mom[2]),
               fE(energy), fDistance(0.), fId(id), fBounces(0), fSpecularBounces(0),
-              fDiffuseBounces(0), fRandomSeed(0), fDecayed(kFALSE), fLostToBoundary(kFALSE),
-              fDetected(kFALSE), fUCNIsStepEntering(kFALSE),
-              fUCNIsStepExiting(kFALSE), fUCNIsOutside(kFALSE), fUCNIsOnBoundary(kFALSE)
+              fDiffuseBounces(0), fRandomSeed(0)
 {
-// -- Constructor
-//   fState = TUCNStatePropagate::Instance();
+   // -- Constructor
+//   Info("TUCNParticle","Constructor");
+   fState = new TUCNPropagating();
 }
 
 //_____________________________________________________________________________
@@ -71,18 +69,17 @@ TUCNParticle::TUCNParticle(const TUCNParticle& p)
               fPz(p.fPz), fE(p.fE), fDistance(p.fDistance), fId(p.fId),
               fBounces(p.fBounces), fSpecularBounces(p.fSpecularBounces),
               fDiffuseBounces(p.fDiffuseBounces), fRandomSeed(p.fRandomSeed),
-              fDecayed(p.fDecayed), fLostToBoundary(p.fLostToBoundary),
-              fDetected(p.fDetected), 
-              fUCNIsStepEntering(p.fUCNIsStepEntering), fUCNIsStepExiting(p.fUCNIsStepExiting),
-              fUCNIsOutside(p.fUCNIsOutside), fUCNIsOnBoundary(p.fUCNIsOnBoundary)
+              fState(p.fState)
 {
-// -- Copy Constructor
+   // -- Copy Constructor
+//   Info("TUCNParticle","Copy Constructor");
 }
 
 //_____________________________________________________________________________
 TUCNParticle& TUCNParticle::operator=(const TUCNParticle& p)
 {
-// -- assignment operator
+   // -- assignment operator
+   Info("TUCNParticle","Assignment");
    if(this!=&p) {
       TObject::operator=(p);
       fX = p.fX;
@@ -99,13 +96,7 @@ TUCNParticle& TUCNParticle::operator=(const TUCNParticle& p)
       fSpecularBounces = p.fSpecularBounces;
       fDiffuseBounces = p.fDiffuseBounces;
       fRandomSeed = p.fRandomSeed;
-      fDecayed = p.fDecayed;
-      fLostToBoundary = p.fLostToBoundary;
-      fDetected = p.fDetected;
-      fUCNIsStepEntering = p.fUCNIsStepEntering;
-      fUCNIsStepExiting = p.fUCNIsStepExiting;
-      fUCNIsOutside = p.fUCNIsOutside;
-      fUCNIsOnBoundary = p.fUCNIsOnBoundary;
+      fState = p.fState;
    }
    return *this;
 }
@@ -113,7 +104,24 @@ TUCNParticle& TUCNParticle::operator=(const TUCNParticle& p)
 //______________________________________________________________________________
 TUCNParticle::~TUCNParticle()
 { 
-// -- Destructor
+   // -- Destructor
+//   Info("TUCNParticle","Destructor");
+   if (fState) delete fState;
+}
+
+//______________________________________________________________________________
+void TUCNParticle::ChangeState(TUCNState* state)
+{
+   // -- Store pointer to state
+   fState = state;
+}
+
+//______________________________________________________________________________
+Bool_t TUCNParticle::RegisterState(TUCNRun* run)
+{
+   // Ask States to register themselves in the run to keep track of numbers
+   if (fState) return fState->RegisterState(run);
+   return kFALSE;
 }
 
 //______________________________________________________________________________
@@ -174,61 +182,8 @@ void TUCNParticle::SetMomentum(const Double_t px, const Double_t py, const Doubl
    fPx = px; fPy = py; fPz = pz; fE = energy;
 }
 
-//______________________________________________________________________________
-Bool_t TUCNParticle::IsLostToWall(const TUCNGeoMaterial* wall, const Double_t* normal) const
-{
-// Calculate whether particle will be absorbed/upscattered by the wall
-   Double_t fermiPotential = wall->FermiPotential();
-   Double_t eta = wall->Eta();
-   if (eta == 0.0) {
-      // No wall losses implemented
-      return kFALSE;
-   }
-// cout << "Material: " << wall->GetName() << "\t" << "eta: " << eta << "\t" <<  "fermiPotential: " << fermiPotential << "\t" << endl;
-// cout << "nx: " << this->DirX() << "\t" << "ny: " << this->DirY() << "\t" << "nz: " << this->DirZ() << endl;
-// cout << "normx: " << normal[0] << "\t" << "normy: " << normal[1] << "\t" << "normz: " << normal[2] << endl;	
-
-   // Take dot product of two unit vectors - normal and direction - to give the angle between them
-   Double_t cosTheta = TMath::Abs(this->Nx()*normal[0] + this->Ny()*normal[1] + this->Nz()*normal[2]);
-   Double_t energyPerp = this->Energy()*cosTheta*cosTheta;
-   if (energyPerp >= fermiPotential) {
-      return kTRUE;
-   }
-   Double_t lossProb = 2.*eta*(TMath::Sqrt(energyPerp/(fermiPotential - energyPerp)));
-// cout << "Loss Prob: " << lossProb << "\t" << "EnergyPerp: " << energyPerp/Units::neV << "\t" <<  "cosTheta: " << cosTheta << "\t" << endl;
-   // roll dice to see whether particle is lost
-   Double_t diceRoll = gRandom->Uniform(0.0, 1.0);
-   if (diceRoll <= lossProb) {
-//    cout << "DiceRoll: " << diceRoll << "\t" << "LossProb: " << lossProb << endl;
-      return kTRUE;
-   } else {
-      return kFALSE;
-   }
-}
-
-//______________________________________________________________________________
-Double_t TUCNParticle::DiffuseProbability(const Double_t diffuseCoeff, const Double_t* /*normal*/,
-                                             const Double_t /*fermiPotential*/) const
-{
-   // Calculate the probability of making a diffuse bounce - according to formula (from Mike P) prob ~ diffuseCoeff*(Eperp/V)
-/*   Double_t cosTheta = TMath::Abs(this->DirX()*normal[0] + this->DirY()*normal[1] + this->DirZ()*normal[2]);
-   Double_t energyPerp = this->Energy()*cosTheta*cosTheta;
-   Double_t diffProb = diffuseCoeff*energyPerp/fermiPotential;
-   assert(diffProb <= 1.0 && diffProb >= 0.0);
-   //return diffProb;
-*/ // For now just use fixed coefficient until this is properly checked
-   return diffuseCoeff;
-}
-
-//______________________________________________________________________________
-Bool_t TUCNParticle::WillDecay(const Double_t /*timeInterval*/)
-{
-   // Placeholder for method to calculate probability particle will decay within timeInterval, and then roll the dice!
-   return kFALSE;
-}
-
 //_____________________________________________________________________________
-void  TUCNParticle::Print(const Option_t* /*option*/) const
+void TUCNParticle::Print(const Option_t* /*option*/) const
 {
    cout << "Particle: " << this->Id() << "\t" << "Time Elapsed: " << this->T() << endl;
    cout << "Vertex (m): " << "X:" << this->X() << "\t" << "Y:" << this->Y();
@@ -251,9 +206,187 @@ void TUCNParticle::SampleMagField(const Double_t integratedField, const Double_t
 }
 */
 
-
 //_____________________________________________________________________________
 Bool_t TUCNParticle::Propagate(TUCNRun* run, TGeoNavigator* navigator, TUCNFieldManager* fieldManager)
+{
+   // -- Call State-dependent propagate method
+   if (!fState) return kFALSE;
+   return fState->Propagate(this,run,navigator,fieldManager);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNState                                                            //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+ClassImp(TUCNState)
+
+//_____________________________________________________________________________
+TUCNState::TUCNState()
+          :TObject()
+{
+   // Constructor
+//   Info("TUCNState","Default Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNState::TUCNState(const TUCNState& s)
+          :TObject(s)
+{
+   // Copy Constructor
+//   Info("TUCNState","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNState& TUCNState::operator=(const TUCNState& s)
+{
+   // Assignment
+//   Info("TUCNState","Assignment");
+   if(this!=&s) {
+      TObject::operator=(s);   
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+TUCNState::~TUCNState()
+{
+   // Destructor
+//   Info("TUCNState","Destructor");
+}
+
+//_____________________________________________________________________________
+void TUCNState::ChangeState(TUCNParticle* particle, TUCNState* newState)
+{
+   // -- Change the particle's state pointer to the new state
+   particle->ChangeState(newState);
+   // Delete ourselves (previous state) before we finish
+   delete this;
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNState::Propagate(TUCNParticle* /*particle*/, TUCNRun* /*run*/, TGeoNavigator* /*navigator*/, TUCNFieldManager* /*fieldManager*/)
+{
+   // Default behaviour - don't propagate
+   return kFALSE;
+}
+
+//_____________________________________________________________________________
+void TUCNState::UpdateParticle(TUCNParticle* particle, const TGeoNavigator* navigator, const Double_t timeInterval, const TUCNGravField* gravField)
+{
+   // -- Take the particle and update its position, momentum, time and energy
+   // -- with the current properties stored in the Navigator
+   #ifdef VERBOSE_MODE
+      cout << "-------------------------------------------" << endl;
+      cout << "Time step: " << timeInterval << endl;
+		cout << "Update -- Initial X: " << particle->X() << "\t" << "Y: " << particle->Y();
+      cout << "\t" <<  "Z: " << particle->Z() << "\t" <<  "T: " << particle->T() << endl;
+      cout << "Update -- Initial PX: " << particle->Px() << "\t" << "PY: " << particle->Py();
+      cout << "\t" <<  "PZ: " << particle->Pz() << "\t";
+      cout <<  "E: " << particle->Energy()/Units::neV << endl;
+   #endif
+   
+   const Double_t* pos = navigator->GetCurrentPoint();
+   const Double_t* dir = navigator->GetCurrentDirection(); 
+   Double_t heightClimbed = 0.0;
+   Double_t gravPotentialEnergy = 0.0;
+   
+   if (gravField) {
+      // Determine the height of our particle in the global coordinate system of TOP.
+      // Take the dot product of the point vector with the field direction unit vector
+      // to get the height of this point in the gravitational field.
+      // This assumes a convention that 'height' is measured along an axis that INCREASES
+      // in the opposite direction to the field direction vector (which is usually 'downwards')
+      heightClimbed = -1.0*((pos[0] - particle->X())*gravField->Nx() + (pos[1] - particle->Y())*gravField->Ny() + (pos[2] - particle->Z())*gravField->Nz());
+      gravPotentialEnergy = particle->Mass_eV_c2()*gravField->GravAcceleration()*heightClimbed;
+   }
+   
+   // Determine current Kinetic energy of particle given the height climbed in graviational field
+   Double_t kineticEnergy = particle->Energy() - gravPotentialEnergy;
+   
+   // Detemine current momentum
+   Double_t momentum = TMath::Sqrt(2.0*particle->Mass_eV()*kineticEnergy);
+   Double_t mom[3] = {momentum*dir[0], momentum*dir[1], momentum*dir[2]};
+   
+   // Update particle
+   particle->SetVertex(pos[0], pos[1], pos[2], particle->T() + timeInterval);
+   particle->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
+   particle->IncreaseDistance(navigator->GetStep()); // Increase the distance travelled
+   
+   #ifdef VERBOSE_MODE
+      cout << "Update -- Height climbed: " << heightClimbed << "\t";
+      cout << "Kinetic Energy Gained(Lost): " << -gravPotentialEnergy/Units::neV << endl;
+      cout << "Update -- Final X: " << particle->X() << "\t" << "Y: " << particle->Y();
+      cout << "\t" <<  "Z: " << particle->Z() << "\t" <<  "T: " << particle->T() << endl;
+      cout << "Update -- Final PX: " << particle->Px() << "\t" << "PY: " << particle->Py();
+      cout << "\t" <<  "PZ: " << particle->Pz() << "\t";
+      cout <<  "E: " << particle->Energy()/Units::neV << endl;
+      cout << "-------------------------------------------" << endl;
+   #endif
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNPropagating                                                      //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+ClassImp(TUCNPropagating)
+
+//_____________________________________________________________________________
+TUCNPropagating::TUCNPropagating()
+                :TUCNState(),
+                 fIsStepEntering(kFALSE),
+                 fIsStepExiting(kFALSE),
+                 fIsOnBoundary(kFALSE)
+{
+   // Constructor
+//   Info("TUCNPropagating","Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNPropagating::TUCNPropagating(const TUCNPropagating& s)
+                :TUCNState(s),
+                 fIsStepEntering(s.fIsStepEntering),
+                 fIsStepExiting(s.fIsStepExiting),
+                 fIsOnBoundary(s.fIsOnBoundary)
+{
+   // Copy Constructor
+//   Info("TUCNPropagating","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNPropagating& TUCNPropagating::operator=(const TUCNPropagating& s)
+{
+   // Assignment.
+//   Info("TUCNPropagating","Assignment");
+   if(this!=&s) {
+      TUCNState::operator=(s);
+      fIsStepEntering = s.fIsStepEntering;
+      fIsStepExiting = s.fIsStepExiting;
+      fIsOnBoundary = s.fIsOnBoundary;
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+TUCNPropagating::~TUCNPropagating()
+{
+   // Destructor
+//   Info("TUCNPropagating","Destructor");
+}
+
+//______________________________________________________________________________
+Bool_t TUCNPropagating::RegisterState(TUCNRun* /*run*/)
+{
+   // Register in Run what final state we are
+   return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNPropagating::Propagate(TUCNParticle* particle, TUCNRun* run, TGeoNavigator* navigator, TUCNFieldManager* fieldManager)
 {
    // Propagate track through geometry until it is either stopped or the runTime has been reached
    // Track passed MUST REFERENCE A TUCNPARTICLE as its particle type. 
@@ -262,62 +395,52 @@ Bool_t TUCNParticle::Propagate(TUCNRun* run, TGeoNavigator* navigator, TUCNField
    ///////////////////////////////////////////////////////////////////////////////////////	
    // -- 1. Initialise Track
    // Initialise track - Sets navigator's current point/direction/node to that of the particle
-   navigator->InitTrack(this->X(),this->Y(),this->Z(),this->Nx(),this->Ny(),this->Nz());                  
+   navigator->InitTrack(particle->X(), particle->Y(), particle->Z(), particle->Nx(), particle->Ny(), particle->Nz());
    #ifdef VERBOSE_MODE
       cout << "Propagate - Starting Run - Max time (seconds): " <<  run->RunTime() << endl;
    #endif
    
-   // -- Check that Particle has not been initialised inside a boundary or detector		
+   // -- Check that Particle has not been initialised inside a boundary or detector
    TUCNGeoMaterial* material = static_cast<TUCNGeoMaterial*>(
                                  navigator->GetCurrentVolume()->GetMaterial());
    if (material->IsTrackingMaterial() == kFALSE) {
-      cout << "Particle: " << this->Id() << " initialised inside boundary of ";
+      cout << "Particle: " << particle->Id() << " initialised inside boundary of ";
       cout << navigator->GetCurrentVolume()->GetName() << endl;
       return kFALSE;
    }
    
-   ///////////////////////////////////////////////////////////////////////////////////////	
+   ///////////////////////////////////////////////////////////////////////////////////////
    // -- 2. Propagation Loop
    Int_t stepNumber;
    for (stepNumber = 1 ; ; stepNumber++) {
       #ifdef VERBOSE_MODE		
          cout << endl << "-------------------------------------------------------" << endl;
-         cout << "STEP " << stepNumber << "\t" << this->T() << " s" << "\t";
+         cout << "STEP " << stepNumber << "\t" << particle->T() << " s" << "\t";
          cout << navigator->GetCurrentNode()->GetName() << endl;	
       #endif
       // -- Calculate the Next StepTime (i.e: are there any factors that reduce the maximum
       // -- step size before we work out boundary distance)
-      Double_t stepTime = this->DetermineNextStepTime(run->MaxStepTime(), run->RunTime());
+      Double_t stepTime = this->DetermineNextStepTime(particle, run->MaxStepTime(), run->RunTime());
 
       // -- Make a step
-      if (this->MakeStep(stepTime, navigator, fieldManager) == kFALSE) {
-         Error("Propagate","Error in Step Number %i. Step Failed to complete.", stepNumber);
-         return kFALSE;	
+      if (this->MakeStep(stepTime, particle, navigator, fieldManager) == kFALSE) {
+         // -- Particle has reached a final state (decay,detected)
+         break; // -- End Propagation Loop
       }
-      // -- Determine Particle destination
-      // Has lost flag been set?
-      if (this->LostToBoundary() == kTRUE) {
-         run->IncrementLostToBoundary();
-         break; // -- End Propagtion Loop
-      // Has detected flag been set?
-      } else if (this->Detected() == kTRUE) {
-         run->IncrementDetected();
-         break; // -- End Propagation Loop
-      // Has particle decayed within steptime?
-      } else if (this->Decayed() == kTRUE) {
-         run->IncrementDecayed();
-         break; // -- End Propagation Loop
-      // -- Have we reached the maximum runtime?
-      } else if (this->T() >= run->RunTime()) {
+      
+      // -- Check whether we reached the runtime
+      if (particle->T() >= run->RunTime()) {
          break; // -- End Propagation Loop
       }
    }
    // -- END OF PROPAGATION LOOP
+   // -- Register Final Particle State with Run counters
+   particle->RegisterState(run);
    return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNFieldManager* fieldManager)
+Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeoNavigator* navigator, TUCNFieldManager* fieldManager)
 {
    // -- Find time to reach next boundary and step along parabola
    
@@ -355,9 +478,9 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
    currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
    initialMatrix->MasterToLocal(currentGlobalPoint,&initialLocalPoint[0]);
    
-   #ifdef VERBOSE_MODE	
+   #ifdef VERBOSE_MODE
       cout << endl << "------------------- START OF STEP ----------------------" << endl;
-      this->Print(); // Print state
+      particle->Print(); // Print state
       cout << "Steptime (s): " << stepTime << endl;
       cout << "-----------------------------" << endl;
       cout << "Navigator's Initial Node: " << initialNode->GetName() << endl;
@@ -365,39 +488,11 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
       initialMatrix->Print();
       initMatrix.Print();
       cout << "Is On Boundary?  " << this->IsUCNOnBoundary() << endl;
-      cout << "Is Outside?  "     << this->IsUCNOutside() << endl;
       cout << "Is Step Entering?  " << this->IsUCNStepEntering()  << endl;
       cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
       cout << "-----------------------------" << endl << endl;
    #endif
      
-/*   // -- Check that current point is located within the current volume
-   if (!navigator->IsSameLocation(currentGlobalPoint[0], currentGlobalPoint[1], currentGlobalPoint[2], kFALSE)) {
-      Error("MakeStep","1. Initial Point is not contained in Current Node, according to Navigator::IsSameLocation");
-      cout << "Current Node: " << initialNode->GetName() << endl;
-      cout << "Global Point: " << "X:" << currentGlobalPoint[0] << "\t";
-      cout << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-      cout << "Local Point: " << "X:" << initialLocalPoint[0] << "\t";
-      cout << "Y:" << initialLocalPoint[1] << "\t" << "Z:" << initialLocalPoint[2] << endl;
-      cout << "Current Volume Contains Local Point: ";
-      cout << initialNode->GetVolume()->GetShape()->Contains(initialLocalPoint) << endl;
-      cout << "Find Node Result: "    << navigator->FindNode()->GetName() << endl;
-      return kFALSE;
-   }
-   
-   if (!initialNode->GetVolume()->GetShape()->Contains(initialLocalPoint)) {
-      Error("MakeStep","1. Initial Point is not contained in Current Node, according to Shape::Contains");
-      cout << "Current Node: " << initialNode->GetName() << endl;
-      cout << "Global Point: " << "X:" << currentGlobalPoint[0] << "\t";
-      cout << "Y:" << currentGlobalPoint[1] << "\t" << "Z:" << currentGlobalPoint[2] << endl;
-      cout << "Local Point: " << "X:" << initialLocalPoint[0] << "\t";
-      cout << "Y:" << initialLocalPoint[1] << "\t" << "Z:" << initialLocalPoint[2] << endl;
-      cout << "Current Volume Contains Local Point: ";
-      cout << initialNode->GetVolume()->GetShape()->Contains(initialLocalPoint) << endl;
-      cout << "Find Node Result: " << navigator->FindNode()->GetName() << endl;
-      return kFALSE;
-   }
-*/   
    // -- We now should be sure we have begun in the current volume. 	
    // -- Save Path to current node - we will want to return to this in the event we make a bounce
    const char* initialPath = navigator->GetPath();
@@ -417,34 +512,33 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
       // CASE 1; No Gravitational Field - Straight line tracking
       if (navigator->FindNextBoundaryAndStep(stepTime) == NULL) {
          Error("MakeStep", "FindNextBoundaryAndStep has failed to find the next node");
-         return kFALSE;
+         throw runtime_error("Failed to find next node");
       }
       // (Re-)Calculate the time travelled (approximately) from the navigator's stepsize
-      Double_t timeTravelled = (this->V() == 0. ? 0. : navigator->GetStep()/this->V()); 
+      Double_t timeTravelled = (particle->V() == 0. ? 0. : navigator->GetStep()/particle->V()); 
       stepTime = timeTravelled;
    } else {
       // CASE 2; Grav Field present - tracking along parabolic trajectories
       // -- Propagate Point by StepTime along Parabola
-      TGeoNode* nextNode = this->ParabolicBoundaryFinder(stepTime, navigator, crossedNode, gravField);
+      TGeoNode* nextNode = this->ParabolicBoundaryFinder(stepTime, particle, navigator, crossedNode, gravField);
       if (nextNode == NULL) {
          Error("MakeStep", "FindNextBoundaryAndStepAlongParabola has failed to find the next node");
-         return kFALSE;	
+         throw runtime_error("Failed to find next node");
       }
       // Assert that the returned node is also the current node
       assert(nextNode == navigator->GetCurrentNode());
    }
    
    // -- Update particle properties
-   this->Update(navigator, stepTime, gravField);
+   this->UpdateParticle(particle, navigator, stepTime, gravField);
    
    #ifdef VERBOSE_MODE	
       cout << endl << "------------------- AFTER STEP ----------------------" << endl;
-      this->Print(); // Print verbose
+      particle->Print(); // Print verbose
       cout << "Steptime (s): " << stepTime << endl;
       cout << "-----------------------------" << endl;
       cout << "Navigator's Current Node: " << navigator->GetCurrentNode()->GetName() << endl;
       cout << "Is On Boundary?  " << this->IsUCNOnBoundary() << endl;
-      cout << "Is Outside?  "     << this->IsUCNOutside() << endl;
       cout << "Is Step Entering?  " << this->IsUCNStepEntering()  << endl;
       cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
       cout << "-----------------------------" << endl << endl;
@@ -455,10 +549,10 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
    // -- the current volume is the point's true container
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Attempt to locate particle within the current node
-   Bool_t locatedParticle = this->LocateInGeometry(navigator, initialNode, initialMatrix, crossedNode);
+   Bool_t locatedParticle = this->LocateInGeometry(particle, navigator, initialNode, initialMatrix, crossedNode);
    if (locatedParticle == kFALSE) {
       cout << "Error - After Step - Unable to locate particle correctly in Geometry" << endl;
-      return kFALSE;
+      throw runtime_error("Unable to locate particle uniquely in correct volume");
    }
    // -- We should now have propagated our point by some stepsize and be inside the correct volume 
    
@@ -477,8 +571,8 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
    // -- Check whether particle has decayed in the last step
    
    if(this->WillDecay(stepTime) == kTRUE) {
-      this->Decayed(kTRUE); // Set Decay Flag
-      return kTRUE;
+      this->ChangeState(particle, new TUCNDecayed());
+      return kFALSE;
    }
    
    TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(navigator->GetCurrentVolume()->GetMaterial());
@@ -502,10 +596,10 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
       if (currentMaterial->IsDetectorMaterial() == kTRUE) {
          // -- Was particle detected?
          Double_t prob = gRandom->Uniform(0.0,1.0);
-         if (prob <= currentMaterial->DetectionEfficiency()) {	
+         if (prob <= currentMaterial->DetectionEfficiency()) {
             // -- PARTICLE DETECTED
-            this->Detected(kTRUE);  // Set detected flag
-            return kTRUE;
+            this->ChangeState(particle, new TUCNDetected());
+            return kFALSE;
          } else {	
             // -- PARTICLE NOT-DETECTED.
             // -- Eventually we will change this to allow particle to track inside the detector
@@ -513,11 +607,12 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
             return kFALSE;
          }
       // -- Was particle lost to boundary (absorbed/upscattered) ?
-      } else if (this->IsLostToWall(currentMaterial, normal)) {	
-         this->LostToBoundary(kTRUE); // Set lost flag
+      } else if (this->IsLostToWall(particle, currentMaterial, normal)) {
+         this->ChangeState(particle, new TUCNAbsorbed());
+         return kFALSE;
       // -- Are we outside the geometry heirarchy we have built - ie: in TOP
       } else if (currentMaterial->IsBlackHole() == kTRUE) {
-         Error("MakeStep","Particle is in `BlackHole' material region.");
+         this->ChangeState(particle, new TUCNLost());;
          return kFALSE;
       } else {
          ///////////////////////////////////////////////////////////////////////////////////////
@@ -531,7 +626,7 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
             cout << "On Boundary? " << this->IsUCNOnBoundary() << endl;
          #endif	
          // -- Make a Bounce (note: bounce calls update track, so no need to do that here)
-         this->Bounce(navigator, normal, currentMaterial);
+         this->Bounce(particle, navigator, normal, currentMaterial);
 
          // -- cd back to the saved node before we made the step -- stored in 'initialPath'. 
          if (!navigator->cd(initialPath)) {
@@ -558,10 +653,10 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
          // -- the current volume is the point's true container
          ///////////////////////////////////////////////////////////////////////////////////////
          // -- Attempt to locate particle within the current node
-         Bool_t locatedParticle = this->LocateInGeometry(navigator, boundaryNode, boundaryMatrix, crossedNode);
+         Bool_t locatedParticle = this->LocateInGeometry(particle, navigator, boundaryNode, boundaryMatrix, crossedNode);
          if (locatedParticle == kFALSE) {
             cout << "Error - After Bounce - Unable to locate particle correctly in Geometry"<< endl;
-            return kFALSE;
+            throw runtime_error("Unable to locate particle uniquely in correct volume");
          } 
          // End of Bounce. We should have returned to the original node, 
          // and guarenteed that the current point is located within it.
@@ -574,7 +669,500 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNParticle::LocateInGeometry(TGeoNavigator* navigator, const TGeoNode* initialNode, const TGeoMatrix* initialMatrix, const TGeoNode* crossedNode)
+Double_t TUCNPropagating::DetermineNextStepTime(TUCNParticle* particle, const Double_t maxStepTime, const Double_t runTime)
+{
+   // Placeholder for method to calculate the next step time depending on 
+   // electric/magnetic field environment
+   // Start with the maximum stepTime 
+   
+   // Check if we will reach the maximum runtime of the track. If so propagate only until this time.
+   if (runTime == 0.0) {
+      return 0.0;
+   } else if (particle->T() > (runTime - maxStepTime)) {
+      return ((runTime - particle->T()) + TGeoShape::Tolerance());
+   } else {
+      return maxStepTime;
+   }
+}
+
+//_____________________________________________________________________________
+TGeoNode* TUCNPropagating::ParabolicBoundaryFinder(Double_t& stepTime, TUCNParticle* particle, TGeoNavigator* navigator, TGeoNode* crossedNode, TUCNGravField* field)
+{
+// Compute distance to next boundary within STEPMAX. If no boundary is found,
+// propagate current point along current direction with fStep=STEPMAX. Otherwise
+// propagate with fStep=SNEXT (distance to boundary) and locate/return the next 
+// node.
+   
+   // -- Get the global coordinates
+   Double_t globalField[3] 	 = {field->Gx(), field->Gy(), field->Gz()}; 
+   Double_t globalPoint[3] 	 = {particle->X(), particle->Y(), particle->Z()};
+   Double_t globalDir[3]	 	 = {particle->Nx(), particle->Ny(), particle->Nz()};
+   Double_t globalVelocity[3]  = {particle->Vx(), particle->Vy(), particle->Vz()};
+   
+   Double_t currentField[3]	 = {globalField[0], globalField[1], globalField[2]};
+   Double_t currentPoint[3]    = {globalPoint[0], globalPoint[1], globalPoint[2]};
+   Double_t currentDir[3]      = {globalDir[0], globalDir[1], globalDir[2]};
+   Double_t currentVelocity[3] = {globalVelocity[0], globalVelocity[1], globalVelocity[2]};
+   
+   // Compute maximum stepsize
+   const Double_t stepMax = TUCNParabola::Instance()->ArcLength(globalVelocity, globalField, stepTime);
+   
+   // -- Some initialisations
+   static Int_t icount = 0;
+   icount++;
+   Int_t nextindex;
+   Bool_t is_assembly;
+   fIsStepExiting  = kFALSE;
+   fIsStepEntering = kFALSE;
+   TGeoNode *skip;
+   
+   // -- Store time step and step distance -- these two should always be convertible
+   navigator->SetStep(stepMax);
+   Double_t snext = TGeoShape::Big();
+   Double_t tnext = TGeoShape::Big();
+   
+   #ifdef VERBOSE_MODE
+      cout << "PBF - Starting StepTime: " << stepTime << "\t";
+      cout << "Starting StepSize: " << navigator->GetStep() << endl;
+      cout << "PBF - Velocity: " << particle->V() << endl;
+      cout << "PBF - Global Field: X: " << globalField[0] << "\t" << "Y: " << globalField[1];
+      cout << "\t" << "Z: " << globalField[2] << endl;
+      cout << "PBF - Global Point: X: " << globalPoint[0] << "\t" << "Y: " << globalPoint[1];
+      cout << "\t" << "Z: " << globalPoint[2] << endl;
+      cout << "PBF - Global Dir: X: "   << globalDir[0] << "\t" << "Y: " << globalDir[1];
+      cout << "\t" << "Z: " << globalDir[2] << endl;	
+      cout << "PBF - Global Velocity: X: " << globalVelocity[0] << "\t" << "Y: ";
+      cout << globalVelocity[1] << "\t" << "Z: " << globalVelocity[2] << endl;	
+   #endif
+   
+   navigator->GetHMatrix()->CopyFrom(navigator->GetCurrentMatrix());
+   
+   // *********************************************************************
+   // -- BRANCH 2
+   // -- Get point and direction in local coordinate frame and calculate
+   // -- distance to boundary of current node.
+   // *********************************************************************
+   Double_t localPoint[3], localVelocity[3], localField[3]; // Containers for the local coords
+   Int_t icrossed = -2;
+   navigator->GetCurrentMatrix()->MasterToLocal(currentPoint, &localPoint[0]);
+   navigator->GetCurrentMatrix()->MasterToLocalVect(currentVelocity, &localVelocity[0]);
+   navigator->GetCurrentMatrix()->MasterToLocalVect(currentField, &localField[0]);
+   TGeoVolume *vol = navigator->GetCurrentNode()->GetVolume();
+   
+   // -- Find distance to exiting current node
+   tnext = static_cast<TUCNGeoBBox*>(vol->GetShape())->TimeFromInsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary); 
+   if (tnext <= 0.0) {
+      Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+      return NULL;
+   }
+   snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
+   crossedNode = navigator->GetCurrentNode();
+   
+   #ifdef VERBOSE_MODE
+      cout << "PBF - Branch 2. Find distance to exit current Volume: " << vol->GetName() << endl;
+      cout << "PBF - Local Field: X: " << localField[0] << "\t" << "Y: " << localField[1] << "\t";
+      cout << "Z: " << localField[2] << endl;
+      cout << "PBF - Time to boundary: " << tnext << "\t";
+      cout << "Distance to Boundary: " << snext << endl;
+      cout << "PBF - Abs(snext - fStep): " << TMath::Abs(snext - navigator->GetStep()) << endl;
+   #endif
+   // -- If distance to exiting current node is <= Tolerance value (1e-10)
+   // -- make a small step by navigator tolerance value
+   if (snext <= TGeoShape::Tolerance()) {
+      snext = TGeoShape::Tolerance();
+      tnext = TGeoShape::Tolerance();
+      navigator->SetStep(snext);
+      stepTime = tnext;
+      fIsOnBoundary = kTRUE;
+      fIsStepEntering = kFALSE;
+      fIsStepExiting = kTRUE;
+      skip = navigator->GetCurrentNode();
+      
+      // -- Move global point by Tolerance value
+      currentPoint[0] += navigator->GetStep()*currentDir[0]; 
+      currentPoint[1] += navigator->GetStep()*currentDir[1]; 
+      currentPoint[2] += navigator->GetStep()*currentDir[2];	
+      navigator->SetCurrentPoint(currentPoint);
+      is_assembly = navigator->GetCurrentNode()->GetVolume()->IsAssembly();
+      if (!(navigator->GetLevel()) && !is_assembly) {
+         // fUCNIsOutside = kTRUE ;
+         return 0;
+      }
+      if (navigator->GetCurrentNode()->IsOffset()) {
+         #ifdef VERBOSE_MODE
+            Warning("FindNextBoundaryAndStepAlongParabola","Branch 2. fCurrentNode->IsOffset(). Entering CrossDivisionCell().");
+         #endif
+         throw runtime_error("In TUCNParticle PBF Need to call CrossDivisionCell but can't!");
+      }
+      // -- Cross Boundary and return new volume
+      if (navigator->GetLevel()) {
+         navigator->CdUp(); 
+      } else {
+         skip = 0;
+      }
+      return navigator->CrossBoundaryAndLocate(kFALSE, skip);
+   }
+   
+   // -- If distance to exiting current node is smaller than proposed Stepsize
+   // -- then set our stepsize fStep to navigator distance (snext)
+   if (snext < navigator->GetStep() - TGeoShape::Tolerance()) {
+      icrossed = -1;
+      navigator->SetStep(snext);
+      stepTime = tnext;
+      fIsStepEntering = kFALSE;
+      fIsStepExiting = kTRUE;
+   }
+   
+   // Find next daughter boundary for the current volume
+   Int_t idaughter = -1;
+   TGeoNode *crossed = this->ParabolicDaughterBoundaryFinder(stepTime, navigator, localPoint, localVelocity, localField, idaughter, kTRUE);
+   if (crossed) {
+      fIsStepExiting = kFALSE;
+      icrossed = idaughter;
+      fIsStepEntering = kTRUE;
+      // If we crossed a daughter volume, set this node to be the new crossedNode,
+      // since in this case it is the daughter's boundary we are crossing, rather than
+      // the current volume's boundary.
+      crossedNode = crossed;
+   }
+   // -- If we are in an overlapping node, return an error as we are no longer supporting this.
+   // -- Geometries must be constructed with no overlaps beyond common boundaries.
+   if (navigator->GetNmany()) {
+      Error("PBF","In overlapping node - implementation of this removed");
+      return 0;
+   }
+   // *********************************************************************
+   // -- BRANCH 3
+   // -- Updating the Particle's position and momentum
+   // *********************************************************************
+   const Double_t timestep = stepTime;
+   #ifdef VERBOSE_MODE
+      cout << "PBF - Branch 3. Updating Global Point. fTimeStep: " << stepTime;
+      cout << "\t" << "fStep: " << navigator->GetStep() << endl;
+      cout << "PBF - Initial X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] <<  "\t";
+      cout << "Z: " << currentPoint[2] << endl;
+      cout << "PBF - Initial Vx: " << currentVelocity[0] << "\t" << "Vy: " << currentVelocity[1];
+      cout <<  "\t" << "Vz: " << currentVelocity[2] << endl;
+      cout << "PBF - Initial Gx: " << currentField[0] << "\t" << "Gy: " << currentField[1] <<  "\t";
+      cout << "Gz: " << currentField[2] << endl;
+      cout << "PBF - Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[1],2)) << endl;
+      cout << "PBF - Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[2],2)) << endl;
+   #endif
+   // -- Update Position and Direction according to the timestep
+   for (Int_t i = 0; i < 3; i++) {
+      currentPoint[i] += currentVelocity[i]*timestep + 0.5*currentField[i]*timestep*timestep;
+      currentVelocity[i] += currentField[i]*timestep;
+   }
+   // Calculate the magnitude of velocity
+   Double_t velocityMag = TMath::Sqrt((TMath::Power(currentVelocity[0],2) + TMath::Power(currentVelocity[1],2) + TMath::Power(currentVelocity[2],2)));
+   // Check that velocity is not zero
+   assert(velocityMag != 0.); 
+   // Update Current Point
+   navigator->SetCurrentPoint(currentPoint);
+   // Update Current Direction
+   for (Int_t i = 0; i < 3; i++) currentDir[i] = currentVelocity[i]/velocityMag;
+   navigator->SetCurrentDirection(currentDir);
+   #ifdef VERBOSE_MODE
+      cout << "PBF - Final X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] <<  "\t";
+      cout << "Z: " << currentPoint[2] << endl;
+      cout << "PBF - Final Vx: " << currentVelocity[0] << "\t" << "Vy: " << currentVelocity[1] <<  "\t" << "Vz: " << currentVelocity[2] << endl;
+      cout << "PBF - Field Gx: " << currentField[0] << "\t" << "Gy: " << currentField[1] <<  "\t";
+      cout << "Gz: " << currentField[2] << endl;
+      cout << "PBF - Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[1],2)) << endl;
+      cout << "PBF - Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[2],2)) << endl;
+   #endif
+   // *********************************************************************
+   // -- BRANCH 4
+   // -- Final check on results of above
+   // *********************************************************************
+   TGeoNode *current = 0;
+   if (icrossed == -2) {
+      // Nothing crossed within stepMax -> propagate and return same location   
+      #ifdef VERBOSE_MODE
+         cout << "PBF - Branch 4. Nothing crossed within stepMax. Propagating point and returning same location." << endl;
+      #endif
+      fIsOnBoundary = kFALSE;
+      return navigator->GetCurrentNode();
+   }
+   fIsOnBoundary = kTRUE;
+   if (icrossed == -1) {
+      #ifdef VERBOSE_MODE
+         cout << "PBF - Branch 4. On Boundary. Crossing boundary and locating." << endl;
+         cout << "PBF - Get Level: " << navigator->GetLevel() << endl;
+         cout << "PBF - Current Node: " << navigator->GetCurrentNode()->GetName() << endl;
+      #endif
+      skip = navigator->GetCurrentNode();
+      is_assembly = navigator->GetCurrentNode()->GetVolume()->IsAssembly();
+      if (!(navigator->GetLevel()) && !is_assembly) {
+         // fUCNIsOutside = kTRUE;
+         return 0;
+      }   
+      if (navigator->GetCurrentNode()->IsOffset()) {
+         throw runtime_error("In PBF Need to call CrossDivisionCell but can't!");
+         //return navigator->CrossDivisionCell();
+      }
+      if (navigator->GetLevel()) {
+         navigator->CdUp();
+      } else {
+         skip = 0;
+      }
+      TGeoNode* finalNode = navigator->CrossBoundaryAndLocate(kFALSE, skip);
+      #ifdef VERBOSE_MODE
+         cout << "PBF - Branch 4. Crossing boundary Upwards." << endl;
+         cout << "PBF - Final Node: " << finalNode->GetName() << endl;
+         cout << "---------------------------------------" << endl;
+      #endif
+      return finalNode;
+   }
+   current = navigator->GetCurrentNode();
+   navigator->CdDown(icrossed);
+   nextindex = navigator->GetCurrentNode()->GetVolume()->GetNextNodeIndex();
+   while (nextindex>=0) {
+      current = navigator->GetCurrentNode();
+      navigator->CdDown(nextindex);
+      nextindex = navigator->GetCurrentNode()->GetVolume()->GetNextNodeIndex();
+   }
+   #ifdef VERBOSE_MODE
+      cout << "PBF - Branch 4. Crossing boundary Downwards." << endl;
+   #endif
+   return navigator->CrossBoundaryAndLocate(kTRUE, current);
+}
+
+//_____________________________________________________________________________
+TGeoNode* TUCNPropagating::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator, Double_t* point, Double_t* velocity, Double_t* field, Int_t &idaughter, Bool_t compmatrix)
+{
+// Computes as fStep the distance to next daughter of the current volume. 
+// The point and direction must be converted in the coordinate system of the current volume.
+// The proposed step limit is fStep.
+   
+   // -- First Get the current local and global fields
+   Double_t motherField[3] = {field[0], field[1], field[2]}; 
+   Double_t motherPoint[3] = {point[0], point[1], point[2]};
+   Double_t motherVelocity[3] = {velocity[0], velocity[1], velocity[2]};
+   
+   #ifdef VERBOSE_MODE		
+      cout << "PDBF - Mother Local Field: X: " << motherField[0] << "\t" << "Y: ";
+      cout << motherField[1] << "\t" << "Z: " << motherField[2] << endl;
+   #endif
+   
+   // -- Initialising some important parameters
+   Double_t tnext = TGeoShape::Big();
+   Double_t snext = TGeoShape::Big();
+   idaughter = -1; // nothing crossed
+   TGeoNode *nodefound = 0;
+   // This has been added because we do not have access to fGlobalMatrix in TGeoNavigator
+   TGeoHMatrix* globalMatrix = navigator->GetCurrentMatrix(); 
+   
+   // Get number of daughters. If no daughters we are done.
+   TGeoVolume *vol = navigator->GetCurrentNode()->GetVolume();
+   Int_t nd = vol->GetNdaughters();
+   
+   #ifdef VERBOSE_MODE		
+      cout << "PDBF - Volume: " << vol->GetName() << "\t";
+      cout << "Checking number of Daughters: " << nd << endl;
+   #endif
+      
+   if (!nd) return 0;  // No daughter 
+   if (gGeoManager->IsActivityEnabled() && !vol->IsActiveDaughters()) {
+      cout << "Warning PDBF - IsActivityEnabled in geomanager" << endl;
+      return 0;
+   }
+   
+   Double_t localPoint[3], localVelocity[3], localField[3];
+   TGeoNode *current = 0;
+   Int_t i=0;
+   
+   // ************************************************************************************
+   // -- BRANCH 1
+   // -- if current volume is divided, we are in the non-divided region. We
+   // -- check first if we are inside a cell in which case compute distance to next cell
+   // ************************************************************************************
+	
+   TGeoPatternFinder *finder = vol->GetFinder();
+   if (finder) {
+      Int_t ifirst = finder->GetDivIndex();
+      Int_t ilast = ifirst+finder->GetNdiv()-1;
+      current = finder->FindNode(motherPoint);
+      if (current) {
+         // Point inside a cell: find distance to next cell
+         Int_t index = current->GetIndex();
+         if ((index-1) >= ifirst) ifirst = index-1;
+         else                     ifirst = -1;
+         if ((index+1) <= ilast)  ilast  = index+1;
+         else                     ilast  = -1;
+      }
+      if (ifirst>=0) {   
+         current = vol->GetNode(ifirst);
+         current->cd();
+         current->MasterToLocal(&motherPoint[0], &localPoint[0]);
+         current->MasterToLocalVect(&motherVelocity[0], &localVelocity[0]);
+         current->MasterToLocalVect(&motherField[0], &localField[0]);
+         #ifdef VERBOSE_MODE
+            cout << "PDBF - Divided Volume. Calculate distance from outside to first cell." << endl;
+            cout << "PDBF - Volume: " << current->GetName() << endl;
+            cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
+            cout << "Z: " << localField[2] << endl;
+         #endif
+         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);  
+         if (tnext <= 0.0) {
+            Error("ParabolicDaughterBoundaryFinder", "Failed to find boundary");
+            return NULL;
+         }
+         snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
+         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
+            if (compmatrix) {
+               navigator->GetHMatrix()->CopyFrom(globalMatrix);
+               navigator->GetHMatrix()->Multiply(current->GetMatrix());
+            }
+            fIsStepExiting  = kFALSE;
+            fIsStepEntering = kTRUE;
+            navigator->SetStep(snext);
+            stepTime = tnext;
+            nodefound = current;
+            idaughter = ifirst;
+         }
+      }
+      if (ilast==ifirst) return nodefound;
+      if (ilast>=0) { 
+         current = vol->GetNode(ilast);
+         current->cd();
+         current->MasterToLocal(&motherPoint[0], localPoint);
+         current->MasterToLocalVect(&motherVelocity[0], localVelocity);
+         current->MasterToLocalVect(&motherField[0], localField);
+         #ifdef VERBOSE_MODE		
+            cout << "PDBF - Divided Volume. Calculate distance from outside to last cell." << endl;
+            cout << "PDBF - Volume: " << current->GetName() << endl;
+            cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
+            cout << "Z: " << localField[2] << endl;
+         #endif
+         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
+         if (tnext <= 0.0) {
+            Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+            return NULL;
+         }
+         snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
+         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
+            if (compmatrix) {
+               navigator->GetHMatrix()->CopyFrom(globalMatrix);
+               navigator->GetHMatrix()->Multiply(current->GetMatrix());
+            }
+            fIsStepExiting  = kFALSE;
+            fIsStepEntering = kTRUE;
+            navigator->SetStep(snext);
+            stepTime = tnext;
+            nodefound = current;
+            idaughter = ilast;
+         }
+      }   
+      return nodefound;
+   }
+   // if only few daughters, check all and exit
+   TGeoVoxelFinder *voxels = vol->GetVoxels();
+   Int_t indnext;
+   if (nd<5 || !voxels) {
+      for (i=0; i<nd; i++) {
+         current = vol->GetNode(i);
+         if (gGeoManager->IsActivityEnabled() && !current->GetVolume()->IsActive()) continue;
+         current->cd();
+         if (voxels && voxels->IsSafeVoxel(motherPoint, i, navigator->GetStep())) continue;
+         current->MasterToLocal(motherPoint, localPoint);
+         current->MasterToLocalVect(motherVelocity, localVelocity);
+         current->MasterToLocalVect(motherField, localField);
+         if (current->IsOverlapping() && current->GetVolume()->Contains(localPoint)) continue;
+         #ifdef VERBOSE_MODE		
+            cout << "PDBF - Only Few daughters. Calculate distance from outside to all." << endl;
+            cout << "PDBF - Volume: " << current->GetName() << endl;
+            cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
+            cout << "Z: " << localField[2] << endl;
+            #endif
+         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
+         if (tnext <= 0.0) {
+            Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+            return NULL;
+         }
+         snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
+         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
+            #ifdef VERBOSE_MODE		
+            cout << "PDBF - Distance to daughter is less than distance to current volume." << endl;
+            #endif
+            indnext = current->GetVolume()->GetNextNodeIndex();
+            if (compmatrix) {
+               navigator->GetHMatrix()->CopyFrom(globalMatrix);
+               navigator->GetHMatrix()->Multiply(current->GetMatrix());
+            }    
+            fIsStepExiting  = kFALSE;
+            fIsStepEntering = kTRUE;
+            navigator->SetStep(snext);
+            stepTime = tnext;
+            nodefound = current;   
+            idaughter = i;   
+            while (indnext>=0) {
+               current = current->GetDaughter(indnext);
+               if (compmatrix) navigator->GetHMatrix()->Multiply(current->GetMatrix());
+               nodefound = current;
+               indnext = current->GetVolume()->GetNextNodeIndex();
+            }
+         }
+      }
+      #ifdef VERBOSE_MODE		
+         cout << "PDBF - Return nearest Node found if any." << endl;
+      #endif
+      return nodefound;
+   }
+   // if current volume is voxelized, first get current voxel
+   Int_t ncheck = 0;
+   Int_t sumchecked = 0;
+   Int_t *vlist = 0;
+   voxels->SortCrossedVoxels(motherPoint, motherVelocity);
+   while ((sumchecked<nd) && (vlist=voxels->GetNextVoxel(motherPoint, motherVelocity, ncheck))) {
+      for (i=0; i<ncheck; i++) {
+         current = vol->GetNode(vlist[i]);
+         if (gGeoManager->IsActivityEnabled() && !current->GetVolume()->IsActive()) continue;
+         current->cd();
+         current->MasterToLocal(motherPoint, localPoint);
+         current->MasterToLocalVect(motherVelocity, localVelocity);
+         current->MasterToLocalVect(&motherField[0], &localField[0]);
+         if (current->IsOverlapping() && current->GetVolume()->Contains(localPoint)) continue;
+         #ifdef VERBOSE_MODE		
+            cout << "PDBF - Volume is voxelized. Calculate distance from outside to voxel." << endl;
+            cout << "PDBF - Volume: " << current->GetName() << endl;
+            cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
+            cout << "Z: " << localField[2] << endl;
+         #endif
+         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
+         if (tnext <= 0.0) {
+            Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+            return NULL;
+         }
+         snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
+         sumchecked++;
+//         printf("checked %d from %d : snext=%g\n", sumchecked, nd, snext);
+         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
+            indnext = current->GetVolume()->GetNextNodeIndex();
+            if (compmatrix) {
+               navigator->GetHMatrix()->CopyFrom(globalMatrix);
+               navigator->GetHMatrix()->Multiply(current->GetMatrix());
+            }
+            fIsStepExiting  = kFALSE;
+            fIsStepEntering = kTRUE;
+            navigator->SetStep(snext);
+            stepTime = tnext;
+            nodefound = current;
+            idaughter = vlist[i];
+            while (indnext>=0) {
+               current = current->GetDaughter(indnext);
+               if (compmatrix) navigator->GetHMatrix()->Multiply(current->GetMatrix());
+               nodefound = current;
+               indnext = current->GetVolume()->GetNextNodeIndex();
+            }
+         }
+      }
+   }
+   return nodefound;
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNPropagating::LocateInGeometry(TUCNParticle* particle, TGeoNavigator* navigator, const TGeoNode* initialNode, const TGeoMatrix* initialMatrix, const TGeoNode* crossedNode)
 {
    // -- We want to determine whether the current coordinates of our particle is
    // -- located in the correct volume in the geometry. If this isn't the case - 
@@ -608,7 +1196,7 @@ Bool_t TUCNParticle::LocateInGeometry(TGeoNavigator* navigator, const TGeoNode* 
          initialMatrix->Print();
       #endif
       // -- Assert that we didn't cross a boundary
-      assert(fUCNIsOnBoundary == kFALSE);
+      assert(fIsOnBoundary == kFALSE);
       // -- If the returned node is the same as before, the matrices should match up
 //      assert(currentMatrix == initialMatrix); -- This no longer works since we make a copy of the
 //      the initial matrix at the start, and the current is taken from cache, which leads to some
@@ -667,6 +1255,9 @@ Bool_t TUCNParticle::LocateInGeometry(TGeoNavigator* navigator, const TGeoNode* 
       // make a small shift to the particle to put it in the correct volume.
       Bool_t locatedParticle = this->AttemptRelocationIntoCurrentNode(navigator, initialNode, initialMatrix, crossedNode);
       
+      // Update particle after attempted relocation
+      this->UpdateParticle(particle, navigator);
+      
       // Check whether shift has helped to locate particle in correct volume
       if (locatedParticle == kFALSE) {
          cout << "Error - Attempt to relocate particle inside current volume has failed. ";
@@ -689,7 +1280,7 @@ Bool_t TUCNParticle::LocateInGeometry(TGeoNavigator* navigator, const TGeoNode* 
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNParticle::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, const TGeoNode* initialNode, const TGeoMatrix* initialMatrix, const TGeoNode* crossedNode)
+Bool_t TUCNPropagating::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, const TGeoNode* initialNode, const TGeoMatrix* initialMatrix, const TGeoNode* crossedNode)
 {
    // At this point we know that the point is not exclusively contained by the current volume.
    // There could be 2 reasons for this:
@@ -736,12 +1327,12 @@ Bool_t TUCNParticle::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, 
          if (currentNode->GetMotherVolume() == initialNode->GetVolume()) {
             // Initial Node is parent of current node -- likely we just made a bounce
             // We will want to try to make micro-steps into the current volume.
-            assert(fUCNIsOnBoundary == kTRUE);
+            assert(fIsOnBoundary == kTRUE);
          } else if (initialNode->GetMotherVolume() == currentNode->GetVolume()) {
             // Current node is parent of initial node -- likely we just made a step onto boundary
             // For now we want to catch this case. Generally we want our boundary finder to always
             // put us over the boundary, so if this case occurs I want to know about it.
-            assert(fUCNIsOnBoundary == kTRUE);
+            assert(fIsOnBoundary == kTRUE);
             cout << "Error - Current point still contained by initial node" << endl;
             cout << "Initial Node: " << initialNode->GetName() << endl;
             cout << "Does Initial Node Contain Current Point? ";
@@ -828,8 +1419,6 @@ Bool_t TUCNParticle::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, 
          #ifdef VERBOSE_MODE
             cout << "Particle is now correctly located in: " << currentNode->GetName() << endl;
          #endif   
-         // Update particle and exit
-         this->Update(navigator);
          return kTRUE;
       }
       // Otherwise, try another microstep
@@ -846,587 +1435,7 @@ Bool_t TUCNParticle::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, 
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNParticle::FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator, const TGeoNode* crossedNode)
-{
-// Computes normal to the crossed boundary, assuming that the current point
-// is close enough to the boundary. This method is the same as ROOT's except that we are using
-// our own currentNode be used exclusively instead of TGeoNavigator::FindNormal when gravity is present.
-
-   if (crossedNode == NULL) {
-      Error("FindBoundaryNormal","No boundary has been set");
-      return kFALSE;
-   }
-   Double_t local[3];
-   Double_t ldir[3];
-   Double_t lnorm[3];
-   navigator->GetHMatrix()->MasterToLocal(navigator->GetCurrentPoint(), local);
-   navigator->GetHMatrix()->MasterToLocalVect(navigator->GetCurrentDirection(), ldir);
-   crossedNode->GetVolume()->GetShape()->ComputeNormal(local, ldir, lnorm);
-   navigator->GetHMatrix()->LocalToMasterVect(lnorm, normal);
-   return kTRUE;
-}
-
-//_____________________________________________________________________________
-TGeoNode* TUCNParticle::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator, Double_t* point, Double_t* velocity, Double_t* field, Int_t &idaughter, Bool_t compmatrix)
-{
-// Computes as fStep the distance to next daughter of the current volume. 
-// The point and direction must be converted in the coordinate system of the current volume.
-// The proposed step limit is fStep.
-   
-   // -- First Get the current local and global fields
-   Double_t motherField[3] = {field[0], field[1], field[2]}; 
-   Double_t motherPoint[3] = {point[0], point[1], point[2]};
-   Double_t motherVelocity[3] = {velocity[0], velocity[1], velocity[2]};
-   
-   #ifdef VERBOSE_MODE		
-      cout << "PDBF - Mother Local Field: X: " << motherField[0] << "\t" << "Y: ";
-      cout << motherField[1] << "\t" << "Z: " << motherField[2] << endl;
-   #endif
-   
-   // -- Initialising some important parameters
-   Double_t tnext = TGeoShape::Big();
-   Double_t snext = TGeoShape::Big();
-   idaughter = -1; // nothing crossed
-   TGeoNode *nodefound = 0;
-   // This has been added because we do not have access to fGlobalMatrix in TGeoNavigator
-   TGeoHMatrix* globalMatrix = navigator->GetCurrentMatrix(); 
-   
-   // Get number of daughters. If no daughters we are done.
-   TGeoVolume *vol = navigator->GetCurrentNode()->GetVolume();
-   Int_t nd = vol->GetNdaughters();
-   
-   #ifdef VERBOSE_MODE		
-      cout << "PDBF - Volume: " << vol->GetName() << "\t";
-      cout << "Checking number of Daughters: " << nd << endl;
-   #endif
-      
-   if (!nd) return 0;  // No daughter 
-   if (gGeoManager->IsActivityEnabled() && !vol->IsActiveDaughters()) {
-      cout << "Warning PDBF - IsActivityEnabled in geomanager" << endl;
-      return 0;
-   }
-   
-   Double_t localPoint[3], localVelocity[3], localField[3];
-   TGeoNode *current = 0;
-   Int_t i=0;
-   
-   // ************************************************************************************
-   // -- BRANCH 1
-   // -- if current volume is divided, we are in the non-divided region. We
-   // -- check first if we are inside a cell in which case compute distance to next cell
-   // ************************************************************************************
-	
-   TGeoPatternFinder *finder = vol->GetFinder();
-   if (finder) {
-      Int_t ifirst = finder->GetDivIndex();
-      Int_t ilast = ifirst+finder->GetNdiv()-1;
-      current = finder->FindNode(motherPoint);
-      if (current) {
-         // Point inside a cell: find distance to next cell
-         Int_t index = current->GetIndex();
-         if ((index-1) >= ifirst) ifirst = index-1;
-         else                     ifirst = -1;
-         if ((index+1) <= ilast)  ilast  = index+1;
-         else                     ilast  = -1;
-      }
-      if (ifirst>=0) {   
-         current = vol->GetNode(ifirst);
-         current->cd();
-         current->MasterToLocal(&motherPoint[0], &localPoint[0]);
-         current->MasterToLocalVect(&motherVelocity[0], &localVelocity[0]);
-         current->MasterToLocalVect(&motherField[0], &localField[0]);
-         #ifdef VERBOSE_MODE
-            cout << "PDBF - Divided Volume. Calculate distance from outside to first cell." << endl;
-            cout << "PDBF - Volume: " << current->GetName() << endl;
-            cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
-            cout << "Z: " << localField[2] << endl;
-         #endif
-         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fUCNIsOnBoundary);  
-         if (tnext <= 0.0) {
-            Error("ParabolicDaughterBoundaryFinder", "Failed to find boundary");
-            return NULL;
-         }
-         snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
-         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
-            if (compmatrix) {
-               navigator->GetHMatrix()->CopyFrom(globalMatrix);
-               navigator->GetHMatrix()->Multiply(current->GetMatrix());
-            }
-            fUCNIsStepExiting  = kFALSE;
-            fUCNIsStepEntering = kTRUE;
-            navigator->SetStep(snext);
-            stepTime = tnext;
-            nodefound = current;
-            idaughter = ifirst;
-         }
-      }
-      if (ilast==ifirst) return nodefound;
-      if (ilast>=0) { 
-         current = vol->GetNode(ilast);
-         current->cd();
-         current->MasterToLocal(&motherPoint[0], localPoint);
-         current->MasterToLocalVect(&motherVelocity[0], localVelocity);
-         current->MasterToLocalVect(&motherField[0], localField);
-         #ifdef VERBOSE_MODE		
-            cout << "PDBF - Divided Volume. Calculate distance from outside to last cell." << endl;
-            cout << "PDBF - Volume: " << current->GetName() << endl;
-            cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
-            cout << "Z: " << localField[2] << endl;
-         #endif
-         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fUCNIsOnBoundary);
-         if (tnext <= 0.0) {
-            Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
-            return NULL;
-         }
-         snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
-         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
-            if (compmatrix) {
-               navigator->GetHMatrix()->CopyFrom(globalMatrix);
-               navigator->GetHMatrix()->Multiply(current->GetMatrix());
-            }
-            fUCNIsStepExiting  = kFALSE;
-            fUCNIsStepEntering = kTRUE;
-            navigator->SetStep(snext);
-            stepTime = tnext;
-            nodefound = current;
-            idaughter = ilast;
-         }
-      }   
-      return nodefound;
-   }
-   // if only few daughters, check all and exit
-   TGeoVoxelFinder *voxels = vol->GetVoxels();
-   Int_t indnext;
-   if (nd<5 || !voxels) {
-      for (i=0; i<nd; i++) {
-         current = vol->GetNode(i);
-         if (gGeoManager->IsActivityEnabled() && !current->GetVolume()->IsActive()) continue;
-         current->cd();
-         if (voxels && voxels->IsSafeVoxel(motherPoint, i, navigator->GetStep())) continue;
-         current->MasterToLocal(motherPoint, localPoint);
-         current->MasterToLocalVect(motherVelocity, localVelocity);
-         current->MasterToLocalVect(motherField, localField);
-         if (current->IsOverlapping() && current->GetVolume()->Contains(localPoint)) continue;
-         #ifdef VERBOSE_MODE		
-            cout << "PDBF - Only Few daughters. Calculate distance from outside to all." << endl;
-            cout << "PDBF - Volume: " << current->GetName() << endl;
-            cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
-            cout << "Z: " << localField[2] << endl;
-            #endif
-         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fUCNIsOnBoundary);
-         if (tnext <= 0.0) {
-            Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
-            return NULL;
-         }
-         snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
-         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
-            #ifdef VERBOSE_MODE		
-            cout << "PDBF - Distance to daughter is less than distance to current volume." << endl;
-            #endif
-            indnext = current->GetVolume()->GetNextNodeIndex();
-            if (compmatrix) {
-               navigator->GetHMatrix()->CopyFrom(globalMatrix);
-               navigator->GetHMatrix()->Multiply(current->GetMatrix());
-            }    
-            fUCNIsStepExiting  = kFALSE;
-            fUCNIsStepEntering = kTRUE;
-            navigator->SetStep(snext);
-            stepTime = tnext;
-            nodefound = current;   
-            idaughter = i;   
-            while (indnext>=0) {
-               current = current->GetDaughter(indnext);
-               if (compmatrix) navigator->GetHMatrix()->Multiply(current->GetMatrix());
-               nodefound = current;
-               indnext = current->GetVolume()->GetNextNodeIndex();
-            }
-         }
-      }
-      #ifdef VERBOSE_MODE		
-         cout << "PDBF - Return nearest Node found if any." << endl;
-      #endif
-      return nodefound;
-   }
-   // if current volume is voxelized, first get current voxel
-   Int_t ncheck = 0;
-   Int_t sumchecked = 0;
-   Int_t *vlist = 0;
-   voxels->SortCrossedVoxels(motherPoint, motherVelocity);
-   while ((sumchecked<nd) && (vlist=voxels->GetNextVoxel(motherPoint, motherVelocity, ncheck))) {
-      for (i=0; i<ncheck; i++) {
-         current = vol->GetNode(vlist[i]);
-         if (gGeoManager->IsActivityEnabled() && !current->GetVolume()->IsActive()) continue;
-         current->cd();
-         current->MasterToLocal(motherPoint, localPoint);
-         current->MasterToLocalVect(motherVelocity, localVelocity);
-         current->MasterToLocalVect(&motherField[0], &localField[0]);
-         if (current->IsOverlapping() && current->GetVolume()->Contains(localPoint)) continue;
-         #ifdef VERBOSE_MODE		
-            cout << "PDBF - Volume is voxelized. Calculate distance from outside to voxel." << endl;
-            cout << "PDBF - Volume: " << current->GetName() << endl;
-            cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
-            cout << "Z: " << localField[2] << endl;
-         #endif
-         tnext = static_cast<TUCNGeoBBox*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fUCNIsOnBoundary);
-         if (tnext <= 0.0) {
-            Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
-            return NULL;
-         }
-         snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
-         sumchecked++;
-//         printf("checked %d from %d : snext=%g\n", sumchecked, nd, snext);
-         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
-            indnext = current->GetVolume()->GetNextNodeIndex();
-            if (compmatrix) {
-               navigator->GetHMatrix()->CopyFrom(globalMatrix);
-               navigator->GetHMatrix()->Multiply(current->GetMatrix());
-            }
-            fUCNIsStepExiting  = kFALSE;
-            fUCNIsStepEntering = kTRUE;
-            navigator->SetStep(snext);
-            stepTime = tnext;
-            nodefound = current;
-            idaughter = vlist[i];
-            while (indnext>=0) {
-               current = current->GetDaughter(indnext);
-               if (compmatrix) navigator->GetHMatrix()->Multiply(current->GetMatrix());
-               nodefound = current;
-               indnext = current->GetVolume()->GetNextNodeIndex();
-            }
-         }
-      }
-   }
-   return nodefound;
-}
-
-//_____________________________________________________________________________
-TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator, TGeoNode* crossedNode, TUCNGravField* field)
-{
-// Compute distance to next boundary within STEPMAX. If no boundary is found,
-// propagate current point along current direction with fStep=STEPMAX. Otherwise
-// propagate with fStep=SNEXT (distance to boundary) and locate/return the next 
-// node.
-   
-   // -- Get the global coordinates
-   Double_t globalField[3] 	 = {field->Gx(), field->Gy(), field->Gz()}; 
-   Double_t globalPoint[3] 	 = {this->X(), this->Y(), this->Z()};
-   Double_t globalDir[3]	 	 = {this->Nx(), this->Ny(), this->Nz()};
-   Double_t globalVelocity[3]  = {this->Vx(), this->Vy(), this->Vz()};
-   
-   Double_t currentField[3]	 = {globalField[0], globalField[1], globalField[2]};
-   Double_t currentPoint[3]    = {globalPoint[0], globalPoint[1], globalPoint[2]};
-   Double_t currentDir[3]      = {globalDir[0], globalDir[1], globalDir[2]};
-   Double_t currentVelocity[3] = {globalVelocity[0], globalVelocity[1], globalVelocity[2]};
-   
-   // Compute maximum stepsize
-   const Double_t stepMax = TUCNParabola::Instance()->ArcLength(globalVelocity, globalField, stepTime);
-   
-   // -- Some initialisations
-   static Int_t icount = 0;
-   icount++;
-   Int_t nextindex;
-   Bool_t is_assembly;
-   fUCNIsStepExiting  = kFALSE;
-   fUCNIsStepEntering = kFALSE;
-   TGeoNode *skip;
-   
-   // -- Store time step and step distance -- these two should always be convertible
-//   this->SetStepTime(stepTime);
-   navigator->SetStep(stepMax);
-   Double_t snext = TGeoShape::Big();
-   Double_t tnext = TGeoShape::Big();
-   
-   #ifdef VERBOSE_MODE
-      cout << "PBF - Starting StepTime: " << stepTime << "\t";
-      cout << "Starting StepSize: " << navigator->GetStep() << endl;
-      cout << "PBF - Velocity: " << this->V() << endl;
-      cout << "PBF - Global Field: X: " << globalField[0] << "\t" << "Y: " << globalField[1];
-      cout << "\t" << "Z: " << globalField[2] << endl;
-      cout << "PBF - Global Point: X: " << globalPoint[0] << "\t" << "Y: " << globalPoint[1];
-      cout << "\t" << "Z: " << globalPoint[2] << endl;
-      cout << "PBF - Global Dir: X: "   << globalDir[0] << "\t" << "Y: " << globalDir[1];
-      cout << "\t" << "Z: " << globalDir[2] << endl;	
-      cout << "PBF - Global Velocity: X: " << globalVelocity[0] << "\t" << "Y: ";
-      cout << globalVelocity[1] << "\t" << "Z: " << globalVelocity[2] << endl;	
-   #endif
-   
-   navigator->GetHMatrix()->CopyFrom(navigator->GetCurrentMatrix());
-   
-   // *********************************************************************
-   // -- BRANCH 1
-   // -- fIsOutside means outside TOP volume - ie: outside geometry
-   // *********************************************************************	
-   if (fUCNIsOutside) {
-      Error("PBF", "Point is Outside Geometry. Stopping all propagation.");
-      return 0;
-   }
-   
-   // *********************************************************************
-   // -- BRANCH 2
-   // -- So we are not outside the geometry. Get point and direction in
-   // -- local coordinate frame and calculate distance to boundary of current node.
-   // *********************************************************************
-   Double_t localPoint[3], localVelocity[3], localField[3]; // Containers for the local coords
-   Int_t icrossed = -2;
-   navigator->GetCurrentMatrix()->MasterToLocal(currentPoint, &localPoint[0]);
-   navigator->GetCurrentMatrix()->MasterToLocalVect(currentVelocity, &localVelocity[0]);
-   navigator->GetCurrentMatrix()->MasterToLocalVect(currentField, &localField[0]);
-   TGeoVolume *vol = navigator->GetCurrentNode()->GetVolume();
-   
-   // -- Find distance to exiting current node
-   tnext = static_cast<TUCNGeoBBox*>(vol->GetShape())->TimeFromInsideAlongParabola(localPoint, localVelocity, localField, stepTime, fUCNIsOnBoundary); 
-   if (tnext <= 0.0) {
-      Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
-      return NULL;
-   }
-   snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
-   crossedNode = navigator->GetCurrentNode();
-   
-   #ifdef VERBOSE_MODE
-      cout << "PBF - Branch 2. Find distance to exit current Volume: " << vol->GetName() << endl;
-      cout << "PBF - Local Field: X: " << localField[0] << "\t" << "Y: " << localField[1] << "\t";
-      cout << "Z: " << localField[2] << endl;
-      cout << "PBF - Time to boundary: " << tnext << "\t";
-      cout << "Distance to Boundary: " << snext << endl;
-      cout << "PBF - Abs(snext - fStep): " << TMath::Abs(snext - navigator->GetStep()) << endl;
-   #endif
-   // -- If distance to exiting current node is <= Tolerance value (1e-10)
-   // -- make a small step by navigator tolerance value
-   if (snext <= TGeoShape::Tolerance()) {
-      snext = TGeoShape::Tolerance();
-      tnext = TGeoShape::Tolerance();
-      navigator->SetStep(snext);
-      stepTime = tnext;
-//      this->SetStepTime(tnext);
-      fUCNIsOnBoundary = kTRUE;
-      fUCNIsStepEntering = kFALSE;
-      fUCNIsStepExiting = kTRUE;
-      skip = navigator->GetCurrentNode();
-      
-      // -- Move global point by Tolerance value
-      currentPoint[0] += navigator->GetStep()*currentDir[0]; 
-      currentPoint[1] += navigator->GetStep()*currentDir[1]; 
-      currentPoint[2] += navigator->GetStep()*currentDir[2];	
-      navigator->SetCurrentPoint(currentPoint);
-      is_assembly = navigator->GetCurrentNode()->GetVolume()->IsAssembly();
-      if (!(navigator->GetLevel()) && !is_assembly) {
-         fUCNIsOutside = kTRUE ;
-         return 0;
-      }
-      if (navigator->GetCurrentNode()->IsOffset()) {
-         #ifdef VERBOSE_MODE
-            Warning("FindNextBoundaryAndStepAlongParabola","Branch 2. fCurrentNode->IsOffset(). Entering CrossDivisionCell().");
-         #endif
-         throw runtime_error("In TUCNParticle PBF Need to call CrossDivisionCell but can't!");
-      }
-      // -- Cross Boundary and return new volume
-      if (navigator->GetLevel()) {
-         navigator->CdUp(); 
-      } else {
-         skip = 0;
-      }
-      return navigator->CrossBoundaryAndLocate(kFALSE, skip);
-   }
-   
-   // -- If distance to exiting current node is smaller than proposed Stepsize
-   // -- then set our stepsize fStep to navigator distance (snext)
-   if (snext < navigator->GetStep() - TGeoShape::Tolerance()) {
-      icrossed = -1;
-      navigator->SetStep(snext);
-      stepTime = tnext;
-//      this->SetStepTime(tnext);
-      fUCNIsStepEntering = kFALSE;
-      fUCNIsStepExiting = kTRUE;
-   }
-   
-   // Find next daughter boundary for the current volume
-   Int_t idaughter = -1;
-   TGeoNode *crossed = this->ParabolicDaughterBoundaryFinder(stepTime, navigator, localPoint, localVelocity, localField, idaughter, kTRUE);
-   if (crossed) {
-      fUCNIsStepExiting = kFALSE;
-      icrossed = idaughter;
-      fUCNIsStepEntering = kTRUE;
-      // If we crossed a daughter volume, set this node to be the new crossedNode,
-      // since in this case it is the daughter's boundary we are crossing, rather than
-      // the current volume's boundary.
-      crossedNode = crossed;
-   }
-   // -- If we are in an overlapping node, return an error as we are no longer supporting this.
-   // -- Geometries must be constructed with no overlaps beyond common boundaries.
-   if (navigator->GetNmany()) {
-      Error("PBF","In overlapping node - implementation of this removed");
-      return 0;
-   }
-   // *********************************************************************
-   // -- BRANCH 3
-   // -- Updating the Particle's position and momentum
-   // *********************************************************************
-   const Double_t timestep = stepTime;
-   #ifdef VERBOSE_MODE
-      cout << "PBF - Branch 3. Updating Global Point. fTimeStep: " << stepTime;
-      cout << "\t" << "fStep: " << navigator->GetStep() << endl;
-      cout << "PBF - Initial X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] <<  "\t";
-      cout << "Z: " << currentPoint[2] << endl;
-      cout << "PBF - Initial Vx: " << currentVelocity[0] << "\t" << "Vy: " << currentVelocity[1];
-      cout <<  "\t" << "Vz: " << currentVelocity[2] << endl;
-      cout << "PBF - Initial Gx: " << currentField[0] << "\t" << "Gy: " << currentField[1] <<  "\t";
-      cout << "Gz: " << currentField[2] << endl;
-      cout << "PBF - Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[1],2)) << endl;
-      cout << "PBF - Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[2],2)) << endl;
-   #endif
-   // -- Update Position and Direction according to the timestep
-   for (Int_t i = 0; i < 3; i++) {
-      currentPoint[i] += currentVelocity[i]*timestep + 0.5*currentField[i]*timestep*timestep;
-      currentVelocity[i] += currentField[i]*timestep;
-   }
-   // Calculate the magnitude of velocity
-   Double_t velocityMag = TMath::Sqrt((TMath::Power(currentVelocity[0],2) + TMath::Power(currentVelocity[1],2) + TMath::Power(currentVelocity[2],2)));
-   // Check that velocity is not zero
-   assert(velocityMag != 0.); 
-   // Update Current Point
-   navigator->SetCurrentPoint(currentPoint);
-   // Update Current Direction
-   for (Int_t i = 0; i < 3; i++) currentDir[i] = currentVelocity[i]/velocityMag;
-   navigator->SetCurrentDirection(currentDir);
-   #ifdef VERBOSE_MODE
-      cout << "PBF - Final X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] <<  "\t";
-      cout << "Z: " << currentPoint[2] << endl;
-      cout << "PBF - Final Vx: " << currentVelocity[0] << "\t" << "Vy: " << currentVelocity[1] <<  "\t" << "Vz: " << currentVelocity[2] << endl;
-      cout << "PBF - Field Gx: " << currentField[0] << "\t" << "Gy: " << currentField[1] <<  "\t";
-      cout << "Gz: " << currentField[2] << endl;
-      cout << "PBF - Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[1],2)) << endl;
-      cout << "PBF - Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[2],2)) << endl;
-   #endif
-   // *********************************************************************
-   // -- BRANCH 4
-   // -- Final check on results of above
-   // *********************************************************************
-   TGeoNode *current = 0;
-   if (icrossed == -2) {
-      // Nothing crossed within stepMax -> propagate and return same location   
-      #ifdef VERBOSE_MODE
-         cout << "PBF - Branch 4. Nothing crossed within stepMax. Propagating point and returning same location." << endl;
-      #endif
-      fUCNIsOnBoundary = kFALSE;
-      return navigator->GetCurrentNode();
-   }
-   fUCNIsOnBoundary = kTRUE;
-   if (icrossed == -1) {
-      #ifdef VERBOSE_MODE
-         cout << "PBF - Branch 4. On Boundary. Crossing boundary and locating." << endl;
-         cout << "PBF - Get Level: " << navigator->GetLevel() << endl;
-         cout << "PBF - Current Node: " << navigator->GetCurrentNode()->GetName() << endl;
-      #endif
-      skip = navigator->GetCurrentNode();
-      is_assembly = navigator->GetCurrentNode()->GetVolume()->IsAssembly();
-      if (!(navigator->GetLevel()) && !is_assembly) {
-         fUCNIsOutside = kTRUE;
-         return 0;
-      }   
-      if (navigator->GetCurrentNode()->IsOffset()) {
-         throw runtime_error("In PBF Need to call CrossDivisionCell but can't!");
-         //return navigator->CrossDivisionCell();
-      }
-      if (navigator->GetLevel()) {
-         navigator->CdUp();
-      } else {
-         skip = 0;
-      }
-      TGeoNode* finalNode = navigator->CrossBoundaryAndLocate(kFALSE, skip);
-      #ifdef VERBOSE_MODE
-         cout << "PBF - Branch 4. Crossing boundary Upwards." << endl;
-         cout << "PBF - Final Node: " << finalNode->GetName() << endl;
-         cout << "---------------------------------------" << endl;
-      #endif
-      return finalNode;
-   }
-   current = navigator->GetCurrentNode();
-   navigator->CdDown(icrossed);
-   nextindex = navigator->GetCurrentNode()->GetVolume()->GetNextNodeIndex();
-   while (nextindex>=0) {
-      current = navigator->GetCurrentNode();
-      navigator->CdDown(nextindex);
-      nextindex = navigator->GetCurrentNode()->GetVolume()->GetNextNodeIndex();
-   }
-   #ifdef VERBOSE_MODE
-      cout << "PBF - Branch 4. Crossing boundary Downwards." << endl;
-   #endif
-   return navigator->CrossBoundaryAndLocate(kTRUE, current);
-}
-
-//_____________________________________________________________________________
-Double_t TUCNParticle::DetermineNextStepTime(const Double_t maxStepTime, const Double_t runTime)
-{
-   // Placeholder for method to calculate the next step time depending on 
-   // electric/magnetic field environment
-   // Start with the maximum stepTime 
-   
-   // Check if we will reach the maximum runtime of the track. If so propagate only until this time.
-   if (runTime == 0.0) {
-      return 0.0;
-   } else if (this->T() > (runTime - maxStepTime)) {
-      return ((runTime - this->T()) + TGeoShape::Tolerance());
-   } else {
-      return maxStepTime;
-   }
-}
-
-//_____________________________________________________________________________
-void TUCNParticle::Update(const TGeoNavigator* navigator, const Double_t timeInterval, const TUCNGravField* gravField)
-{
-   // -- Take the particle and update its position, momentum, time and energy
-   // -- with the current properties stored in the Navigator
-   #ifdef VERBOSE_MODE
-      cout << "-------------------------------------------" << endl;
-      cout << "Time step: " << timeInterval << endl;
-		cout << "Update -- Initial X: " << this->X() << "\t" << "Y: " << this->Y();
-      cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
-      cout << "Update -- Initial PX: " << this->Px() << "\t" << "PY: " << this->Py();
-      cout << "\t" <<  "PZ: " << this->Pz() << "\t";
-      cout <<  "E: " << this->Energy()/Units::neV << endl;
-   #endif
-   
-   const Double_t* pos = navigator->GetCurrentPoint();
-   const Double_t* dir = navigator->GetCurrentDirection(); 
-   Double_t heightClimbed = 0.0;
-   Double_t gravPotentialEnergy = 0.0;
-   
-   if (gravField) {
-      // Determine the height of our particle in the global coordinate system of TOP.
-      // Take the dot product of the point vector with the field direction unit vector
-      // to get the height of this point in the gravitational field.
-      // This assumes a convention that 'height' is measured along an axis that INCREASES
-      // in the opposite direction to the field direction vector (which is usually 'downwards')
-      heightClimbed = -1.0*((pos[0] - this->X())*gravField->Nx() + (pos[1] - this->Y())*gravField->Ny() + (pos[2] - this->Z())*gravField->Nz());
-      gravPotentialEnergy = this->Mass_eV_c2()*gravField->GravAcceleration()*heightClimbed;
-   }
-   
-   // Determine current Kinetic energy of particle given the height climbed in graviational field
-   Double_t kineticEnergy = this->Energy() - gravPotentialEnergy;
-   
-   // Detemine current momentum
-   Double_t momentum = TMath::Sqrt(2.0*this->Mass_eV()*kineticEnergy);
-   Double_t mom[3] = {momentum*dir[0], momentum*dir[1], momentum*dir[2]};
-   
-   // Update particle
-   this->SetVertex(pos[0], pos[1], pos[2], this->T() + timeInterval);
-   this->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
-   this->IncreaseDistance(navigator->GetStep()); // Increase the distance travelled
-   
-   #ifdef VERBOSE_MODE
-      cout << "Update -- Height climbed: " << heightClimbed << "\t";
-      cout << "Kinetic Energy Gained(Lost): " << -gravPotentialEnergy/Units::neV << endl;
-      cout << "Update -- Final X: " << this->X() << "\t" << "Y: " << this->Y();
-      cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
-      cout << "Update -- Final PX: " << this->Px() << "\t" << "PY: " << this->Py();
-      cout << "\t" <<  "PZ: " << this->Pz() << "\t";
-      cout <<  "E: " << this->Energy()/Units::neV << endl;
-      cout << "-------------------------------------------" << endl;
-   #endif
-}
-
-//_____________________________________________________________________________
-Bool_t TUCNParticle::Bounce(TGeoNavigator* navigator, const Double_t* normal, const TUCNGeoMaterial* wallMaterial)
+Bool_t TUCNPropagating::Bounce(TUCNParticle* particle, TGeoNavigator* navigator, const Double_t* normal, const TUCNGeoMaterial* wallMaterial)
 {
    // -- Make a reflection off of the current boundary
    // -- Direction Vector
@@ -1457,26 +1466,26 @@ Bool_t TUCNParticle::Bounce(TGeoNavigator* navigator, const Double_t* normal, co
    if (prob <= diffuseProbability) {
       // -- Diffuse Bounce
       this->DiffuseBounce(navigator, dir, norm);
-      this->MadeDiffuseBounce(); // Update counter
+      particle->MadeDiffuseBounce(); // Update counter
    } else {
       // -- Specular Bounce
       this->SpecularBounce(dir, norm);
-      this->MadeSpecularBounce(); // Update counter
+      particle->MadeSpecularBounce(); // Update counter
    }
 
    // -- Set New Direction
    navigator->SetCurrentDirection(dir);
    
    // -- Update Particle
-   this->Update(navigator);	
+   this->UpdateParticle(particle, navigator);	
 
    // -- Update Bounce Counter
-   this->MadeBounce();
+   particle->MadeBounce();
    return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNParticle::SpecularBounce(Double_t* dir, const Double_t* norm)
+Bool_t TUCNPropagating::SpecularBounce(Double_t* dir, const Double_t* norm)
 {
    #ifdef VERBOSE_MODE
       cout << "----------------------------" << endl;
@@ -1498,7 +1507,7 @@ Bool_t TUCNParticle::SpecularBounce(Double_t* dir, const Double_t* norm)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNParticle::DiffuseBounce(const TGeoNavigator* navigator, Double_t* dir, const Double_t* norm)
+Bool_t TUCNPropagating::DiffuseBounce(const TGeoNavigator* navigator, Double_t* dir, const Double_t* norm)
 {
    #ifdef VERBOSE_MODE	
       cout << "----------------------------" << endl;
@@ -1595,5 +1604,285 @@ Bool_t TUCNParticle::DiffuseBounce(const TGeoNavigator* navigator, Double_t* dir
       cout << "AFTER - nx: " << dir[0] <<"\t"<< "nx: " << dir[1] <<"\t"<< "nx: " << dir[2] << endl;
    #endif
    
+   return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNPropagating::FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator, const TGeoNode* crossedNode)
+{
+// Computes normal to the crossed boundary, assuming that the current point
+// is close enough to the boundary. This method is the same as ROOT's except that we are using
+// our own currentNode be used exclusively instead of TGeoNavigator::FindNormal when gravity is present.
+
+   if (crossedNode == NULL) {
+      Error("FindBoundaryNormal","No boundary has been set");
+      return kFALSE;
+   }
+   Double_t local[3];
+   Double_t ldir[3];
+   Double_t lnorm[3];
+   navigator->GetHMatrix()->MasterToLocal(navigator->GetCurrentPoint(), local);
+   navigator->GetHMatrix()->MasterToLocalVect(navigator->GetCurrentDirection(), ldir);
+   crossedNode->GetVolume()->GetShape()->ComputeNormal(local, ldir, lnorm);
+   navigator->GetHMatrix()->LocalToMasterVect(lnorm, normal);
+   return kTRUE;
+}
+
+//______________________________________________________________________________
+Double_t TUCNPropagating::DiffuseProbability(const Double_t diffuseCoeff, const Double_t* /*normal*/, const Double_t /*fermiPotential*/) const
+{
+   // Calculate the probability of making a diffuse bounce - according to formula (from Mike P) prob ~ diffuseCoeff*(Eperp/V)
+/*   Double_t cosTheta = TMath::Abs(this->DirX()*normal[0] + this->DirY()*normal[1] + this->DirZ()*normal[2]);
+   Double_t energyPerp = this->Energy()*cosTheta*cosTheta;
+   Double_t diffProb = diffuseCoeff*energyPerp/fermiPotential;
+   assert(diffProb <= 1.0 && diffProb >= 0.0);
+   //return diffProb;
+*/ // For now just use fixed coefficient until this is properly checked
+   return diffuseCoeff;
+}
+
+//______________________________________________________________________________
+Bool_t TUCNPropagating::IsLostToWall(const TUCNParticle* particle, const TUCNGeoMaterial* wall, const Double_t* normal) const
+{
+// Calculate whether particle will be absorbed/upscattered by the wall
+   Double_t fermiPotential = wall->FermiPotential();
+   Double_t eta = wall->Eta();
+   if (eta == 0.0) {
+      // No wall losses implemented
+      return kFALSE;
+   }
+// cout << "Material: " << wall->GetName() << "\t" << "eta: " << eta << "\t";
+// cout <<  "fermiPotential: " << fermiPotential << "\t" << endl;
+// cout << "nx: " << this->DirX() << "\t" << "ny: " << this->DirY() << "\t";
+// cout << "nz: " << this->DirZ() << endl;
+// cout << "normx: " << normal[0] << "\t" << "normy: " << normal[1] << "\t";
+// cout << "normz: " << normal[2] << endl;	
+
+   // Take dot product of two unit vectors - normal and direction - to give the angle between them
+   Double_t cosTheta = TMath::Abs(particle->Nx()*normal[0] + particle->Ny()*normal[1] + particle->Nz()*normal[2]);
+   Double_t energyPerp = particle->Energy()*cosTheta*cosTheta;
+   if (energyPerp >= fermiPotential) {
+      return kTRUE;
+   }
+   Double_t lossProb = 2.*eta*(TMath::Sqrt(energyPerp/(fermiPotential - energyPerp)));
+// cout << "Loss Prob: " << lossProb << "\t" << "EnergyPerp: " << energyPerp/Units::neV << "\t";
+// cout <<  "cosTheta: " << cosTheta << "\t" << endl;
+   
+   // roll dice to see whether particle is lost
+   Double_t diceRoll = gRandom->Uniform(0.0, 1.0);
+   if (diceRoll <= lossProb) {
+//    cout << "DiceRoll: " << diceRoll << "\t" << "LossProb: " << lossProb << endl;
+      return kTRUE;
+   } else {
+      return kFALSE;
+   }
+}
+
+//______________________________________________________________________________
+Bool_t TUCNPropagating::WillDecay(const Double_t /*timeInterval*/)
+{
+   // Placeholder for method to calculate probability particle will decay within timeInterval, and then roll the dice!
+   return kFALSE;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNDecayed                                                          //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+ClassImp(TUCNDecayed)
+
+//_____________________________________________________________________________
+TUCNDecayed::TUCNDecayed()
+            :TUCNState()
+{
+   // Constructor
+//   Info("TUCNDecayed","Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNDecayed::TUCNDecayed(const TUCNDecayed& s)
+            :TUCNState(s)
+{
+   // Copy Constructor
+//   Info("TUCNDecayed","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNDecayed& TUCNDecayed::operator=(const TUCNDecayed& s)
+{
+   // Assignment
+//   Info("TUCNDecayed","Assignment");
+   if(this!=&s) {
+      TUCNState::operator=(s);   
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+TUCNDecayed::~TUCNDecayed()
+{
+   // Destructor
+//   Info("TUCNDecayed","Destructor");
+}
+
+//______________________________________________________________________________
+Bool_t TUCNDecayed::RegisterState(TUCNRun* run)
+{
+   // Register in Run what final state we are
+   run->IncrementDecayed();
+   return kTRUE;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNAbsorbed                                                         //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+ClassImp(TUCNAbsorbed)
+
+//_____________________________________________________________________________
+TUCNAbsorbed::TUCNAbsorbed()
+             :TUCNState()
+{
+   // Constructor
+//   Info("TUCNAbsorbed","Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNAbsorbed::TUCNAbsorbed(const TUCNAbsorbed& s)
+             :TUCNState(s)
+{
+   // Copy Constructor
+//   Info("TUCNAbsorbed","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNAbsorbed& TUCNAbsorbed::operator=(const TUCNAbsorbed& s)
+{
+   // Assignment
+//   Info("TUCNAbsorbed","Assignment");
+   if(this!=&s) {
+      TUCNState::operator=(s);   
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+TUCNAbsorbed::~TUCNAbsorbed()
+{
+   // Destructor
+//   Info("TUCNAbsorbed","Destructor");
+}
+
+//______________________________________________________________________________
+Bool_t TUCNAbsorbed::RegisterState(TUCNRun* run)
+{
+   // Register in Run what final state we are
+   run->IncrementAbsorbed();
+   return kTRUE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNDetected                                                         //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+ClassImp(TUCNDetected)
+
+//_____________________________________________________________________________
+TUCNDetected::TUCNDetected()
+             :TUCNState()
+{
+   // Constructor
+//   Info("TUCNDetected","Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNDetected::TUCNDetected(const TUCNDetected& s)
+             :TUCNState(s)
+{
+   // Copy Constructor
+//   Info("TUCNDetected","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNDetected& TUCNDetected::operator=(const TUCNDetected& s)
+{
+   // Assignment
+//   Info("TUCNDetected","Assignment");
+   if(this!=&s) {
+      TUCNState::operator=(s);   
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+TUCNDetected::~TUCNDetected()
+{
+   // Destructor
+//   Info("TUCNDetected","Destructor");
+}
+
+//______________________________________________________________________________
+Bool_t TUCNDetected::RegisterState(TUCNRun* run)
+{
+   // Register in Run what final state we are
+   run->IncrementDetected();
+   return kTRUE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNLost                                                             //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+ClassImp(TUCNLost)
+
+//_____________________________________________________________________________
+TUCNLost::TUCNLost()
+         :TUCNState()
+{
+   // Constructor
+//   Info("TUCNLost","Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNLost::TUCNLost(const TUCNLost& s)
+         :TUCNState(s)
+{
+   // Copy Constructor
+//   Info("TUCNLost","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNLost& TUCNLost::operator=(const TUCNLost& s)
+{
+   // Assignment
+//   Info("TUCNLost","Assignment");
+   if(this!=&s) {
+      TUCNState::operator=(s);   
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+TUCNLost::~TUCNLost()
+{
+   // Destructor
+//   Info("TUCNLost","Destructor");
+}
+
+//______________________________________________________________________________
+Bool_t TUCNLost::RegisterState(TUCNRun* run)
+{
+   // Register in Run what final state we are
+   run->IncrementLost();
    return kTRUE;
 }

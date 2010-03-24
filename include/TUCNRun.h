@@ -12,17 +12,9 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 class TGeoManager;
-class TGeoVolume;
-class TGeoMatrix;
-class TPolyMarker3D;
-class TFile;
-class TGeoTrack;
-class TGeoNode;
-class TGeoVolume;
-class TGeoMatrix;
-class TGeoHMatrix;
+class TObjArray;
 class TCanvas;
-class TVirtualGeoTrack;
+class TPolyMarker3D;
 
 class TUCNConfigFile;
 class TUCNFieldManager;
@@ -30,10 +22,7 @@ class TUCNData;
 class TUCNParticle;
 class TUCNGravField;
 class TUCNMagField;
-class TUCNGeoManager;
-class TUCNGeoMaterial;
 class TUCNFieldManager;
-
 
 class TUCNRun : public TNamed 
 {
@@ -50,10 +39,10 @@ protected:
    Bool_t               fSampleMagField;
    Bool_t               fWallLosses;
    
-   Int_t                fBoundaryLossCounter;
+   Int_t                fAbsorbedCounter; // Absorbed includes any loss to the boundary
    Int_t                fDetectedCounter;
    Int_t                fDecayedCounter;
-   
+   Int_t                fLostCounter;
    
    TObjArray*           GetParticles()    {return fParticles;}
    TUCNData*            GetData()         {return fData;}
@@ -75,21 +64,22 @@ public:
    Double_t             RunTime() const               {return fRunTime;}
    Double_t             MaxStepTime()                 {return fMaxStepTime;}
    Int_t                Detected() const              {return fDetectedCounter;}
-   Int_t                LostToBoundary() const        {return fBoundaryLossCounter;}
+   Int_t                Absorbed() const              {return fAbsorbedCounter;}
    Int_t                Decayed() const               {return fDecayedCounter;}
+   Int_t                Lost() const                  {return fLostCounter;}
    
    void                 IncrementDetected()           {fDetectedCounter++;}
-   void                 IncrementLostToBoundary()     {fBoundaryLossCounter++;}
+   void                 IncrementAbsorbed()           {fAbsorbedCounter++;}
    void                 IncrementDecayed()            {fDecayedCounter++;}
+   void                 IncrementLost()               {fLostCounter++;}
    
    void                 DrawParticles(TCanvas* canvas, TPolyMarker3D* points);
-   void                 DrawTrack(TCanvas* canvas, Int_t trackID);
    
-   Bool_t               AddTrack(TVirtualGeoTrack* track);
+//   Bool_t               AddTrack(TVirtualGeoTrack* track);
    Bool_t               AddParticle(TUCNParticle* particle);
    Bool_t               SaveInitialParticle(TUCNParticle* particle);
    Bool_t               SaveParticle(TUCNParticle* particle);
-   TGeoTrack*           GetTrack(Int_t trackID);
+//   TGeoTrack*           GetTrack(Int_t trackID);
    TUCNParticle*        GetInitialParticle(Int_t particleID);
    TUCNParticle*        GetParticle(Int_t particleID);
    

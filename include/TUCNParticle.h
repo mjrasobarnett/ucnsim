@@ -21,6 +21,7 @@
 //    TParticle.                                                           //                                                                     
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
+class TUCNState;
 class TUCNGeoMaterial;
 class TUCNFieldManager;
 class TUCNGravField;
@@ -34,8 +35,8 @@ class TGeoNavigator;
 
 class TUCNParticle : public TObject
 {
-private:
-   // -- private members
+protected:
+   // -- Members
    static const Double_t   fgMass = 939.56563e+6;  // Units of MeV
    static const Double_t   fgLifetime = 885.7;     // Units s
    
@@ -61,62 +62,16 @@ private:
    
 //   Double_t    fAvgMagField;           // Average Magnetic field seen by the neutron as it travels
 //   Int_t       fFieldPointsSampled;    // Number of times field has been sampled
-   Bool_t      fDecayed;
-   Bool_t      fLostToBoundary;
-   Bool_t      fDetected;
-   
-   Bool_t      fUCNIsStepEntering;
-   Bool_t      fUCNIsStepExiting;
-   Bool_t      fUCNIsOutside;        //! flag that current point is outside geometry
-   Bool_t      fUCNIsOnBoundary;     //! flag that current point is on some boundary
    
    // -- State
-//   friend class TUCNParticleState;
-//   TUCNParticleState    *fState;
+   friend class TUCNState;
+   TUCNState      *fState;
    
-   // -- Private Methods
+   // -- Methods
    //_____________________________________________________________________________
-   
    // State Change
-//   void        ChangeState(TUCNParticleState* state);
-   
-   // Decay Probability
-   Bool_t            IsLostToWall(const TUCNGeoMaterial* wall, const Double_t* normal) const;
-   Double_t          DiffuseProbability(const Double_t diffuseCoeff, const Double_t* normal,
-                                                   const Double_t fermiPotential) const;
-   Bool_t            WillDecay(const Double_t timeInterval);
-
-   // Propagation
-   Bool_t            MakeStep(Double_t stepTime, TGeoNavigator* navigator, 
-                                    TUCNFieldManager* fieldManager);
-   Bool_t            LocateInGeometry(TGeoNavigator* navigator, const TGeoNode* initialNode,
-                           const TGeoMatrix* initialMatrix, const TGeoNode* crossedNode);
-   Bool_t            AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, 
-                           const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
-                           const TGeoNode* crossedNode);
-   TGeoNode*         ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator,
-                                          TGeoNode* crossedNode, TUCNGravField* field);
-   TGeoNode*         ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator,
-                                    Double_t* point, Double_t* velocity, Double_t* field,
-                                    Int_t &idaughter, Bool_t compmatrix=kFALSE);
-   
-   Double_t          DetermineNextStepTime(const Double_t maxStepTime, const Double_t runTime=0.);   
-   
-   Bool_t            Bounce(TGeoNavigator* navigator, const Double_t* normal, 
-                                    const TUCNGeoMaterial* wallMaterial);
-   Bool_t            SpecularBounce(Double_t* dir, const Double_t* norm);
-   Bool_t            DiffuseBounce(const TGeoNavigator* navigator, Double_t* dir, 
-                                    const Double_t* norm);
-   Bool_t            FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator, const TGeoNode* crossedNode);
-   
-   Bool_t            IsUCNOnBoundary() const {return fUCNIsOnBoundary;}
-   Bool_t            IsUCNStepEntering() const {return fUCNIsStepEntering;}
-   Bool_t            IsUCNStepExiting() const {return fUCNIsStepExiting;}
-   Bool_t            IsUCNOutside() const {return fUCNIsOutside;}
-   
-   void              Update(const TGeoNavigator* navigator, const Double_t timeInterval=0.,
-                                    const TUCNGravField* gravField=0);
-   
+   void        ChangeState(TUCNState* state);
+  
 public:
    // -- Constructors
    TUCNParticle();
@@ -160,7 +115,6 @@ public:
                                        const Double_t t);
    void                 SetMomentum(const Double_t px, const Double_t py, const Double_t pz, 
                                        const Double_t energy);
-   
    void                 Print(const Option_t* option="") const;
    
    // Random Seed Storage 
@@ -184,18 +138,14 @@ public:
    // -- Mag Field Tracking
 //   void                 SampleMagField(const Double_t integratedField, const Double_t stepTime);
 //   Double_t             AvgMagField() const {return fAvgMagField;}
-
-   Bool_t   LostToBoundary()  {return fLostToBoundary;}
-   void     LostToBoundary(Bool_t lost)   {fLostToBoundary = lost;}
-   Bool_t   Detected()  {return fDetected;}
-   void     Detected(Bool_t detected)   {fDetected = detected;}
-   Bool_t   Decayed()  {return fDecayed;}
-   void     Decayed(Bool_t decayed)   {fDecayed = decayed;}
+   
+   // State
+   TUCNState*           GetState()     {return fState;}
+   Bool_t               RegisterState(TUCNRun* run);
    
    // -- Propagation
    Bool_t      Propagate(TUCNRun* run, TGeoNavigator* navigator, TUCNFieldManager* fieldManager);
    
-
    ClassDef(TUCNParticle,1)   // Ultra-Cold Neutron
 };
 
@@ -203,57 +153,191 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
-//    TUCNParticleState - Following the State design pattern, a Particle   //
+//    TUCNState - Following the State design pattern, a Particle           //
 //    state handles state specific behaviour, such as when a UCN is        //
 //    detected, decays, or lost to the boundary in some way. The state     //
 //    pattern allows us to code specific behaviour to these states rather  //
 //    than relying on Boolean flags that must be checked constantly.       //                                             
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
-/*
-class TUCNState : public TNamed
+
+class TUCNState : public TObject
 {
-public:
-   
-   
 protected:
+   void  ChangeState(TUCNParticle* particle, TUCNState* state);
    
+public:
+   // -- Constructors
+   TUCNState();
+   TUCNState(const TUCNState&);
+   TUCNState& operator=(const TUCNState&);
+   virtual ~TUCNState();
+   
+   // -- Propagation
+   virtual Bool_t    Propagate(TUCNParticle* particle, TUCNRun* run,
+                                    TGeoNavigator* navigator, TUCNFieldManager* fieldManager);
+   virtual void      UpdateParticle(TUCNParticle* particle, const TGeoNavigator* navigator,
+                        const Double_t timeInterval=0., const TUCNGravField* gravField=0);
+   virtual Bool_t    RegisterState(TUCNRun* run) = 0;
    
    ClassDef(TUCNState,1)
 };
 
 
 /////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNPropagating -                                                    //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
 
 class TUCNPropagating : public TUCNState
 {
+protected:
+   Bool_t      fIsStepEntering;
+   Bool_t      fIsStepExiting;
+   Bool_t      fIsOnBoundary;     //! flag that current point is on some boundary
+   
+   // Step Time calculation
+   virtual Double_t  DetermineNextStepTime(TUCNParticle* particle, const Double_t maxStepTime,
+                                          const Double_t runTime=0.);
+   // Propagation
+   virtual Bool_t    MakeStep(Double_t stepTime, TUCNParticle* particle, TGeoNavigator* navigator,
+                                          TUCNFieldManager* fieldManager);
+   // Boundary Finding
+   virtual TGeoNode* ParabolicBoundaryFinder(Double_t& stepTime, TUCNParticle* particle,
+                                          TGeoNavigator* navigator, TGeoNode* crossedNode,
+                                          TUCNGravField* field);
+   virtual TGeoNode* ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator,
+                                    Double_t* point, Double_t* velocity, Double_t* field,
+                                    Int_t &idaughter, Bool_t compmatrix=kFALSE);
+   
+   // Error checking when moving between volumes
+   virtual Bool_t    LocateInGeometry(TUCNParticle* particle, TGeoNavigator* navigator,
+                           const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
+                           const TGeoNode* crossedNode);
+   virtual Bool_t    AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, 
+                           const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
+                           const TGeoNode* crossedNode);
+   
+   // Wall reflection
+   virtual Bool_t    Bounce(TUCNParticle* particle, TGeoNavigator* navigator, 
+                              const Double_t* normal, const TUCNGeoMaterial* wallMaterial);
+   virtual Bool_t    SpecularBounce(Double_t* dir, const Double_t* norm);
+   virtual Bool_t    DiffuseBounce(const TGeoNavigator* navigator, Double_t* dir, 
+                                    const Double_t* norm);
+   virtual Bool_t    FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator,
+                                    const TGeoNode* crossedNode);
+   virtual Double_t  DiffuseProbability(const Double_t diffuseCoeff, const Double_t* normal,
+                                                   const Double_t fermiPotential) const;
+   
+   // Decay/Loss Probability calculations
+   virtual Bool_t    IsLostToWall(const TUCNParticle* particle, const TUCNGeoMaterial* wall,
+                                          const Double_t* normal) const;
+   virtual Bool_t    WillDecay(const Double_t timeInterval);
+   
+public:
+   // -- Constructors
+   TUCNPropagating();
+   TUCNPropagating(const TUCNPropagating&);
+   TUCNPropagating& operator=(const TUCNPropagating&);
+   virtual ~TUCNPropagating();
+   
+   // -- Propagation
+   virtual Bool_t    Propagate(TUCNParticle* particle, TUCNRun* run,
+                                    TGeoNavigator* navigator, TUCNFieldManager* fieldManager);
+   virtual Bool_t    RegisterState(TUCNRun* run);
+   
+   
    
    ClassDef(TUCNPropagating,1)
 };
 
 
 /////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNDecayed -                                                        //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
 
 class TUCNDecayed : public TUCNState
-{
+{   
+public:
+   // -- Constructors
+   TUCNDecayed();
+   TUCNDecayed(const TUCNDecayed&);
+   TUCNDecayed& operator=(const TUCNDecayed&);
+   virtual ~TUCNDecayed();
+   
+   // -- Propagation
+   virtual Bool_t    RegisterState(TUCNRun* run);
    
    ClassDef(TUCNDecayed,1)
 };
 
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNAbsorbed -                                                       //
+//                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
 class TUCNAbsorbed : public TUCNState
 {
+public:
+   // -- Constructors
+   TUCNAbsorbed();
+   TUCNAbsorbed(const TUCNAbsorbed&);
+   TUCNAbsorbed& operator=(const TUCNAbsorbed&);
+   virtual ~TUCNAbsorbed();
+   
+   // -- Propagation
+   virtual Bool_t    RegisterState(TUCNRun* run);
    
    ClassDef(TUCNAbsorbed,1)
 };
 
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNDetected -                                                       //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+class TUCNDetected : public TUCNState
+{
+public:
+   // -- Constructors
+   TUCNDetected();
+   TUCNDetected(const TUCNDetected&);
+   TUCNDetected& operator=(const TUCNDetected&);
+   virtual ~TUCNDetected();
+   
+   // -- Propagation
+   virtual Bool_t    RegisterState(TUCNRun* run);
+   
+   ClassDef(TUCNDetected,1)
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNLost -                                                           //
+//                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
 class TUCNLost : public TUCNState
 {
+public:
+   // -- Constructors
+   TUCNLost();
+   TUCNLost(const TUCNLost&);
+   TUCNLost& operator=(const TUCNLost&);
+   virtual ~TUCNLost();
+   
+   // -- Propagation
+   virtual Bool_t    RegisterState(TUCNRun* run);
    
    ClassDef(TUCNLost,1)
 };
-*/
+
 #endif  /*TUCNPARTICLE_H*/

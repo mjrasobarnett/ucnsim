@@ -9,6 +9,12 @@
 #pragma link C++ class TUCNGeoTube;
 #pragma link C++ class TUCNGeoMaterial;
 #pragma link C++ class TUCNParticle;
+#pragma link C++ class TUCNState;
+#pragma link C++ class TUCNPropagating;
+#pragma link C++ class TUCNDecayed;
+#pragma link C++ class TUCNAbsorbed;
+#pragma link C++ class TUCNDetected;
+#pragma link C++ class TUCNLost;
 #pragma link C++ class TUCNGravField;
 #pragma link C++ class TUCNDataParser;
 #pragma link C++ class TUCNParabola;

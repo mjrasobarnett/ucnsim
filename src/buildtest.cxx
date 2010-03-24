@@ -293,11 +293,11 @@ Bool_t PlotFinalHeightDistribution(const TString& dataFileName)
 	for (Int_t i = 0; i < run->Neutrons(); i++) {
 		// Get each Track
 		TUCNParticle* particle = run->GetParticle(i);
-		if (particle->LostToBoundary() == kTRUE) {
-			continue;
-		} else {
+//		if (particle->LostToBoundary() == kTRUE) {
+//			continue;
+//		} else {
 			histogram->Fill(particle->Vz());
-		}
+//		}
 	}
 	
 	// Write Histogram
@@ -377,11 +377,11 @@ Bool_t PlotLossFunction(const TString& dataFileName)
 			// Get each Track
 			TUCNParticle* particle = run->GetParticle(i);
 			// Only store number of bounces from those particles that actually decayed
-			if (particle->LostToBoundary() == kTRUE) {
-				histogram.Fill(particle->Bounces());
-			} else {
+		//	if (particle->LostToBoundary() == kTRUE) {
+		//		histogram.Fill(particle->Bounces());
+		//	} else {
 				continue;
-			}
+		//	}
 		}
 		// -- Fit to exponential
 		TF1 expntl("expntl", "expo", range);
