@@ -2,9 +2,6 @@
 // Author: Matthew Raso-Barnett  19/01/2009
 #include <iostream>
 #include <cassert>
-#include <iomanip>
-#include <cassert>
-#include <vector>
 #include <stdexcept>
 
 #include "Constants.h"
@@ -12,43 +9,24 @@
 
 #include "TUCNParticle.h"
 
-#include "TUCNGeoMaterial.h"
-
 #include "TMath.h"
 #include "TRandom.h"
-#include "TGeoNode.h"
-#include "TGeoNavigator.h"
-#include "TGeoShape.h"
-#include "TGeoBBox.h"
-
 
 #include "TUCNRun.h"
-#include "TUCNConfigFile.h"
 #include "TUCNGeoMaterial.h"
 #include "TUCNFieldManager.h"
-#include "TUCNMagField.h"
 #include "TUCNGravField.h"
 #include "TUCNParticle.h"
-#include "TUCNData.h"
 #include "TUCNGeoBBox.h"
 #include "TUCNParabola.h"
 
-#include "TGeoNode.h"
-#include "TGeoPatternFinder.h"
-#include "TGeoVoxelFinder.h"
-#include "TParticle.h"
-#include "TGeoNavigator.h"
-
-#include "TFile.h"
-#include "TCanvas.h"
-#include "TPolyMarker3D.h"
 #include "TGeoManager.h"
-#include "TRandom.h"
+#include "TGeoNavigator.h"
+#include "TGeoNode.h"
 #include "TGeoVolume.h"
 #include "TGeoShape.h"
-#include "TGeoBBox.h"
 #include "TGeoMatrix.h"
-#include "TVirtualGeoTrack.h"
+#include "TGeoVoxelFinder.h"
 
 using namespace std;
 
@@ -65,7 +43,7 @@ TUCNParticle::TUCNParticle()
               fX(0.), fY(0.), fZ(0.), fT(0.), fPx(0.), fPy(0.), fPz(0.), fE(0.),
               fDistance(0.), fId(0), fBounces(0), fSpecularBounces(0), fDiffuseBounces(0),
               fRandomSeed(0), fDecayed(kFALSE), fLostToBoundary(kFALSE), fDetected(kFALSE),
-              fStepTime(0), fUCNIsStepEntering(kFALSE), fUCNIsStepExiting(kFALSE),
+              fUCNIsStepEntering(kFALSE), fUCNIsStepExiting(kFALSE),
               fUCNIsOutside(kFALSE), fUCNIsOnBoundary(kFALSE)
 {
 // -- Default constructor
@@ -79,7 +57,7 @@ TUCNParticle::TUCNParticle(Int_t id, Double_t* pos, Double_t* mom, Double_t ener
               fX(pos[0]), fY(pos[1]), fZ(pos[2]), fT(t), fPx(mom[0]), fPy(mom[1]), fPz(mom[2]),
               fE(energy), fDistance(0.), fId(id), fBounces(0), fSpecularBounces(0),
               fDiffuseBounces(0), fRandomSeed(0), fDecayed(kFALSE), fLostToBoundary(kFALSE),
-              fDetected(kFALSE), fStepTime(0), fUCNIsStepEntering(kFALSE),
+              fDetected(kFALSE), fUCNIsStepEntering(kFALSE),
               fUCNIsStepExiting(kFALSE), fUCNIsOutside(kFALSE), fUCNIsOnBoundary(kFALSE)
 {
 // -- Constructor
@@ -94,7 +72,7 @@ TUCNParticle::TUCNParticle(const TUCNParticle& p)
               fBounces(p.fBounces), fSpecularBounces(p.fSpecularBounces),
               fDiffuseBounces(p.fDiffuseBounces), fRandomSeed(p.fRandomSeed),
               fDecayed(p.fDecayed), fLostToBoundary(p.fLostToBoundary),
-              fDetected(p.fDetected), fStepTime(p.fStepTime),
+              fDetected(p.fDetected), 
               fUCNIsStepEntering(p.fUCNIsStepEntering), fUCNIsStepExiting(p.fUCNIsStepExiting),
               fUCNIsOutside(p.fUCNIsOutside), fUCNIsOnBoundary(p.fUCNIsOnBoundary)
 {
@@ -124,7 +102,6 @@ TUCNParticle& TUCNParticle::operator=(const TUCNParticle& p)
       fDecayed = p.fDecayed;
       fLostToBoundary = p.fLostToBoundary;
       fDetected = p.fDetected;
-      fStepTime = p.fStepTime;
       fUCNIsStepEntering = p.fUCNIsStepEntering;
       fUCNIsStepExiting = p.fUCNIsStepExiting;
       fUCNIsOutside = p.fUCNIsOutside;
@@ -327,9 +304,8 @@ Bool_t TUCNParticle::Propagate(TUCNRun* run, TGeoNavigator* navigator, TUCNField
          run->IncrementDetected();
          break; // -- End Propagation Loop
       // Has particle decayed within steptime?
-      } else if (this->WillDecay(this->GetStepTime()) == kTRUE) {
+      } else if (this->Decayed() == kTRUE) {
          run->IncrementDecayed();
-         this->Decayed(kTRUE); // Set Decay Flag
          break; // -- End Propagation Loop
       // -- Have we reached the maximum runtime?
       } else if (this->T() >= run->RunTime()) {
@@ -337,9 +313,6 @@ Bool_t TUCNParticle::Propagate(TUCNRun* run, TGeoNavigator* navigator, TUCNField
       }
    }
    // -- END OF PROPAGATION LOOP
-//	cout << "FINAL STATUS: " << "Track: " << track->GetId() << "\t" << "Steps taken: " << stepNumber << "\t";
-//	cout << "Time: " << particle->T() << "s" << "\t" << "Final Medium: " << navigator->GetCurrentNode()->GetMedium()->GetName() << "\t";
-//	cout << "Bounces: " << particle->Bounces() << "\t" << "Diffuse: " << particle->DiffuseBounces() << "\t" << "Specular: " << particle->SpecularBounces() << endl;
    return kTRUE;
 }
 
@@ -367,8 +340,8 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
    
    // -- Store the Initial Node and Initial Matrix
    const TGeoNode* initialNode = navigator->GetCurrentNode();
-   TGeoHMatrix initMatrix = *(navigator->GetCurrentMatrix()); // Store the initial matrix here
-   TGeoMatrix* initialMatrix = &initMatrix; // Create pointer to the stored matrix
+   TGeoHMatrix initMatrix = *(navigator->GetCurrentMatrix()); // Copy the initial matrix here
+   TGeoMatrix* initialMatrix = &initMatrix; // Hold pointer to the stored matrix
    // N.B: We do this because I have noticed that just storing a pointer to the navigator's
    // current matrix here actually leads to the initialMatrix changing later on in some cases.
    // Not sure what is causing this, as the initialNode seems to stay the same, but I think
@@ -384,7 +357,7 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
    
    #ifdef VERBOSE_MODE	
       cout << endl << "------------------- START OF STEP ----------------------" << endl;
-      this->Print(); // Print verbose
+      this->Print(); // Print state
       cout << "Steptime (s): " << stepTime << endl;
       cout << "-----------------------------" << endl;
       cout << "Navigator's Initial Node: " << initialNode->GetName() << endl;
@@ -493,13 +466,21 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
    // -- Step 4 - Sample Magnetic Field if there is one	
    ///////////////////////////////////////////////////////////////////////////////////////   
 // if (magField != NULL) {
-//    const Double_t integratedField = magField->IntegratedField(this->GetStepTime(), particle, gravField);
-//    particle->SampleMagField(integratedField, this->GetStepTime());	
+//    const Double_t integratedField = magField->IntegratedField(stepTime, particle, gravField);
+//    particle->SampleMagField(integratedField, stepTime);	
 // }
    
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Step 5 - Get the current material we are in to determine what to do next
+   // -- Step 5 - Determine whether we collided with a wall, decayed, or any other
+   // -- state change occured
    ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Check whether particle has decayed in the last step
+   
+   if(this->WillDecay(stepTime) == kTRUE) {
+      this->Decayed(kTRUE); // Set Decay Flag
+      return kTRUE;
+   }
+   
    TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(navigator->GetCurrentVolume()->GetMaterial());
 
    // -- Get the normal vector to the boundary
@@ -524,6 +505,7 @@ Bool_t TUCNParticle::MakeStep(Double_t stepTime, TGeoNavigator* navigator, TUCNF
          if (prob <= currentMaterial->DetectionEfficiency()) {	
             // -- PARTICLE DETECTED
             this->Detected(kTRUE);  // Set detected flag
+            return kTRUE;
          } else {	
             // -- PARTICLE NOT-DETECTED.
             // -- Eventually we will change this to allow particle to track inside the detector
@@ -1306,9 +1288,6 @@ TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigato
    // Update Current Direction
    for (Int_t i = 0; i < 3; i++) currentDir[i] = currentVelocity[i]/velocityMag;
    navigator->SetCurrentDirection(currentDir);
-   // Update stepsize and steptime
-//   navigator->SetStep(navigator->GetStep());
-//   this->SetStepTime(this->GetStepTime());
    #ifdef VERBOSE_MODE
       cout << "PBF - Final X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] <<  "\t";
       cout << "Z: " << currentPoint[2] << endl;
@@ -1336,7 +1315,7 @@ TGeoNode* TUCNParticle::ParabolicBoundaryFinder(Double_t& stepTime, TGeoNavigato
       #ifdef VERBOSE_MODE
          cout << "PBF - Branch 4. On Boundary. Crossing boundary and locating." << endl;
          cout << "PBF - Get Level: " << navigator->GetLevel() << endl;
-         cout << "PBF - Current Node: " << gGeoManager->GetCurrentNode()->GetName() << endl;
+         cout << "PBF - Current Node: " << navigator->GetCurrentNode()->GetName() << endl;
       #endif
       skip = navigator->GetCurrentNode();
       is_assembly = navigator->GetCurrentNode()->GetVolume()->IsAssembly();
@@ -1390,13 +1369,6 @@ Double_t TUCNParticle::DetermineNextStepTime(const Double_t maxStepTime, const D
    } else {
       return maxStepTime;
    }
-}
-
-//_____________________________________________________________________________
-void TUCNParticle::SetStepTime(Double_t stepTime) 
-{
-   assert(stepTime > 0.0);
-   fStepTime = stepTime;
 }
 
 //_____________________________________________________________________________

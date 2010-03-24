@@ -48,15 +48,16 @@ private:
    Double_t    fPy;        // y component of momentum
    Double_t    fPz;        // z component of momentum
    Double_t    fE;         // kinetic energy
-
+   
    Double_t    fDistance;  // Distance travelled
-
+   
    Int_t       fId;        // Particle's number (assigned when its created to help keep track of it)
    
    Int_t       fBounces;            // Number of Bounces made from Wall
    Int_t       fSpecularBounces;    // Number of such bounces that are specular
    Int_t       fDiffuseBounces;     // Number of such bounces that are diffuse
-   Int_t       fRandomSeed;  // The seed of TRandom when the particle began to propagate
+   
+   Int_t       fRandomSeed;         // The seed of TRandom when the particle began to propagate
    
 //   Double_t    fAvgMagField;           // Average Magnetic field seen by the neutron as it travels
 //   Int_t       fFieldPointsSampled;    // Number of times field has been sampled
@@ -64,7 +65,6 @@ private:
    Bool_t      fLostToBoundary;
    Bool_t      fDetected;
    
-   Double_t    fStepTime;
    Bool_t      fUCNIsStepEntering;
    Bool_t      fUCNIsStepExiting;
    Bool_t      fUCNIsOutside;        //! flag that current point is outside geometry
@@ -101,8 +101,6 @@ private:
                                     Int_t &idaughter, Bool_t compmatrix=kFALSE);
    
    Double_t          DetermineNextStepTime(const Double_t maxStepTime, const Double_t runTime=0.);   
-   Double_t          GetStepTime() const {return fStepTime;}
-   void              SetStepTime(Double_t stepTime); 
    
    Bool_t            Bounce(TGeoNavigator* navigator, const Double_t* normal, 
                                     const TUCNGeoMaterial* wallMaterial);
