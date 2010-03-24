@@ -210,9 +210,16 @@ void TUCNParticle::SampleMagField(const Double_t integratedField, const Double_t
 Bool_t TUCNParticle::Propagate(TUCNRun* run, TGeoNavigator* navigator, TUCNFieldManager* fieldManager)
 {
    // -- Call State-dependent propagate method
-   if (!fState) return kFALSE;
+   if (!fState) fState = new TUCNPropagating();
    return fState->Propagate(this,run,navigator,fieldManager);
 }
+
+//_____________________________________________________________________________
+Bool_t TUCNParticle::Detected() const 
+{
+   return fState->Detected();
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -413,7 +420,7 @@ Bool_t TUCNPropagating::Propagate(TUCNParticle* particle, TUCNRun* run, TGeoNavi
    // -- 2. Propagation Loop
    Int_t stepNumber;
    for (stepNumber = 1 ; ; stepNumber++) {
-      #ifdef VERBOSE_MODE		
+      #ifdef VERBOSE_MODE
          cout << endl << "-------------------------------------------------------" << endl;
          cout << "STEP " << stepNumber << "\t" << particle->T() << " s" << "\t";
          cout << navigator->GetCurrentNode()->GetName() << endl;	

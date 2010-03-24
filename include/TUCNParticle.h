@@ -111,6 +111,7 @@ public:
    Double_t             Phi()    const;
    Double_t             Lifetime()     const {return fgLifetime;} 
    
+   void                 SetId(const Int_t id) {fId = id;}
    void                 SetVertex(const Double_t x, const Double_t y, const Double_t z, 
                                        const Double_t t);
    void                 SetMomentum(const Double_t px, const Double_t py, const Double_t pz, 
@@ -146,6 +147,8 @@ public:
    // -- Propagation
    Bool_t      Propagate(TUCNRun* run, TGeoNavigator* navigator, TUCNFieldManager* fieldManager);
    
+   Bool_t      Detected() const; 
+   
    ClassDef(TUCNParticle,1)   // Ultra-Cold Neutron
 };
 
@@ -179,6 +182,9 @@ public:
    virtual void      UpdateParticle(TUCNParticle* particle, const TGeoNavigator* navigator,
                         const Double_t timeInterval=0., const TUCNGravField* gravField=0);
    virtual Bool_t    RegisterState(TUCNRun* run) = 0;
+   
+   virtual Bool_t    Detected() const {return kFALSE;}
+   
    
    ClassDef(TUCNState,1)
 };
@@ -314,6 +320,8 @@ public:
    
    // -- Propagation
    virtual Bool_t    RegisterState(TUCNRun* run);
+   virtual Bool_t    Detected() const {return kTRUE;}
+   
    
    ClassDef(TUCNDetected,1)
 };

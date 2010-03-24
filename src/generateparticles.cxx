@@ -1,47 +1,22 @@
 #include <iostream>
-#include <fstream>
-#include <stdexcept>
-#include <string>
-#include <cassert>
-#include <cstdlib>
-#include <stdio.h> // sprintf
 
 #include "TCanvas.h"
-#include "TBenchmark.h"
-#include "TSystem.h"
 #include "TRint.h"
 #include "TRandom.h"
-#include "TObjArray.h"
 #include "TFile.h"
-#include "TKey.h"
-
-#include "TF1.h"
 #include "TH1.h"
-#include "TStyle.h"
 #include "TMath.h"
-#include "TLegend.h"
-#include "TGraphErrors.h"
 
 #include "TGeoManager.h"
-#include "TGeoNavigator.h"
-#include "TGeoTrack.h"
-#include "TParticle.h"
-#include "TParticlePDG.h"
+#include "TGeoMedium.h"
 #include "TGeoMatrix.h"
-#include "TPolyMarker3D.h"
 
 #include "TUCNGeoBuilder.h"
 #include "TUCNGeoBBox.h"
 #include "TUCNGeoTube.h"
 #include "TUCNGeoMaterial.h"
-#include "TUCNGravField.h"
 #include "TUCNParticle.h"
-#include "TUCNExperiment.h"
-#include "TUCNMagField.h"
-#include "TUCNUniformMagField.h"
-#include "TUCNRun.h"
-#include "TUCNFieldManager.h"
-#include "TUCNConfigFile.h"
+#include "TUCNData.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -55,12 +30,16 @@ using std::string;
 
 namespace ModelParameters {
    // -- SourceTube Segment
-   const Double_t sourceSegRMin = 0., sourceSegRMax = 31.5*Units::mm, sourceSegHalfLength = 125.*Units::mm;
+   const Double_t sourceSegRMin = 0.; 
+   const Double_t sourceSegRMax = 31.5*Units::mm;
+   const Double_t sourceSegHalfLength = 125.*Units::mm;
    const Double_t sourceSegAngle = 90.0;
    const Double_t sourceSegYDisplacement = 125.*Units::mm;
    
    // -- Neutron Beam Area
-   const Double_t neutronBeamAreaRMin = 0., neutronBeamAreaRMax = 15.*Units::mm, neutronBeamAreaHalfLength = (13.0*sourceSegHalfLength);
+   const Double_t neutronBeamAreaRMin = 0.;
+   const Double_t neutronBeamAreaRMax = 15.*Units::mm;
+   const Double_t neutronBeamAreaHalfLength = (13.0*sourceSegHalfLength);
    const Double_t neutronBeamAreaAngle = 90.0;
    const Double_t neutronBeamAreaYDisplacement = neutronBeamAreaHalfLength;
 }
@@ -68,7 +47,7 @@ namespace ModelParameters {
 using namespace ModelParameters;
 
 
-Bool_t GenerateParticles(const Int_t neutrons, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix);
+Bool_t GenerateParticles(const Int_t neutrons, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree);
 Bool_t CreateRandomParticle(TUCNParticle* particle, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
 Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnergy);
 
@@ -77,28 +56,44 @@ Int_t main(Int_t argc,Char_t **argv)
 {
    TRint *theApp = new TRint("TheApp", &argc, argv);
    
-   TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
    // -- Make the particle beam volume
+   TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
    TUCNGeoMaterial *matTracking  = new TUCNGeoMaterial("TrackingMaterial",0,0);
    TGeoMedium *vacuum = new TGeoMedium("Vacuum",1, matTracking);
-   TGeoVolume *neutronBeamArea = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("NeutronBeamArea", vacuum, neutronBeamAreaRMin, neutronBeamAreaRMax, neutronBeamAreaHalfLength);
-   TGeoRotation neutronBeamAreaRot("NeutronBeamAreaRot",0,neutronBeamAreaAngle,0); // phi, theta, psi
-   TGeoTranslation neutronBeamAreaTra("NeutronBeamAreaTra",0.,neutronBeamAreaYDisplacement,0.); // x, y, z
+   TGeoVolume *neutronBeamArea = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube( "NeutronBeamArea", vacuum, neutronBeamAreaRMin, neutronBeamAreaRMax, neutronBeamAreaHalfLength);
+   TGeoRotation neutronBeamAreaRot("NeutronBeamAreaRot",0,neutronBeamAreaAngle,0); // phi,theta,psi
+   TGeoTranslation neutronBeamAreaTra("NeutronBeamAreaTra",0.,neutronBeamAreaYDisplacement,0.);
    TGeoCombiTrans neutronBeamAreaCom(neutronBeamAreaTra,neutronBeamAreaRot);
    TGeoHMatrix neutronBeamAreaMat = neutronBeamAreaCom;
    TGeoMatrix* neutronBeamAreaMatrix = new TGeoHMatrix(neutronBeamAreaMat);
-   GenerateParticles(10000, neutronBeamArea, neutronBeamAreaMatrix);
    
+   // -- Generate the particles
+   TUCNData* dataTree = new TUCNData("InitialParticleData","InitialParticleData");
+   GenerateParticles(1000, neutronBeamArea, neutronBeamAreaMatrix, dataTree);
+   
+   // -- Write out the particle tree
+   TFile *f = TFile::Open("temp/initialparticles.root","recreate");
+   if (!f || f->IsZombie()) {
+      Error("Export","Cannot open file");
+      return kFALSE;
+   }
+   dataTree->Write("InitialParticleData");
+   cout << dataTree->GetName() << " was successfully written to file" << endl;
+   cout << "-------------------------------------------" << endl;
+   f->ls(); // List the contents of the file
+   cout << "-------------------------------------------" << endl;
+   delete f;
+   
+   // -- Enter Root interactive session
    theApp->Run();
-   
-	return EXIT_SUCCESS;
+   return EXIT_SUCCESS;
 }
 
 //__________________________________________________________________________
-Bool_t GenerateParticles(const Int_t neutrons, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix)
+Bool_t GenerateParticles(const Int_t neutrons, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree)
 {
-   // Generates a uniform distribution of particles with random directions all with the same total energy
-   // (kinetic plus potential) defined at z = 0.	
+   // Generates a uniform distribution of particles with random directions all with 
+   // the same total energy (kinetic plus potential) defined at z = 0.
    cout << "-------------------------------------------" << endl;
    cout << "Generating " << neutrons << " Particles." << endl;
    
@@ -108,7 +103,8 @@ Bool_t GenerateParticles(const Int_t neutrons, const TGeoVolume* beamVolume, con
    boundary[0] = neutronBeamAreaRMax;
    boundary[1] = 2.0*neutronBeamAreaHalfLength;
    boundary[2] = neutronBeamAreaRMax;
-   cout << boundary[0] << "\t" << boundary[1] << "\t" << boundary[2] << endl;
+   cout << "Boundary X (m): " << boundary[0] << "\t" << "Y (m): " << boundary[1] << "\t";
+   cout << "Z (m): " << boundary[2] << endl;
    
    TH1F* initialXHist = new TH1F("InitialXHist","Initial X Position, Units of (m)", nbins, -boundary[0], boundary[0]);
    TH1F* initialYHist = new TH1F("InitialYHist","Initial Y Position, Units of (m)", nbins, 0., boundary[1]); 
@@ -122,12 +118,13 @@ Bool_t GenerateParticles(const Int_t neutrons, const TGeoVolume* beamVolume, con
    
    Double_t maxEnergy = 0.5*Constants::neutron_mass*TMath::Power(vmax,2.0);
    
-   cout << maxEnergy/Units::neV << endl;
+   cout << "Max Energy: " << maxEnergy/Units::neV << endl;
    
    // -- Loop over the total number of particles to be created. 
    for (Int_t i = 0; i < neutrons; i++) {
       // -- Create particle at a random position inside beam volume
       TUCNParticle* particle = new TUCNParticle();
+      particle->SetId(i);
       CreateRandomParticle(particle, beamVolume, beamMatrix);
       // -- Initialise particle's momentum
       DetermineParticleMomentum(particle, maxEnergy);
@@ -139,6 +136,8 @@ Bool_t GenerateParticles(const Int_t neutrons, const TGeoVolume* beamVolume, con
       initialVYHist->Fill(particle->Vy());
       initialVZHist->Fill(particle->Vz());
       initialVHist->Fill(particle->V());
+      // -- Add particle to data tree
+      dataTree->AddInitialParticleState(particle);
    }
    
    TCanvas *canvas1 = new TCanvas("InitialPhaseSpace","Initial Phase Space",60,0,1000,800);

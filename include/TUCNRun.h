@@ -31,8 +31,6 @@ protected:
    TObjArray*           fParticles;
    TUCNData*            fData;
    
-   Int_t                fNeutrons;
-   Double_t             fTotalEnergy;
    Double_t             fRunTime;
    Double_t             fMaxStepTime;
    Double_t             fDiffuseCoeff;
@@ -59,8 +57,7 @@ public:
    Bool_t               Initialise(TUCNConfigFile* configFile);
    Bool_t               Export(TString& outputFile);
    
-   Int_t                Neutrons() const              {return fNeutrons;}
-   Double_t             TotalEnergy() const           {return fTotalEnergy;}
+   Int_t                Neutrons() const;
    Double_t             RunTime() const               {return fRunTime;}
    Double_t             MaxStepTime()                 {return fMaxStepTime;}
    Int_t                Detected() const              {return fDetectedCounter;}

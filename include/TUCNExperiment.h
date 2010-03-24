@@ -40,7 +40,7 @@ protected:
 	Bool_t						BuildGeometry(TUCNConfigFile* configFile);
 	
 	// Particle & Track Management
-	Bool_t 						GenerateParticles(TUCNRun* run);
+//	Bool_t 						GenerateParticles(TUCNRun* run);
 	Bool_t						ClearTracks();
 		
 public:

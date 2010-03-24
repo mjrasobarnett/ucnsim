@@ -197,17 +197,29 @@ Bool_t TUCNExperiment::BuildGeometry(TUCNConfigFile* configFile)
 		return kFALSE;
 	}
 	// Set boundary fermi potential
-	static_cast<TUCNGeoMaterial*>(this->GeoManager()->GetMaterial("BoundaryMaterial"))->FermiPotential(V);
+	static_cast<TUCNGeoMaterial*>( this->GeoManager()->GetMaterial("BoundaryMaterial"))->FermiPotential(V);
 	// --------------------------------------------------------------------------
 	// -- Define the Source Volume and the Source Matrix for creating the neutrons
 	TString sourceVolumeName = configFile->GetString("SourceVolume","Geometry");
-	if (sourceVolumeName == "") { Error("BuildGeometry","No SourceVolume has been specified"); return kFALSE; }
+	if (sourceVolumeName == "") { 
+	   Error("BuildGeometry","No SourceVolume has been specified");
+	   return kFALSE; 
+	}
 	TString sourceMatrixName = configFile->GetString("SourceMatrix","Geometry");
-	if (sourceMatrixName == "") { Error("BuildGeometry","No SourceMatrix has been specified"); return kFALSE; }
+	if (sourceMatrixName == "") { 
+	   Error("BuildGeometry","No SourceMatrix has been specified");
+	   return kFALSE;
+	}
    TGeoVolume* sourceVolume = this->GeoManager()->FindVolumeFast(sourceVolumeName);
-	if (sourceVolume == 0) { Error("BuildGeometry","No SourceVolume has been found for the name specified."); return kFALSE; }
+	if (sourceVolume == 0) { 
+	   Error("BuildGeometry","No SourceVolume has been found for the name specified.");
+	   return kFALSE; 
+	}
    TGeoMatrix* sourceMatrix = dynamic_cast<TGeoMatrix*>(this->GeoManager()->GetListOfMatrices()->FindObject(sourceMatrixName));
-	if (sourceMatrix == 0) { Error("BuildGeometry","No SourceMatrix has been found for the name specified."); return kFALSE; }
+	if (sourceMatrix == 0) { 
+	   Error("BuildGeometry","No SourceMatrix has been found for the name specified.");
+	   return kFALSE; 
+	}
    this->SetSourceVolume(sourceVolume);
 	this->SetSourceMatrix(sourceMatrix);
 	
@@ -235,7 +247,7 @@ Bool_t TUCNExperiment::ClearTracks()
 	return kTRUE;
 }
 
-//______________________________________________________________________________
+/*//______________________________________________________________________________
 Bool_t TUCNExperiment::GenerateParticles(TUCNRun* run)
 {
 	// Generates a uniform distribution of particles with random directions all with the same total energy
@@ -387,7 +399,7 @@ Bool_t TUCNExperiment::GenerateParticles(TUCNRun* run)
 	cout << "-------------------------------------------" << endl;	
 	return kTRUE;
 }
-
+*/
 //______________________________________________________________________________
 Bool_t TUCNExperiment::Initialise()
 {
@@ -476,12 +488,12 @@ Bool_t TUCNExperiment::Run()
 			return kFALSE;
 		}
 		
-		// Create Particles/Tracks
+/*		// Create Particles/Tracks
 		if (!(this->GenerateParticles(&theRun))) {
 			Error("Run","Could not create particles for Run: %s.", theRun.GetName());
 			return kFALSE;
 		}
-		
+*/		
 		// Propagate the Run
 		if (!(theRun.Propagate(this->GeoManager(), this->FieldManager()))) {
 			Fatal("Run","Run: &s failed to Propagate Correctly", theRun.GetName());

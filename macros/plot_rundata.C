@@ -219,6 +219,7 @@ Bool_t PlotInitialAndFinalPhaseSpace(const TString& dataFileName, const TString&
 		if (initialParticle == NULL) continue;
 		TUCNParticle* finalParticle = run->GetParticle(i);
 		if (finalParticle == NULL) continue;
+      if (finalParticle->Detected() == kFALSE) continue;
 		initialEnergyHist->Fill(initialParticle->Energy());
 	   initialPxHist->Fill(initialParticle->Px()/Units::eV);
 		initialPyHist->Fill(initialParticle->Py()/Units::eV);
