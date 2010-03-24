@@ -26,16 +26,19 @@ public:
    Bool_t         ChecksOut();
    
    // Add a Particle
-   Bool_t          AddInitialParticleState(TUCNParticle* particle);
-   Bool_t          AddPropagatingParticleState(TUCNParticle* particle);
-   Bool_t          AddDetectedParticleState(TUCNParticle* particle);
-   Bool_t          AddDecayedParticleState(TUCNParticle* particle);
-   Bool_t          AddAbsorbedParticleState(TUCNParticle* particle);
-   Bool_t          AddLostParticleState(TUCNParticle* particle);
-   Bool_t          AddBadParticleState(TUCNParticle* particle);
+   Bool_t         AddParticleState(TString treeName, TUCNParticle* particle);
+   Bool_t         AddParticleState(TTree* tree, TUCNParticle* particle);
+   Bool_t         AddInitialParticleState(TUCNParticle* particle);
+   Bool_t         AddPropagatingParticleState(TUCNParticle* particle);
+   Bool_t         AddDetectedParticleState(TUCNParticle* particle);
+   Bool_t         AddDecayedParticleState(TUCNParticle* particle);
+   Bool_t         AddAbsorbedParticleState(TUCNParticle* particle);
+   Bool_t         AddLostParticleState(TUCNParticle* particle);
+   Bool_t         AddBadParticleState(TUCNParticle* particle);
    
    // Get a Particle
-   TUCNParticle*  GetParticleState(TTree& tree, Int_t index);
+   TUCNParticle*  GetParticleState(TString treeName, Int_t index);
+   TUCNParticle*  GetParticleState(TTree* tree, Int_t index);
    TUCNParticle*  GetInitialParticleState(Int_t index);
    TUCNParticle*  GetPropagatingParticleState(Int_t index);
    TUCNParticle*  GetDetectedParticleState(Int_t index);
