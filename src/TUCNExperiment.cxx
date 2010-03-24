@@ -28,12 +28,14 @@ TUCNExperiment::TUCNExperiment()
 // -- Default constructor
    Info("TUCNExperiment", "Default Constructor");
    fFieldManager = 0;
+   fGeoManager = 0;
 } 
 
 //_____________________________________________________________________________
 TUCNExperiment::TUCNExperiment(const TUCNExperiment& other)
                :TNamed(other),
-                fFieldManager(other.fFieldManager)
+                fFieldManager(other.fFieldManager),
+                fGeoManager(other.fGeoManager)
 {
 // -- Copy Constructor
 	Info("TUCNExperiment", "Copy Constructor");
@@ -46,6 +48,7 @@ TUCNExperiment& TUCNExperiment::operator=(const TUCNExperiment& other)
    if(this!=&other) {
       TNamed::operator=(other);
       fFieldManager = other.fFieldManager;
+      fGeoManager = other.fGeoManager;
    }
    return *this;
 }
@@ -56,7 +59,7 @@ TUCNExperiment::~TUCNExperiment()
 // -- Destructor
    Info("TUCNExperiment", "Destructor");
    if (fFieldManager) delete fFieldManager;
-   if (gGeoManager) delete gGeoManager;
+   if (fGeoManager) delete fGeoManager;
 }
 
 // -- METHODS --
@@ -70,7 +73,7 @@ Bool_t TUCNExperiment::BuildGeometry(TUCNConfigFile& configFile, const TUCNRun& 
       return kFALSE;
    }
    // Load the Geometry from the File
-   TGeoManager::Import(geomFileName);
+   fGeoManager = TGeoManager::Import(geomFileName);
    return kTRUE;
 }
 

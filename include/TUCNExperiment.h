@@ -20,6 +20,7 @@ class TUCNExperiment : public TNamed
 {
 protected:
    TUCNFieldManager*    fFieldManager;
+   TGeoManager*         fGeoManager;
    
    // Geometry Building
    Bool_t               BuildGeometry(TUCNConfigFile& configFile, const TUCNRun& run);
@@ -37,8 +38,8 @@ public:
    Bool_t               Initialise(TUCNConfigFile& configFile, const TUCNRun& run);
    
    // GeoManager
-   TGeoManager*         GeoManager() const {return gGeoManager;}
-   TGeoNavigator*       Navigator() const {return gGeoManager->GetCurrentNavigator();}
+   TGeoManager*         GeoManager() const {return fGeoManager;}
+   TGeoNavigator*       Navigator() const  {return fGeoManager->GetCurrentNavigator();}
    
    // FieldManager
    TUCNFieldManager*    FieldManager() const {return fFieldManager;}
