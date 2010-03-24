@@ -4,8 +4,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class TUCNExperiment;
-#pragma link C++ class TUCNGeoManager;
-#pragma link C++ class TUCNGeoNavigator;
 #pragma link C++ class TUCNGeoBuilder;
 #pragma link C++ class TUCNGeoBBox;
 #pragma link C++ class TUCNGeoTube;

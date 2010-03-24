@@ -26,10 +26,6 @@ GENPART			= bin/generateparticles$(ExeSuf)
 #------------------------------------------------------------------------------
 # my classes
 #------------------------------------------------------------------------------
-TUCNGEOMANAGERO		= src/TUCNGeoManager.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNGEOMANAGERS		= src/TUCNGeoManager.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNGEONAVIGATORO		= src/TUCNGeoNavigator.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNGEONAVIGATORS		= src/TUCNGeoNavigator.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNGEOBUILDERO		= src/TUCNGeoBuilder.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNGEOBUILDERS		= src/TUCNGeoBuilder.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNGEOBBOXO			= src/TUCNGeoBBox.$(ObjSuf)  UCNDict.$(ObjSuf)
@@ -78,7 +74,7 @@ LINKDEF			= UCNLinkDef.h
 UCNSO				= lib/libUCN.$(DllSuf)
 UCNLIB			= -L./lib -lUCN -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter -lMathMore
 #------------------------------------------------------------------------------
-OBJS				=	$(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(GENPARTO) $(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) \
+OBJS				=	$(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(GENPARTO) $(TUCNGEOBUILDERO) \
  						$(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) \
  						$(TUCNPARABOLAO) $(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) \
  						$(TUCNRUNO) $(TUCNPARABOLICMAGFIELDO) $(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) $(TUCNGEOBOOLNODEO)
@@ -117,7 +113,7 @@ $(GENPART):		$(GENPARTO) $(UCNSO)
 					@echo "$@ done"
 
 UCN:				$(UCNSO)
-$(UCNSO):		$(TUCNGEOMANAGERO) $(TUCNGEONAVIGATORO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) \
+$(UCNSO):		$(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) \
 					$(TUCNGEOMATERIALO) $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
 					$(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO) \
 					$(TUCNPARABOLICMAGFIELDO) $(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) $(TUCNGEOBOOLNODEO)
@@ -146,8 +142,6 @@ endif
 endif
 endif
 
-TUCNGEOMANAGERO:				include/TUCNGeoManager.h
-TUCNGEONAVIGATORO:			include/TUCNGeoNavigator.h 
 TUCNGEOBUILDERO:				include/TUCNGeoBuilder.h
 TUCNGEOBBOXO:					include/TUCNGeoBBox.h
 TUCNGEOTUBEO:					include/TUCNGeoTube.h
@@ -168,7 +162,7 @@ TUCNCONFIGFILEO:				include/TUCNConfigFile.h
 TUCNGEOCOMPOSITESHAPEO:		include/TUCNGeoCompositeShape.h
 TUCNGEOBOOLNODEO:				include/TUCNGeoBoolNode.h
 
-UCNDict.$(SrcSuf):		include/TUCNGeoManager.h include/TUCNGeoNavigator.h include/TUCNGeoBuilder.h \
+UCNDict.$(SrcSuf):		include/TUCNGeoBuilder.h \
 								include/TUCNGeoBBox.h include/TUCNGeoTube.h include/TUCNGeoMaterial.h \
 								include/TUCNGravField.h include/TUCNParticle.h include/TUCNDataParser.h include/TUCNPolynomial.h \
 								include/TUCNParabola.h include/TUCNExperiment.h include/TUCNData.h include/TUCNMagField.h \

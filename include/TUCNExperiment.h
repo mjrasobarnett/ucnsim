@@ -6,7 +6,7 @@
 
 #include "TNamed.h"
 
-#include "TUCNGeoManager.h"
+#include "TGeoManager.h"
 #include "TUCNRun.h"
 
 ////////////////////////////////////////////////////////////////////////////

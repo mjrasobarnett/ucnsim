@@ -30,8 +30,6 @@
 #include "TGeoMatrix.h"
 #include "TPolyMarker3D.h"
 
-#include "TUCNGeoManager.h"
-#include "TUCNGeoNavigator.h"
 #include "TUCNGeoBuilder.h"
 #include "TUCNGeoBBox.h"
 #include "TUCNGeoTube.h"

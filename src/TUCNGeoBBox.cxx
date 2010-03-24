@@ -9,7 +9,6 @@
 #include "TVirtualGeoTrack.h"
 #include "TGeoBBox.h"
 
-#include "TUCNGeoManager.h"
 #include "TUCNParticle.h"
 #include "TUCNParabola.h"
 #include "TUCNPolynomial.h"
