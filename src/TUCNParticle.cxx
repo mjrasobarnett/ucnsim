@@ -13,7 +13,7 @@
 #include "TRandom.h"
 
 #include "TUCNRun.h"
-#include "TUCNGeoMaterial.h"
+#include "TUCNVolume.h"
 #include "TUCNFieldManager.h"
 #include "TUCNGravField.h"
 #include "TUCNParticle.h"
@@ -214,6 +214,35 @@ Bool_t TUCNParticle::Propagate(TUCNRun* run)
    return fState->Propagate(this,run,run->Navigator(),run->FieldManager());
 }
 
+//_____________________________________________________________________________
+Bool_t TUCNParticle::LocateInGeometry(TUCNParticle* particle, TGeoNavigator* navigator, const TGeoNode* initialNode, const TGeoMatrix* initialMatrix, const TGeoNode* crossedNode)
+{
+   return fState->LocateInGeometry(particle, navigator, initialNode, initialMatrix, crossedNode);
+}
+
+//_____________________________________________________________________________
+void TUCNParticle::Detected()
+{
+   fState->Detected(this);
+}
+
+//_____________________________________________________________________________
+void TUCNParticle::Lost()
+{
+   fState->Lost(this);
+}
+
+//_____________________________________________________________________________
+void TUCNParticle::Absorbed()
+{
+   fState->Absorbed(this);
+}
+
+//_____________________________________________________________________________
+void TUCNParticle::Bad()
+{
+   fState->Bad(this);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -274,6 +303,12 @@ Bool_t TUCNState::Propagate(TUCNParticle* /*particle*/, TUCNRun* /*run*/, TGeoNa
 }
 
 //_____________________________________________________________________________
+Bool_t TUCNState::LocateInGeometry(TUCNParticle* /*particle*/, TGeoNavigator* /*navigator*/, const TGeoNode* /*initialNode*/, const TGeoMatrix* /*initialMatrix*/, const TGeoNode* /*crossedNode*/)
+{
+   return kTRUE;
+}
+
+//_____________________________________________________________________________
 void TUCNState::UpdateParticle(TUCNParticle* particle, const TGeoNavigator* navigator, const Double_t timeInterval, const TUCNGravField* gravField)
 {
    // -- Take the particle and update its position, momentum, time and energy
@@ -327,6 +362,29 @@ void TUCNState::UpdateParticle(TUCNParticle* particle, const TGeoNavigator* navi
    #endif
 }
 
+//_____________________________________________________________________________
+void TUCNState::Detected(TUCNParticle* /*particle*/)
+{
+   // Default do nothing
+}
+
+//_____________________________________________________________________________
+void TUCNState::Lost(TUCNParticle* /*particle*/)
+{
+   // Default do nothing
+}
+
+//_____________________________________________________________________________
+void TUCNState::Absorbed(TUCNParticle* /*particle*/)
+{
+   // Default do nothing
+}
+
+//_____________________________________________________________________________
+void TUCNState::Bad(TUCNParticle* /*particle*/)
+{
+   // Default do nothing
+}
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -398,18 +456,19 @@ Bool_t TUCNPropagating::Propagate(TUCNParticle* particle, TUCNRun* run, TGeoNavi
    // -- 1. Initialise Track
    // Initialise track - Sets navigator's current point/direction/node to that of the particle
    navigator->InitTrack(particle->X(), particle->Y(), particle->Z(), particle->Nx(), particle->Ny(), particle->Nz());
+   
    #ifdef VERBOSE_MODE
       cout << "Propagate - Starting Run - Max time (seconds): " <<  run->RunTime() << endl;
    #endif
    
    // -- Check that Particle has not been initialised inside a boundary or detector
-   TUCNGeoMaterial* material = static_cast<TUCNGeoMaterial*>(
-                                 navigator->GetCurrentVolume()->GetMaterial());
-   if (material->IsTrackingMaterial() == kFALSE) {
-      cout << "Particle: " << particle->Id() << " initialised inside boundary of ";
-      cout << navigator->GetCurrentVolume()->GetName() << endl;
-      return kFALSE;
-   }
+//   TUCNMaterial* material = static_cast<TUCNMaterial*>(
+//                                 navigator->GetCurrentVolume()->GetMaterial());
+//   if (material->IsTrackingMaterial() == kFALSE) {
+//      cout << "Particle: " << particle->Id() << " initialised inside boundary of ";
+//      cout << navigator->GetCurrentVolume()->GetName() << endl;
+//      return kFALSE;
+//   }
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- 2. Propagation Loop
@@ -436,8 +495,6 @@ Bool_t TUCNPropagating::Propagate(TUCNParticle* particle, TUCNRun* run, TGeoNavi
       }
    }
    // -- END OF PROPAGATION LOOP
-   // -- Register Final Particle State with Run counters
-   particle->SaveState(run);
    return kTRUE;
 }
 
@@ -489,9 +546,9 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
       cout << "Initial Matrix: " << endl;
       initialMatrix->Print();
       initMatrix.Print();
-      cout << "Is On Boundary?  " << this->IsUCNOnBoundary() << endl;
-      cout << "Is Step Entering?  " << this->IsUCNStepEntering()  << endl;
-      cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
+      cout << "Is On Boundary?  " << fIsOnBoundary << endl;
+      cout << "Is Step Entering?  " << fIsStepEntering << endl;
+      cout << "Is Step Exiting?  " << fIsStepExiting << endl;
       cout << "-----------------------------" << endl << endl;
    #endif
      
@@ -514,6 +571,7 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
       // CASE 1; No Gravitational Field - Straight line tracking
       if (navigator->FindNextBoundaryAndStep(stepTime) == NULL) {
          Error("MakeStep", "FindNextBoundaryAndStep has failed to find the next node");
+         this->ChangeState(particle, new TUCNBad());
          throw runtime_error("Failed to find next node");
       }
       // (Re-)Calculate the time travelled (approximately) from the navigator's stepsize
@@ -525,6 +583,7 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
       TGeoNode* nextNode = this->ParabolicBoundaryFinder(stepTime, particle, navigator, crossedNode, gravField);
       if (nextNode == NULL) {
          Error("MakeStep", "FindNextBoundaryAndStepAlongParabola has failed to find the next node");
+         this->ChangeState(particle, new TUCNBad());
          throw runtime_error("Failed to find next node");
       }
       // Assert that the returned node is also the current node
@@ -540,9 +599,9 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
       cout << "Steptime (s): " << stepTime << endl;
       cout << "-----------------------------" << endl;
       cout << "Navigator's Current Node: " << navigator->GetCurrentNode()->GetName() << endl;
-      cout << "Is On Boundary?  " << this->IsUCNOnBoundary() << endl;
-      cout << "Is Step Entering?  " << this->IsUCNStepEntering()  << endl;
-      cout << "Is Step Exiting?  " << this->IsUCNStepExiting() << endl;
+      cout << "Is On Boundary?  " << fIsOnBoundary << endl;
+      cout << "Is Step Entering?  " << fIsStepEntering << endl;
+      cout << "Is Step Exiting?  " << fIsStepExiting << endl;
       cout << "-----------------------------" << endl << endl;
    #endif
    
@@ -554,6 +613,7 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    Bool_t locatedParticle = this->LocateInGeometry(particle, navigator, initialNode, initialMatrix, crossedNode);
    if (locatedParticle == kFALSE) {
       cout << "Error - After Step - Unable to locate particle correctly in Geometry" << endl;
+      this->ChangeState(particle, new TUCNBad());
       throw runtime_error("Unable to locate particle uniquely in correct volume");
    }
    // -- We should now have propagated our point by some stepsize and be inside the correct volume 
@@ -577,8 +637,6 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
       return kFALSE;
    }
    
-   TUCNGeoMaterial* currentMaterial = static_cast<TUCNGeoMaterial*>(navigator->GetCurrentVolume()->GetMaterial());
-
    // -- Get the normal vector to the boundary
    Double_t normal[3] = {0.,0.,0.};
    if (gravField) {
@@ -588,84 +646,12 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
       //normal = navigator->FindNormal();
    }
    
-   // -- Determine what to do if we are on a boundary
-   // -- Is Track on the surface of a boundary?
-   if (currentMaterial->IsTrackingMaterial() == kFALSE) {
-      #ifdef VERBOSE_MODE	
-         cout << "On Boundary - Deciding what action to take..." << endl;
-      #endif
-      // -- Are we on the surface of a detector?
-      if (currentMaterial->IsDetectorMaterial() == kTRUE) {
-         // -- Was particle detected?
-         Double_t prob = gRandom->Uniform(0.0,1.0);
-         if (prob <= currentMaterial->DetectionEfficiency()) {
-            // -- PARTICLE DETECTED
-            this->ChangeState(particle, new TUCNDetected());
-            return kFALSE;
-         } else {	
-            // -- PARTICLE NOT-DETECTED.
-            // -- Eventually we will change this to allow particle to track inside the detector
-            cerr << "Not implemented yet" << endl;
-            return kFALSE;
-         }
-      // -- Was particle lost to boundary (absorbed/upscattered) ?
-      } else if (this->IsLostToWall(particle, currentMaterial, normal)) {
-         this->ChangeState(particle, new TUCNAbsorbed());
-         return kFALSE;
-      // -- Are we outside the geometry heirarchy we have built - ie: in TOP
-      } else if (currentMaterial->IsBlackHole() == kTRUE) {
-         this->ChangeState(particle, new TUCNLost());;
-         return kFALSE;
-      } else {
-         ///////////////////////////////////////////////////////////////////////////////////////
-         // -- STEP 6 - Particle reflects from boundary
-         ///////////////////////////////////////////////////////////////////////////////////////
-         TGeoNode* boundaryNode = navigator->GetCurrentNode();
-         TGeoMatrix* boundaryMatrix = navigator->GetCurrentMatrix();
-         #ifdef VERBOSE_MODE	
-            cout << "------------------- BOUNCE ----------------------" << endl;
-            cout << "Boundary Node: " << boundaryNode->GetName() << endl;
-            cout << "On Boundary? " << this->IsUCNOnBoundary() << endl;
-         #endif	
-         // -- Make a Bounce (note: bounce calls update track, so no need to do that here)
-         this->Bounce(particle, navigator, normal, currentMaterial);
-
-         // -- cd back to the saved node before we made the step -- stored in 'initialPath'. 
-         if (!navigator->cd(initialPath)) {
-            Error("MakeStep","Unable to cd to initial node after bounce!");
-            return kFALSE;
-         }
-
-         TGeoNode* finalNode = navigator->GetCurrentNode();
-         #ifdef VERBOSE_MODE	
-            cout << "-------------------------------------------------" << endl;
-            cout << "Final Node: " << finalNode->GetName() << endl;
-            cout << "On Boundary? " << this->IsUCNOnBoundary() << endl;
-            cout << "-------------------------------------------------" << endl << endl;
-         #endif
-         // -- Check if the particle is still registered as being on the boundary
-         if (finalNode == boundaryNode) {
-            cout << "Initial Node: " << boundaryNode->GetName() << "\t";
-            cout << "Final Node: " << finalNode->GetName() << endl;
-            return kFALSE;
-         }
-        
-         ///////////////////////////////////////////////////////////////////////////////////////
-         // -- STEP 7 - Now we need to determine where we have ended up, and to examine whether
-         // -- the current volume is the point's true container
-         ///////////////////////////////////////////////////////////////////////////////////////
-         // -- Attempt to locate particle within the current node
-         Bool_t locatedParticle = this->LocateInGeometry(particle, navigator, boundaryNode, boundaryMatrix, crossedNode);
-         if (locatedParticle == kFALSE) {
-            cout << "Error - After Bounce - Unable to locate particle correctly in Geometry"<< endl;
-            throw runtime_error("Unable to locate particle uniquely in correct volume");
-         } 
-         // End of Bounce. We should have returned to the original node, 
-         // and guarenteed that the current point is located within it.
-      }
+   // -- Interact with Boundary
+   TUCNVolume* currentVolume = static_cast<TUCNVolume*>(navigator->GetCurrentVolume());
+   if (currentVolume->Interact(particle, normal, navigator, crossedNode, initialPath) == kFALSE) {
+      // Particle reached a final state
+      return kFALSE;
    }
-   // Add Vertex to Track
-   // track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
    // End of MakeStep.
    return kTRUE;
 }
@@ -1173,14 +1159,17 @@ Bool_t TUCNPropagating::LocateInGeometry(TUCNParticle* particle, TGeoNavigator* 
    // -- boundary that is out by a small amount - then we make a number of small
    // -- microsteps, along the normal vector of the boundary, back to where we should be.
    // -- If these microsteps still fail to locate the particle, we return an error.
-   #ifdef VERBOSE_MODE
-      cout << "Locating Current Point in Geometry..." << endl;
-   #endif
+   
    // - 1. Find the current Point, Node and Matrix
    Double_t* currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
    TGeoNode* currentNode = navigator->GetCurrentNode();
    TGeoMatrix* currentMatrix = navigator->GetCurrentMatrix();
-
+   #ifdef VERBOSE_MODE
+      cout << "Locating Current Point in Geometry..." << endl;
+      cout << "Current Node: " << currentNode->GetName() << endl;
+      cout << "Initial Node: " << initialNode->GetName() << endl;
+      
+   #endif
    // - 1.1 Find current point, local to the current matrix
    Double_t currentLocalPoint[3] = {0.,0.,0.};
    currentMatrix->MasterToLocal(currentGlobalPoint,&currentLocalPoint[0]);
@@ -1218,6 +1207,14 @@ Bool_t TUCNPropagating::LocateInGeometry(TUCNParticle* particle, TGeoNavigator* 
          cout << "Current Global Point: " << endl;
          cout << "X:" << currentGlobalPoint[0] << "\t" << "Y:" << currentGlobalPoint[1] << "\t";
          cout << "Z:" << currentGlobalPoint[2] << endl;
+         cout << "X:" << particle->X() << "\t" << "Y:" << particle->Y() << "\t";
+         cout << "Z:" << particle->Z() << endl;
+         cout << "NX:" << navigator->GetCurrentDirection()[0] << "\t" << "NY:" << navigator->GetCurrentDirection()[1] << "\t";
+         cout << "NZ:" << navigator->GetCurrentDirection()[2] << endl;
+         cout << "NX:" << particle->Nx() << "\t" << "NY:" << particle->Ny() << "\t";
+         cout << "NZ:" << particle->Nz() << endl;
+         
+         
          cout << "-----------------------------" << endl;
          cout << "Current Node: " << currentNode->GetName() << endl;
          cout << "Current Matrix: " << endl;
@@ -1437,179 +1434,6 @@ Bool_t TUCNPropagating::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigato
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNPropagating::Bounce(TUCNParticle* particle, TGeoNavigator* navigator, const Double_t* normal, const TUCNGeoMaterial* wallMaterial)
-{
-   // -- Make a reflection off of the current boundary
-   // -- Direction Vector
-   Double_t dir[3] = {navigator->GetCurrentDirection()[0], navigator->GetCurrentDirection()[1], navigator->GetCurrentDirection()[2]};
-   
-   // -- Normal Vector
-   Double_t norm[3] = {normal[0], normal[1], normal[2]};
-   
-   // Check if the normal vector is actually pointing in the wrong direction  
-   // (wrong means pointing along the direction of the track, rather than in the opposite direction)
-   // This will actually be the case nearly all (if not all) of the time,
-   // because of the way ROOT calculates the normal
-   Double_t dotProduct = dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2];
-   if (dotProduct > 0.) {
-      // If so, reflect the normal to get the correct direction
-      norm[0] = -norm[0];
-      norm[1] = -norm[1];
-      norm[2] = -norm[2];
-   }
-   
-   // -- Calculate Probability of diffuse reflection
-   Double_t fermiPotential = wallMaterial->FermiPotential();
-   Double_t diffuseCoefficient = wallMaterial->RoughnessCoeff();
-   Double_t diffuseProbability = this->DiffuseProbability(diffuseCoefficient, normal, fermiPotential);
-   
-   // Determine Reflection Type 
-   Double_t prob = gRandom->Uniform(0.0,1.0);
-   if (prob <= diffuseProbability) {
-      // -- Diffuse Bounce
-      this->DiffuseBounce(navigator, dir, norm);
-      particle->MadeDiffuseBounce(); // Update counter
-   } else {
-      // -- Specular Bounce
-      this->SpecularBounce(dir, norm);
-      particle->MadeSpecularBounce(); // Update counter
-   }
-
-   // -- Set New Direction
-   navigator->SetCurrentDirection(dir);
-   
-   // -- Update Particle
-   this->UpdateParticle(particle, navigator);	
-
-   // -- Update Bounce Counter
-   particle->MadeBounce();
-   return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t TUCNPropagating::SpecularBounce(Double_t* dir, const Double_t* norm)
-{
-   #ifdef VERBOSE_MODE
-      cout << "----------------------------" << endl;
-      cout << "Specular Bounce" << endl;
-      cout << "BEFORE - nx: " << dir[0] <<"\t"<< "ny: " << dir[1] <<"\t"<< "nz: " << dir[2] << endl;
-      cout <<"normx: "<< norm[0] <<"\t"<<"normy: "<< norm[1] <<"\t"<<"normz: "<< norm[2] << endl;
-   #endif
-   
-   Double_t dotProduct = dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2];	
-   // Reflection Law for Specular Reflection
-   dir[0] = dir[0] - 2.0*dotProduct*norm[0];
-   dir[1] = dir[1] - 2.0*dotProduct*norm[1];
-   dir[2] = dir[2] - 2.0*dotProduct*norm[2];
-   
-   #ifdef VERBOSE_MODE
-      cout << "AFTER - nx: " << dir[0] <<"\t"<< "ny: " << dir[1] <<"\t"<< "nz: " << dir[2] << endl;
-   #endif
-   return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t TUCNPropagating::DiffuseBounce(const TGeoNavigator* navigator, Double_t* dir, const Double_t* norm)
-{
-   #ifdef VERBOSE_MODE	
-      cout << "----------------------------" << endl;
-      cout << "Diffuse Bounce" << endl;
-      cout << "BEFORE - nx: " << dir[0] <<"\t"<< "ny: " << dir[1] <<"\t"<< "nz: " << dir[2] << endl;
-      cout << "normx: "<< norm[0] <<"\t"<<"normy: "<< norm[1] <<"\t"<<"normz: "<< norm[2] << endl;
-   #endif
-   
-   // First we need to pick random angles to choose the orientation of our diffuse direction vector. 
-   // Correct method for UCN physics though is to weight these angles towards the poles by adding
-   // an extra cos(theta). Derivation of how to pick these angles is in notes
-   // Overall solid angle used is dOmega = cos(theta)sin(theta) dtheta dphi
-   Double_t phi = gRandom->Uniform(0.0, 1.0)*2*TMath::Pi();
-   // We do not want the full range of theta from 0 to pi/2 however.
-   // An angle of pi/2 would imply moving off the boundary exactly parallel to
-   // the current surface.Therefore we should restrict theta to a slightly smaller
-   // proportion of angles - letting u be between 0 and 0.499, ensures theta
-   // is between 0 and ~89 degrees. 
-   Double_t u = gRandom->Uniform(0.0, 0.499);
-   // We ignore the negative sqrt term when selecting theta,
-   // since we are only interested in theta between 0 and pi/2 
-   // (negative root provides the pi/2 to pi branch) 
-   Double_t theta = TMath::ACos(TMath::Sqrt(1.0 - 2*u)); 
-   
-   // Calculate local normal vector	
-   Double_t lnorm[3] = {0.,0.,0.};
-   navigator->MasterToLocalVect(norm, lnorm);
-   TVector3 localNorm(lnorm[0], lnorm[1], lnorm[2]);
-   assert(TMath::Abs(localNorm.Mag() - 1.0) < TGeoShape::Tolerance());
-   
-   // ------------------------------------------------------------------
-   // -- FIND A SINGLE ARBITRARY VECTOR PERPENDICULAR TO THE LOCAL NORMAL
-   // Define a preferred direction in our coordinate system - usually the z-direction
-   // - that we want to be perpendicular to the normal vector of our surface
-   TVector3 upAxis(0.,0.,1.);
-   
-   // Here we check to make sure that the upAxis we chose is not parallel to the normal vector.
-   // If it is, we try another one, x. 
-   if (TMath::Abs(upAxis.Dot(localNorm)) > TGeoShape::Tolerance()) {
-      upAxis.SetXYZ(1.,0.,0.);
-      if (TMath::Abs(upAxis.Dot(localNorm)) > TGeoShape::Tolerance()) {
-         // In the (hopefully) unlikely case that localNorm has components in the x and z
-         // directions. This has been observed when including the bend geometry. This suggests
-         // that in the local coordinate system in this instance, the z-axis is not along the
-         // vertical as we usually assume. Thus including this check covers our backs. 
-         upAxis.SetXYZ(0.,1.,0.);
-         if (TMath::Abs(upAxis.Dot(localNorm)) > TGeoShape::Tolerance()) {
-            cout << "Axis X: " << upAxis.X() << "\t" <<  "Y: " << upAxis.Y() << "\t";
-            cout <<   "Z: " << upAxis.Z() << endl;
-            cout << "LocalNorm X: " << localNorm.X() << "\t" <<  "Y: " << localNorm.Y() << "\t";
-            cout <<   "Z: " << localNorm.Z() << endl;
-            throw runtime_error("In TUCNParticle::DiffuseBounce - Could not find an axis perpendicular to normal. Normal is parallel to z and x axes!!!");
-         }
-      }
-   }
-   // Calculate the cross product of the 'up' vector with our normal vector to get a vector
-   // guaranteed to be perpendicular to the normal. 
-   // This is the vector we will want to rotate around initially. 
-   TVector3 perpAxis = localNorm.Cross(upAxis); 
-   assert(TMath::Abs(perpAxis.Mag() - 1.0) < TGeoShape::Tolerance());
-   // ------------------------------------------------------------------
-   
-   // Rotate normal vector about perpendicular axis by angle theta. 
-   // Using Rodrigues' formula derived in notes. 
-   TVector3 rotatedNorm(0.,0.,0.);
-   {
-      // name term2 and term3 just refer to the terms as they appear in the Rodrigues' formula
-      TVector3 term2 = localNorm - (localNorm.Dot(perpAxis))*perpAxis; 
-      TVector3 term3 = perpAxis.Cross(localNorm);
-      rotatedNorm = localNorm + (TMath::Cos(theta) - 1.0)*term2 + TMath::Sin(theta)*term3;
-   }
-   assert(TMath::Abs(rotatedNorm.Mag() - 1.0) < TGeoShape::Tolerance());
-   
-   // Rotate the newly rotated Normal vector, rotatedNorm, by angle phi, this time
-   // rotating about the original normal vector, norm.
-   TVector3 direction(0.,0.,0.);
-   {
-      TVector3 term3 = localNorm.Cross(rotatedNorm);
-      TVector3 term2 = rotatedNorm - (rotatedNorm.Dot(localNorm))*localNorm;
-      direction = rotatedNorm + (TMath::Cos(phi) - 1.0)*term2 + TMath::Sin(phi)*term3;
-   }
-   assert(TMath::Abs(direction.Mag() - 1.0) < TGeoShape::Tolerance()); 
-   
-   // Convert the direction vector back to the global frame
-   Double_t ldir[3] = {direction.X(), direction.Y(), direction.Z()};
-   navigator->LocalToMasterVect(ldir, dir);
-   
-   assert(TMath::Abs(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2] - 1.0) < TGeoShape::Tolerance());
-   // Assert that our final direction is not perpendicular to the normal.
-   // This could result in escaping the boundary
-   assert(TMath::Abs(dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2]) > TGeoShape::Tolerance()); 
-   
-   #ifdef VERBOSE_MODE	
-      cout << "AFTER - nx: " << dir[0] <<"\t"<< "nx: " << dir[1] <<"\t"<< "nx: " << dir[2] << endl;
-   #endif
-   
-   return kTRUE;
-}
-
-//_____________________________________________________________________________
 Bool_t TUCNPropagating::FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator, const TGeoNode* crossedNode)
 {
 // Computes normal to the crossed boundary, assuming that the current point
@@ -1631,62 +1455,35 @@ Bool_t TUCNPropagating::FindBoundaryNormal(Double_t* normal, TGeoNavigator* navi
 }
 
 //______________________________________________________________________________
-Double_t TUCNPropagating::DiffuseProbability(const Double_t diffuseCoeff, const Double_t* /*normal*/, const Double_t /*fermiPotential*/) const
-{
-   // Calculate the probability of making a diffuse bounce - according to formula (from Mike P) prob ~ diffuseCoeff*(Eperp/V)
-/*   Double_t cosTheta = TMath::Abs(this->DirX()*normal[0] + this->DirY()*normal[1] + this->DirZ()*normal[2]);
-   Double_t energyPerp = this->Energy()*cosTheta*cosTheta;
-   Double_t diffProb = diffuseCoeff*energyPerp/fermiPotential;
-   assert(diffProb <= 1.0 && diffProb >= 0.0);
-   //return diffProb;
-*/ // For now just use fixed coefficient until this is properly checked
-   return diffuseCoeff;
-}
-
-//______________________________________________________________________________
-Bool_t TUCNPropagating::IsLostToWall(const TUCNParticle* particle, const TUCNGeoMaterial* wall, const Double_t* normal) const
-{
-// Calculate whether particle will be absorbed/upscattered by the wall
-   Double_t fermiPotential = wall->FermiPotential();
-   Double_t eta = wall->Eta();
-   if (eta == 0.0) {
-      // No wall losses implemented
-      return kFALSE;
-   }
-// cout << "Material: " << wall->GetName() << "\t" << "eta: " << eta << "\t";
-// cout <<  "fermiPotential: " << fermiPotential << "\t" << endl;
-// cout << "nx: " << this->DirX() << "\t" << "ny: " << this->DirY() << "\t";
-// cout << "nz: " << this->DirZ() << endl;
-// cout << "normx: " << normal[0] << "\t" << "normy: " << normal[1] << "\t";
-// cout << "normz: " << normal[2] << endl;	
-
-   // Take dot product of two unit vectors - normal and direction - to give the angle between them
-   Double_t cosTheta = TMath::Abs(particle->Nx()*normal[0] + particle->Ny()*normal[1] + particle->Nz()*normal[2]);
-   Double_t energyPerp = particle->Energy()*cosTheta*cosTheta;
-   if (energyPerp >= fermiPotential) {
-      return kTRUE;
-   }
-   Double_t lossProb = 2.*eta*(TMath::Sqrt(energyPerp/(fermiPotential - energyPerp)));
-// cout << "Loss Prob: " << lossProb << "\t" << "EnergyPerp: " << energyPerp/Units::neV << "\t";
-// cout <<  "cosTheta: " << cosTheta << "\t" << endl;
-   
-   // roll dice to see whether particle is lost
-   Double_t diceRoll = gRandom->Uniform(0.0, 1.0);
-   if (diceRoll <= lossProb) {
-//    cout << "DiceRoll: " << diceRoll << "\t" << "LossProb: " << lossProb << endl;
-      return kTRUE;
-   } else {
-      return kFALSE;
-   }
-}
-
-//______________________________________________________________________________
 Bool_t TUCNPropagating::WillDecay(const Double_t /*timeInterval*/)
 {
    // Placeholder for method to calculate probability particle will decay within timeInterval, and then roll the dice!
    return kFALSE;
 }
 
+//_____________________________________________________________________________
+void TUCNPropagating::Detected(TUCNParticle* particle)
+{
+   this->ChangeState(particle, new TUCNDetected());
+}
+
+//_____________________________________________________________________________
+void TUCNPropagating::Lost(TUCNParticle* particle)
+{
+   this->ChangeState(particle, new TUCNLost());
+}
+
+//_____________________________________________________________________________
+void TUCNPropagating::Absorbed(TUCNParticle* particle)
+{
+   this->ChangeState(particle, new TUCNAbsorbed());
+}
+
+//_____________________________________________________________________________
+void TUCNPropagating::Bad(TUCNParticle* particle)
+{
+   this->ChangeState(particle, new TUCNBad());
+}
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -1888,3 +1685,54 @@ Bool_t TUCNLost::SaveState(TUCNRun* run, TUCNParticle* particle)
    run->GetData()->AddLostParticleState(particle);
    return kTRUE;
 }
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNBad                                                              //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+ClassImp(TUCNBad)
+
+//_____________________________________________________________________________
+TUCNBad::TUCNBad()
+        :TUCNState()
+{
+   // Constructor
+//   Info("TUCNBad","Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNBad::TUCNBad(const TUCNBad& s)
+        :TUCNState(s)
+{
+   // Copy Constructor
+//   Info("TUCNBad","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNBad& TUCNBad::operator=(const TUCNBad& s)
+{
+   // Assignment
+//   Info("TUCNBad","Assignment");
+   if(this!=&s) {
+      TUCNState::operator=(s);   
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+TUCNBad::~TUCNBad()
+{
+   // Destructor
+//   Info("TUCNLost","Destructor");
+}
+
+//______________________________________________________________________________
+Bool_t TUCNBad::SaveState(TUCNRun* run, TUCNParticle* particle)
+{
+   // Register in Run what final state we are
+   run->GetData()->AddBadParticleState(particle);
+   return kTRUE;
+}
+

@@ -22,7 +22,6 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 class TUCNState;
-class TUCNGeoMaterial;
 class TUCNFieldManager;
 class TUCNGravField;
 class TUCNRun;
@@ -146,6 +145,13 @@ public:
    
    // -- Propagation
    Bool_t               Propagate(TUCNRun* run);
+   Bool_t               LocateInGeometry(TUCNParticle* particle, TGeoNavigator* navigator,
+                           const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
+                           const TGeoNode* crossedNode);
+   void                 Detected();
+   void                 Lost();
+   void                 Absorbed();
+   void                 Bad();
    
    ClassDef(TUCNParticle,1)   // Ultra-Cold Neutron
 };
@@ -177,9 +183,16 @@ public:
    // -- Propagation
    virtual Bool_t    Propagate(TUCNParticle* particle, TUCNRun* run,
                                     TGeoNavigator* navigator, TUCNFieldManager* fieldManager);
+   virtual Bool_t    LocateInGeometry(TUCNParticle* particle, TGeoNavigator* navigator,
+                           const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
+                           const TGeoNode* crossedNode);
    virtual void      UpdateParticle(TUCNParticle* particle, const TGeoNavigator* navigator,
                         const Double_t timeInterval=0., const TUCNGravField* gravField=0);
    virtual Bool_t    SaveState(TUCNRun* run, TUCNParticle* particle) = 0;
+   virtual void      Detected(TUCNParticle* particle);
+   virtual void      Lost(TUCNParticle* particle);
+   virtual void      Absorbed(TUCNParticle* particle);
+   virtual void      Bad(TUCNParticle* particle);
    
    ClassDef(TUCNState,1)
 };
@@ -213,27 +226,14 @@ protected:
                                     Int_t &idaughter, Bool_t compmatrix=kFALSE);
    
    // Error checking when moving between volumes
-   virtual Bool_t    LocateInGeometry(TUCNParticle* particle, TGeoNavigator* navigator,
-                           const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
-                           const TGeoNode* crossedNode);
    virtual Bool_t    AttemptRelocationIntoCurrentNode(TGeoNavigator* navigator, 
                            const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
                            const TGeoNode* crossedNode);
    
    // Wall reflection
-   virtual Bool_t    Bounce(TUCNParticle* particle, TGeoNavigator* navigator, 
-                              const Double_t* normal, const TUCNGeoMaterial* wallMaterial);
-   virtual Bool_t    SpecularBounce(Double_t* dir, const Double_t* norm);
-   virtual Bool_t    DiffuseBounce(const TGeoNavigator* navigator, Double_t* dir, 
-                                    const Double_t* norm);
    virtual Bool_t    FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator,
                                     const TGeoNode* crossedNode);
-   virtual Double_t  DiffuseProbability(const Double_t diffuseCoeff, const Double_t* normal,
-                                                   const Double_t fermiPotential) const;
-   
-   // Decay/Loss Probability calculations
-   virtual Bool_t    IsLostToWall(const TUCNParticle* particle, const TUCNGeoMaterial* wall,
-                                          const Double_t* normal) const;
+
    virtual Bool_t    WillDecay(const Double_t timeInterval);
    
 public:
@@ -246,9 +246,15 @@ public:
    // -- Propagation
    virtual Bool_t    Propagate(TUCNParticle* particle, TUCNRun* run,
                                     TGeoNavigator* navigator, TUCNFieldManager* fieldManager);
+   virtual Bool_t    LocateInGeometry(TUCNParticle* particle, TGeoNavigator* navigator,
+                           const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
+                           const TGeoNode* crossedNode);
+   
    virtual Bool_t    SaveState(TUCNRun* run, TUCNParticle* particle);
-   
-   
+   virtual void      Detected(TUCNParticle* particle);
+   virtual void      Lost(TUCNParticle* particle);
+   virtual void      Absorbed(TUCNParticle* particle);
+   virtual void      Bad(TUCNParticle* particle);
    
    ClassDef(TUCNPropagating,1)
 };
@@ -339,6 +345,28 @@ public:
    virtual Bool_t    SaveState(TUCNRun* run, TUCNParticle* particle);
    
    ClassDef(TUCNLost,1)
+};
+
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNBad -                                                            //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+class TUCNBad : public TUCNState
+{
+public:
+   // -- Constructors
+   TUCNBad();
+   TUCNBad(const TUCNBad&);
+   TUCNBad& operator=(const TUCNBad&);
+   virtual ~TUCNBad();
+   
+   // -- Propagation
+   virtual Bool_t    SaveState(TUCNRun* run, TUCNParticle* particle);
+   
+   ClassDef(TUCNBad,1)
 };
 
 #endif  /*TUCNPARTICLE_H*/
