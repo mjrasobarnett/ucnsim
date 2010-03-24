@@ -166,11 +166,11 @@ Bool_t TUCNRun::Start()
    cout << "Starting Simulation of " << this->GetName() << endl;
    cout << "-------------------------------------------" << endl;
    Int_t totalParticles = this->GetData()->InitialParticles();
-   ///////////////////////////////////////////////////////////////////////////////////////
+   ///////////////////////////////////////////////////////////////////////
    // Loop over all particles stored in InitialParticles Tree
-   for (Int_t particleID = 0; particleID < totalParticles; particleID++) {
+   for (Int_t index = 0; index < totalParticles; index++) {
       // Get Particle from list
-      TUCNParticle* particle = dynamic_cast<TUCNParticle*>(this->GetInitialParticle(particleID));
+      TUCNParticle* particle = dynamic_cast<TUCNParticle*>(this->GetInitialParticle(index));
       // Determine whether we are restoring to the start of a previously propagated track.
       // If so we want to set the Random Generator's seed back to what it was at the start of this
       // particle's propagation. This seed is stored (currently) in the particle itself. Otherwise
@@ -182,7 +182,7 @@ Bool_t TUCNRun::Start()
          // Particle is 'restored' -> seed must be restored too
          gRandom->SetSeed(particle->GetRandomSeed());
       }
-      ///////////////////////////////////////////////////////////////////////////////////////
+      ///////////////////////////////////////////////////////////////////////
       // Attempt to Propagate track
       try {
          Bool_t propagated = particle->Propagate(this);
@@ -193,14 +193,14 @@ Bool_t TUCNRun::Start()
       } catch (...) {
          // Serious tracking errors (eg: particle cannot be located correctly) will be thrown
          cout << "-------------------------------------------" << endl;
-         Error("Start","Exception thrown by particle %i. Propagation Failed.", particleID);
+         Error("Start","Exception thrown by particle %i. Propagation Failed.", index);
          cout << "-------------------------------------------" << endl << endl;
          // Add this particle to special tree for errorneous particles
          this->GetData()->AddBadParticleState(particle);
          delete particle;
          continue;
       }
-      ///////////////////////////////////////////////////////////////////////////////////////
+      ///////////////////////////////////////////////////////////////////////
       // Add Final Particle State to data tree
       if (!(particle->SaveState(this))) {
          Error("Start","Particle has failed to save its final state correctly");
@@ -208,12 +208,12 @@ Bool_t TUCNRun::Start()
       }
       // Print Progress Bar to Screen
       #ifndef VERBOSE_MODE
-         PrintProgress(particleID, totalParticles);
+         PrintProgress(index, totalParticles);
       #endif
       // Delete Particle
       delete particle;
    }
-   ///////////////////////////////////////////////////////////////////////////////////////
+   ///////////////////////////////////////////////////////////////////////
    cout << "-------------------------------------------" << endl;
    cout << "Propagation Results: " << endl;
    cout << "Total Particles: " << this->GetData()->InitialParticles() << endl;
@@ -268,23 +268,30 @@ Bool_t TUCNRun::SaveInitialParticle(TUCNParticle* particle)
 }
 
 //_____________________________________________________________________________
-TUCNParticle* TUCNRun::GetInitialParticle(Int_t particleID)
+TUCNParticle* TUCNRun::GetInitialParticle(Int_t index)
 {
    // -- Retrieve the requested initial particle state from the Data
-   return this->GetData()->GetInitialParticleState(particleID);
+   return this->GetData()->GetInitialParticleState(index);
 }
 
 //_____________________________________________________________________________
 Bool_t TUCNRun::LoadParticles(TUCNConfigFile& configFile)
 {
 // Fetch initial particles tree from file specified in Config File
+   ///////////////////////////////////////////////////////////////////////
    // Get name of file holding the data from ConfigFile 
    TString particlesFile = configFile.GetString("InputDataFile",this->GetName());
    if (particlesFile == "") { 
-      Error("LoadParticles","No File holding the Initial Particle Distribution has been specified");
+      Error("LoadParticles","No File holding the initial particle data has been specified");
       return kFALSE;
    }
+   ///////////////////////////////////////////////////////////////////////
    // Fetch Data object holding Initial Particles
+   TString inputDataName = configFile.GetString("InputDataName",this->GetName());
+   if (inputDataName == "") { 
+      Error("LoadParticles","No Run holding initial particle data has been specified");
+      return kFALSE;
+   }
    cout << "-------------------------------------------" << endl;
    cout << "Loading Particles from File: " << particlesFile << endl;
    TFile *f = TFile::Open(particlesFile,"read");
