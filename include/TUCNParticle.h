@@ -142,12 +142,10 @@ public:
    
    // State
    TUCNState*           GetState()     {return fState;}
-   Bool_t               RegisterState(TUCNRun* run);
+   Bool_t               SaveState(TUCNRun* run);
    
    // -- Propagation
-   Bool_t      Propagate(TUCNRun* run, TGeoNavigator* navigator, TUCNFieldManager* fieldManager);
-   
-   Bool_t      Detected() const; 
+   Bool_t               Propagate(TUCNRun* run);
    
    ClassDef(TUCNParticle,1)   // Ultra-Cold Neutron
 };
@@ -181,10 +179,7 @@ public:
                                     TGeoNavigator* navigator, TUCNFieldManager* fieldManager);
    virtual void      UpdateParticle(TUCNParticle* particle, const TGeoNavigator* navigator,
                         const Double_t timeInterval=0., const TUCNGravField* gravField=0);
-   virtual Bool_t    RegisterState(TUCNRun* run) = 0;
-   
-   virtual Bool_t    Detected() const {return kFALSE;}
-   
+   virtual Bool_t    SaveState(TUCNRun* run, TUCNParticle* particle) = 0;
    
    ClassDef(TUCNState,1)
 };
@@ -251,7 +246,7 @@ public:
    // -- Propagation
    virtual Bool_t    Propagate(TUCNParticle* particle, TUCNRun* run,
                                     TGeoNavigator* navigator, TUCNFieldManager* fieldManager);
-   virtual Bool_t    RegisterState(TUCNRun* run);
+   virtual Bool_t    SaveState(TUCNRun* run, TUCNParticle* particle);
    
    
    
@@ -275,7 +270,7 @@ public:
    virtual ~TUCNDecayed();
    
    // -- Propagation
-   virtual Bool_t    RegisterState(TUCNRun* run);
+   virtual Bool_t    SaveState(TUCNRun* run, TUCNParticle* particle);
    
    ClassDef(TUCNDecayed,1)
 };
@@ -297,7 +292,7 @@ public:
    virtual ~TUCNAbsorbed();
    
    // -- Propagation
-   virtual Bool_t    RegisterState(TUCNRun* run);
+   virtual Bool_t    SaveState(TUCNRun* run, TUCNParticle* particle);
    
    ClassDef(TUCNAbsorbed,1)
 };
@@ -319,9 +314,7 @@ public:
    virtual ~TUCNDetected();
    
    // -- Propagation
-   virtual Bool_t    RegisterState(TUCNRun* run);
-   virtual Bool_t    Detected() const {return kTRUE;}
-   
+   virtual Bool_t    SaveState(TUCNRun* run, TUCNParticle* particle);   
    
    ClassDef(TUCNDetected,1)
 };
@@ -343,7 +336,7 @@ public:
    virtual ~TUCNLost();
    
    // -- Propagation
-   virtual Bool_t    RegisterState(TUCNRun* run);
+   virtual Bool_t    SaveState(TUCNRun* run, TUCNParticle* particle);
    
    ClassDef(TUCNLost,1)
 };

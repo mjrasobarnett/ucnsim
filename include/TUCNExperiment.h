@@ -5,64 +5,45 @@
 #define ROOT_TUCNExperiment
 
 #include "TNamed.h"
-
 #include "TGeoManager.h"
-#include "TUCNRun.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-// 						TUCNExperiment													  //
+//    TUCNExperiment                                                      //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 class TUCNConfigFile;
 class TUCNFieldManager;
+class TUCNRun;
 
 class TUCNExperiment : public TNamed 
 {
 protected:
-	// ConfigFile
-	TUCNConfigFile*			fConfigFile;
-	TUCNConfigFile*			ConfigFile() const {return fConfigFile;}
-	// GeoManager
-	TGeoManager*				GeoManager() const {return gGeoManager;}
-	// FieldManager
-	TUCNFieldManager*			fFieldManager;
-	TUCNFieldManager*			FieldManager() const {return fFieldManager;}
-	// Runs
-	Int_t							fNumberOfRuns;
-	// Source Volume/Matrix
-	Int_t 						fSourceVolumeIndex;
-	Int_t							fSourceMatrixIndex;
-	void							SetSourceVolume(TGeoVolume* sourceVolume);
-	TGeoVolume*					GetSourceVolume() const;
-	void							SetSourceMatrix(TGeoMatrix* sourceMatrix);
-	TGeoMatrix*					GetSourceMatrix() const;
-	// Geometry Building
-	Bool_t						BuildGeometry(TUCNConfigFile* configFile);
-	
-	// Particle & Track Management
-//	Bool_t 						GenerateParticles(TUCNRun* run);
-	Bool_t						ClearTracks();
-		
+   TUCNFieldManager*    fFieldManager;
+   
+   // Geometry Building
+   Bool_t               BuildGeometry(TUCNConfigFile& configFile, const TUCNRun& run);
+   
 public:
-	// -- constructors
-	TUCNExperiment();
-	TUCNExperiment(std::string configFileName);
+   // -- constructors
+   TUCNExperiment();
    TUCNExperiment(const TUCNExperiment&); 
-	TUCNExperiment& operator=(const TUCNExperiment&);
-	
-	// -- destructor
-	virtual ~TUCNExperiment();
-
-	// -- methods
-	Bool_t					Initialise();
-	Bool_t					Run();
-	Bool_t					Export();
-	
-	Int_t						NumberOfRuns() const {return fNumberOfRuns;}
-	
-	
-   ClassDef(TUCNExperiment, 1)      
+   TUCNExperiment& operator=(const TUCNExperiment&);
+   
+   // -- destructor
+   virtual ~TUCNExperiment();
+   
+   // -- methods
+   Bool_t               Initialise(TUCNConfigFile& configFile, const TUCNRun& run);
+   
+   // GeoManager
+   TGeoManager*         GeoManager() const {return gGeoManager;}
+   TGeoNavigator*       Navigator() const {return gGeoManager->GetCurrentNavigator();}
+   
+   // FieldManager
+   TUCNFieldManager*    FieldManager() const {return fFieldManager;}
+   
+   ClassDef(TUCNExperiment, 1)
 };
 
 #endif

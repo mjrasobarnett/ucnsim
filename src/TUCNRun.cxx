@@ -43,6 +43,7 @@
 using std::cout;
 using std::endl;
 using std::cerr;
+using std::string;
 using std::runtime_error;
 
 //#define VERBOSE_MODE
@@ -57,15 +58,9 @@ TUCNRun::TUCNRun()
    Info("TUCNRun", "Default Constructor");
    // Create the data object
    fData = 0;
+   fExperiment = 0;
    fRunTime = 0.0;
    fMaxStepTime = 0.0;
-   fDiffuseCoeff = 0;
-   fSampleMagField = kFALSE;
-   fWallLosses = kFALSE;
-   fAbsorbedCounter = 0;
-   fDetectedCounter = 0;
-   fDecayedCounter = 0;
-   fLostCounter = 0;
 } 
 
 //_____________________________________________________________________________
@@ -75,54 +70,35 @@ TUCNRun::TUCNRun(const char *name, const char *title)
 // -- Default constructor
    Info("TUCNRun", "Constructor");
    // Create the data object
-   fData = new TUCNData("ucndata", "ucndata");
+   fData = new TUCNData("UCNData", "Data for UCNSIM Run");
+   fExperiment = new TUCNExperiment();
    fRunTime = 0.0;
    fMaxStepTime = 0.0;
-   fDiffuseCoeff = 0;
-   fSampleMagField = kFALSE;
-   fWallLosses = kFALSE;
-   fAbsorbedCounter = 0;
-   fDetectedCounter = 0;
-   fDecayedCounter = 0;
-   fLostCounter = 0;
 }
 
 //_____________________________________________________________________________
 TUCNRun::TUCNRun(const TUCNRun& run)
-		  :TNamed(run),
-			fData(run.fData),
-			fRunTime(run.fRunTime),
-			fMaxStepTime(run.fMaxStepTime),
-			fDiffuseCoeff(run.fDiffuseCoeff),
-			fSampleMagField(run.fSampleMagField),
-			fWallLosses(run.fWallLosses),
-			fAbsorbedCounter(run.fAbsorbedCounter),
-			fDetectedCounter(run.fDetectedCounter),
-			fDecayedCounter(run.fDecayedCounter),
-			fLostCounter(run.fLostCounter)
-			
+        :TNamed(run),
+         fData(run.fData),
+         fExperiment(run.fExperiment),
+         fRunTime(run.fRunTime),
+         fMaxStepTime(run.fMaxStepTime)
 {
 // -- Copy Constructor
-	Info("TUCNRunManager", "Copy Constructor");
+   Info("TUCNRunManager", "Copy Constructor");
 }
 
 //_____________________________________________________________________________
 TUCNRun& TUCNRun::operator=(const TUCNRun& run)
 {
 // --assignment operator
-	if(this!=&run) {
-		TNamed::operator=(run);
+   if(this!=&run) {
+      TNamed::operator=(run);
       fData = run.fData;
-		fRunTime = run.fRunTime;
-		fMaxStepTime = run.fMaxStepTime;
-		fDiffuseCoeff = run.fDiffuseCoeff;
-		fSampleMagField = run.fSampleMagField;
-		fWallLosses = run.fWallLosses;
-		fAbsorbedCounter = run.fAbsorbedCounter;
-		fDetectedCounter = run.fDetectedCounter;
-		fDecayedCounter = run.fDecayedCounter;
-      fLostCounter = run.fLostCounter;
-	}
+      fExperiment = run.fExperiment;
+      fRunTime = run.fRunTime;
+      fMaxStepTime = run.fMaxStepTime;
+   }
    return *this;
 }
 
@@ -130,89 +106,52 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& run)
 TUCNRun::~TUCNRun()
 {
 // -- Destructor
-	Info("TUCNRun", "Destructor");
-   fData->Delete();
+   Info("TUCNRun", "Destructor");
+   if(fData) delete fData;
+   if(fExperiment) delete fExperiment;
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
+Bool_t TUCNRun::Initialise(TUCNConfigFile& configFile)
 {
    // Initialise the Run
    cout << "-------------------------------------------" << endl;
    cout << "Initialising: " << this->GetName() << endl;
    cout << "-------------------------------------------" << endl;
    ///////////////////////////////////////////////////////////////////////////////////////
-   // Store the run parameters
+   // -- Build Geometry
+   ///////////////////////////////////////////////////////////////////////////////////////
+   if (!(this->GetExperiment()->Initialise(configFile, *this))) {
+      Error("Initialise","Failed to Build the Experiment");
+      return kFALSE;
+   }
+   
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Load Particles
-   TString particlesFile = configFile->GetString("ParticleFile","I/O");
-   if (particlesFile == "") { 
-      Error("Initialise","No Particles File has been specified");
+   ///////////////////////////////////////////////////////////////////////////////////////
+   if (!(this->LoadParticles(configFile))) {
+      Error("Initialise","Failed to Load the Initial Particle Distribution from File");
       return kFALSE;
-   }
-   cout << "-------------------------------------------" << endl;
-   cout << "Loading Particles from File: " << particlesFile << endl;
-   TFile *f = TFile::Open(particlesFile,"read");
-   if (!f || f->IsZombie()) {
-      Error("Export","Cannot open file");
-      return kFALSE;
-   }
-   TUCNData* importedData = 0;
-   f->ls();
-   f->GetObject("RunData;1",importedData);
-   delete f;
-   if (!importedData) return kFALSE;
-   // Set imported Data File as the Run's data
-   if (fData) delete fData;
-   fData = importedData;
-   cout << fData << "\t" << importedData << endl;
-   cout << this->GetData()->InitialParticles() << " Particles loaded succesfully" << endl;
-   cout << "-------------------------------------------" << endl;
+   }  
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Get the FermiPotential of the Wall 
-   // !!!! This is ugly and unsafe. Needs a work around. 
-   // Perhaps get the name of the boundary material from configFile
-   TUCNGeoMaterial* boundaryMaterial = static_cast<TUCNGeoMaterial*>(gGeoManager->GetMaterial("BoundaryMaterial"));
-   if (boundaryMaterial == NULL) { 
-      Error("Initialise","BoundaryMaterial cannot be found");
-      return kFALSE;
-   }
-   Double_t fermiV = boundaryMaterial->FermiPotential();    
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Run Time
-   fRunTime = TMath::Abs(configFile->GetFloat("RunTime(s)", this->GetName()))*Units::s;
-   if (fRunTime == 0.0) { Warning("Initialise","No RunTime has been set"); return kFALSE; }
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Max Step Time
-   fMaxStepTime = TMath::Abs(configFile->GetFloat("MaxStepTime(s)", this->GetName()))*Units::s;
-   if (fMaxStepTime == 0.0) { 
-      Warning("Initialise","No max step time has been set");
-      return kFALSE;
-   }
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Diffuse Coefficient
-   fDiffuseCoeff = TMath::Abs(configFile->GetFloat("DiffuseBounceCoefficient", this->GetName()));
-   // -- Set material's roughness parameter to the Diffuse Coefficient
-   boundaryMaterial->RoughnessCoeff(fDiffuseCoeff); 
-   ///////////////////////////////////////////////////////////////////////////////////////	
-   // -- Determine if we will sample the magnetic field
-   fSampleMagField = configFile->GetBool("SampleMagField", this->GetName());
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Determine if we will sample the magnetic field
-   fWallLosses = configFile->GetBool("WallLosses", this->GetName());
-   if (fWallLosses == kFALSE) {
-      boundaryMaterial->WPotential(0.0); 
-   } else {
-      Double_t W = TMath::Abs(configFile->GetFloat("WPotential(neV)", "Geometry"))*Units::neV;
-      boundaryMaterial->WPotential(W);
-   }
+   // -- Run Parameters
+   // Run Time
+   fRunTime = TMath::Abs(configFile.GetFloat("RunTime(s)", this->GetName()))*Units::s;
+   if (fRunTime <= 0.0) { Error("Initialise","No RunTime set!"); return kFALSE; }
+   // Max Step Time
+   fMaxStepTime = TMath::Abs(configFile.GetFloat("MaxStepTime(s)", this->GetName()))*Units::s;
+   if (fMaxStepTime == 0.0) { Error("Initialise","No maxsteptime set!"); return kFALSE; }
+   // Determine if we will have any wall losses
+   Bool_t wallLosses = configFile.GetBool("WallLosses", this->GetName());
+   cout << "Wall Losses needs to be re-implemented" << endl;
+   /*
+      Need a new way to do this
+   */
    ///////////////////////////////////////////////////////////////////////////////////////
    cout << "Particles: " << this->GetData()->InitialParticles() << endl;
    cout << "RunTime(s): " << fRunTime << endl;
    cout << "MaxStepTime(s): " << fMaxStepTime << endl;
-   cout << "DiffuseCoeff: " << fDiffuseCoeff << endl;
-   cout << "SampleMagField: " << fSampleMagField << endl;
-   cout << "WallLosses: " << fWallLosses << endl;
+   cout << "WallLosses: " << wallLosses << endl;
    cout << "-------------------------------------------" << endl;
    cout << "Run successfully initialised" << endl;
    cout << "-------------------------------------------" << endl;
@@ -220,109 +159,164 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManager)
+Bool_t TUCNRun::Start()
 {
-   // -- Propagate all tracks stored in the GeoManager for a set period of time
-   Int_t numberOfTracks = this->GetData()->InitialParticles();
-   // Container to store Ids of lost tracks;
-   std::vector<Int_t> lostTracks;
-   
-   for (Int_t trackid = 0; trackid < numberOfTracks; trackid++) {
-      // Print Progress Bar to Screen
-      #ifndef VERBOSE_MODE
-         PrintProgress(trackid, numberOfTracks);
-      #endif
+// -- Propagate the particles stored in the Run's Data, specified by configFile
+   cout << "-------------------------------------------" << endl;
+   cout << "Starting Simulation of " << this->GetName() << endl;
+   cout << "-------------------------------------------" << endl;
+   Int_t totalParticles = this->GetData()->InitialParticles();
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // Loop over all particles stored in InitialParticles Tree
+   for (Int_t particleID = 0; particleID < totalParticles; particleID++) {
       // Get Particle from list
-      TUCNParticle* particle = static_cast<TUCNParticle*>(this->GetInitialParticle(trackid));
-      // Store the random number seed in particle
-      particle->SetRandomSeed(gRandom->GetSeed());
-      // Add Initial Particle State to data tree
-   //   this->SaveInitialParticle(particle);
-   //   this->SaveParticle(particle);
+      TUCNParticle* particle = dynamic_cast<TUCNParticle*>(this->GetInitialParticle(particleID));
+      // Determine whether we are restoring to the start of a previously propagated track.
+      // If so we want to set the Random Generator's seed back to what it was at the start of this
+      // particle's propagation. This seed is stored (currently) in the particle itself. Otherwise
+      // just store the seed in the new particle.
+      if (particle->GetRandomSeed() == 0) {
+         // Particle is 'new', store current random seed in particle
+         particle->SetRandomSeed(gRandom->GetSeed());
+      } else {
+         // Particle is 'restored' -> seed must be restored too
+         gRandom->SetSeed(particle->GetRandomSeed());
+      }
+      ///////////////////////////////////////////////////////////////////////////////////////
       // Attempt to Propagate track
       try {
-         particle->Propagate(this, geoManager->GetCurrentNavigator(), fieldManager);
+         Bool_t propagated = particle->Propagate(this);
+         if (!propagated) {
+            Error("Start", "Propagation Failed to Begin.");
+            return kFALSE;
+         }
       } catch (...) {
          // Serious tracking errors (eg: particle cannot be located correctly) will be thrown
          cout << "-------------------------------------------" << endl;
-         Error("Propagate","Exception thrown by particle %i. Propagation Failed.", trackid);
+         Error("Start","Exception thrown by particle %i. Propagation Failed.", particleID);
          cout << "-------------------------------------------" << endl << endl;
-         // Save Errorneous Particle Initial and Final State in special bad track Tree
-         // ...
-         // Can then reload these particles at later stage with debugging code on
-         // continue;
+         // Add this particle to special tree for errorneous particles
+         this->GetData()->AddBadParticleState(particle);
+         delete particle;
+         continue;
       }
+      ///////////////////////////////////////////////////////////////////////////////////////
       // Add Final Particle State to data tree
-      this->SaveParticle(particle);
+      if (!(particle->SaveState(this))) {
+         Error("Start","Particle has failed to save its final state correctly");
+         return kFALSE;
+      }
+      // Print Progress Bar to Screen
+      #ifndef VERBOSE_MODE
+         PrintProgress(particleID, totalParticles);
+      #endif
+      // Delete Particle
+      delete particle;
    }
-   
+   ///////////////////////////////////////////////////////////////////////////////////////
    cout << "-------------------------------------------" << endl;
    cout << "Propagation Results: " << endl;
    cout << "Total Particles: " << this->GetData()->InitialParticles() << endl;
-   cout << "Number Detected: " << this->Detected() << endl;
-   cout << "Number Absorbed by Boundary: " << this->Absorbed() << endl;
-   cout << "Number Decayed: " << this->Decayed() << endl;
-   cout << "Number Lost To Outer Geometry: " << this->Lost() << endl;
+   cout << "Number Still Propagating: " << this->GetData()->PropagatingParticles() << endl;
+   cout << "Number Detected: " << this->GetData()->DetectedParticles() << endl;
+   cout << "Number Absorbed by Boundary: " << this->GetData()->AbsorbedParticles() << endl;
+   cout << "Number Decayed: " << this->GetData()->DecayedParticles() << endl;
+   cout << "Number Lost To Outer Geometry: " << this->GetData()->LostParticles() << endl;
+   cout << "Number With Anomalous Behaviour: " << this->GetData()->BadParticles() << endl;
    cout << "-------------------------------------------" << endl;
    return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::Export(TString& outputFile)
+Bool_t TUCNRun::Finish(TUCNConfigFile& configFile)
 {
 // -- Export this run to file
-	cout << "-------------------------------------------" << endl;
-	cout << "Writing " << this->GetName() << " out to File: " << outputFile << endl;
-	// -- Check that Data 'checks out'
-	if (this->GetData()->ChecksOut() == kFALSE) {
-		Error("Export", "TUCNData doesn't check out. Cannot Export Run to file.");
-		return kFALSE;
-	}
-	// -- Check we have a .root file
-	if (!(outputFile.Contains(".root"))) {
-		Error("Export", "OutputFile is not a ROOT filename");
-		return kFALSE;
-	} 
-	// -- Write out
-	TFile *f = TFile::Open(outputFile,"update");
-	if (!f || f->IsZombie()) {
-	   Error("Export","Cannot open file");
-	   return kFALSE;
-	}
-	char keyname[256];
-	strcpy(keyname,this->GetName());
-	this->Write(keyname);
-	cout << "Run: " << keyname << " was successfully written to file" << endl;
-	cout << "-------------------------------------------" << endl;
-	// -- Clean up
-	delete f;
-	return kTRUE;
+   TString outputFile = configFile.GetString("OutputDataFile",this->GetName());
+   cout << "-------------------------------------------" << endl;
+   cout << "Writing " << this->GetName() << " out to File: " << outputFile << endl;
+   // -- Check that Data 'checks out'
+   if (this->GetData()->ChecksOut() == kFALSE) {
+      Error("Export", "TUCNData doesn't check out. Cannot Export Run to file.");
+      return kFALSE;
+   }
+   // -- Check we have a .root file
+   if (!(outputFile.Contains(".root"))) {
+      Error("Export", "OutputFile is not a ROOT filename");
+      return kFALSE;
+   } 
+   // -- Write out
+   TFile *f = TFile::Open(outputFile,"update");
+   if (!f || f->IsZombie()) {
+      Error("Export","Cannot open file");
+      return kFALSE;
+   }
+   char keyname[256];
+   strcpy(keyname,this->GetName());
+   this->Write(keyname);
+   cout << keyname << " was successfully written to file" << endl;
+   f->ls();
+   cout << "-------------------------------------------" << endl;
+   // -- Clean up
+   delete f;
+   return kTRUE;
 }
 
 //_____________________________________________________________________________
 Bool_t TUCNRun::SaveInitialParticle(TUCNParticle* particle) 
 {
-	return this->GetData()->AddInitialParticleState(particle);
-}
-
-//_____________________________________________________________________________
-Bool_t TUCNRun::SaveParticle(TUCNParticle* particle)
-{
-	return this->GetData()->AddFinalParticleState(particle);
-}
-
-//_____________________________________________________________________________
-TUCNParticle* TUCNRun::GetParticle(Int_t particleID)
-{
-	// -- Retrieve the requested particle from the Data
-	return this->GetData()->GetFinalParticleState(particleID);
+   return this->GetData()->AddInitialParticleState(particle);
 }
 
 //_____________________________________________________________________________
 TUCNParticle* TUCNRun::GetInitialParticle(Int_t particleID)
 {
-	// -- Retrieve the requested initial particle state from the Data
-	return this->GetData()->GetInitialParticleState(particleID);
+   // -- Retrieve the requested initial particle state from the Data
+   return this->GetData()->GetInitialParticleState(particleID);
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNRun::LoadParticles(TUCNConfigFile& configFile)
+{
+// Fetch initial particles tree from file specified in Config File
+   // Get name of file holding the data from ConfigFile 
+   TString particlesFile = configFile.GetString("InputDataFile",this->GetName());
+   if (particlesFile == "") { 
+      Error("LoadParticles","No File holding the Initial Particle Distribution has been specified");
+      return kFALSE;
+   }
+   // Fetch Data object holding Initial Particles
+   cout << "-------------------------------------------" << endl;
+   cout << "Loading Particles from File: " << particlesFile << endl;
+   TFile *f = TFile::Open(particlesFile,"read");
+   if (!f || f->IsZombie()) {
+      Error("Initialise","Cannot open file");
+      return kFALSE;
+   }
+   TUCNData* importedData = 0;
+   f->ls();
+   f->GetObject("RunData;1",importedData);
+   delete f;
+   if (!importedData) {
+      Error("LoadParticles","Could not find Data object named 'RunData;1' in %s", particlesFile.Data());
+      return kFALSE;
+   }
+   // Check Configuration for whether we will simulate all the particles in the Tree
+   if (!(configFile.GetBool("AllParticles",this->GetName()))) {
+      // If NOT, then we need to extract the list of which particles are to be simulated
+      /*
+         ... Needs implementing
+         Produce an array of integers representing the particleIDs we wish to include
+      */
+      this->SaveInitialParticle(importedData->GetInitialParticleState(0));
+      delete importedData;
+   } else {
+      // If we want all particles, just set imported DataFile as the Run's data
+      if (fData) delete fData;
+      fData = importedData;
+   }
+   cout << fData->InitialParticles() << " particles have been loaded succesfully" << endl;
+   cout << "-------------------------------------------" << endl;
+   return kTRUE;
 }
 
 //_____________________________________________________________________________

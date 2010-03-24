@@ -22,7 +22,7 @@ TUCNData::TUCNData()
 	Info("TUCNData","Default Constructor");
 	// -- Create the Trees
 	fInitialParticles = 0;
-   fSurvivedParticles = 0;
+   fPropagatingParticles = 0;
    fDetectedParticles = 0;
    fDecayedParticles = 0;
    fAbsorbedParticles = 0;
@@ -38,7 +38,7 @@ TUCNData::TUCNData(const char * name, const char * title)
    Info("TUCNData","Constructor");
    // -- Create the Trees
    fInitialParticles = new TTree("InitialParticles","Tree of Initial Particle States");
-   fSurvivedParticles = new TTree("SurvivedParticles","Tree of Survived Particles");
+   fPropagatingParticles = new TTree("PropagatingParticles","Tree of Propagating Particles");
    fDetectedParticles = new TTree("DetectedParticles","Tree of Detected Particles");
    fDecayedParticles = new TTree("DecayedParticles","Tree of Decayed Particles");
    fAbsorbedParticles = new TTree("AbsorbedParticles","Tree of Absorbed Particles");
@@ -50,7 +50,7 @@ TUCNData::TUCNData(const char * name, const char * title)
 TUCNData::TUCNData(const TUCNData& d)
          :TNamed(d), 
           fInitialParticles(d.fInitialParticles),
-          fSurvivedParticles(d.fSurvivedParticles),
+          fPropagatingParticles(d.fPropagatingParticles),
           fDetectedParticles(d.fDetectedParticles),
           fDecayedParticles(d.fDecayedParticles),
           fAbsorbedParticles(d.fAbsorbedParticles),
@@ -68,8 +68,8 @@ TUCNData& TUCNData::operator=(const TUCNData& d)
    Info("TUCNData","Assignment");
    if(this!=&d) {
       TNamed::operator=(d);
-      fInitialParticleStates = d.fInitialParticleStates;
-      fSurvivedParticleStates = d.fSurvivedParticleStates;
+      fInitialParticles = d.fInitialParticles;
+      fPropagatingParticles = d.fPropagatingParticles;
       fDetectedParticles = d.fDetectedParticles;
       fDecayedParticles = d.fDecayedParticles;
       fAbsorbedParticles = d.fAbsorbedParticles;
@@ -84,8 +84,8 @@ TUCNData::~TUCNData(void)
 {
    // -- Destructor
    Info("TUCNData","Destructor");
-   if(fInitialParticleStates) delete fInitialParticleStates;
-   if(fSurvivedParticleStates) delete fSurvivedParticleStates;
+   if(fInitialParticles) delete fInitialParticles;
+   if(fPropagatingParticles) delete fPropagatingParticles;
    if(fDetectedParticles) delete fDetectedParticles;
    if(fDecayedParticles) delete fDecayedParticles;
    if(fAbsorbedParticles) delete fAbsorbedParticles;
@@ -123,15 +123,15 @@ Bool_t TUCNData::AddInitialParticleState(TUCNParticle* particle)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNData::AddSurvivedParticleState(TUCNParticle* particle)
+Bool_t TUCNData::AddPropagatingParticleState(TUCNParticle* particle)
 {
    // -- Create the Branches in the Trees where we will store the objects
-   if (fSurvivedParticles->GetBranch("SurvivedParticles") == NULL) {
-      fSurvivedParticles->Branch("SurvivedParticles","TUCNParticle",&particle);
+   if (fPropagatingParticles->GetBranch("PropagatingParticles") == NULL) {
+      fPropagatingParticles->Branch("PropagatingParticles","TUCNParticle",&particle);
    }
-   // Add the particle to the SurvivedParticleState Tree
-   fSurvivedParticles->SetBranchAddress("SurvivedParticles",&particle);
-   fSurvivedParticles->Fill();
+   // Add the particle to the PropagatingParticleState Tree
+   fPropagatingParticles->SetBranchAddress("PropagatingParticles",&particle);
+   fPropagatingParticles->Fill();
    return kTRUE;
 }
 
@@ -142,7 +142,7 @@ Bool_t TUCNData::AddDetectedParticleState(TUCNParticle* particle)
    if (fDetectedParticles->GetBranch("DetectedParticles") == NULL) {
       fDetectedParticles->Branch("DetectedParticles","TUCNParticle",&particle);
    }
-   // Add the particle to the SurvivedParticleState Tree
+   // Add the particle to the Detected ParticleState Tree
    fDetectedParticles->SetBranchAddress("DetectedParticles",&particle);
    fDetectedParticles->Fill();
    return kTRUE;
@@ -218,17 +218,17 @@ TUCNParticle* TUCNData::GetInitialParticleState(Int_t particleID) {
 }
 
 //_____________________________________________________________________________
-TUCNParticle* TUCNData::GetSurvivedParticleState(Int_t particleID) {
+TUCNParticle* TUCNData::GetPropagatingParticleState(Int_t particleID) {
    // -- Retrieve the particle from the TTree	
    TUCNParticle* particle = 0;
-   if (particleID > fSurvivedParticles->GetEntries() || particleID < 0) {
-      Error("GetSurvivedParticleState","No Entry exists for Particle: %i", particleID);
+   if (particleID > fPropagatingParticles->GetEntries() || particleID < 0) {
+      Error("GetPropagatingParticleState","No Entry exists for Particle: %i", particleID);
       return 0;
    }
-   fSurvivedParticles->SetBranchAddress("SurvivedParticles", &particle);
-   fSurvivedParticles->GetEntry(particleID);
+   fPropagatingParticles->SetBranchAddress("PropagatingParticles", &particle);
+   fPropagatingParticles->GetEntry(particleID);
    if (particle == NULL) {
-      Error("GetSurvivedParticleState","Failed to Get Particle: %i from Tree",particleID);
+      Error("GetPropagatingParticleState","Failed to Get Particle: %i from Tree",particleID);
       return 0;
    }   return particle;
 }

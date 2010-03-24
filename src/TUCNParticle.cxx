@@ -117,10 +117,10 @@ void TUCNParticle::ChangeState(TUCNState* state)
 }
 
 //______________________________________________________________________________
-Bool_t TUCNParticle::RegisterState(TUCNRun* run)
+Bool_t TUCNParticle::SaveState(TUCNRun* run)
 {
    // Ask States to register themselves in the run to keep track of numbers
-   if (fState) return fState->RegisterState(run);
+   if (fState) return fState->SaveState(run, this);
    return kFALSE;
 }
 
@@ -207,17 +207,11 @@ void TUCNParticle::SampleMagField(const Double_t integratedField, const Double_t
 */
 
 //_____________________________________________________________________________
-Bool_t TUCNParticle::Propagate(TUCNRun* run, TGeoNavigator* navigator, TUCNFieldManager* fieldManager)
+Bool_t TUCNParticle::Propagate(TUCNRun* run)
 {
    // -- Call State-dependent propagate method
    if (!fState) fState = new TUCNPropagating();
-   return fState->Propagate(this,run,navigator,fieldManager);
-}
-
-//_____________________________________________________________________________
-Bool_t TUCNParticle::Detected() const 
-{
-   return fState->Detected();
+   return fState->Propagate(this,run,run->Navigator(),run->FieldManager());
 }
 
 
@@ -386,9 +380,10 @@ TUCNPropagating::~TUCNPropagating()
 }
 
 //______________________________________________________________________________
-Bool_t TUCNPropagating::RegisterState(TUCNRun* /*run*/)
+Bool_t TUCNPropagating::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
+   run->GetData()->AddPropagatingParticleState(particle);
    return kTRUE;
 }
 
@@ -442,7 +437,7 @@ Bool_t TUCNPropagating::Propagate(TUCNParticle* particle, TUCNRun* run, TGeoNavi
    }
    // -- END OF PROPAGATION LOOP
    // -- Register Final Particle State with Run counters
-   particle->RegisterState(run);
+   particle->SaveState(run);
    return kTRUE;
 }
 
@@ -1736,10 +1731,10 @@ TUCNDecayed::~TUCNDecayed()
 }
 
 //______________________________________________________________________________
-Bool_t TUCNDecayed::RegisterState(TUCNRun* run)
+Bool_t TUCNDecayed::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-   run->IncrementDecayed();
+   run->GetData()->AddDecayedParticleState(particle);
    return kTRUE;
 }
 
@@ -1787,10 +1782,10 @@ TUCNAbsorbed::~TUCNAbsorbed()
 }
 
 //______________________________________________________________________________
-Bool_t TUCNAbsorbed::RegisterState(TUCNRun* run)
+Bool_t TUCNAbsorbed::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-   run->IncrementAbsorbed();
+   run->GetData()->AddAbsorbedParticleState(particle);
    return kTRUE;
 }
 
@@ -1837,10 +1832,10 @@ TUCNDetected::~TUCNDetected()
 }
 
 //______________________________________________________________________________
-Bool_t TUCNDetected::RegisterState(TUCNRun* run)
+Bool_t TUCNDetected::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-   run->IncrementDetected();
+   run->GetData()->AddDetectedParticleState(particle);
    return kTRUE;
 }
 
@@ -1887,9 +1882,9 @@ TUCNLost::~TUCNLost()
 }
 
 //______________________________________________________________________________
-Bool_t TUCNLost::RegisterState(TUCNRun* run)
+Bool_t TUCNLost::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-   run->IncrementLost();
+   run->GetData()->AddLostParticleState(particle);
    return kTRUE;
 }

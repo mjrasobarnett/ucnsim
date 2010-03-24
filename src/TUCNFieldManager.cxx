@@ -7,10 +7,12 @@
 
 #include "TObjArray.h"
 #include "TUCNConfigFile.h"
+#include "TUCNRun.h"
 #include "TUCNGravField.h"
 #include "TUCNMagField.h"
 #include "TUCNUniformMagField.h"
 #include "TUCNParabolicMagField.h"
+
 #include "TUCNFieldManager.h"
 
 #include "Units.h"
@@ -26,35 +28,33 @@ ClassImp(TUCNFieldManager)
 
 //_____________________________________________________________________________
 TUCNFieldManager::TUCNFieldManager()
-					  :TNamed("FieldManager", "Default Field Manager")
+                 :TNamed("FieldManager", "Default Field Manager")
 {
 // -- Default constructor
    Info("TUCNFieldManager", "Constructor");
-	fMagField = 0;
-	fGravField = 0;
-	
+   fMagField = 0;
+   fGravField = 0;
 } 
 
 //_____________________________________________________________________________
 TUCNFieldManager::TUCNFieldManager(const TUCNFieldManager& other)
-					  :TNamed(other),
-						fMagField(other.fMagField),
-						fGravField(other.fGravField)
+                 :TNamed(other),
+                  fMagField(other.fMagField),
+                  fGravField(other.fGravField)
 {
 // -- Copy Constructor
-	Info("TUCNFieldManager", "Copy Constructor");
-	
+   Info("TUCNFieldManager", "Copy Constructor");
 }
 
 //_____________________________________________________________________________
 TUCNFieldManager& TUCNFieldManager::operator=(const TUCNFieldManager& other)
 {
 // --assignment operator
-	if(this!=&other) {
+   if(this!=&other) {
       TNamed::operator=(other);
-		fMagField = other.fMagField;
-		fGravField = other.fGravField;
-	}
+      fMagField = other.fMagField;
+      fGravField = other.fGravField;
+   }
    return *this;
 }
 
@@ -62,53 +62,46 @@ TUCNFieldManager& TUCNFieldManager::operator=(const TUCNFieldManager& other)
 TUCNFieldManager::~TUCNFieldManager()
 { 
 // -- Destructor
-	Info("TUCNFieldManager", "Destructor");
-	if (fMagField)  delete fMagField;
-	if (fGravField) delete fGravField;
+   Info("TUCNFieldManager", "Destructor");
+   if (fMagField)  delete fMagField;
+   if (fGravField) delete fGravField;
 }
 
 // -- METHODS --
 
 //______________________________________________________________________________
-Bool_t TUCNFieldManager::Initialise(TUCNConfigFile* configFile)
+Bool_t TUCNFieldManager::Initialise(TUCNConfigFile& configFile, const TUCNRun& run)
 {
 // -- Read in the field environment for the experiment from configFile.
-	cout << "-------------------------------------------" << endl;
-	cout << "Initialising the Field Environment" << endl;
-	cout << "-------------------------------------------" << endl;
-	// Set-up the Grav Field
-	if (configFile->GetBool("Presence","GravField")) {
-		Info("Initialise","Gravitational Field set to be ON. Creating...");
-		this->AddGravField();
-	} else {
-		Info("Initialise","Gravitational Field set to be OFF.");
-	}
-	
-	// Set-up the magnetic field
-	if (configFile->GetBool("Presence","MagField")) {
-		// Field is present
-		std::string fieldType = configFile->GetString("Type","MagField");
-		Info("Initialise", "Magnetic Field of type: %s present. Creating...", fieldType.c_str());
-		Double_t fieldStrength = configFile->GetFloat("FieldStrength","MagField");
-		if (fieldType == "Parabolic") {
-			// Creating a Rotationally symmetric, parabolically decaying field
-			Double_t fieldRadius = configFile->GetFloat("FieldRadius(m)","MagField");
-			Double_t gradient = configFile->GetFloat("ParabolicGradient","MagField");
-			this->AddParabolicMagField(fieldStrength, gradient, fieldRadius);
-		} else if (fieldType == "Uniform") {
-			// Creating a Uniform field
-			this->AddUniformMagField(fieldStrength);
-		} else {
-			Error("Initialise", "Magnetic Field set to be present, but Field Type has been set.");
-			return kFALSE;
-		}
-	} else {
-		Info("Initialise", "Magnetic Field NOT present.");
-	}
-	cout << "-------------------------------------------" << endl;
-	cout << "Field Environment initialised successfully" << endl;
-	cout << "-------------------------------------------" << endl;
-	return kTRUE;
+   cout << "-------------------------------------------" << endl;
+   cout << "Initialising the Field Environment" << endl;
+   cout << "-------------------------------------------" << endl;
+   // Set-up the Grav Field
+   if (configFile.GetBool("GravField",run.GetName())) {
+      Info("Initialise","Gravitational Field set to be ON. Creating...");
+      this->AddGravField();
+   } else {
+      Info("Initialise","Gravitational Field set to be OFF.");
+   }
+   // Set-up the magnetic field
+   if (configFile.GetBool("MagField",run.GetName())) {
+      // Field is present. Read in Field Map
+      std::string fieldMapName = configFile.GetString("MagFieldMap",run.GetName());
+      if (fieldMapName == "") {
+         Error("Initialise", "Magnetic Field set to be present, but Field Type has been set.");
+         return kFALSE;
+      }
+      Info("Initialise", "Magnetic Field present. Creating...");
+      /*
+         Need to flesh out a MagFieldMap system
+      */
+   } else {
+      Info("Initialise", "Magnetic Field NOT present.");
+   }
+   cout << "-------------------------------------------" << endl;
+   cout << "Field Environment initialised successfully" << endl;
+   cout << "-------------------------------------------" << endl;
+   return kTRUE;
 }
 
 //______________________________________________________________________________
