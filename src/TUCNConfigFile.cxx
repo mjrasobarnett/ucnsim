@@ -236,8 +236,8 @@ bool TUCNConfigFile::GetBool(string key, string section, bool defaultval)
   if (value.size() == 0) return defaultval;
   
   // Now try to work out what it is
-  if (value == "True" || value == "true" || value == "TRUE") return true;
-  if (value == "False" || value == "false" || value == "FALSE") return false;
+  if (value == "True" || value == "true" || value == "TRUE" || value == "ON" || value == "On" || value == "on" || value == "YES" || value == "Yes" || value == "yes") return true;
+  if (value == "False" || value == "false" || value == "FALSE" || value == "OFF" || value == "Off" || value == "off" || value == "NO" || value == "No" || value == "no" ) return false;
   
   // Try to convert to an integer, and see if it is non-zero
   istringstream iss (value);
