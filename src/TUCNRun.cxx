@@ -165,6 +165,13 @@ Bool_t TUCNRun::Start()
 // -- Propagate the particles stored in the Run's Data, specified by configFile
    cout << "-------------------------------------------" << endl;
    cout << "Starting Simulation of " << this->GetName() << endl;
+   cout << "Total Particles: " << this->GetData()->InitialParticles() << endl;
+   cout << "Number Propagating: " << this->GetData()->PropagatingParticles() << endl;
+   cout << "Number Detected: " << this->GetData()->DetectedParticles() << endl;
+   cout << "Number Absorbed by Boundary: " << this->GetData()->AbsorbedParticles() << endl;
+   cout << "Number Decayed: " << this->GetData()->DecayedParticles() << endl;
+   cout << "Number Lost To Outer Geometry: " << this->GetData()->LostParticles() << endl;
+   cout << "Number With Anomalous Behaviour: " << this->GetData()->BadParticles() << endl;
    cout << "-------------------------------------------" << endl;
    Int_t totalParticles = this->GetData()->InitialParticles();
    ///////////////////////////////////////////////////////////////////////
@@ -248,7 +255,7 @@ Bool_t TUCNRun::Finish(TUCNConfigFile& configFile)
    // -- Clear the experiment
    this->GetExperiment()->ClearManager();
    // -- Write out
-   TFile *f = TFile::Open(outputFile,"update");
+   TFile *f = TFile::Open(outputFile,"recreate");
    if (!f || f->IsZombie()) {
       Error("Export","Cannot open file");
       return kFALSE;
@@ -343,7 +350,7 @@ Bool_t TUCNRun::LoadParticles(TUCNConfigFile& configFile)
       // Using all particles in Tree.
       for (Int_t i=0;i<inputTree->GetEntriesFast();i++) {
          // Fetch all particles
-         TUCNParticle* particle = importedData->GetParticleState(*inputTree, i);
+         TUCNParticle* particle = importedData->GetParticleState(inputTree, i);
          // Add Particle ID to the list
          particleIDs.push_back(particle->Id());
       }

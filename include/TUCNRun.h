@@ -55,9 +55,7 @@ public:
    
    // Data storage
    Bool_t               SaveInitialParticle(TUCNParticle* particle);
-   Bool_t               SaveParticle(TUCNParticle* particle);
    TUCNParticle*        GetInitialParticle(Int_t particleID);
-   TUCNParticle*        GetParticle(Int_t particleID);
    
    // Run Procedures
    Bool_t               Initialise(TUCNConfigFile& configFile);
