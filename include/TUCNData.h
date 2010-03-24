@@ -25,7 +25,7 @@ public:
    
    Bool_t         ChecksOut();
    
-   // Storage of Tracks and Particles
+   // Add a Particle
    Bool_t          AddInitialParticleState(TUCNParticle* particle);
    Bool_t          AddPropagatingParticleState(TUCNParticle* particle);
    Bool_t          AddDetectedParticleState(TUCNParticle* particle);
@@ -34,6 +34,8 @@ public:
    Bool_t          AddLostParticleState(TUCNParticle* particle);
    Bool_t          AddBadParticleState(TUCNParticle* particle);
    
+   // Get a Particle
+   TUCNParticle*  GetParticleState(TTree& tree, Int_t index);
    TUCNParticle*  GetInitialParticleState(Int_t index);
    TUCNParticle*  GetPropagatingParticleState(Int_t index);
    TUCNParticle*  GetDetectedParticleState(Int_t index);
@@ -53,6 +55,8 @@ public:
                                               this->DetectedParticles() + this->DecayedParticles() +
                                               this->AbsorbedParticles() + this->LostParticles() +
                                               this->BadParticles();}
+   // Get a Particular Tree
+   TTree*         FetchTree(TString treeName);
    
    ClassDef(TUCNData, 1) // UCN Data Object
 };

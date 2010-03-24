@@ -126,11 +126,11 @@ Bool_t TUCNData::AddInitialParticleState(TUCNParticle* particle)
 Bool_t TUCNData::AddPropagatingParticleState(TUCNParticle* particle)
 {
    // -- Create the Branches in the Trees where we will store the objects
-   if (fPropagatingParticles->GetBranch("PropagatingParticles") == NULL) {
-      fPropagatingParticles->Branch("PropagatingParticles","TUCNParticle",&particle);
+   if (fPropagatingParticles->GetBranch(fPropagatingParticles->GetName()) == NULL) {
+      fPropagatingParticles->Branch(fPropagatingParticles->GetName(),"TUCNParticle",&particle);
    }
    // Add the particle to the PropagatingParticleState Tree
-   fPropagatingParticles->SetBranchAddress("PropagatingParticles",&particle);
+   fPropagatingParticles->SetBranchAddress(fPropagatingParticles->GetName(),&particle);
    fPropagatingParticles->Fill();
    return kTRUE;
 }
@@ -139,11 +139,11 @@ Bool_t TUCNData::AddPropagatingParticleState(TUCNParticle* particle)
 Bool_t TUCNData::AddDetectedParticleState(TUCNParticle* particle)
 {
    // -- Create the Branches in the Trees where we will store the objects
-   if (fDetectedParticles->GetBranch("DetectedParticles") == NULL) {
-      fDetectedParticles->Branch("DetectedParticles","TUCNParticle",&particle);
+   if (fDetectedParticles->GetBranch(fDetectedParticles->GetName()) == NULL) {
+      fDetectedParticles->Branch(fDetectedParticles->GetName(),"TUCNParticle",&particle);
    }
    // Add the particle to the Detected ParticleState Tree
-   fDetectedParticles->SetBranchAddress("DetectedParticles",&particle);
+   fDetectedParticles->SetBranchAddress(fDetectedParticles->GetName(),&particle);
    fDetectedParticles->Fill();
    return kTRUE;
 }
@@ -152,11 +152,11 @@ Bool_t TUCNData::AddDetectedParticleState(TUCNParticle* particle)
 Bool_t TUCNData::AddDecayedParticleState(TUCNParticle* particle)
 {
    // -- Create the Branches in the Trees where we will store the objects
-   if (fDecayedParticles->GetBranch("DecayedParticles") == NULL) {
-      fDecayedParticles->Branch("DecayedParticles","TUCNParticle",&particle);
+   if (fDecayedParticles->GetBranch(fDecayedParticles->GetName()) == NULL) {
+      fDecayedParticles->Branch(fDecayedParticles->GetName(),"TUCNParticle",&particle);
    }
    // Add the particle to the Tree
-   fDecayedParticles->SetBranchAddress("DecayedParticles",&particle);
+   fDecayedParticles->SetBranchAddress(fDecayedParticles->GetName(),&particle);
    fDecayedParticles->Fill();
    return kTRUE;
 }
@@ -165,11 +165,11 @@ Bool_t TUCNData::AddDecayedParticleState(TUCNParticle* particle)
 Bool_t TUCNData::AddAbsorbedParticleState(TUCNParticle* particle)
 {
    // -- Create the Branches in the Trees where we will store the objects
-   if (fAbsorbedParticles->GetBranch("AbsorbedParticles") == NULL) {
-      fAbsorbedParticles->Branch("AbsorbedParticles","TUCNParticle",&particle);
+   if (fAbsorbedParticles->GetBranch(fAbsorbedParticles->GetName()) == NULL) {
+      fAbsorbedParticles->Branch(fAbsorbedParticles->GetName(),"TUCNParticle",&particle);
    }
    // Add the particle to the Tree
-   fAbsorbedParticles->SetBranchAddress("AbsorbedParticles",&particle);
+   fAbsorbedParticles->SetBranchAddress(fAbsorbedParticles->GetName(),&particle);
    fAbsorbedParticles->Fill();
    return kTRUE;
 }
@@ -178,11 +178,11 @@ Bool_t TUCNData::AddAbsorbedParticleState(TUCNParticle* particle)
 Bool_t TUCNData::AddLostParticleState(TUCNParticle* particle)
 {
    // -- Create the Branches in the Trees where we will store the objects
-   if (fLostParticles->GetBranch("LostParticles") == NULL) {
-      fLostParticles->Branch("LostParticles","TUCNParticle",&particle);
+   if (fLostParticles->GetBranch(fLostParticles->GetName()) == NULL) {
+      fLostParticles->Branch(fLostParticles->GetName(),"TUCNParticle",&particle);
    }
    // Add the particle to the Tree
-   fLostParticles->SetBranchAddress("LostParticles",&particle);
+   fLostParticles->SetBranchAddress(fLostParticles->GetName(),&particle);
    fLostParticles->Fill();
    return kTRUE;
 }
@@ -191,124 +191,177 @@ Bool_t TUCNData::AddLostParticleState(TUCNParticle* particle)
 Bool_t TUCNData::AddBadParticleState(TUCNParticle* particle)
 {
    // -- Create the Branches in the Trees where we will store the objects
-   if (fBadParticles->GetBranch("BadParticles") == NULL) {
-      fBadParticles->Branch("BadParticles","TUCNParticle",&particle);
+   if (fBadParticles->GetBranch(fBadParticles->GetName()) == NULL) {
+      fBadParticles->Branch(fBadParticles->GetName(),"TUCNParticle",&particle);
    }
    // Add the particle to the Tree
-   fBadParticles->SetBranchAddress("BadParticles",&particle);
+   fBadParticles->SetBranchAddress(fBadParticles->GetName(),&particle);
    fBadParticles->Fill();
    return kTRUE;
 }
 
 //_____________________________________________________________________________
-TUCNParticle* TUCNData::GetInitialParticleState(Int_t particleID) {
-   // -- Retrieve the particle from the TTree	
+TUCNParticle*  TUCNData::GetParticleState(TTree& tree, Int_t index)
+{
+// -- Retrieve the particle from the TTree	
    TUCNParticle* particle = 0;
-   if (particleID > fInitialParticles->GetEntries() || particleID < 0) {
-      Error("GetInitialParticleState","No Entry exists for Particle: %i", particleID);
+   if (index > tree.GetEntries() || index < 0) {
+      Error("GetParticleState","No Entry exists for Particle: %i", index);
       return 0;
    }
-   fInitialParticles->SetBranchAddress("InitialParticles", &particle);
-   fInitialParticles->GetEntry(particleID);
+   tree.SetBranchAddress(tree.GetName(), &particle);
+   tree.GetEntry(index);
    if (particle == NULL) {
-      Error("GetInitialParticleState","Failed to Get Particle: %i from Tree",particleID);
+      Error("GetParticleState","Failed to Get Particle: %i from Tree: %s",index,tree.GetName());
+      return 0;
+   }
+   return particle;
+}
+//_____________________________________________________________________________
+TUCNParticle* TUCNData::GetInitialParticleState(Int_t index)
+{
+   // -- Retrieve the particle from the TTree	
+   TUCNParticle* particle = 0;
+   if (index > fInitialParticles->GetEntries() || index < 0) {
+      Error("GetInitialParticleState","No Entry exists for Particle: %i", index);
+      return 0;
+   }
+   fInitialParticles->SetBranchAddress(fInitialParticles->GetName(), &particle);
+   fInitialParticles->GetEntry(index);
+   if (particle == NULL) {
+      Error("GetInitialParticleState","Failed to Get Particle: %i from Tree",index);
       return 0;
    }
    return particle;
 }
 
 //_____________________________________________________________________________
-TUCNParticle* TUCNData::GetPropagatingParticleState(Int_t particleID) {
+TUCNParticle* TUCNData::GetPropagatingParticleState(Int_t index) {
    // -- Retrieve the particle from the TTree	
    TUCNParticle* particle = 0;
-   if (particleID > fPropagatingParticles->GetEntries() || particleID < 0) {
-      Error("GetPropagatingParticleState","No Entry exists for Particle: %i", particleID);
+   if (index > fPropagatingParticles->GetEntries() || index < 0) {
+      Error("GetPropagatingParticleState","No Entry exists for Particle: %i", index);
       return 0;
    }
-   fPropagatingParticles->SetBranchAddress("PropagatingParticles", &particle);
-   fPropagatingParticles->GetEntry(particleID);
+   fPropagatingParticles->SetBranchAddress(fPropagatingParticles->GetName(), &particle);
+   fPropagatingParticles->GetEntry(index);
    if (particle == NULL) {
-      Error("GetPropagatingParticleState","Failed to Get Particle: %i from Tree",particleID);
+      Error("GetPropagatingParticleState","Failed to Get Particle: %i from Tree",index);
       return 0;
    }   return particle;
 }
 
 //_____________________________________________________________________________
-TUCNParticle* TUCNData::GetDetectedParticleState(Int_t particleID) {
+TUCNParticle* TUCNData::GetDetectedParticleState(Int_t index) {
    // -- Retrieve the particle from the TTree	
    TUCNParticle* particle = 0;
-   if (particleID > fDetectedParticles->GetEntries() || particleID < 0) {
-      Error("GetDetectedParticleState","No Entry exists for Particle: %i", particleID);
+   if (index > fDetectedParticles->GetEntries() || index < 0) {
+      Error("GetDetectedParticleState","No Entry exists for Particle: %i", index);
       return 0;
    }
-   fDetectedParticles->SetBranchAddress("DetectedParticles", &particle);
-   fDetectedParticles->GetEntry(particleID);
+   fDetectedParticles->SetBranchAddress(fDetectedParticles->GetName(), &particle);
+   fDetectedParticles->GetEntry(index);
    if (particle == NULL) {
-      Error("GetDetectedParticleState","Failed to Get Particle: %i from Tree",particleID);
+      Error("GetDetectedParticleState","Failed to Get Particle: %i from Tree",index);
       return 0;
    }   return particle;
 }
 
 //_____________________________________________________________________________
-TUCNParticle* TUCNData::GetDecayedParticleState(Int_t particleID) {
+TUCNParticle* TUCNData::GetDecayedParticleState(Int_t index) {
    // -- Retrieve the particle from the TTree	
    TUCNParticle* particle = 0;
-   if (particleID > fDecayedParticles->GetEntries() || particleID < 0) {
-      Error("GetDecayedParticleState","No Entry exists for Particle: %i", particleID);
+   if (index > fDecayedParticles->GetEntries() || index < 0) {
+      Error("GetDecayedParticleState","No Entry exists for Particle: %i", index);
       return 0;
    }
-   fDecayedParticles->SetBranchAddress("DecayedParticles", &particle);
-   fDecayedParticles->GetEntry(particleID);
+   fDecayedParticles->SetBranchAddress(fDecayedParticles->GetName(), &particle);
+   fDecayedParticles->GetEntry(index);
    if (particle == NULL) {
-      Error("GetDecayedParticleState","Failed to Get Particle: %i from Tree",particleID);
+      Error("GetDecayedParticleState","Failed to Get Particle: %i from Tree",index);
       return 0;
    }   return particle;
 }
 
 //_____________________________________________________________________________
-TUCNParticle* TUCNData::GetAbsorbedParticleState(Int_t particleID) {
+TUCNParticle* TUCNData::GetAbsorbedParticleState(Int_t index) {
    // -- Retrieve the particle from the TTree	
    TUCNParticle* particle = 0;
-   if (particleID > fAbsorbedParticles->GetEntries() || particleID < 0) {
-      Error("GetAbsorbedParticleState","No Entry exists for Particle: %i", particleID);
+   if (index > fAbsorbedParticles->GetEntries() || index < 0) {
+      Error("GetAbsorbedParticleState","No Entry exists for Particle: %i", index);
       return 0;
    }
-   fAbsorbedParticles->SetBranchAddress("AbsorbedParticles", &particle);
-   fAbsorbedParticles->GetEntry(particleID);
+   fAbsorbedParticles->SetBranchAddress(fAbsorbedParticles->GetName(), &particle);
+   fAbsorbedParticles->GetEntry(index);
    if (particle == NULL) {
-      Error("GetAbsorbedParticleState","Failed to Get Particle: %i from Tree",particleID);
+      Error("GetAbsorbedParticleState","Failed to Get Particle: %i from Tree",index);
       return 0;
    }   return particle;
 }
 
 //_____________________________________________________________________________
-TUCNParticle* TUCNData::GetLostParticleState(Int_t particleID) {
+TUCNParticle* TUCNData::GetLostParticleState(Int_t index) {
    // -- Retrieve the particle from the TTree	
    TUCNParticle* particle = 0;
-   if (particleID > fLostParticles->GetEntries() || particleID < 0) {
-      Error("GetLostParticleState","No Entry exists for Particle: %i", particleID);
+   if (index > fLostParticles->GetEntries() || index < 0) {
+      Error("GetLostParticleState","No Entry exists for Particle: %i", index);
       return 0;
    }
-   fLostParticles->SetBranchAddress("LostParticles", &particle);
-   fLostParticles->GetEntry(particleID);
+   fLostParticles->SetBranchAddress(fLostParticles->GetName(), &particle);
+   fLostParticles->GetEntry(index);
    if (particle == NULL) {
-      Error("GetLostParticleState","Failed to Get Particle: %i from Tree",particleID);
+      Error("GetLostParticleState","Failed to Get Particle: %i from Tree",index);
       return 0;
    }   return particle;
 }
 
 //_____________________________________________________________________________
-TUCNParticle* TUCNData::GetBadParticleState(Int_t particleID) {
+TUCNParticle* TUCNData::GetBadParticleState(Int_t index) {
    // -- Retrieve the particle from the TTree	
    TUCNParticle* particle = 0;
-   if (particleID > fBadParticles->GetEntries() || particleID < 0) {
-      Error("GetBadParticleState","No Entry exists for Particle: %i", particleID);
+   if (index > fBadParticles->GetEntries() || index < 0) {
+      Error("GetBadParticleState","No Entry exists for Particle: %i", index);
       return 0;
    }
-   fBadParticles->SetBranchAddress("BadParticles", &particle);
-   fBadParticles->GetEntry(particleID);
+   fBadParticles->SetBranchAddress(fBadParticles->GetName(), &particle);
+   fBadParticles->GetEntry(index);
    if (particle == NULL) {
-      Error("GetBadParticleState","Failed to Get Particle: %i from Tree",particleID);
+      Error("GetBadParticleState","Failed to Get Particle: %i from Tree",index);
       return 0;
    }   return particle;
+}
+
+//_____________________________________________________________________________
+TTree* TUCNData::FetchTree(TString treeName) {
+// -- Return pointer to a particular Tree based on the name given
+// -- This could be converted to a switch statement if this is felt to be more efficient,
+// -- however the number of calls to this function would suggest this is unimportant
+   // Convert to Lower Case
+   treeName.ToLower();
+   // Determine which Tree is trying to be selected
+   if (treeName == "initial" || treeName == "initialparticles" || treeName == "initialstates") {
+      Info("FetchTree","Returning the InitialParticles Tree");
+      return fInitialParticles;
+   } else if (treeName == "propagating" || treeName == "propagatingparticles" || treeName == "propagatingstates") {
+      Info("FetchTree","Returning the PropagatingParticles Tree");
+      return fPropagatingParticles;
+   } else if (treeName == "decayed" || treeName == "decayedparticles" || treeName == "decayedstates") {
+      Info("FetchTree","Returning the DecayedParticles Tree");
+      return fDecayedParticles;
+   } else if (treeName == "detected" || treeName == "detectedparticles" || treeName == "detectedstates") {
+      Info("FetchTree","Returning the DetectedParticles Tree");
+      return fDetectedParticles;
+   } else if (treeName == "absorbed" || treeName == "absorbedparticles" || treeName == "absorbedstates") {
+      Info("FetchTree","Returning the AbsorbedParticles Tree");
+      return fAbsorbedParticles;
+   } else if (treeName == "lost" || treeName == "lostparticles" || treeName == "loststates") {
+      Info("FetchTree","Returning the LostParticles Tree");
+      return fLostParticles;
+   } else if (treeName == "bad" || treeName == "badparticles" || treeName == "badstates") {
+      Info("FetchTree","Returning the BadParticles Tree");
+      return fBadParticles;
+   } else {
+      Error("FetchTree","Input TreeName: %s does not match any listed in Data",treeName.Data());
+      return 0;
+   }
 }
