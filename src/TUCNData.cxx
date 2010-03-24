@@ -13,23 +13,19 @@
 ClassImp(TUCNData)
 
 //_____________________________________________________________________________
-TUCNData::TUCNData(void) 
-			: TNamed("ucnData","Default data")
+TUCNData::TUCNData() 
+			:TNamed()
 {
 	// -- Default Constructor
 	Info("TUCNData","Default Constructor");
 	// -- Create the Trees
-	fTracks = new TTree("ParticleTracks","Tree of Particle Tracks");
-	fInitialParticleStates = new TTree("InitialParticleStates","Tree of Initial Particles");
-	fFinalParticleStates = new TTree("FinalParticleStates","Tree of Final Particles");
+	fTracks = 0;
+	fInitialParticleStates = 0;
+	fFinalParticleStates = 0;
 	// -- Create storage for filling the trees
-	fCurrentTrack    = new TGeoTrack();
-	fInitialParticle = new TUCNParticle();
-	fCurrentParticle = new TUCNParticle();
-	// -- Create the Branches in the Trees where we will store the objects
-	fTracks->Branch("Tracks","TGeoTrack",&fCurrentTrack);
-	fInitialParticleStates->Branch("InitialParticles","TUCNParticle",&fInitialParticle);
-	fFinalParticleStates->Branch("FinalParticles","TUCNParticle",&fCurrentParticle);
+	fCurrentTrack    = 0;
+	fInitialParticle = 0;
+	fCurrentParticle = 0;
 }
 
 //_____________________________________________________________________________
