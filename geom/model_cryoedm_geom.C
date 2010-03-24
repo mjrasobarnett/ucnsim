@@ -9,8 +9,8 @@
 #include "../include/Units.h"
 #include "../include/Constants.h"
 
-Int_t build_geom(TGeoManager* geoManager);
-Int_t draw_geom(TGeoManager* geoManager);
+Bool_t Build_Geom(const TGeoManager* geoManager);
+Bool_t Draw_Geom(const TGeoManager* geoManager);
 
 namespace ModelParameters {
    // -- SourceTube Segment
@@ -90,14 +90,15 @@ Int_t model_cryoedm_geom()
    // Create the geoManager
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
    // Build and write to file the simulation and visualisation geoms
-   build_geom(geoManager);
-   draw_geom(geoManager);
+   Build_Geom(geoManager);
+   Draw_Geom(geoManager);
    
    return 0;
 }
 
 //__________________________________________________________________________
-Int_t build_geom(TGeoManager* geoManager) {
+Bool_t Build_Geom(const TGeoManager* geoManager) 
+{
    // -------------------------------------
    // BUILDING GEOMETRY
    // Materials - Define the materials used. Leave the neutron properties to be defined on a run-by-run basis
@@ -385,11 +386,12 @@ Int_t build_geom(TGeoManager* geoManager) {
    cerr << "Visualisation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    
-   return 0;
+   return kTRUE;
 }
 
 //__________________________________________________________________________
-Int_t draw_geom(TGeoManager* geoManager) {
+Bool_t Draw_Geom(const TGeoManager* geoManager) 
+{
    // -------------------------------------
    // -- Draw the vis-geometry in OpenGLViewer
    TCanvas* canvas = new TCanvas("GeomCanvas","Canvas for visualisation of EDM Geom",60,40,600,600);
@@ -421,6 +423,5 @@ Int_t draw_geom(TGeoManager* geoManager) {
    // Int_t axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const Double_t referencePos[3]
    glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
    glViewer->UpdateScene();
-   return 0;
+   return kTRUE;
 }
-
