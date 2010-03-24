@@ -3,36 +3,54 @@
 
 #include "TNamed.h"
 #include "TTree.h"
-#include "TGeoTrack.h"
 
 class TUCNParticle;
 
 class TUCNData : public TNamed {
 protected:
-   TTree             *fInitialParticleStates;
-   TTree             *fFinalParticleStates;
-   
-private:   
-   TTree*            GetInitialParticlesTree()     {return fInitialParticleStates;}
-   TTree*            GetFinalParticlesTree()       {return fFinalParticleStates;}
+   TTree          *fInitialParticles;
+   TTree          *fSurvivedParticles;
+   TTree          *fDetectedParticles;
+   TTree          *fDecayedParticles;
+   TTree          *fAbsorbedParticles;
+   TTree          *fLostParticles;
+   TTree          *fBadParticles;
    
 public:
    TUCNData(void); 
    TUCNData(const char *name, const char *title);
-   TUCNData(const TUCNData&);
-   TUCNData& operator=(const TUCNData&);
    virtual ~TUCNData(void);
    
-   Bool_t               ChecksOut();
+   Bool_t         ChecksOut();
    
    // Storage of Tracks and Particles
-   Bool_t               AddInitialParticleState(TUCNParticle* particle);
-   Bool_t               AddFinalParticleState(TUCNParticle* particle);
+   Int_t          AddInitialParticleState(TUCNParticle* particle);
+   Int_t          AddSurvivedParticleState(TUCNParticle* particle);
+   Int_t          AddDetectedParticleState(TUCNParticle* particle);
+   Int_t          AddDecayedParticleState(TUCNParticle* particle);
+   Int_t          AddAbsorbedParticleState(TUCNParticle* particle);
+   Int_t          AddLostParticleState(TUCNParticle* particle);
+   Int_t          AddBadParticleState(TUCNParticle* particle);
    
-   TUCNParticle*        GetInitialParticleState(Int_t particleID);
-   TUCNParticle*        GetFinalParticleState(Int_t particleID);
+   TUCNParticle*  GetInitialParticleState(Int_t index);
+   TUCNParticle*  GetSurvivedParticleState(Int_t index);
+   TUCNParticle*  GetDetectedParticleState(Int_t index);
+   TUCNParticle*  GetDecayedParticleState(Int_t index);
+   TUCNParticle*  GetAbsorbedParticleState(Int_t index);
+   TUCNParticle*  GetLostParticleState(Int_t index);
+   TUCNParticle*  GetBadParticleState(Int_t index);
    
-   Int_t                InitialParticles() {return fInitialParticleStates->GetEntriesFast();}
+   Int_t          InitialParticles() const   {return fInitialParticles->GetEntriesFast();}
+   Int_t          SurvivedParticles() const  {return fSurvivedParticles->GetEntriesFast();}
+   Int_t          DetectedParticles() const  {return fDetectedParticles->GetEntriesFast();}
+   Int_t          DecayedParticles() const   {return fDecayedParticles->GetEntriesFast();}
+   Int_t          AbsorbedParticles() const  {return fAbsorbedParticles->GetEntriesFast();}
+   Int_t          LostParticles() const      {return fLostParticles->GetEntriesFast();}
+   Int_t          BadParticles() const       {return fBadParticles->GetEntriesFast();}
+   Int_t          FinalParticles() const     {return this->SurvivedParticles() +
+                                              this->DetectedParticles() + this->DecayedParticles() +
+                                              this->AbsorbedParticles() + this->LostParticles() +
+                                              this->BadParticles();}
    
    ClassDef(TUCNData, 1) // UCN Data Object
 };
