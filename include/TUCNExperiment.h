@@ -38,6 +38,7 @@ public:
    Bool_t               Initialise(TUCNConfigFile& configFile, const TUCNRun& run);
    
    // GeoManager
+   void                 ClearManager() {fGeoManager = 0;}
    TGeoManager*         GeoManager() const {return fGeoManager;}
    TGeoNavigator*       Navigator() const  {return fGeoManager->GetCurrentNavigator();}
    

@@ -245,6 +245,8 @@ Bool_t TUCNRun::Finish(TUCNConfigFile& configFile)
       Error("Export", "OutputFile is not a ROOT filename");
       return kFALSE;
    } 
+   // -- Clear the experiment
+   this->GetExperiment()->ClearManager();
    // -- Write out
    TFile *f = TFile::Open(outputFile,"update");
    if (!f || f->IsZombie()) {

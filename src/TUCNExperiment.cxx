@@ -59,7 +59,7 @@ TUCNExperiment::~TUCNExperiment()
 // -- Destructor
    Info("TUCNExperiment", "Destructor");
    if (fFieldManager) delete fFieldManager;
-   if (fGeoManager) delete fGeoManager;
+//   if (fGeoManager) delete fGeoManager;
 }
 
 // -- METHODS --
