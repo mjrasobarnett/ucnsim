@@ -86,37 +86,42 @@ OBJS				=	$(UCNSIMO) $(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(GENPARTO) $(TUCNGEO
 PROGRAMS			=	$(UCNSO) $(UCNSIM) $(BUILDTEST) $(FITDATA) $(SANDBOX) $(GENPART)
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
-.PHONY:     UCN
+.PHONY:     UCN ucnsim sandbox buildtest fitdata genpart
 
 all:         $(PROGRAMS)
 
 clean:
 		@rm -f $(OBJS) $(PROGRAMS) ./lib/* UCNDict.* core *Dict* ./*.txt
 
+ucnsim:			$(UCNSIM)
 $(UCNSIM):		$(UCNSIMO) $(UCNSO)
 					$(LD) $(LDFLAGS) $(UCNSIMO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
 					@echo "$@ done"
 
+sandbox:			$(SANDBOX)
 $(SANDBOX):		$(SANDBOXO) $(UCNSO)
 					$(LD) $(LDFLAGS) $(SANDBOXO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
 					@echo "$@ done"
 
+buildtest:		$(BUILDTEST)
 $(BUILDTEST):	$(BUILDTESTO) $(UCNSO)
 					$(LD) $(LDFLAGS) $(BUILDTESTO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
 					@echo "$@ done"		
 
+fitdata:			$(FITDATA)
 $(FITDATA):		$(FITDATAO) $(TUCNDATAPARSERO)
 					$(LD) $(LDFLAGS) $(FITDATAO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
 					@echo "$@ done"
 					
+genpart:			$(GENPART)
 $(GENPART):		$(GENPARTO) $(UCNSO)
 					$(LD) $(LDFLAGS) $(GENPARTO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
