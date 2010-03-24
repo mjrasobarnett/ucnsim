@@ -10,15 +10,18 @@
 #include "TGeoManager.h"
 #include "TGeoMedium.h"
 #include "TGeoMatrix.h"
+#include "TGeoBBox.h"
 
-#include "TUCNGeoBuilder.h"
 #include "TUCNGeoBBox.h"
 #include "TUCNGeoTube.h"
-#include "TUCNGeoMaterial.h"
+#include "TUCNGeoBuilder.h"
+
 #include "TUCNParticle.h"
 #include "TUCNData.h"
 #include "TUCNRun.h"
+#include "TUCNVolume.h"
 
+#include "Materials.h"
 #include "Constants.h"
 #include "Units.h"
 #include "FitSuite.h"
@@ -27,7 +30,6 @@ using std::cout;
 using std::endl;
 using std::cerr;
 using std::string;
-
 
 namespace ModelParameters {
    // -- SourceTube Segment
@@ -48,7 +50,7 @@ namespace ModelParameters {
 using namespace ModelParameters;
 
 
-Bool_t GenerateParticles(const Int_t neutrons, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree);
+Bool_t GenerateParticles(const Int_t neutrons, const Double_t vmax, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree);
 Bool_t CreateRandomParticle(TUCNParticle* particle, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
 Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnergy);
 
@@ -59,9 +61,13 @@ Int_t main(Int_t argc,Char_t **argv)
    
    // -- Make the particle beam volume
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
-   TUCNGeoMaterial *matTracking  = new TUCNGeoMaterial("TrackingMaterial",0,0);
-   TGeoMedium *vacuum = new TGeoMedium("Vacuum",1, matTracking);
-   TGeoVolume *neutronBeamArea = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube( "NeutronBeamArea", vacuum, neutronBeamAreaRMin, neutronBeamAreaRMax, neutronBeamAreaHalfLength);
+   
+   Materials::BuildMaterials(geoManager);
+   TGeoMedium* liquidHelium = geoManager->GetMedium("HeliumII");
+   
+   TUCNGeoTube* tube = new TUCNGeoTube("NeutronBeamArea", neutronBeamAreaRMin, neutronBeamAreaRMax, neutronBeamAreaHalfLength);
+   TUCNTrackingVolume* neutronBeamArea = new TUCNTrackingVolume("NeutronBeamArea", tube, liquidHelium);
+   
    TGeoRotation neutronBeamAreaRot("NeutronBeamAreaRot",0,neutronBeamAreaAngle,0); // phi,theta,psi
    TGeoTranslation neutronBeamAreaTra("NeutronBeamAreaTra",0.,neutronBeamAreaYDisplacement,0.);
    TGeoCombiTrans neutronBeamAreaCom(neutronBeamAreaTra,neutronBeamAreaRot);
@@ -70,7 +76,10 @@ Int_t main(Int_t argc,Char_t **argv)
    
    // -- Generate the particles
    TUCNRun* run = new TUCNRun("Run1","Run no: 1");
-   GenerateParticles(1000, neutronBeamArea, neutronBeamAreaMatrix, run->GetData());
+   
+   Double_t vmax = 10.0*Units::m/Units::s;
+   
+   GenerateParticles(10000, vmax, neutronBeamArea, neutronBeamAreaMatrix, run->GetData());
    
    // -- Write out the particle tree
    TFile *f = TFile::Open("temp/initialparticles.root","recreate");
@@ -92,7 +101,7 @@ Int_t main(Int_t argc,Char_t **argv)
 }
 
 //__________________________________________________________________________
-Bool_t GenerateParticles(const Int_t neutrons, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree)
+Bool_t GenerateParticles(const Int_t neutrons, const Double_t vmax, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree)
 {
    // Generates a uniform distribution of particles with random directions all with 
    // the same total energy (kinetic plus potential) defined at z = 0.
@@ -112,11 +121,10 @@ Bool_t GenerateParticles(const Int_t neutrons, const TGeoVolume* beamVolume, con
    TH1F* initialYHist = new TH1F("InitialYHist","Initial Y Position, Units of (m)", nbins, 0., boundary[1]); 
    TH1F* initialZHist = new TH1F("InitialZHist","Initial Z Position, Units of (m)", nbins, -boundary[2], boundary[2]);
    
-   Double_t vmax = 5.*(Units::m/Units::s), vmin = 0.;
    TH1F* initialVXHist = new TH1F("InitialVXHist","Initial VX velocity, Units of (m/s)", nbins, -vmax, vmax);
    TH1F* initialVYHist = new TH1F("InitialVYHist","Initial VY velocity, Units of (m/s)", nbins, -vmax, vmax);
    TH1F* initialVZHist = new TH1F("InitialVZHist","Initial VZ velocity, Units of (m/s)", nbins, -vmax, vmax);
-   TH1F* initialVHist = new TH1F("InitialVHist","Initial V velocity, Units of (m/s)", nbins, vmin, vmax);
+   TH1F* initialVHist = new TH1F("InitialVHist","Initial V velocity, Units of (m/s)", nbins, 0.0, vmax);
    
    Double_t maxEnergy = 0.5*Constants::neutron_mass*TMath::Power(vmax,2.0);
    

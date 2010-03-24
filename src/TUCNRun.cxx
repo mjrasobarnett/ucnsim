@@ -11,7 +11,6 @@
 
 #include "TUCNRun.h"
 #include "TUCNConfigFile.h"
-#include "TUCNGeoMaterial.h"
 #include "TUCNFieldManager.h"
 #include "TUCNMagField.h"
 #include "TUCNGravField.h"

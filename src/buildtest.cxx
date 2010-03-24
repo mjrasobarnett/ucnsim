@@ -34,7 +34,6 @@
 #include "TUCNGeoBuilder.h"
 #include "TUCNGeoBBox.h"
 #include "TUCNGeoTube.h"
-#include "TUCNGeoMaterial.h"
 #include "TUCNGravField.h"
 #include "TUCNParticle.h"
 #include "TUCNExperiment.h"

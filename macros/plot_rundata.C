@@ -9,270 +9,216 @@
 #include "include/FitSuite.h"
 
 
-Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& runName);
-Bool_t PlotInitialAndFinalAngularDistribution(const TString& dataFileName, const TString& runName);
-Bool_t PlotInitialAndFinalPhaseSpace(const TString& dataFileName, const TString& runName); 
+Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeName);
+Bool_t PlotAngularDistribution(TUCNRun* run, const TString& treeName);
+Bool_t PlotPhaseSpace(TUCNRun* run, const TString& treeName); 
+Double_t ExponentialDecay(Double_t *x, Double_t *par);
 
 // -------------------------------------------------------------------------------------- 
-Int_t plot_rundata(const char* dataFileName, const char* runName) {
-
-
-   PlotInitialAndFinalPositions(dataFileName, runName);
-	PlotInitialAndFinalAngularDistribution(dataFileName, runName);
-	PlotInitialAndFinalPhaseSpace(dataFileName, runName); 
-
-	return 0;
-}
-
-
-// -------------------------------------------------------------------------------------- 
-Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& runName) 
-{
-// -- Create a TPolyMarker3D object to store the final positions of the neutrons and write this to file. 
-	cout << "-------------------------------------------" << endl;
-	cout << "PlotInitialAndFinalPositions" <<  endl;
-	cout << "-------------------------------------------" << endl;
-	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Open File
-	TFile *file = 0;
-	file = TFile::Open(dataFileName, "update");
-	if (!file || file->IsZombie()) {
-	   cerr << "Cannot open file: " << dataFileName << endl;
-	   return 0;
-	}
-	// -- Extract Run Object
-	cout << "Fetching run: " << runName << endl;
-	TUCNRun* run = new TUCNRun();
+Int_t plot_rundata(const char* geomFileName, const char* dataFileName, const char* runName, const char* treeName) {
+   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Open File
+   TFile *file = 0;
+   file = TFile::Open(dataFileName, "update");
+   if (!file || file->IsZombie()) {
+      cerr << "Cannot open file: " << dataFileName << endl;
+      return 0;
+   }
+   // -- Extract Run Object
+   cout << "Fetching run: " << runName << endl;
+   TUCNRun* run = new TUCNRun();
    file->GetObject(static_cast<const char*>(runName), run);
-	if (run == NULL) {
-		cerr << "Could not find run: " << runName << endl;
-		return kFALSE;
-	}
-	cout << "Successfully Loaded Run: " << runName << endl;
-	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Create the initial points
-	TPolyMarker3D* initialPoints = new TPolyMarker3D(run->Neutrons(), 1); // 1 is marker style
-	for (Int_t i = 0; i < run->Neutrons(); i++) {
-		TUCNParticle* particle = run->GetInitialParticle(i);
-		if (particle == NULL) continue;
-		initialPoints->SetPoint(i, particle->X(), particle->Y(), particle->Z());
-	}
-	cout << "Created Initial Points" << endl;
-	initialPoints->SetMarkerColor(2);
-	initialPoints->SetMarkerStyle(6);
-	// -- Write the points to the File
-	initialPoints->SetName("NeutronInitialPositions");
-	initialPoints->Write();
-	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Create the final points
-	TPolyMarker3D* finalPoints = new TPolyMarker3D(run->Neutrons(), 1); // 1 is marker style
-	for (Int_t i = 0; i < run->Neutrons(); i++) {
-		TUCNParticle* particle = run->GetParticle(i);
-		if (particle == NULL) continue;
-		finalPoints->SetPoint(i, particle->X(), particle->Y(), particle->Z());
-	}
-	cout << "Created Final Points" << endl;
-	finalPoints->SetMarkerColor(2);
-	finalPoints->SetMarkerStyle(6);
-	// -- Write the points to the File
-	finalPoints->SetName("NeutronFinalPositions");
-	finalPoints->Write();
-	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Clean Up
-	delete run;
-	delete initialPoints; 
-	delete finalPoints;
-	delete file;
-	
-	return kTRUE;
+   if (run == NULL) {
+      cerr << "Could not find run: " << runName << endl;
+      return kFALSE;
+   }
+   cout << "Successfully Loaded Run: " << runName << endl;
+   ///////////////////////////////////////////////////////////////////////////////////////
+   PlotAngularDistribution(run, treeName);
+   PlotPhaseSpace(run, treeName); 
+   // -- Import Geometry
+   TGeoManager* geoManager = TGeoManager::Import(geomFileName); 
+   // Needs to be imported first because we draw the volumes in certain histograms
+   // from it, so we do not want it deleted in each function.
+   PlotPositions(geoManager, run, treeName);
+   return 0;
 }
 
+
 // -------------------------------------------------------------------------------------- 
-Bool_t PlotInitialAndFinalAngularDistribution(const TString& dataFileName, const TString& runName) 
+Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeName) 
 {
-// -- Create a Histogram object to store the angular distribution (as in, their initial and final directions about the origin). 
-	cout << "-------------------------------------------" << endl;
-	cout << "PlotInitialAndFinalAngularDistribution" <<  endl;
-	cout << "-------------------------------------------" << endl;
-	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Open File
-	TFile *file = 0;
-	file = TFile::Open(dataFileName, "update");
-	if (!file || file->IsZombie()) {
-	   cerr << "Cannot open file: " << dataFileName << endl;
-	   return 0;
-	}
-	// -- Extract Run Object
-	TUCNRun* run = new TUCNRun();
-   file->GetObject(static_cast<const char*>(runName), run);
-	if (run == NULL) {
-		cerr << "Could not find run: " << runName << endl;
-		return kFALSE;
-	}
-	// -- Plot the Initial and Final Directions
-	Int_t nbins = 50;
-	TH1F* initialThetaHist = new TH1F("InitialThetaHist","Initial Direction: Theta component, Units of Pi", nbins, 0.0, 1.0);
-	TH1F* initialPhiHist = new TH1F("InitialPhiHist","Initial Direction: Phi component, Units of Pi", nbins, 0.0, 2.0);
-	TH1F* finalThetaHist = new TH1F("FinalThetaHist","Final Direction: Theta component, Units of Pi", nbins, 0.0, 1.0);
-	TH1F* finalPhiHist = new TH1F("FinalPhiHist","Final Direction: Phi component, Units of Pi", nbins, 0.0, 2.0);
-	// Axis Titles
-	initialThetaHist->SetXTitle("Height from bottom of Tube (m)");
-	initialThetaHist->SetYTitle("Number of Neutrons");
-	
-	for (Int_t i = 0; i < run->Neutrons(); i++) {
-		TUCNParticle* initialParticle = run->GetInitialParticle(i);
-		if (initialParticle == NULL) continue;
-		TUCNParticle* finalParticle = run->GetParticle(i);
-		if (finalParticle == NULL) continue;
-		initialThetaHist->Fill(initialParticle->Theta()/TMath::Pi());
-		initialPhiHist->Fill(initialParticle->Phi()/TMath::Pi());
-		finalThetaHist->Fill(finalParticle->Theta()/TMath::Pi());
-		finalPhiHist->Fill(finalParticle->Phi()/TMath::Pi());
-	}
-	// -- Write the points to the File
-	initialThetaHist->Write();
-	initialPhiHist->Write();
-	finalThetaHist->Write();
-	finalPhiHist->Write();
-	
-	delete initialThetaHist;
-	delete initialPhiHist;
-	delete finalThetaHist;
-	delete finalPhiHist;
-	delete run;
-	delete file;
-	
-	return kTRUE;
+// -- Create a TPolyMarker3D object to store the final positions
+// -- of the neutrons and write this to file. 
+   cout << "-------------------------------------------" << endl;
+   cout << "PlotPositions" <<  endl;
+   cout << "-------------------------------------------" << endl;
+   // -- Fetch Tree
+   TTree* tree = run->GetData()->FetchTree(treeName);
+   if (tree == NULL) return kFALSE;
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Create the points
+   Int_t neutrons = tree->GetEntriesFast();
+   TPolyMarker3D* points = new TPolyMarker3D(neutrons, 1); // 1 is marker style
+   for (Int_t i = 0; i < neutrons; i++) {
+      TUCNParticle* particle = run->GetData()->GetParticleState(tree, i);
+      if (particle == NULL) continue;
+      points->SetPoint(i, particle->X(), particle->Y(), particle->Z());
+   }
+   cout << "Created Initial Points" << endl;
+   points->SetMarkerColor(2);
+   points->SetMarkerStyle(6);
+   // -- Write the points to the File
+   Char_t name[20];
+   sprintf(name,"%s:NeutronPositions",tree->GetName());
+   points->SetName(name);
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Clean Up
+   TCanvas *canvas = new TCanvas("Positions","Neutron Positions",60,0,800,800);
+   canvas->cd();
+   geoManager->GetTopVolume()->Draw();
+   geoManager->SetVisLevel(4);
+   geoManager->SetVisOption(0);
+   points->Draw();
+   return kTRUE;
 }
 
 // -------------------------------------------------------------------------------------- 
-Bool_t PlotInitialAndFinalPhaseSpace(const TString& dataFileName, const TString& runName) 
+Bool_t PlotAngularDistribution(TUCNRun* run, const TString& treeName) 
+{
+// -- Create a Histogram object to store the angular distribution 
+// -- (as in, their initial and final directions about the origin). 
+   cout << "-------------------------------------------" << endl;
+   cout << "PlotInitialAndFinalAngularDistribution" <<  endl;
+   cout << "-------------------------------------------" << endl;
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // Get Tree
+   TTree* tree = run->GetData()->FetchTree(treeName);
+   if (tree == NULL) return kFALSE;
+   // -- Plot the Initial and Final Directions
+   Int_t nbins = 50;
+   Char_t name[20];
+   sprintf(name,"%s:Theta",tree->GetName());
+   TH1F* thetaHist = new TH1F(name,"Direction: Theta, Units of Pi", nbins, 0.0, 1.0);
+   sprintf(name,"%s:Phi",tree->GetName());
+   TH1F* phiHist = new TH1F(name,"Direction: Phi, Units of Pi", nbins, 0.0, 2.0);
+   
+   for (Int_t i = 0; i < tree->GetEntriesFast(); i++) {
+      TUCNParticle* particle = run->GetData()->GetParticleState(tree, i);
+      if (particle == NULL) continue;
+      thetaHist->Fill(particle->Theta()/TMath::Pi());
+      phiHist->Fill(particle->Phi()/TMath::Pi());
+   }
+   // -- Write the points to the File
+   TCanvas *canvas = new TCanvas("Directions","Neutron Directions",60,0,800,800);
+   canvas->Divide(2,1);
+   canvas->cd(1);
+   thetaHist->Draw();
+   canvas->cd(2);
+   phiHist->Draw();
+   return kTRUE;
+}
+
+// -------------------------------------------------------------------------------------- 
+Bool_t PlotPhaseSpace(TUCNRun* run, const TString& treeName) 
 {
 // -- Create a Histogram object to store the angular distribution (as in, their initial and final directions about the origin). 
-	cout << "-------------------------------------------" << endl;
-	cout << "PlotInitialAndFinalPhaseSpace" <<  endl;
-	cout << "-------------------------------------------" << endl;
-	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Open File
-	TFile *file = 0;
-	file = TFile::Open(dataFileName, "update");
-	if (!file || file->IsZombie()) {
-	   cerr << "Cannot open file: " << dataFileName << endl;
-	   return 0;
-	}
-	// -- Extract Run Object
-	TUCNRun* run = new TUCNRun();
-   file->GetObject(static_cast<const char*>(runName), run);
-	if (run == NULL) {
-		cerr << "Could not find run: " << runName << endl;
-		return kFALSE;
-	}
-	
-   Double_t maximumEnergy = 300*Units::neV;
+   cout << "-------------------------------------------" << endl;
+   cout << "PlotInitialAndFinalPhaseSpace" <<  endl;
+   cout << "-------------------------------------------" << endl;
+   // Get Tree
+   TTree* tree = run->GetData()->FetchTree(treeName);
+   if (tree == NULL) return kFALSE;
+   
+   Double_t maximumVelocity = 15.0;
    Double_t maximumMomentum = 20*Units::eV;
    Double_t runTime = 100*Units::s;
    Double_t maximumDistance = 1000*Units::m;
-	
-	// -- Plot the Initial Phase Space
-	Int_t nbins = 50;
-	TH1F* initialEnergyHist = new TH1F("InitialEnergyHist","Initial Energy: Units of neV", nbins, 0.0, maximumEnergy);
-	initialEnergyHist->SetXTitle("Energy (neV)");
-	initialEnergyHist->SetYTitle("Neutrons");
-	TH1F* initialPxHist = new TH1F("InitialPxHist","Initial Px: Units of eV", nbins, -maximumMomentum, maximumMomentum);
-	initialPxHist->SetXTitle("Px (eV)");
-	initialPxHist->SetYTitle("Neutrons");
-	TH1F* initialPyHist = new TH1F("InitialPyHist","Initial Py: Units of eV", nbins, -maximumMomentum, maximumMomentum);
-	initialPyHist->SetXTitle("Py (eV)");
-	initialPyHist->SetYTitle("Neutrons");
-   TH1F* initialPzHist = new TH1F("InitialPzHist","Initial Pz: Units of eV", nbins, -maximumMomentum, maximumMomentum);
-	initialPzHist->SetXTitle("Pz (eV)");
-	initialPzHist->SetYTitle("Neutrons");
-   TH1F* initialTimeHist = new TH1F("InitialTimeHist","Initial Time: Units of s", nbins, 0.0, runTime);
-	initialTimeHist->SetXTitle("Time (s)");
-	initialTimeHist->SetYTitle("Neutrons");
-   TH1F* initialDistHist = new TH1F("InitialDistHist","Initial Distance Travelled: Units of m", nbins, 0.0, maximumDistance);
-	initialDistHist->SetXTitle("Distance (m)");
-	initialDistHist->SetYTitle("Neutrons");
-
-	// -- Plot the Final Phase Space
-	TH1F* finalEnergyHist = new TH1F("FinalEnergyHist","Final Energy: Units of neV", nbins, 0.0, maximumEnergy);
-	finalEnergyHist->SetXTitle("Energy (neV)");
-	finalEnergyHist->SetYTitle("Neutrons");
-	TH1F* finalPxHist = new TH1F("FinalPxHist","Final Px: Units of eV", nbins, -maximumMomentum, maximumMomentum);
-	finalPxHist->SetXTitle("Px (eV)");
-	finalPxHist->SetYTitle("Neutrons");
-	TH1F* finalPyHist = new TH1F("FinalPyHist","Final Py: Units of eV", nbins, -maximumMomentum, maximumMomentum);
-	finalPyHist->SetXTitle("Py (eV)");
-	finalPyHist->SetYTitle("Neutrons");
-   TH1F* finalPzHist = new TH1F("FinalPzHist","Final Pz: Units of eV", nbins, -maximumMomentum, maximumMomentum);
-	finalPzHist->SetXTitle("Pz (eV)");
-	finalPzHist->SetYTitle("Neutrons");
-   TH1F* finalTimeHist = new TH1F("FinalTimeHist","Final Time: Units of s", nbins, 0.0, runTime);
-	finalTimeHist->SetXTitle("Time (s)");
-	finalTimeHist->SetYTitle("Neutrons");
-   TH1F* finalDistHist = new TH1F("FinalDistHist","Final Distance Travelled: Units of m", nbins, 0.0, maximumDistance);
-	finalDistHist->SetXTitle("Distance (m)");
-	finalDistHist->SetYTitle("Neutrons");
-	
-	for (Int_t i = 0; i < run->Neutrons(); i++) {
-		TUCNParticle* initialParticle = run->GetInitialParticle(i);
-		if (initialParticle == NULL) continue;
-		TUCNParticle* finalParticle = run->GetParticle(i);
-		if (finalParticle == NULL) continue;
-      if (finalParticle->Detected() == kFALSE) continue;
-		initialEnergyHist->Fill(initialParticle->Energy());
-	   initialPxHist->Fill(initialParticle->Px()/Units::eV);
-		initialPyHist->Fill(initialParticle->Py()/Units::eV);
-	   initialPzHist->Fill(initialParticle->Pz()/Units::eV);
-	   initialTimeHist->Fill(initialParticle->T()/Units::s);
-	   initialDistHist->Fill(initialParticle->Distance()/Units::m);
-	   
-		finalEnergyHist->Fill(finalParticle->Energy());
-	   finalPxHist->Fill(finalParticle->Px()/Units::eV);
-		finalPyHist->Fill(finalParticle->Py()/Units::eV);
-	   finalPzHist->Fill(finalParticle->Pz()/Units::eV);
-	   finalTimeHist->Fill(finalParticle->T()/Units::s);
-	   finalDistHist->Fill(finalParticle->Distance()/Units::m);
-	}
+   // -- Set up the histograms
+   Int_t nbins = 50;
+   Char_t name[20];
    
+   sprintf(name,"%s:Velocity",tree->GetName());
+   TH1F* energyHist = new TH1F(name,"Velocity: Units of m/s", nbins, 0.0, maximumVelocity);      
+   energyHist->SetXTitle("Velocity (m/s)");
+   energyHist->SetYTitle("Neutrons");
+   
+   sprintf(name,"%s:Px",tree->GetName());
+   TH1F* pxHist = new TH1F(name,"Px: Units of eV", nbins, -maximumMomentum, maximumMomentum);
+   pxHist->SetXTitle("Px (eV)");
+   pxHist->SetYTitle("Neutrons");
+   
+   sprintf(name,"%s:Py",tree->GetName());
+   TH1F* pyHist = new TH1F(name,"Py: Units of eV", nbins, -maximumMomentum, maximumMomentum);
+   pyHist->SetXTitle("Py (eV)");
+   pyHist->SetYTitle("Neutrons");
+   
+   sprintf(name,"%s:Pz",tree->GetName());
+   TH1F* pzHist = new TH1F(name,"Pz: Units of eV", nbins, -maximumMomentum, maximumMomentum);
+   pzHist->SetXTitle("Pz (eV)");
+   pzHist->SetYTitle("Neutrons");
+   
+   sprintf(name,"%s:Time",tree->GetName());
+   TH1F* timeHist = new TH1F(name,"Time: Units of s", nbins, 0.0, runTime);
+   timeHist->SetXTitle("Time (s)");
+   timeHist->SetYTitle("Neutrons");
+   
+   sprintf(name,"%s:Dist",tree->GetName());
+   TH1F* distHist = new TH1F(name,"Distance: Units of m", nbins, 0.0, maximumDistance);
+   distHist->SetXTitle("Distance (m)");
+   distHist->SetYTitle("Neutrons");
+   // Fill Histograms
+   for (Int_t i = 0; i < tree->GetEntriesFast(); i++) {
+      TUCNParticle* particle = run->GetData()->GetParticleState(tree, i);
+      if (particle == NULL) continue;
+      energyHist->Fill(particle->V());
+      pxHist->Fill(particle->Px()/Units::eV);
+      pyHist->Fill(particle->Py()/Units::eV);
+      pzHist->Fill(particle->Pz()/Units::eV);
+      timeHist->Fill(particle->T()/Units::s);
+      distHist->Fill(particle->Distance()/Units::m);
+   }
+   
+   // -- Draw histograms
+   TCanvas *canvas = new TCanvas("PhaseSpace","Phase Space",60,0,1000,800);
+   canvas->Divide(3,2);
+   canvas->cd(1);
+   energyHist->Draw();
+   canvas->Update();   
+   canvas->cd(2);
+   pxHist->Draw();
+   canvas->cd(3);
+   pyHist->Draw();
+   canvas->cd(4);
+   pzHist->Draw();
+   canvas->cd(5);
+   distHist->Draw();
+   canvas->cd(6);
+   timeHist->Draw();
    // Fit Final Time to Exponential - determine emptying time
-   TF1 *expo = new TF1("Expo", "expo", 5., runTime);
-   finalTimeHist->Fit("Expo","R");
-   Double_t emptyingTime = expo->GetParameter(0);
-	Double_t emptyingTimeError = expo->GetParError(0);
-	cout << "EmptyingTime: " << emptyingTime << "\t" << "Error: " << emptyingTimeError << endl;
-   expo->Write();
+   sprintf(name,"%s:Expo",tree->GetName());
+   TF1 *expo = new TF1(name, ExponentialDecay, 2., run->RunTime(), 2);
+   expo->SetParameters(100.0,10.0);
+   expo->SetParNames("Initial Number","Emptying Time(s)");
+   timeHist->Fit(expo, "R");
+   Double_t decayConstant = expo->GetParameter(1);
+   Double_t decayConstantError = expo->GetParError(1);
+   cout << "DecayConstant: " << decayConstant << "\t" << "Error: " << decayConstantError << endl;
    
-	// -- Write the histograms to the File
-   initialEnergyHist->Write();
-   initialPxHist->Write();
-   initialPyHist->Write();
-   initialPzHist->Write();
-   initialTimeHist->Write();
-   initialDistHist->Write();
-   finalEnergyHist->Write();
-   finalPxHist->Write();
-   finalPyHist->Write();
-   finalPzHist->Write();
-   finalTimeHist->Write();
-   finalDistHist->Write();
-	
-	delete initialEnergyHist;
-   delete initialPxHist;
-   delete initialPyHist;
-   delete initialPzHist;
-   delete initialTimeHist;
-   delete initialDistHist;
-   delete finalEnergyHist;
-   delete finalPxHist;
-   delete finalPyHist;
-   delete finalPzHist;
-   delete finalTimeHist;
-   delete finalDistHist;
-   delete run;
-	delete file;
-	
-	return kTRUE;
+   
+   Double_t emptyingTime = 1.0/decayConstant;
+   Double_t emptyingTimeError = decayConstantError/(decayConstant*decayConstant);
+   
+   cout << "EmptyingTime: " << emptyingTime << "\t" << "Error: " << emptyingTimeError << endl;
+   
+   return kTRUE;
 }
 
-
+// -------------------------------------------------------------------------------------- 
+Double_t ExponentialDecay(Double_t *x, Double_t *par)
+{
+   Double_t t = x[0];
+   Double_t f = par[0]*TMath::Exp(-t/par[1]);
+   return f;
+}
