@@ -94,10 +94,10 @@ Double_t TUCNParabolicMagField::IntegratedField(const Double_t stepTime, const T
 	// -- Definitions for calculation
 	Double_t integratedField = 0.0;
 	Double_t alpha = fParabolicGradient/(fFieldRadius*fFieldRadius);
-	Double_t x0 = initialState->Vx();
-	Double_t vx = initialState->VelocityX();
-	Double_t y0 = initialState->Vy();
-	Double_t vy = initialState->VelocityY();
+	Double_t x0 = initialState->X();
+	Double_t vx = initialState->Vx();
+	Double_t y0 = initialState->Y();
+	Double_t vy = initialState->Vy();
 
 	// Integrate along straight line
 	Double_t term1 = (fBMax - alpha*(x0*x0 + y0*y0))*stepTime;

@@ -73,8 +73,7 @@ namespace Constants
 
 	//
 	//
-	//
-	static const Double_t electron_charge = - eplus; // see SystemOfUnits.h
+	static const Double_t electron_charge = - eplus; // Units.h
 	static const Double_t e_squared = eplus * eplus;
 
 	//

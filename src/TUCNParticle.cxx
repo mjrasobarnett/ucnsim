@@ -7,70 +7,51 @@
 #include "Units.h"
 
 #include "TUCNParticle.h"
+
 #include "TUCNGeoMaterial.h"
+#include "TMath.h"
 #include "TRandom.h"
-#include "TParticlePDG.h"
 
 using namespace std;
 
-ClassImp(TUCNParticle) 
+ClassImp(TUCNParticle)
 
-const Int_t 	TUCNParticle::fgNeutronPDGCode;  //Static Const
+const Double_t    TUCNParticle::fgMass;      // Neutron Mass
+const Double_t    TUCNParticle::fgLifetime;   // Neutron Lifetime
 
 //______________________________________________________________________________
 TUCNParticle::TUCNParticle()
-  				 :TParticle()				
+             :TObject(),
+              fX(0.), fY(0.), fZ(0.), fT(0.), fPx(0.), fPy(0.), fPz(0.), fE(0.),
+              fDistance(0.), fId(0), fBounces(0), fSpecularBounces(0), fDiffuseBounces(0),
+              fRandomSeed(0), fDecayed(kFALSE), fLostToBoundary(kFALSE), fDetected(kFALSE)
 {
-//	-- Default constructor
-//	Info("TUCNParticle", "Default Constructor");
-	this->SetPdgCode(fgNeutronPDGCode);
-	fDecayed = kFALSE;
-	fLostToBoundary = kFALSE;
-	fDetected = kFALSE;
-	fDistance = 0.0;
-	fBounces = 0;
-	fSpecularBounces = 0;
-	fDiffuseBounces = 0;
-	fAvgMagField = 0.0;
-	fFieldPointsSampled = 0;
-	fInitialSeed = 0;
+// -- Default constructor
+//   fState = TUCNStatePropagate::Instance();
 }
 
 
 //______________________________________________________________________________
-TUCNParticle::TUCNParticle(Double_t* pos, Double_t* mom, Double_t kineticEnergy, Double_t startTime)
-  				 :TParticle() 
+TUCNParticle::TUCNParticle(Int_t id, Double_t* pos, Double_t* mom, Double_t energy, Double_t t)
+             :TObject(),
+              fX(pos[0]), fY(pos[1]), fZ(pos[2]), fT(t), fPx(mom[0]), fPy(mom[1]), fPz(mom[2]),
+              fE(energy), fDistance(0.), fId(id), fBounces(0), fSpecularBounces(0),
+              fDiffuseBounces(0), fRandomSeed(0), fDecayed(kFALSE), fLostToBoundary(kFALSE),
+              fDetected(kFALSE)
 {
-//	-- Constructor
-//	Info("TUCNParticle", "Constructor");
-	this->SetPdgCode(fgNeutronPDGCode);
-	this->SetProductionVertex(pos[0], pos[1], pos[2], startTime);
-	this->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
-	fDecayed = kFALSE;
-	fLostToBoundary = kFALSE;
-	fDetected = kFALSE;
-	fDistance = 0.0;
-	fBounces = 0;
-	fSpecularBounces = 0;
-	fDiffuseBounces = 0;
-	fAvgMagField = 0.0;
-	fFieldPointsSampled = 0;
-	fInitialSeed = 0;
+// -- Constructor
+//   fState = TUCNStatePropagate::Instance();
 }
 
 //_____________________________________________________________________________
 TUCNParticle::TUCNParticle(const TUCNParticle& part)
-             :TParticle(part),
-				  fDecayed(part.fDecayed),
-				  fLostToBoundary(part.fLostToBoundary),
-				  fDetected(part.fDetected),
-				  fDistance(part.fDistance),
-				  fBounces(part.fBounces),
-				  fSpecularBounces(part.fSpecularBounces),
-				  fDiffuseBounces(part.fDiffuseBounces),
-				  fAvgMagField(part.fAvgMagField),
-				  fFieldPointsSampled(part.fFieldPointsSampled),
-				  fInitialSeed(part.fInitialSeed)
+             :TObject(part),
+              fX(part.fX), fY(part.fY), fZ(part.fZ), fT(part.fT), fPx(part.fPx), fPy(part.fPy),
+              fPz(part.fPz), fE(part.fE), fDistance(part.fDistance), fId(part.fId),
+              fBounces(part.fBounces), fSpecularBounces(part.fSpecularBounces),
+              fDiffuseBounces(part.fDiffuseBounces), fRandomSeed(part.fRandomSeed),
+              fDecayed(part.fDecayed), fLostToBoundary(part.fLostToBoundary),
+              fDetected(part.fDetected)
 {
 // -- Copy Constructor
 }
@@ -78,186 +59,157 @@ TUCNParticle::TUCNParticle(const TUCNParticle& part)
 //_____________________________________________________________________________
 TUCNParticle& TUCNParticle::operator=(const TUCNParticle& part)
 {
-// --assignment operator
-	if(this!=&part) {
-		TParticle::operator=(part);
-		fDecayed = part.fDecayed;
-		fLostToBoundary = part.fLostToBoundary;
-		fDetected = part.fDetected;
-		fDistance = part.fDistance;
-		fBounces = part.fBounces;
-		fSpecularBounces = part.fSpecularBounces;
-		fDiffuseBounces = part.fDiffuseBounces;
-		fAvgMagField = part.fAvgMagField;
-		fFieldPointsSampled = part.fFieldPointsSampled;
-		fInitialSeed = part.fInitialSeed;
-	}
-	return *this;
+// -- assignment operator
+   if(this!=&part) {
+      TObject::operator=(part);
+      fX = part.fX;
+      fY = part.fY;
+      fZ = part.fZ;
+      fT = part.fT;
+      fPx = part.fPx;
+      fPy = part.fPy;
+      fPz = part.fPz;
+      fE = part.fE;
+      fDistance = part.fDistance;
+      fId = part.fId;
+      fBounces = part.fBounces;
+      fSpecularBounces = part.fSpecularBounces;
+      fDiffuseBounces = part.fDiffuseBounces;
+      fRandomSeed = part.fRandomSeed;
+      fDecayed = part.fDecayed;
+      fLostToBoundary = part.fLostToBoundary;
+      fDetected = part.fDetected;
+   }
+   return *this;
 }
 
 //______________________________________________________________________________
 TUCNParticle::~TUCNParticle()
 { 
 // -- Destructor	
-//	Info("TUCNParticle", "Destructor");
 }
 
 //______________________________________________________________________________
-Bool_t TUCNParticle::WillDecay(Double_t timeInterval)
+Double_t TUCNParticle::P() const
 {
-	// Placeholder for method to calculate probability particle will decay within timeInterval, and then roll the dice!
-	timeInterval = 0.;
-	return kFALSE;
+   return TMath::Sqrt(fPx*fPx+fPy*fPy+fPz*fPz);
 }
 
 //______________________________________________________________________________
-Double_t TUCNParticle::Dir() const
+Double_t TUCNParticle::Mass_Kg() const
 {
-// Returns direction mag (1?)
-	Double_t dirX = this->DirX();
-	Double_t dirY = this->DirY();
-	Double_t dirZ = this->DirZ();
-	Double_t mag = TMath::Sqrt(dirX*dirX + dirY*dirY + dirZ*dirZ);
-	return mag;
+   return this->Mass_eV_c2()*Units::e_SI;
 }
 
 //______________________________________________________________________________
-Double_t TUCNParticle::DirX() const
+Double_t TUCNParticle::Mass_eV_c() const
 {
-// Returns x direction
-	if (this->P() == 0.) {
-		return 0.;
-	}
-	Double_t dirX = this->Px()/this->P();
-	return dirX;
+   return this->Mass_eV()/Constants::c_light;
 }
 
 //______________________________________________________________________________
-Double_t TUCNParticle::DirY() const
+Double_t TUCNParticle::Mass_eV_c2() const
 {
-// Returns y direction
-	if (this->P() == 0.) {
-		return 0.;
-	}
-	Double_t dirY = this->Py()/this->P();
-	return dirY;
+   return this->Mass_eV()/Constants::c_squared;
 }
 
 //______________________________________________________________________________
-Double_t TUCNParticle::DirZ() const
+Double_t TUCNParticle::Rho() const
 {
-// Returns z direction
-	if (this->P() == 0.) {
-		return 0.;
-	}
-	Double_t dirZ = this->Pz()/this->P();
-	return dirZ;
+   return TMath::Sqrt(fX*fX+fY*fY+fZ*fZ);
 }
 
 //______________________________________________________________________________
-Double_t TUCNParticle::Velocity() const
+Double_t TUCNParticle::Theta() const
 {
-// Returns velocity in units of M/S
-	Double_t mass_c2 = this->Mass_GeV_c2();
-	Double_t velocity = TMath::Sqrt(2.0*(this->Energy())/mass_c2);
-	return velocity;
+   return (fPz==0)?TMath::PiOver2():TMath::ACos(fPz/P());
 }
 
 //______________________________________________________________________________
-Double_t TUCNParticle::VelocityX() const
+Double_t TUCNParticle::Phi() const
 {
-// Returns velocity in units of M/S
-	return this->Velocity()*this->DirX();
+   return TMath::Pi()+TMath::ATan2(-fPy,-fPx);
 }
 
 //______________________________________________________________________________
-Double_t TUCNParticle::VelocityY() const
+void TUCNParticle::SetVertex(const Double_t x, const Double_t y, const Double_t z,
+                                    const Double_t t)
 {
-// Returns velocity in units of M/S
-	return this->Velocity()*this->DirY();
+   // Set current vertex to given coords
+   fX = x; fY = y; fZ = z; fT = t;
 }
 
 //______________________________________________________________________________
-Double_t TUCNParticle::VelocityZ() const
+void TUCNParticle::SetMomentum(const Double_t px, const Double_t py, const Double_t pz,
+                                    const Double_t energy)
 {
-// Returns velocity in units of M/S
-	return this->Velocity()*this->DirZ();
+   // Set current momentum to given coords
+   fPx = px; fPy = py; fPz = pz; fE = energy;
 }
 
 //______________________________________________________________________________
-Double_t TUCNParticle::Mass_GeV() const
-{
-// Returns neutron mass in units of GeV
-	const Double_t mass_GeV = (fParticlePDG->Mass()*Units::GeV);
-	return mass_GeV;
-}
-
-//______________________________________________________________________________
-Double_t TUCNParticle::Mass_GeV_c() const
-{
-// Returns neutron mass in units of GeV/c
-	const Double_t mass_GeV = (fParticlePDG->Mass()*Units::GeV);
-	Double_t mass_GeV_c  = mass_GeV/(Constants::c_light);
-	return mass_GeV_c;
-}
-
-//______________________________________________________________________________
-Double_t TUCNParticle::Mass_GeV_c2() const
-{
-// Returns neutron mass in units of GeV/c^2
-	const Double_t mass_GeV = (fParticlePDG->Mass()*Units::GeV);
-	Double_t mass_GeV_c2 = mass_GeV/(Constants::c_squared);
-	return mass_GeV_c2;
-}
-
-//______________________________________________________________________________
-Bool_t TUCNParticle::IsLostToWall(TUCNGeoMaterial* wall, const Double_t* normal) const
+Bool_t TUCNParticle::IsLostToWall(const TUCNGeoMaterial* wall, const Double_t* normal) const
 {
 // Calculate whether particle will be absorbed/upscattered by the wall
-	Double_t fermiPotential = wall->FermiPotential();
-	Double_t eta = wall->Eta();
-	if (eta == 0.0) {
-		// No wall losses implemented
-		return kFALSE;
-	}
-//	cout << "Material: " << wall->GetName() << "\t" << "eta: " << eta << "\t" <<  "fermiPotential: " << fermiPotential << "\t" << endl;
-//	cout << "nx: " << this->DirX() << "\t" << "ny: " << this->DirY() << "\t" << "nz: " << this->DirZ() << endl;
-//	cout << "normx: " << normal[0] << "\t" << "normy: " << normal[1] << "\t" << "normz: " << normal[2] << endl;	
-	// Take dot product of two unit vectors - normal and direction vector - to give the angle between them
-	Double_t cosTheta = TMath::Abs(this->DirX()*normal[0] + this->DirY()*normal[1] + this->DirZ()*normal[2]);
-	Double_t energyPerp = this->Energy()*cosTheta*cosTheta;
-	if (energyPerp >= fermiPotential) {
-		return kTRUE;
-	}
-	Double_t lossProb = 2.*eta*(TMath::Sqrt(energyPerp/(fermiPotential - energyPerp)));
-//	cout << "Loss Prob: " << lossProb << "\t" << "EnergyPerp: " << energyPerp/Units::neV << "\t" <<  "cosTheta: " << cosTheta << "\t" << endl;
-	// roll dice to see whether particle is lost
-	Double_t diceRoll = gRandom->Uniform(0.0, 1.0);
-	if (diceRoll <= lossProb) {
-//		cout << "DiceRoll: " << diceRoll << "\t" << "LossProb: " << lossProb << endl;
-		return kTRUE;
-	} else {
-		return kFALSE;
-	}
+   Double_t fermiPotential = wall->FermiPotential();
+   Double_t eta = wall->Eta();
+   if (eta == 0.0) {
+      // No wall losses implemented
+      return kFALSE;
+   }
+// cout << "Material: " << wall->GetName() << "\t" << "eta: " << eta << "\t" <<  "fermiPotential: " << fermiPotential << "\t" << endl;
+// cout << "nx: " << this->DirX() << "\t" << "ny: " << this->DirY() << "\t" << "nz: " << this->DirZ() << endl;
+// cout << "normx: " << normal[0] << "\t" << "normy: " << normal[1] << "\t" << "normz: " << normal[2] << endl;	
+
+   // Take dot product of two unit vectors - normal and direction - to give the angle between them
+   Double_t cosTheta = TMath::Abs(this->Nx()*normal[0] + this->Ny()*normal[1] + this->Nz()*normal[2]);
+   Double_t energyPerp = this->Energy()*cosTheta*cosTheta;
+   if (energyPerp >= fermiPotential) {
+      return kTRUE;
+   }
+   Double_t lossProb = 2.*eta*(TMath::Sqrt(energyPerp/(fermiPotential - energyPerp)));
+// cout << "Loss Prob: " << lossProb << "\t" << "EnergyPerp: " << energyPerp/Units::neV << "\t" <<  "cosTheta: " << cosTheta << "\t" << endl;
+   // roll dice to see whether particle is lost
+   Double_t diceRoll = gRandom->Uniform(0.0, 1.0);
+   if (diceRoll <= lossProb) {
+//    cout << "DiceRoll: " << diceRoll << "\t" << "LossProb: " << lossProb << endl;
+      return kTRUE;
+   } else {
+      return kFALSE;
+   }
 }
 
 //______________________________________________________________________________
-Double_t	TUCNParticle::DiffuseProbability(const Double_t diffuseCoeff, const Double_t* normal, const Double_t fermiPotential) const
+Double_t TUCNParticle::DiffuseProbability(const Double_t diffuseCoeff, const Double_t* /*normal*/,
+                                             const Double_t /*fermiPotential*/) const
 {
-	// Calculate the probability of making a diffuse bounce - according to formula (from Mike P) prob ~ diffuseCoeff*(Eperp/V)
-	Double_t cosTheta = TMath::Abs(this->DirX()*normal[0] + this->DirY()*normal[1] + this->DirZ()*normal[2]);
-	Double_t energyPerp = this->Energy()*cosTheta*cosTheta;
-	Double_t diffProb = diffuseCoeff*energyPerp/fermiPotential;
-	assert(diffProb <= 1.0 && diffProb >= 0.0);
-	//return diffProb;
-	return diffuseCoeff;
+   // Calculate the probability of making a diffuse bounce - according to formula (from Mike P) prob ~ diffuseCoeff*(Eperp/V)
+/*   Double_t cosTheta = TMath::Abs(this->DirX()*normal[0] + this->DirY()*normal[1] + this->DirZ()*normal[2]);
+   Double_t energyPerp = this->Energy()*cosTheta*cosTheta;
+   Double_t diffProb = diffuseCoeff*energyPerp/fermiPotential;
+   assert(diffProb <= 1.0 && diffProb >= 0.0);
+   //return diffProb;
+*/ // For now just use fixed coefficient until this is properly checked
+   return diffuseCoeff;
 }
 
 //______________________________________________________________________________
+Bool_t TUCNParticle::WillDecay(const Double_t /*timeInterval*/)
+{
+   // Placeholder for method to calculate probability particle will decay within timeInterval, and then roll the dice!
+   return kFALSE;
+}
+
+
+
+
+
+
+/*//______________________________________________________________________________
 void TUCNParticle::SampleMagField(const Double_t integratedField, const Double_t stepTime)
 {
-	// Adds current field to average field
-	Double_t timeAveragedField = integratedField/stepTime;
-	fAvgMagField = (fAvgMagField*fFieldPointsSampled + timeAveragedField)/(++fFieldPointsSampled);
+   // Adds current field to average field
+   Double_t timeAveragedField = integratedField/stepTime;
+   fAvgMagField = (fAvgMagField*fFieldPointsSampled + timeAveragedField)/(++fFieldPointsSampled);
 }
-
+*/

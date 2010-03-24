@@ -58,7 +58,8 @@ TUCNRun::TUCNRun()
 // -- Default constructor
    Info("TUCNRun", "Default Constructor");
 	// Create the data object
-	fData = new TUCNData("ucndata", "ucndata");
+   fParticles = 0;
+	fData = 0;
 	fNeutrons = 0;
 	fTotalEnergy = 0.0;
 	fRunTime = 0.0;
@@ -69,7 +70,6 @@ TUCNRun::TUCNRun()
 	fBoundaryLossCounter = 0;
 	fDetectedCounter = 0;
 	fDecayedCounter = 0;
-	
 	fUCNNextNode = 0;
 	fStepTime = 1.0;
 	fUCNIsStepEntering = kFALSE;
@@ -88,6 +88,7 @@ TUCNRun::TUCNRun(const char *name, const char *title)
 // -- Default constructor
    Info("TUCNRun", "Constructor");
 	// Create the data object
+	fParticles = new TObjArray(256);
 	fData = new TUCNData("ucndata", "ucndata");
 	fNeutrons = 0;
 	fTotalEnergy = 0.0;
@@ -109,11 +110,14 @@ TUCNRun::TUCNRun(const char *name, const char *title)
 	for (Int_t i=0; i<3; i++) {
 		fUCNNormal[i] = 0.;
 	}
+	// Set ownership over the particles
+	fParticles->SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
 TUCNRun::TUCNRun(const TUCNRun& run)
 		  :TNamed(run),
+			fParticles(run.fParticles),
 			fData(run.fData),
 			fNeutrons(run.fNeutrons),
 			fTotalEnergy(run.fTotalEnergy),
@@ -142,7 +146,8 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& run)
 // --assignment operator
 	if(this!=&run) {
 		TNamed::operator=(run);
-      fData = run.fData;
+      fParticles = run.fParticles;
+		fData = run.fData;
 		fNeutrons = run.fNeutrons;
 		fTotalEnergy = run.fTotalEnergy;
 		fRunTime = run.fRunTime;
@@ -171,6 +176,7 @@ TUCNRun::~TUCNRun()
 {
 // -- Destructor
 	Info("TUCNRun", "Destructor");
+   fParticles->Delete();
 	fData->Delete();
 }
 
@@ -251,36 +257,34 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile* configFile)
 Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManager)
 {
 // -- Propagate all tracks stored in the GeoManager for a set period of time
-	Int_t numberOfTracks = geoManager->GetNtracks();
+	Int_t numberOfTracks = this->GetParticles()->GetEntriesFast();
 	// Container to store Ids of lost tracks;
-	vector<Int_t> lostTracks;
+	std::vector<Int_t> lostTracks;
 
 	for (Int_t trackid = 0; trackid < numberOfTracks; trackid++) {
 		// Print Progress Bar to Screen
-		#ifndef VERBOSE_MODE				
+		#ifndef VERBOSE_MODE
 			PrintProgress(trackid, numberOfTracks);
 		#endif
-		// Get Track from list
-		TVirtualGeoTrack* track = geoManager->GetTrack(trackid);
-		// Set Current Track
-		geoManager->SetCurrentTrack(track);
+		// Get Particle from list
+      TUCNParticle* particle = static_cast<TUCNParticle*>(this->GetParticles()->At(trackid));
 		// Store the random number seed in particle
-		static_cast<TUCNParticle*>(track->GetParticle())->SetInitialSeed(gRandom->GetSeed());
+		particle->SetRandomSeed(gRandom->GetSeed());
 		// Copy initial state
-		TUCNParticle initialParticle = *static_cast<TUCNParticle*>(track->GetParticle());
+		TUCNParticle initialParticle = *particle;
 		// Propagate track
-		Bool_t propagated = this->PropagateTrack(geoManager, fieldManager);	
+		Bool_t propagated = this->PropagateTrack(particle, geoManager, fieldManager);	
 		// Check if we propagated correctly or not
 		if (propagated) {
 			// Add Initial Particle State to data tree
-			this->AddInitialParticle(&initialParticle);
+			this->SaveInitialParticle(&initialParticle);
 			// Add Final Particle State to data tree
-			this->AddParticle(static_cast<TUCNParticle*>(track->GetParticle()));
+			this->SaveParticle(particle);
 		} else {
-			cout << "Track: " << track->GetId() << " has exited errorneously." << endl << endl;
+			cout << "Track: " << particle->Id() << " has exited errorneously." << endl << endl;
 			lostTracks.push_back(trackid);
 			// Update Track to Include the final point
-			TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+/*			TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
 			track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
 			// Add Track to the data tree
 			this->AddTrack(track);
@@ -298,9 +302,9 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 			badTrack->SetLineWidth(2);
 			// -- Write the points to the File
 			badTrackPoints->SetName("TrackPoints");
-			cout << "-------------------------------------------" << endl;
-			cout << "Track: " << track->GetId() << " has exited errorneously. Writing to file: temp/badtrackpoints.root" << endl;
-			TFile *f = TFile::Open("temp/badtrackpoints.root","recreate");
+*/			cout << "-------------------------------------------" << endl;
+			cout << "Track: " << particle->Id() << " has exited errorneously. Writing to file: temp/badtrackpoints.root" << endl;
+/*			TFile *f = TFile::Open("temp/badtrackpoints.root","recreate");
 			if (!f || f->IsZombie()) {
 			   Error("Propagate","Cannot open file");
 			   return kFALSE;
@@ -311,7 +315,7 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 			f->Delete();
 			cout << "Track: " << track->GetId() << " was successfully written to file" << endl;
 			cout << "-------------------------------------------" << endl;
-			// Exit the loop
+*/			// Exit the loop
 	//		break;
 		}
 		
@@ -353,7 +357,7 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 		// Add Track to the data tree
 //		this->AddTrack(track);
       // Reset Track to release memory
-		track->ResetTrack();
+//		track->ResetTrack();
 	}
 	
 	if (lostTracks.size() != 0) {
@@ -377,16 +381,14 @@ Bool_t TUCNRun::Propagate(TGeoManager* geoManager, TUCNFieldManager* fieldManage
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldManager)
+Bool_t TUCNRun::PropagateTrack(TUCNParticle* particle, TGeoManager* geoManager, TUCNFieldManager* fieldManager)
 {
 	// Propagate track through geometry until it is either stopped or the runTime has been reached
 	// Track passed MUST REFERENCE A TUCNPARTICLE as its particle type. UNITS:: runTime, stepTime in Seconds
 	
-	// -- Get the 
-	TVirtualGeoTrack* track = geoManager->GetCurrentTrack();
-	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
+	// -- Get the navigator
 	TGeoNavigator* navigator = geoManager->GetCurrentNavigator();
-	assert(track != NULL && particle != NULL );
+	assert(particle != NULL);
 	
 	///////////////////////////////////////////////////////////////////////////////////////	
 	// -- Get the Fields
@@ -405,16 +407,16 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 	///////////////////////////////////////////////////////////////////////////////////////	
 	// -- 1. Initialise Track
 	// Initialise track - Sets navigator's current point/direction/node to that of the particle
-	geoManager->InitTrack(particle->Vx(), particle->Vy(), particle->Vz(), \
-		particle->Px()/particle->P(), particle->Py()/particle->P(), particle->Pz()/particle->P());
+	navigator->InitTrack(particle->X(), particle->Y(), particle->Z(), 
+	                           particle->Nx(), particle->Ny(), particle->Nz());
 	
-	#ifdef VERBOSE_MODE				
+	#ifdef VERBOSE_MODE
 		cout << "PropagateForSetTime - Starting Run - Max time (seconds): " <<  fRunTime << endl;
 	#endif
 	
 	// -- Check that Particle has not been initialised inside a boundary or detector		
-	if (static_cast<TUCNGeoMaterial*>(navigator->GetCurrentNode()->GetMedium()->GetMaterial())->IsTrackingMaterial() == kFALSE) {
-		cerr << "Track number " << track->GetId() << " initialised inside boundary of " << navigator->GetCurrentVolume()->GetName() << endl;
+	if ( static_cast<TUCNGeoMaterial*>(navigator->GetCurrentNode()->GetMedium()->GetMaterial())->IsTrackingMaterial() == kFALSE) {
+		cerr << "Track number " << particle->Id() << " initialised inside boundary of " << navigator->GetCurrentVolume()->GetName() << endl;
 		return kFALSE;
 	}
 	
@@ -432,7 +434,7 @@ Bool_t TUCNRun::PropagateTrack(TGeoManager* geoManager, TUCNFieldManager* fieldM
 		this->DetermineNextStepTime(particle, fMaxStepTime, fRunTime);
 		
 		// -- Make a step
-		if (!(this->MakeStep(track, gravField, magField))) {
+		if (!(this->MakeStep(particle, gravField, magField))) {
 			Error("PropagateTrack","Error in Step Number %i. Step Failed to complete.", stepNumber);
 			return kFALSE;	
 		} 
@@ -488,7 +490,7 @@ void TUCNRun::DrawParticles(TCanvas* canvas, TPolyMarker3D* points)
 }
 
 //_____________________________________________________________________________
-void	TUCNRun::DrawTrack(TCanvas* canvas, Int_t trackID)
+void	TUCNRun::DrawTrack(TCanvas* canvas, Int_t /*trackID*/)
 {
 	canvas->Draw();
 	// -- Draw Volumes
@@ -496,9 +498,9 @@ void	TUCNRun::DrawTrack(TCanvas* canvas, Int_t trackID)
 	gGeoManager->SetVisLevel(4);
 	gGeoManager->SetVisOption(0);
 	// -- Draw Track
-	TVirtualGeoTrack* track = this->GetTrack(trackID);
-	assert(track != NULL);
-	track->Draw();
+//	TVirtualGeoTrack* track = this->GetTrack(trackID);
+//	assert(track != NULL);
+//	track->Draw();
 }
 
 //_____________________________________________________________________________
@@ -540,13 +542,22 @@ Bool_t TUCNRun::AddTrack(TVirtualGeoTrack* track)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::AddInitialParticle(TUCNParticle* particle) 
+Bool_t TUCNRun::AddParticle(TUCNParticle* particle)
+{
+   // Add particle to the particle array
+   Int_t index = particle->Id();
+   this->GetParticles()->AddAtAndExpand(particle, index);
+   return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNRun::SaveInitialParticle(TUCNParticle* particle) 
 {
 	return this->GetData()->AddInitialParticleState(particle);
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::AddParticle(TUCNParticle* particle)
+Bool_t TUCNRun::SaveParticle(TUCNParticle* particle)
 {
 	return this->GetData()->AddFinalParticleState(particle);
 }
@@ -599,6 +610,7 @@ Double_t* TUCNRun::FindUCNNormal()
 	return fUCNNormal;
 }
 
+/*
 //_____________________________________________________________________________
 TGeoNode* TUCNRun::FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGravField* field, Double_t stepTime, Bool_t onBoundary)
 {
@@ -970,6 +982,7 @@ TGeoNode* TUCNRun::FindNextBoundaryAlongParabola(TVirtualGeoTrack* track, TUCNGr
    }
    return fUCNNextNode;
 }
+*/
 
 //_____________________________________________________________________________
 TGeoNode* TUCNRun::FindNextDaughterBoundaryAlongParabola(Double_t* point, Double_t* velocity, Double_t* field, Int_t &idaughter, Bool_t compmatrix)
@@ -1203,21 +1216,18 @@ TGeoNode* TUCNRun::FindNextDaughterBoundaryAlongParabola(Double_t* point, Double
 }
 
 //_____________________________________________________________________________
-TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track, TUCNGravField* field, Double_t stepTime, Bool_t compsafe)
+TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TUCNParticle* particle, TUCNGravField* field, Double_t stepTime, Bool_t compsafe)
 {
 // Compute distance to next boundary within STEPMAX. If no boundary is found,
 // propagate current point along current direction with fStep=STEPMAX. Otherwise
 // propagate with fStep=SNEXT (distance to boundary) and locate/return the next 
 // node.
 	
-	// -- Get the track's particle
-	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
-	
 	// -- Get the global field	
 	Double_t globalField[3] 	 = {field->Gx(), field->Gy(), field->Gz()}; 
-	Double_t globalPoint[3] 	 = {particle->Vx(), particle->Vy(), particle->Vz()};
-	Double_t globalDir[3]	 	 = {particle->DirX(), particle->DirY(), particle->DirZ()};
-	Double_t globalVelocity[3]  = {particle->VelocityX(), particle->VelocityY(), particle->VelocityZ()};
+	Double_t globalPoint[3] 	 = {particle->X(), particle->Y(), particle->Z()};
+	Double_t globalDir[3]	 	 = {particle->Nx(), particle->Ny(), particle->Nz()};
+	Double_t globalVelocity[3]  = {particle->Vx(), particle->Vy(), particle->Vz()};
 	
 	Double_t currentField[3]	 = {globalField[0], globalField[1], globalField[2]};
 	Double_t currentPoint[3]    = {globalPoint[0], globalPoint[1], globalPoint[2]};
@@ -1246,7 +1256,7 @@ TGeoNode* TUCNRun::FindNextBoundaryAndStepAlongParabola(TVirtualGeoTrack* track,
 	
 	#ifdef VERBOSE_MODE
 		cout << "FNBASAP - Starting StepTime: " << this->GetStepTime() << "\t" << "Starting StepSize: " << gGeoManager->GetCurrentNavigator()->GetStep() << endl;
-		cout << "FNBASAP - Velocity: " << particle->Velocity() << endl;
+		cout << "FNBASAP - Velocity: " << particle->V() << endl;
 		cout << "FNBASAP - Global Field: X: " << globalField[0] << "\t" << "Y: " << globalField[1] << "\t" << "Z: " << globalField[2] << endl;	
 		cout << "FNBASAP - Global Point: X: " << globalPoint[0] << "\t" << "Y: " << globalPoint[1] << "\t" << "Z: " << globalPoint[2] << endl;	
 		cout << "FNBASAP - Global Dir: X: "   << globalDir[0] << "\t" << "Y: " << globalDir[1] << "\t" << "Z: " << globalDir[2] << endl;	
@@ -1507,10 +1517,9 @@ void TUCNRun::SetStepTime(Double_t stepTime)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCNMagField* /*magField*/)
+Bool_t TUCNRun::MakeStep(TUCNParticle* particle, TUCNGravField* gravField, TUCNMagField* /*magField*/)
 {
 	// -- Find time to reach next boundary and step along parabola
-	TUCNParticle* particle = static_cast<TUCNParticle*>(track->GetParticle());
 	// -- Get the Navigator
 	TGeoNavigator* navigator = gGeoManager->GetCurrentNavigator();
 
@@ -1518,9 +1527,9 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		cout.precision(16);
       cout << endl << "------------------- START OF STEP ----------------------" << endl;
 		cout << "Steptime (s): " << this->GetStepTime() << "\t" << "Stepsize: " << navigator->GetStep() << endl;
-		cout << "Vertex (m): " << "X:" << particle->Vx() << "\t" << "Y:" << particle->Vy()  << "\t" << "Z:" << particle->Vz() << "\t" << "T:" << particle->T() << endl;
-		cout << "Dir: " << "X:" << particle->DirX()  << "\t" << "Y:" << particle->DirY()  << "\t" << "Z:" << particle->DirZ() << "\t" << "Mag:" << particle->Dir() << endl;
-		cout << "Vel (m/s): " << "X:" << particle->VelocityX()  << "\t" << "Y:" << particle->VelocityY()  << "\t" << "Z:" << particle->VelocityZ() << "\t" << "V:" << particle->Velocity() << endl;
+		cout << "Vertex (m): " << "X:" << particle->X() << "\t" << "Y:" << particle->Y()  << "\t" << "Z:" << particle->Z() << "\t" << "T:" << particle->T() << endl;
+		cout << "Dir: " << "X:" << particle->Nx()  << "\t" << "Y:" << particle->Ny()  << "\t" << "Z:" << particle->Nz() << endl;
+		cout << "Vel (m/s): " << "X:" << particle->Vx()  << "\t" << "Y:" << particle->Vy()  << "\t" << "Z:" << particle->Vz() << "\t" << "V:" << particle->V() << endl;
 		cout << "Mom (eV): " << "X:" << particle->Px()  << "\t" << "Y:" << particle->Py()  << "\t" << "Z:" << particle->Pz() << "\t" << "P:" << particle->P() << endl;
 		cout << "Energy (neV): "    << particle->Energy() /Units::neV << endl;
 		cout << "-----------------------------" << endl;
@@ -1590,13 +1599,13 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		}
 		// TODO: UPDATE CLASS DATA MEMBERS NOW LIKE fUCNNextNode
 		// - Calculate the time travelled (approximately)
-		assert(particle->Velocity() > 0.0);
-		Double_t timeTravelled = navigator->GetStep()/particle->Velocity(); 
+		assert(particle->V() > 0.0);
+		Double_t timeTravelled = navigator->GetStep()/particle->V(); 
 		this->SetStepTime(timeTravelled);
 	} else {
 		
 		// -- Propagate Point by StepTime along Parabola
-		if (this->FindNextBoundaryAndStepAlongParabola(track, gravField, this->GetStepTime()) == NULL) {
+		if (this->FindNextBoundaryAndStepAlongParabola(particle, gravField, this->GetStepTime()) == NULL) {
 			Error("MakeStep", "FindNextBoundaryAndStepAlongParabola has failed to find the next node");
 			return kFALSE;	
 		}
@@ -1618,9 +1627,9 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		#ifdef VERBOSE_MODE	
 			cout << endl << "------------------- AFTER STEP ----------------------" << endl;
 			cout << "Steptime (s): " << this->GetStepTime() << "\t" << "Stepsize: " << navigator->GetStep() << endl;
-			cout << "Vertex (m): " << "X:" << particle->Vx() << "\t" << "Y:" << particle->Vy()  << "\t" << "Z:" << particle->Vz() << "\t" << "T:" << particle->T() << endl;
-			cout << "Dir: " << "X:" << particle->DirX()  << "\t" << "Y:" << particle->DirY()  << "\t" << "Z:" << particle->DirZ() << "\t" << "Mag:" << particle->Dir() << endl;
-			cout << "Vel (m/s): " << "X:" << particle->VelocityX()  << "\t" << "Y:" << particle->VelocityY()  << "\t" << "Z:" << particle->VelocityZ() << "\t" << "V:" << particle->Velocity() << endl;
+			cout << "Vertex (m): " << "X:" << particle->X() << "\t" << "Y:" << particle->Y()  << "\t" << "Z:" << particle->Z() << "\t" << "T:" << particle->T() << endl;
+			cout << "Dir: " << "X:" << particle->Nx()  << "\t" << "Y:" << particle->Ny()  << "\t" << "Z:" << particle->Nz() << endl;
+			cout << "Vel (m/s): " << "X:" << particle->Vx()  << "\t" << "Y:" << particle->Vy()  << "\t" << "Z:" << particle->Vz() << "\t" << "V:" << particle->V() << endl;
 			cout << "Mom (eV): " << "X:" << particle->Px()  << "\t" << "Y:" << particle->Py()  << "\t" << "Z:" << particle->Pz() << "\t" << "P:" << particle->P() << endl;
 			cout << "Energy (neV): "    << particle->Energy() /Units::neV << endl;
 			cout << "-----------------------------" << endl;
@@ -1902,7 +1911,7 @@ Bool_t TUCNRun::MakeStep(TVirtualGeoTrack* track, TUCNGravField* gravField, TUCN
 		}
 	}
 	// Add Vertex to Track
-	track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
+//	track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
 	// End of MakeStep.
 	return kTRUE;
 }
@@ -1912,7 +1921,7 @@ void TUCNRun::UpdateParticle(TUCNParticle* particle, const Double_t timeInterval
 {
 	// -- Take the particle and update its position, momentum, time and energy with the current properties stored in the Navigator
 	#ifdef VERBOSE_MODE
-		cout << "UpdateParticle -- Initial X: " << particle->Vx() << "\t" << "Y: " << particle->Vy() << "\t" <<  "Z: " << particle->Vz() << "\t" <<  "T: " << particle->T() << endl;
+		cout << "UpdateParticle -- Initial X: " << particle->X() << "\t" << "Y: " << particle->Y() << "\t" <<  "Z: " << particle->Z() << "\t" <<  "T: " << particle->T() << endl;
 		cout << "UpdateParticle -- Initial PX: " << particle->Px() << "\t" << "PY: " << particle->Py() << "\t" <<  "PZ: " << particle->Pz() << "\t" <<  "E: " << particle->Energy()/Units::neV << endl;
 	#endif
 	
@@ -1927,35 +1936,33 @@ void TUCNRun::UpdateParticle(TUCNParticle* particle, const Double_t timeInterval
 		// Take the dot product of the point vector with the field direction unit vector to get the height of this point in the gravitational field.
 		// This assumes a convention that 'height' is measured along an axis that INCREASES in the opposite direction to the field direction vector
 		// (which is usually 'downwards')
-		heightClimbed = -1.0*((pos[0] - particle->Vx())*gravField->Nx() + (pos[1] - particle->Vy())*gravField->Ny() + (pos[2] - particle->Vz())*gravField->Nz());
-		gravPotentialEnergy = particle->Mass_GeV_c2()*gravField->GravAcceleration()*heightClimbed;
+		heightClimbed = -1.0*((pos[0] - particle->X())*gravField->Nx() + (pos[1] - particle->Y())*gravField->Ny() + (pos[2] - particle->Z())*gravField->Nz());
+		gravPotentialEnergy = particle->Mass_eV_c2()*gravField->GravAcceleration()*heightClimbed;
 	}
 	
 	// Determine current Kinetic energy of particle given the height climbed in graviational field
 	Double_t kineticEnergy = particle->Energy() - gravPotentialEnergy;
 	
 	// Detemine current momentum
-	Double_t momentum = TMath::Sqrt(2.0*particle->Mass_GeV()*kineticEnergy);
+	Double_t momentum = TMath::Sqrt(2.0*particle->Mass_eV()*kineticEnergy);
 	Double_t mom[3] = {momentum*dir[0], momentum*dir[1], momentum*dir[2]};
 	
 	// Update particle
-	particle->SetProductionVertex(pos[0], pos[1], pos[2], particle->T() + timeInterval);
+	particle->SetVertex(pos[0], pos[1], pos[2], particle->T() + timeInterval);
 	particle->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
 	particle->IncreaseDistance(gGeoManager->GetCurrentNavigator()->GetStep()); // Increase the distance travelled stored in the particle
 			
 	#ifdef VERBOSE_MODE
 		cout << "UpdateParticle -- Height climbed: " << heightClimbed << "\t" << "Kinetic Energy Gained(Lost): " << -gravPotentialEnergy/Units::neV << endl;
-		cout << "UpdateParticle -- Final X: " << particle->Vx() << "\t" << "Y: " << particle->Vy() << "\t" <<  "Z: " << particle->Vz() << "\t" <<  "T: " << particle->T() << endl;
+		cout << "UpdateParticle -- Final X: " << particle->X() << "\t" << "Y: " << particle->Y() << "\t" <<  "Z: " << particle->Z() << "\t" <<  "T: " << particle->T() << endl;
 		cout << "UpdateParticle -- Final PX: " << particle->Px() << "\t" << "PY: " << particle->Py() << "\t" <<  "PZ: " << particle->Pz() << "\t" <<  "E: " << particle->Energy()/Units::neV << endl;
 	#endif
 }
-
 
 //_____________________________________________________________________________
 Bool_t TUCNRun::Bounce(TUCNParticle* particle, const Double_t* normal, const TUCNGeoMaterial* wallMaterial)
 {
 	// -- Make a reflection off of the current boundary
-	
 	// -- GetNavigator
 	TGeoNavigator* navigator = gGeoManager->GetCurrentNavigator();
 	

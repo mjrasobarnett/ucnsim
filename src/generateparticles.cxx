@@ -132,13 +132,13 @@ Bool_t GenerateParticles(const Int_t neutrons, const TGeoVolume* beamVolume, con
       // -- Initialise particle's momentum
       DetermineParticleMomentum(particle, maxEnergy);
       // -- Fill histograms
-      initialXHist->Fill(particle->Vx());
-      initialYHist->Fill(particle->Vy());
-      initialZHist->Fill(particle->Vz());
-      initialVXHist->Fill(particle->VelocityX());
-      initialVYHist->Fill(particle->VelocityY());
-      initialVZHist->Fill(particle->VelocityZ());
-      initialVHist->Fill(particle->Velocity());
+      initialXHist->Fill(particle->X());
+      initialYHist->Fill(particle->Y());
+      initialZHist->Fill(particle->Z());
+      initialVXHist->Fill(particle->Vx());
+      initialVYHist->Fill(particle->Vy());
+      initialVZHist->Fill(particle->Vz());
+      initialVHist->Fill(particle->V());
    }
    
    TCanvas *canvas1 = new TCanvas("InitialPhaseSpace","Initial Phase Space",60,0,1000,800);
@@ -191,7 +191,7 @@ Bool_t CreateRandomParticle(TUCNParticle* particle, const TGeoVolume* beamVolume
    // -- Set Starting time
    Double_t startTime = 0.;
    // -- Create Particle
-   particle->SetProductionVertex(point[0], point[1], point[2], startTime);
+   particle->SetVertex(point[0], point[1], point[2], startTime);
    
    return kTRUE;
 }
@@ -222,7 +222,7 @@ Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnerg
    Double_t kineticEnergy = 0.5*Constants::neutron_mass*TMath::Power(velocity,2.0);
    // -- Determine Particle Momentum (eV)
    Double_t mom[3];
-   Double_t momentum = TMath::Sqrt(2.0*particle->Mass_GeV()*kineticEnergy);
+   Double_t momentum = TMath::Sqrt(2.0*particle->Mass_eV()*kineticEnergy);
    mom[0] = momentum*dir[0];
    mom[1] = momentum*dir[1];
    mom[2] = momentum*dir[2];  

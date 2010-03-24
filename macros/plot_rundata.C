@@ -55,7 +55,7 @@ Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& 
 	for (Int_t i = 0; i < run->Neutrons(); i++) {
 		TUCNParticle* particle = run->GetInitialParticle(i);
 		if (particle == NULL) continue;
-		initialPoints->SetPoint(i, particle->Vx(), particle->Vy(), particle->Vz());
+		initialPoints->SetPoint(i, particle->X(), particle->Y(), particle->Z());
 	}
 	cout << "Created Initial Points" << endl;
 	initialPoints->SetMarkerColor(2);
@@ -69,7 +69,7 @@ Bool_t PlotInitialAndFinalPositions(const TString& dataFileName, const TString& 
 	for (Int_t i = 0; i < run->Neutrons(); i++) {
 		TUCNParticle* particle = run->GetParticle(i);
 		if (particle == NULL) continue;
-		finalPoints->SetPoint(i, particle->Vx(), particle->Vy(), particle->Vz());
+		finalPoints->SetPoint(i, particle->X(), particle->Y(), particle->Z());
 	}
 	cout << "Created Final Points" << endl;
 	finalPoints->SetMarkerColor(2);

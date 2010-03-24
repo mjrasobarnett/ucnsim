@@ -224,11 +224,11 @@ Bool_t TUCNExperiment::ClearTracks()
 	// -- First Reset the Navigator to wipe current Node etc...
 	this->GeoManager()->GetCurrentNavigator()->ResetAll();	
 	// -- Delete all the TParticles stored by the tracks
-	for (Int_t trackID = 0; trackID < this->GeoManager()->GetNtracks(); trackID++) {
+/*	for (Int_t trackID = 0; trackID < this->GeoManager()->GetNtracks(); trackID++) {
 		TObject* particle = this->GeoManager()->GetTrack(trackID)->GetParticle();
 		if (particle != NULL) {delete particle; particle = 0;}
 	}
-	// -- Finally Clear out all the tracks from the Manager
+*/	// -- Finally Clear out all the tracks from the Manager
 	this->GeoManager()->ClearTracks();
 	cout << "Tracks and Particles of current Run have been successfully deleted." << endl;
 	cout << "-------------------------------------------" << endl;
@@ -291,9 +291,6 @@ Bool_t TUCNExperiment::GenerateParticles(TUCNRun* run)
 		Double_t point[3] = {0.,0.,0.}, lpoint[3] = {0.,0.,0.}, dir[3] = {0.,0.,0.}, mom[3] = {0.,0.,0.};
 		Double_t kineticEnergy = 0.0, momentum = 0.0, height = 0.0, startTime = 0.0;
 	
-		// Create a particle
-		TUCNParticle* particle = new TUCNParticle();
-	
 		// Find a random point inside the volume provided
 		while (currentNode == NULL) {
 			// First generate random point inside bounding box, in the local coordinate frame of the box
@@ -330,7 +327,7 @@ Bool_t TUCNExperiment::GenerateParticles(TUCNRun* run)
 			}
 
 			// Kinetic Energy
-			kineticEnergy = totalEnergy - particle->Mass_GeV_c2()*gravAcceleration*height;
+			kineticEnergy = totalEnergy - Constants::neutron_mass*gravAcceleration*height;
 			if (kineticEnergy <= 0.0) {
 				// Energy is negative. Find another point.
 				currentNode = NULL;
@@ -368,7 +365,7 @@ Bool_t TUCNExperiment::GenerateParticles(TUCNRun* run)
 	
 		// -- 6. Initialise Particle
 		// Momentum (eV)
-		momentum = TMath::Sqrt(2.0*particle->Mass_GeV()*kineticEnergy);
+		momentum = TMath::Sqrt(2.0*Constants::neutron_mass_c2*kineticEnergy);
 		mom[0] = momentum*dir[0];
 		mom[1] = momentum*dir[1];
 		mom[2] = momentum*dir[2];
@@ -376,21 +373,16 @@ Bool_t TUCNExperiment::GenerateParticles(TUCNRun* run)
 		#ifdef VERBOSE_MODE
 			cout << "Particle Momentum (eV) - P: " << momentum/Units::eV << "\t" << "Px:" << mom[0]/Units::eV << "\t" << "Py: " << mom[1]/Units::eV << "\t" << "Pz: " << mom[2]/Units::eV << endl; 
 		#endif
-		
-		// Initialise particle 
-		particle->SetProductionVertex(point[0], point[1], point[2], startTime);
-		particle->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
-		
-		// -- 7. Create the track in the geoManager
-		// Make track and add to list
-		#ifdef VERBOSE_MODE
-			cout << "Creating particle track..." << endl; 
-		#endif
-		TVirtualGeoTrack* track = this->GeoManager()->MakeTrack(i, particle->GetPdgCode(), particle);
-		this->GeoManager()->AddTrack(track);
-		// Add initial point to track
-		track->AddPoint(particle->Vx(), particle->Vy(), particle->Vz(), particle->T());
-	}
+      
+      // -- 7. Create Particle
+      // Initialise particle 
+      TUCNParticle* particle = new TUCNParticle(i,point,mom,kineticEnergy,startTime);
+      // Add to list
+      #ifdef VERBOSE_MODE
+         cout << "Creating particle track..." << endl; 
+      #endif
+      run->AddParticle(particle);
+   }
 	cout << "Successfully generated " << this->GeoManager()->GetNtracks() << " particles." << endl;
 	cout << "-------------------------------------------" << endl;	
 	return kTRUE;

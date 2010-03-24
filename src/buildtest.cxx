@@ -113,7 +113,7 @@ Int_t main(Int_t argc,Char_t ** argv)
 	PlotInitialAndFinalAngularDistribution(dataFile, "Run1;1");
 	PlotFinalHeightDistribution(dataFile);
 	PlotLossFunction(dataFile);
-	PlotAvgMagField(dataFile);
+//	PlotAvgMagField(dataFile);
 	
 	cout << endl << endl << "ANALYSIS COMPLETE" << endl << endl << endl;
 	theApp->Run();
@@ -421,7 +421,7 @@ Bool_t PlotLossFunction(const TString& dataFileName)
 	return kTRUE;
 }
 
-// -------------------------------------------------------------------------------------- 
+/*// -------------------------------------------------------------------------------------- 
 Bool_t PlotAvgMagField(const TString& dataFileName)
 {
 	// -- Plot the Average Mag Field
@@ -498,3 +498,4 @@ Bool_t PlotAvgMagField(const TString& dataFileName)
 
 	return kTRUE;
 }
+*/
