@@ -70,8 +70,8 @@ namespace Units
 
 	static const Double_t micrometer = 1.e-6 *meter;             
 	static const Double_t  nanometer = 1.e-9 *meter;
-	static const Double_t  angstrom  = 1.e-10*meter;
-	static const Double_t  fermi     = 1.e-15*meter;
+	static const Double_t   angstrom = 1.e-10*meter;
+	static const Double_t femtometer = 1.e-15*meter;
 
 	static const Double_t      barn = 1.e-28*meter2;
 	static const Double_t millibarn = 1.e-3 *barn;
@@ -79,8 +79,13 @@ namespace Units
 	static const Double_t  nanobarn = 1.e-9 *barn;
 	static const Double_t  picobarn = 1.e-12*barn;
 
+   static const Double_t      litre = 1.E-3*meter3;
+   static const Double_t millilitre = 1.E-3*litre;
+
 	// symbols
-	static const Double_t mm  = millimeter;                        
+   static const Double_t fm  = femtometer;
+	
+	static const Double_t mm  = millimeter;
 	static const Double_t mm2 = millimeter2;
 	static const Double_t mm3 = millimeter3;
 
@@ -88,15 +93,18 @@ namespace Units
 	static const Double_t cm2 = centimeter2;
 	static const Double_t cm3 = centimeter3;
 
-	static const Double_t m  = meter;                  
+	static const Double_t m  = meter;
 	static const Double_t m2 = meter2;
 	static const Double_t m3 = meter3;
 
-	static const Double_t km  = kilometer;                   
+	static const Double_t km  = kilometer;
 	static const Double_t km2 = kilometer2;
 	static const Double_t km3 = kilometer3;
 
 	static const Double_t pc = parsec;
+	
+	static const Double_t  l = litre;
+   static const Double_t ml = millilitre;
 
 	//
 	// Angle

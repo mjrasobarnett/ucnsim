@@ -37,8 +37,8 @@
 //          and pressure; also added Gas threshold.
 
 
-#ifndef HEP_CONSTANTS_H
-#define HEP_CONSTANTS_H
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
 
 #include "Units.h"
 
@@ -66,11 +66,12 @@ namespace Constants
 	// hbar  = 6.58212e-13 MeV*ns
 	// hbarc = 197.32705e-12 MeV*mm
 	//
-	static const Double_t h_Planck      = 6.6260755e-34 * joule*s;
-	static const Double_t hbar_Planck   = h_Planck/twopi;
-	static const Double_t hbarc         = hbar_Planck * c_light;
+	static const Double_t h_Planck      = 6.6260755e-34 ; // J.s
+	static const Double_t hbar          = h_Planck/twopi;
+	static const Double_t hbarc         = hbar * c_light;
 	static const Double_t hbarc_squared = hbarc * hbarc;
-
+   static const Double_t hbar_eV       = hbar * joule * s;
+	
 	//
 	//
 	static const Double_t electron_charge = - eplus; // Units.h
@@ -86,7 +87,8 @@ namespace Constants
 	static const Double_t           amu_c2 = 931.49432 * MeV;
 	static const Double_t              amu = amu_c2/c_squared;
 
-	static const Double_t neutron_mass 		= (neutron_mass_c2/c_squared);
+	static const Double_t     neutron_mass = (neutron_mass_c2/c_squared);
+	static const Double_t     neutron_mass_kg = neutron_mass*e_SI;
 	
 
 	//
@@ -114,20 +116,12 @@ namespace Constants
 	                                             *classic_electr_radius;
 	//
 	//
-	//
 	static const Double_t k_Boltzmann = 8.617385e-11 * MeV/kelvin;
 
 	//
 	//
-	//
 	static const Double_t STP_Temperature = 273.15*kelvin;
 	static const Double_t STP_Pressure    = 1.*atmosphere;
-	static const Double_t kGasThreshold   = 10.*mg/cm3;
-
-	//
-	//
-	//
-	static const Double_t universe_mean_density = 1.e-25*g/cm3;
 
 	//
 	//
@@ -135,5 +129,6 @@ namespace Constants
 	static const Double_t height_equivalent_conversion = grav_acceleration*neutron_mass;
 	//
 	//
+   static const Double_t avagadro_number = 6.02214E+23/mole;
 }
-#endif /* HEP_CONSTANTS_H */
+#endif /* CONSTANTS_H */
