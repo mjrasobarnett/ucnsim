@@ -1,30 +1,8 @@
 #include <iostream>
 
-#include "TCanvas.h"
-#include "TRint.h"
-#include "TRandom.h"
-#include "TFile.h"
-#include "TH1.h"
-#include "TMath.h"
-
-#include "TGeoManager.h"
-#include "TGeoMedium.h"
-#include "TGeoMatrix.h"
-#include "TGeoBBox.h"
-
-#include "TUCNGeoBBox.h"
-#include "TUCNGeoTube.h"
-#include "TUCNGeoBuilder.h"
-
-#include "TUCNParticle.h"
-#include "TUCNData.h"
-#include "TUCNRun.h"
-#include "TUCNVolume.h"
-
-#include "Materials.h"
-#include "Constants.h"
-#include "Units.h"
-#include "FitSuite.h"
+#include "include/Materials.h"
+#include "include/Constants.h"
+#include "include/Units.h"
 
 using std::cout;
 using std::endl;
@@ -50,15 +28,50 @@ namespace ModelParameters {
 using namespace ModelParameters;
 
 
-Bool_t GenerateParticles(const Int_t neutrons, const Double_t vmax, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree);
-Bool_t CreateRandomParticle(TUCNParticle* particle, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
+Bool_t GenerateParticles(const Int_t neutrons, const Double_t fillTime, const Double_t vmax, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree);
+Bool_t CreateRandomParticle(TUCNParticle* particle, const Double_t fillTime, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
 Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnergy);
 
 //__________________________________________________________________________
-Int_t main(Int_t argc,Char_t **argv)
+Int_t generate_particles(const char* configFileName)
 {
-   TRint *theApp = new TRint("TheApp", &argc, argv);
    
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // Build the ConfigFile
+   ///////////////////////////////////////////////////////////////////////////////////////
+   TUCNConfigFile configFile(configFileName);
+   // Check number of runs
+   const Int_t numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
+   if (numberOfRuns < 1) {
+      cerr << "Cannot read valid number of runs from ConfigFile" << endl;
+      return EXIT_FAILURE;
+   }
+   cout << "Number of Runs: " << numberOfRuns << endl << endl;
+   if (numberOfRuns > 1) {
+      cout << "More than one Run specified. Plot_rundata needs updating to handle this." << endl;
+      return EXIT_FAILURE;
+   }
+   // Read the inputfile name
+   Char_t runName[20], runTitle[20];
+   sprintf(runName,"Run%d",numberOfRuns);
+   sprintf(runTitle,"Run no:%d",1);
+   TString dataFileName = configFile.GetString("InputDataFile",runName);
+   if (dataFileName == "") { 
+      cout << "No File holding the particle data has been specified" << endl;
+      return kFALSE;
+   }
+   // Create the run to store particles
+   TUCNRun* run = new TUCNRun(runName,runTitle);
+   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Open File
+   TFile *file = TFile::Open(dataFileName, "recreate");
+   if (!file || file->IsZombie()) {
+      cerr << "Cannot open file: " << dataFileName << endl;
+      return 0;
+   }
+   
+   ///////////////////////////////////////////////////////////////////////////////////////
    // -- Make the particle beam volume
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
    
@@ -74,12 +87,13 @@ Int_t main(Int_t argc,Char_t **argv)
    TGeoHMatrix neutronBeamAreaMat = neutronBeamAreaCom;
    TGeoMatrix* neutronBeamAreaMatrix = new TGeoHMatrix(neutronBeamAreaMat);
    
+   ///////////////////////////////////////////////////////////////////////////////////////
    // -- Generate the particles
-   TUCNRun* run = new TUCNRun("Run1","Run no: 1");
+   Int_t particles = TMath::Abs(configFile.GetInt("InitialParticles", runName));
+   Double_t vmax = TMath::Abs(configFile.GetFloat("InitialMaxVelocity", runName))*Units::m/Units::s;
+   Double_t fillTime = TMath::Abs(configFile.GetFloat("FillingTime", runName))*Units::s;
    
-   Double_t vmax = 10.0*Units::m/Units::s;
-   
-   GenerateParticles(10000, vmax, neutronBeamArea, neutronBeamAreaMatrix, run->GetData());
+   GenerateParticles(particles, fillTime, vmax, neutronBeamArea, neutronBeamAreaMatrix, run->GetData());
    
    // -- Write out the particle tree
    TFile *f = TFile::Open("temp/initialparticles.root","recreate");
@@ -96,12 +110,11 @@ Int_t main(Int_t argc,Char_t **argv)
    delete f;
    
    // -- Enter Root interactive session
-   theApp->Run();
-   return EXIT_SUCCESS;
+   return 0;
 }
 
 //__________________________________________________________________________
-Bool_t GenerateParticles(const Int_t neutrons, const Double_t vmax, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree)
+Bool_t GenerateParticles(const Int_t neutrons, const Double_t fillTime, const Double_t vmax, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree)
 {
    // Generates a uniform distribution of particles with random directions all with 
    // the same total energy (kinetic plus potential) defined at z = 0.
@@ -125,17 +138,17 @@ Bool_t GenerateParticles(const Int_t neutrons, const Double_t vmax, const TGeoVo
    TH1F* initialVYHist = new TH1F("InitialVYHist","Initial VY velocity, Units of (m/s)", nbins, -vmax, vmax);
    TH1F* initialVZHist = new TH1F("InitialVZHist","Initial VZ velocity, Units of (m/s)", nbins, -vmax, vmax);
    TH1F* initialVHist = new TH1F("InitialVHist","Initial V velocity, Units of (m/s)", nbins, 0.0, vmax);
+   TH1F* initialTHist = new TH1F("InitialTHist","Initial T time, Units of s", nbins, 0.0, fillTime);
    
    Double_t maxEnergy = 0.5*Constants::neutron_mass*TMath::Power(vmax,2.0);
-   
-   cout << "Max Energy: " << maxEnergy/Units::neV << endl;
+   cout << "Max Energy (neV): " << maxEnergy/Units::neV << endl;
    
    // -- Loop over the total number of particles to be created. 
    for (Int_t i = 0; i < neutrons; i++) {
       // -- Create particle at a random position inside beam volume
       TUCNParticle* particle = new TUCNParticle();
       particle->SetId(i);
-      CreateRandomParticle(particle, beamVolume, beamMatrix);
+      CreateRandomParticle(particle, fillTime, beamVolume, beamMatrix);
       // -- Initialise particle's momentum
       DetermineParticleMomentum(particle, maxEnergy);
       // -- Fill histograms
@@ -146,6 +159,7 @@ Bool_t GenerateParticles(const Int_t neutrons, const Double_t vmax, const TGeoVo
       initialVYHist->Fill(particle->Vy());
       initialVZHist->Fill(particle->Vz());
       initialVHist->Fill(particle->V());
+      initialTHist->Fill(particle->T());
       // -- Add particle to data tree
       dataTree->AddInitialParticleState(particle);
    }
@@ -159,21 +173,22 @@ Bool_t GenerateParticles(const Int_t neutrons, const Double_t vmax, const TGeoVo
    canvas1->cd(3);
    initialZHist->Draw();
    canvas1->cd(4);
-   initialVXHist->Draw();
+   initialTHist->Draw();
    canvas1->cd(5);
-   initialVYHist->Draw();
+   initialVXHist->Draw();
    canvas1->cd(6);
-   initialVZHist->Draw();
+   initialVYHist->Draw();
    canvas1->cd(7);
-   initialVHist->Draw();
+   initialVZHist->Draw();
    canvas1->cd(8);
+   initialVHist->Draw();
    cout << "Successfully generated " << neutrons << " particles." << endl;
    cout << "-------------------------------------------" << endl;	
    return kTRUE;
 }
 
 //__________________________________________________________________________
-Bool_t CreateRandomParticle(TUCNParticle* particle, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix) 
+Bool_t CreateRandomParticle(TUCNParticle* particle, const Double_t fillTime, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix) 
 {
    // -- Find a random point inside the Volume
    Double_t point[3] = {0.,0.,0.}, localPoint[3] = {0.,0.,0.};
@@ -198,7 +213,9 @@ Bool_t CreateRandomParticle(TUCNParticle* particle, const TGeoVolume* beamVolume
    // Next transform point to the global coordinate frame
    beamMatrix->LocalToMaster(localPoint, point);
    // -- Set Starting time
-   Double_t startTime = 0.;
+   // Pick a time uniformly between start, and the filling time of the experiment
+   // Thus a particle can be generated at any time in the filling time process when the beam is on
+   Double_t startTime = gRandom->Uniform(0.0,fillTime);
    // -- Create Particle
    particle->SetVertex(point[0], point[1], point[2], startTime);
    

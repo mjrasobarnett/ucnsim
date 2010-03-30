@@ -22,9 +22,6 @@ BUILDTEST		= bin/buildtest$(ExeSuf)
 FITDATAS			= src/fitdata.$(SrcSuf)
 FITDATAO			= src/fitdata.$(ObjSuf)
 FITDATA			= bin/fitdata$(ExeSuf)
-GENPARTS			= src/generateparticles.$(SrcSuf)
-GENPARTO			= src/generateparticles.$(ObjSuf)
-GENPART			= bin/generateparticles$(ExeSuf)
 
 #------------------------------------------------------------------------------
 # my classes
@@ -82,13 +79,13 @@ LINKDEF			= UCNLinkDef.h
 UCNSO				= lib/libUCN.$(DllSuf)
 UCNLIB			= -L./lib -lUCN -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter -lMathMore
 #------------------------------------------------------------------------------
-OBJS				=	$(UCNSIMO) $(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(GENPARTO) $(TUCNGEOBUILDERO) \
+OBJS				=	$(UCNSIMO) $(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(TUCNGEOBUILDERO) \
  						$(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) $(TUCNGRAVFIELDO) \
  						$(TUCNPARTICLEO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) $(TUCNPOLYNOMIALO) \
  						$(TUCNEXPERIMENTO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) \
  						$(TUCNRUNO) $(TUCNPARABOLICMAGFIELDO) $(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) \
  						$(TUCNGEOCOMPOSITESHAPEO) $(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) $(TUCNELEMENTO)
-PROGRAMS			=	$(UCNSO) $(UCNSIM) $(BUILDTEST) $(FITDATA) $(SANDBOX) $(GENPART)
+PROGRAMS			=	$(UCNSO) $(UCNSIM) $(BUILDTEST) $(FITDATA) $(SANDBOX) 
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 .PHONY:     UCN ucnsim sandbox buildtest fitdata genpart
@@ -126,13 +123,6 @@ $(FITDATA):		$(FITDATAO) $(TUCNDATAPARSERO)
 					$(MT_EXE)
 					@echo "$@ done"
 					
-genpart:			$(GENPART)
-$(GENPART):		$(GENPARTO) $(UCNSO)
-					$(LD) $(LDFLAGS) $(GENPARTO) $(UCNLIB) $(LIBS)  \
-					$(OutPutOpt)$@
-					$(MT_EXE)
-					@echo "$@ done"
-
 UCN:				$(UCNSO)
 $(UCNSO):		$(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) \
                $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
