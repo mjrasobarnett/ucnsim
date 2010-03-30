@@ -31,7 +31,7 @@ elif [[ `uname -n` == "neutrino.pact.cpes.susx.ac.uk" ]] ; then
 	export UCNSIM=/export/eppcode/ucnsim
 	export UCN_GEOM=${UCNSIM}/geom
 	if [[ -n "${ROOTSYS}" ]] ; then
-		export ROOTSYS=/export/eppcode/root_v5.22.00
+		export ROOTSYS=/export/eppcode/matt/root/root
 		export PATH=${UCNSIM}/bin:${ROOTSYS}/bin:${PATH}
 		export MANPATH=${ROOTSYS}/man:${MANPATH}
 	fi
