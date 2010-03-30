@@ -15,8 +15,31 @@ Bool_t PlotPhaseSpace(TUCNRun* run, const TString& treeName);
 Double_t ExponentialDecay(Double_t *x, Double_t *par);
 
 // -------------------------------------------------------------------------------------- 
-Int_t plot_rundata(const char* geomFileName, const char* dataFileName, const char* runName, const char* treeName) {
+Int_t plot_rundata(const char* configFileName, const char* treeName) {
    
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // Build the ConfigFile
+   ///////////////////////////////////////////////////////////////////////////////////////
+   TUCNConfigFile configFile(configFileName);
+   // Check number of runs
+   const Int_t numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
+   if (numberOfRuns < 1) {
+      cerr << "Cannot read valid number of runs from ConfigFile" << endl;
+      return EXIT_FAILURE;
+   }
+   cout << "Number of Runs: " << numberOfRuns << endl << endl;
+   if (numberOfRuns > 1) {
+      cout << "More than one Run specified. Plot_rundata needs updating to handle this." << endl;
+      return EXIT_FAILURE;
+   }
+   // Read the outputfile name
+   Char_t runName[20];
+   sprintf(runName,"Run%d",numberOfRuns);
+   TString dataFileName = configFile.GetString("OutputDataFile",runName);
+   if (dataFileName == "") { 
+      cout << "No File holding the particle data has been specified" << endl;
+      return kFALSE;
+   }
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Open File
    TFile *file = 0;
@@ -35,9 +58,17 @@ Int_t plot_rundata(const char* geomFileName, const char* dataFileName, const cha
    }
    cout << "Successfully Loaded Run: " << runName << endl;
    ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Plot angles and momenta
    PlotAngularDistribution(run, treeName);
-   PlotPhaseSpace(run, treeName); 
-   // -- Import Geometry
+   PlotPhaseSpace(run, treeName);
+   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Plot the positions
+   TString geomFileName = configFile.GetString("GeomVisFile",runName);
+   if (geomFileName == "") { 
+      cout << "No File holding the geometry can be found" << endl;
+      return kFALSE;
+   }
    TGeoManager* geoManager = TGeoManager::Import(geomFileName); 
    // Needs to be imported first because we draw the volumes in certain histograms
    // from it, so we do not want it deleted in each function.
@@ -160,7 +191,7 @@ Bool_t PlotPhaseSpace(TUCNRun* run, const TString& treeName)
    pzHist->SetYTitle("Neutrons");
    
    sprintf(name,"%s:Time",tree->GetName());
-   TH1F* timeHist = new TH1F(name,"Time: Units of s", nbins, 0.0, runTime);
+   TH1F* timeHist = new TH1F(name,"Time: Units of s", nbins, 0.0, runTime+10);
    timeHist->SetXTitle("Time (s)");
    timeHist->SetYTitle("Neutrons");
    
