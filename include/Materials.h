@@ -176,7 +176,7 @@ namespace Materials
    namespace LossFactor {
       // List of Experimentally determined Loss potentials
       // Useful for large discrepancies between experiment and theoretical prediction
-      static const Double_t beryllium = 3.0E-5;
+      static const Double_t beryllium = 2.0E-4;
    }
    
    //_____________________________________________________________________________
