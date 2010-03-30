@@ -199,9 +199,11 @@ Bool_t TUCNRun::Start()
          }
       } catch (...) {
          // Serious tracking errors (eg: particle cannot be located correctly) will be thrown
-         cout << "-------------------------------------------" << endl;
-         Error("Start","Exception thrown by particle %i. Propagation Failed.", index);
-         cout << "-------------------------------------------" << endl << endl;
+         #ifdef VERBOSE_MODE
+            cout << "-------------------------------------------" << endl;
+            Error("Start","Exception thrown by particle %i. Propagation Failed.", index);
+            cout << "-------------------------------------------" << endl << endl;
+         #endif
          // Add this particle to special tree for errorneous particles
          this->GetData()->AddBadParticleState(particle);
          delete particle;

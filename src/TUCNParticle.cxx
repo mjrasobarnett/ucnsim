@@ -570,7 +570,9 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    if (gravField == NULL) {
       // CASE 1; No Gravitational Field - Straight line tracking
       if (navigator->FindNextBoundaryAndStep(stepTime) == NULL) {
-         Error("MakeStep", "FindNextBoundaryAndStep has failed to find the next node");
+         #ifdef VERBOSE_MODE
+            Error("MakeStep", "MakeStep has failed to find the next node");
+         #endif
          this->ChangeState(particle, new TUCNBad());
          throw runtime_error("Failed to find next node");
       }
@@ -582,7 +584,9 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
       // -- Propagate Point by StepTime along Parabola
       TGeoNode* nextNode = this->ParabolicBoundaryFinder(stepTime, particle, navigator, crossedNode, gravField);
       if (nextNode == NULL) {
-         Error("MakeStep", "FindNextBoundaryAndStepAlongParabola has failed to find the next node");
+         #ifdef VERBOSE_MODE
+            Error("MakeStep", "MakeStep has failed to find the next node");
+         #endif
          this->ChangeState(particle, new TUCNBad());
          throw runtime_error("Failed to find next node");
       }
@@ -612,7 +616,9 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    // -- Attempt to locate particle within the current node
    Bool_t locatedParticle = this->LocateInGeometry(particle, navigator, initialNode, initialMatrix, crossedNode);
    if (locatedParticle == kFALSE) {
-      cout << "Error - After Step - Unable to locate particle correctly in Geometry" << endl;
+      #ifdef VERBOSE_MODE
+         cout << "Error - After Step - Unable to locate particle correctly in Geometry" << endl;
+      #endif
       this->ChangeState(particle, new TUCNBad());
       throw runtime_error("Unable to locate particle uniquely in correct volume");
    }
@@ -740,7 +746,9 @@ TGeoNode* TUCNPropagating::ParabolicBoundaryFinder(Double_t& stepTime, TUCNParti
    // -- Find distance to exiting current node
    tnext = static_cast<TUCNGeoBBox*>(vol->GetShape())->TimeFromInsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary); 
    if (tnext <= 0.0) {
-      Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+      #ifdef VERBOSE_MODE
+         Error("ParabolicBoundaryFinder", "Failed to find boundary");
+      #endif
       return NULL;
    }
    snext = TUCNParabola::Instance()->ArcLength(localVelocity, localField, tnext);
@@ -777,9 +785,7 @@ TGeoNode* TUCNPropagating::ParabolicBoundaryFinder(Double_t& stepTime, TUCNParti
          return 0;
       }
       if (navigator->GetCurrentNode()->IsOffset()) {
-         #ifdef VERBOSE_MODE
-            Warning("FindNextBoundaryAndStepAlongParabola","Branch 2. fCurrentNode->IsOffset(). Entering CrossDivisionCell().");
-         #endif
+         Warning("ParabolicBoundaryFinder","Deprecated CrossDivisionCell().");
          throw runtime_error("In TUCNParticle PBF Need to call CrossDivisionCell but can't!");
       }
       // -- Cross Boundary and return new volume
@@ -1259,8 +1265,10 @@ Bool_t TUCNPropagating::LocateInGeometry(TUCNParticle* particle, TGeoNavigator* 
       
       // Check whether shift has helped to locate particle in correct volume
       if (locatedParticle == kFALSE) {
-         cout << "Error - Attempt to relocate particle inside current volume has failed. ";
-         cout << "Particle must be debugged to determine what has gone wrong"<< endl;
+         #ifdef VERBOSE_MODE
+            cout << "Error - Attempt to relocate particle inside current volume has failed. ";
+            cout << "Particle must be debugged to determine what has gone wrong"<< endl;
+         #endif
          return kFALSE;
       } else {
          // Otherwise we should have successfully moved our particle into the correct volume
@@ -1332,11 +1340,13 @@ Bool_t TUCNPropagating::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigato
             // For now we want to catch this case. Generally we want our boundary finder to always
             // put us over the boundary, so if this case occurs I want to know about it.
             assert(fIsOnBoundary == kTRUE);
-            cout << "Error - Current point still contained by initial node" << endl;
-            cout << "Initial Node: " << initialNode->GetName() << endl;
-            cout << "Does Initial Node Contain Current Point? ";
-            cout << initialNode->GetVolume()->GetShape()->Contains(tempLocalPoint) << endl;
-            cout << "Actual Node: " << navigator->FindNode()->GetName() << endl;
+            #ifdef VERBOSE_MODE
+               cout << "Error - Current point still contained by initial node" << endl;
+               cout << "Initial Node: " << initialNode->GetName() << endl;
+               cout << "Does Initial Node Contain Current Point? ";
+               cout << initialNode->GetVolume()->GetShape()->Contains(tempLocalPoint) << endl;
+               cout << "Actual Node: " << navigator->FindNode()->GetName() << endl;
+            #endif
             return kFALSE;
          } else {
             // Initial and current node are unrelated -- likely that they are sitting next to
@@ -1348,8 +1358,10 @@ Bool_t TUCNPropagating::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigato
          }
       } else {
          // Not inside initial node either! Case (1c.)
-         cout << "Error - Particle not contained in Initial Node either!" << endl;
-         cout << "Actual Node: " << navigator->FindNode()->GetName() << endl;
+         #ifdef VERBOSE_MODE
+            cout << "Error - Particle not contained in Initial Node either!" << endl;
+            cout << "Actual Node: " << navigator->FindNode()->GetName() << endl;
+         #endif
          return kFALSE;
       }
    }
@@ -1426,10 +1438,12 @@ Bool_t TUCNPropagating::AttemptRelocationIntoCurrentNode(TGeoNavigator* navigato
    // Loop has finished and we have not been able to push the particle back into the
    // correct volume. This suggests a major problem so we highlight the error and return
    // a failure.
-   cout << "Point is STILL not exclusively contained in Current Node after relocation" << endl;
-   cout << "Current Node: " << currentNode->GetName() << endl;
-   cout << "Initial Node: " << initialNode->GetName() << endl;
-   cout << "Actual Node: " << navigator->FindNode()->GetName() << endl;
+   #ifdef VERBOSE_MODE
+      cout << "Point is STILL not exclusively contained in Current Node after relocation" << endl;
+      cout << "Current Node: " << currentNode->GetName() << endl;
+      cout << "Initial Node: " << initialNode->GetName() << endl;
+      cout << "Actual Node: " << navigator->FindNode()->GetName() << endl;
+   #endif
    return kFALSE;
 }
 
