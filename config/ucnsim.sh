@@ -28,7 +28,7 @@ elif [[ `uname -n` == "sjp39.local" ]] ; then # Need Simon's local hostname
 elif [[ `uname -n` == "neutrino.pact.cpes.susx.ac.uk" ]] ; then 
 	# Test if we are running on neutrino
 	echo "Configuring for neutrino remote machine"
-	export UCNSIM=/export/eppcode/ucnsim
+	export UCNSIM=/export/eppcode/matt/dev/ucnsim
 	export UCN_GEOM=${UCNSIM}/geom
 	if [[ -n "${ROOTSYS:-unset}" ]] ; then
 		export ROOTSYS=/export/eppcode/matt/root/root
