@@ -24,7 +24,7 @@ elif [[ `uname -n` == "sjp39.local" ]] ; then # Need Simon's local hostname
 	export PATH=${UCNSIM}/bin:${PATH}
 	if [[ -z "${ROOTSYS}" ]] ; then
 		export ROOTSYS=${HOME}Software/ROOT/v5.24.00 # Simon to fill in where he keeps his root
-		export PATH=${UCNSIM}/bin:${ROOTSYS}/bin:${PATH}
+		export PATH=${ROOTSYS}/bin:${PATH}
 		export MANPATH=${ROOTSYS}/man:${MANPATH}
 	fi
 elif [[ `uname -n` == "neutrino.pact.cpes.susx.ac.uk" ]] ; then 
@@ -36,7 +36,7 @@ elif [[ `uname -n` == "neutrino.pact.cpes.susx.ac.uk" ]] ; then
 	export default="default"
    if [[ "${ROOTSYS:-default}" == "default" ]] ; then
 		export ROOTSYS=/export/eppcode/matt/root/root
-		export PATH=${UCNSIM}/bin:${ROOTSYS}/bin:${PATH}
+		export PATH=${ROOTSYS}/bin:${PATH}
 		export MANPATH=${ROOTSYS}/man:${MANPATH}
 	fi
 	# Add more machines here as necessary
@@ -48,7 +48,7 @@ elif [[ `uname -n` == "ubuntu" ]] ; then
 	export PATH=${UCNSIM}/bin:${PATH}
 	if [[ -z "${ROOTSYS}" ]] ; then
 		export ROOTSYS=${HOME}/code/root
-		export PATH=${UCNSIM}/bin:${ROOTSYS}/bin:${PATH}
+		export PATH=${ROOTSYS}/bin:${PATH}
 		export MANPATH=${ROOTSYS}/man:${MANPATH}
 	fi
 fi
