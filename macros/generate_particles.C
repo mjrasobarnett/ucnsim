@@ -57,9 +57,6 @@ Int_t generate_particles(const char* configFileName)
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Generate the particles
-   Int_t particles = TMath::Abs(configFile.GetInt("InitialParticles", runName));
-   Double_t vmax = TMath::Abs(configFile.GetFloat("InitialMaxVelocity", runName))*Units::m/Units::s;
-   Double_t fillTime = TMath::Abs(configFile.GetFloat("FillingTime", runName))*Units::s;
    
    // Check number of runs
    const Int_t numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
@@ -78,6 +75,10 @@ Int_t generate_particles(const char* configFileName)
    sprintf(runName,"Run%d",numberOfRuns);
    sprintf(runTitle,"Run no:%d",1);
    TUCNRun* run = new TUCNRun(runName,runTitle);
+   
+   Int_t particles = TMath::Abs(configFile.GetInt("InitialParticles", runName));
+   Double_t vmax = TMath::Abs(configFile.GetFloat("InitialMaxVelocity", runName))*Units::m/Units::s;
+   Double_t fillTime = TMath::Abs(configFile.GetFloat("FillingTime", runName))*Units::s;
    
    GenerateParticles(particles, fillTime, vmax, neutronBeamArea, neutronBeamAreaMatrix, run->GetData());
    
