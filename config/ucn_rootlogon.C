@@ -25,8 +25,7 @@
 	TString ucnsim = gSystem->Getenv("UCNSIM");
 	if ( ucnsim.Length() == 0 ) {
 		cerr << "-------------------------------------" << endl;
-		cerr << "---- WARNING - WARNING - WARNING ----" << endl;
-		cerr << "-FAILED TO ENVIRONMENT VAR. UCNSIM-" << endl;
+		cerr << "Warning: Failed to find env. variable UCNSIM" << endl;
 		cerr << "-------------------------------------" << endl;
 	}
 	else {

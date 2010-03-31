@@ -35,6 +35,9 @@ Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnerg
 //__________________________________________________________________________
 Int_t generate_particles(const char* configFileName)
 {
+   // Ensure we load necessary libraries
+   TString ucnlib = gSystem->Getenv("UCNSIM") + "/lib/libUCN.so";
+   gSystem->Load(ucnlib.Data());
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
