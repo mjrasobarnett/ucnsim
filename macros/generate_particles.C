@@ -35,44 +35,9 @@ Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnerg
 //__________________________________________________________________________
 Int_t generate_particles(const char* configFileName)
 {
-   // Ensure we load necessary libraries
-   TString ucnlib = gSystem->Getenv("UCNSIM") + "/lib/libUCN.so";
-   gSystem->Load(ucnlib.Data());
-   
    ///////////////////////////////////////////////////////////////////////////////////////
-   // Build the ConfigFile
-   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Build the ConfigFile
    TUCNConfigFile configFile(configFileName);
-   // Check number of runs
-   const Int_t numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
-   if (numberOfRuns < 1) {
-      cerr << "Cannot read valid number of runs from ConfigFile" << endl;
-      return EXIT_FAILURE;
-   }
-   cout << "Number of Runs: " << numberOfRuns << endl << endl;
-   if (numberOfRuns > 1) {
-      cout << "More than one Run specified. Plot_rundata needs updating to handle this." << endl;
-      return EXIT_FAILURE;
-   }
-   // Read the inputfile name
-   Char_t runName[20], runTitle[20];
-   sprintf(runName,"Run%d",numberOfRuns);
-   sprintf(runTitle,"Run no:%d",1);
-   TString dataFileName = configFile.GetString("InputDataFile",runName);
-   if (dataFileName == "") { 
-      cout << "No File holding the particle data has been specified" << endl;
-      return kFALSE;
-   }
-   // Create the run to store particles
-   TUCNRun* run = new TUCNRun(runName,runTitle);
-   
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Open File
-   TFile *file = TFile::Open(dataFileName, "recreate");
-   if (!file || file->IsZombie()) {
-      cerr << "Cannot open file: " << dataFileName << endl;
-      return 0;
-   }
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Make the particle beam volume
@@ -96,21 +61,46 @@ Int_t generate_particles(const char* configFileName)
    Double_t vmax = TMath::Abs(configFile.GetFloat("InitialMaxVelocity", runName))*Units::m/Units::s;
    Double_t fillTime = TMath::Abs(configFile.GetFloat("FillingTime", runName))*Units::s;
    
+   // Check number of runs
+   const Int_t numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
+   if (numberOfRuns < 1) {
+      cerr << "Cannot read valid number of runs from ConfigFile" << endl;
+      return EXIT_FAILURE;
+   }
+   cout << "Number of Runs: " << numberOfRuns << endl << endl;
+   if (numberOfRuns > 1) {
+      cout << "More than one Run specified. Plot_rundata needs updating to handle this." << endl;
+      return EXIT_FAILURE;
+   }
+   
+   // Create the run to store particles
+   Char_t runName[20], runTitle[20];
+   sprintf(runName,"Run%d",numberOfRuns);
+   sprintf(runTitle,"Run no:%d",1);
+   TUCNRun* run = new TUCNRun(runName,runTitle);
+   
    GenerateParticles(particles, fillTime, vmax, neutronBeamArea, neutronBeamAreaMatrix, run->GetData());
    
+   ///////////////////////////////////////////////////////////////////////////////////////
    // -- Write out the particle tree
-   TFile *f = TFile::Open("temp/initialparticles.root","recreate");
-   if (!f || f->IsZombie()) {
-      Error("Export","Cannot open file");
+   TString dataFileName = configFile.GetString("InputDataFile",runName);
+   if (dataFileName == "") { 
+      cout << "No File holding the particle data has been specified" << endl;
       return kFALSE;
+   }
+   // -- Open and Write to File
+   TFile *file = TFile::Open(dataFileName, "recreate");
+   if (!file || file->IsZombie()) {
+      cerr << "Cannot open file: " << dataFileName << endl;
+      return 0;
    }
    run->Write("Run1");
    cout << "Initial Particle Data for: " << run->GetName();
    cout << " was successfully written to file" << endl;
    cout << "-------------------------------------------" << endl;
-   f->ls(); // List the contents of the file
+   file->ls(); // List the contents of the file
    cout << "-------------------------------------------" << endl;
-   delete f;
+   delete file;
    
    // -- Enter Root interactive session
    return 0;
