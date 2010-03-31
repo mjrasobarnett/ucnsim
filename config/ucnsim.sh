@@ -56,17 +56,17 @@ fi
 #------------------------------------------------------------------------------
 # ROOT & UCNSIM PATHS
 #------------------------------------------------------------------------------
-if [[ -n "${LD_LIBRARY_PATH}" ]] ; then
+if [[ -z "${LD_LIBRARY_PATH}" ]] ; then
 	export LD_LIBRARY_PATH=${UCNSIM}/lib:${ROOTSYS}/lib:${LD_LIBRARY_PATH}
 else
-	export LD_LIBRARY_PATH=${UCNSIM}/lib:${ROOTSYS}/lib:
+	export LD_LIBRARY_PATH=${UCNSIM}/lib:${ROOTSYS}/lib
 fi
 
 if [[ `uname` == Darwin ]] ; then
-  if [[ -n "${DYLD_LIBRARY_PATH}" ]] ; then
+  if [[ -z "${DYLD_LIBRARY_PATH}" ]] ; then
    export DYLD_LIBRARY_PATH=${UCNSIM}/lib:${ROOTSYS}/lib:${DYLD_LIBRARY_PATH}
   else
-   export DYLD_LIBRARY_PATH=${UCNSIM}/lib:${ROOTSYS}/lib:
+   export DYLD_LIBRARY_PATH=${UCNSIM}/lib:${ROOTSYS}/lib
   fi
 fi
 
