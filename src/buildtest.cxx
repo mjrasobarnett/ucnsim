@@ -45,7 +45,6 @@
 
 #include "Constants.h"
 #include "Units.h"
-#include "FitSuite.h"
 
 using std::cout;
 using std::endl;

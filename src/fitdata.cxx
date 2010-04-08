@@ -1,336 +1,294 @@
 #include <iostream>
-#include <fstream>
-#include <cassert>
 
-#include "TRint.h"
-#include "TFile.h"
-#include "TKey.h"
-#include "TString.h"
-#include "TCanvas.h"
-#include "TH1.h"
-#include "TF1.h"
-#include "TMath.h"
-#include "TLegend.h"
-#include "TGraphErrors.h"
+#include "TGLViewer.h"
+#include "TGLCamera.h"
+#include "TGLPerspectiveCamera.h"
 #include "TGeoManager.h"
+#include "TH1F.h"
+#include "TF1.h"
+#include "TRint.h"
+#include "TCanvas.h"
 #include "TPolyMarker3D.h"
+#include "TFile.h"
+#include "TMath.h"
 
-#include "TUCNExperiment.h"
-#include "TUCNFieldManager.h"
 #include "TUCNParticle.h"
+#include "TUCNConfigFile.h"
 #include "TUCNRun.h"
+#include "TUCNData.h"
 
 #include "Constants.h"
 #include "Units.h"
 
 using namespace std;
 
-const Double_t total_energy = 200*neV;
-
-
-Double_t lossFunc(Double_t* x, Double_t* par);
-Double_t densityf(Double_t* x, Double_t* par);
-
-void		PlotFinalPositions(TCanvas* canvas, TUCNExperiment* experiment);
+Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeName);
+Bool_t PlotAngularDistribution(TUCNRun* run, const TString& treeName);
+Bool_t PlotPhaseSpace(TUCNRun* run, const TString& treeName); 
+Double_t ExponentialDecay(Double_t *x, Double_t *par);
 
 Int_t main(Int_t argc,Char_t **argv)
 {
-	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Read in Files
-	///////////////////////////////////////////////////////////////////////////////////////
-	TString dataFile, geomFile;
-	if (argc == 3) {
-		geomFile = argv[1];
-		dataFile = argv[2];
-	} else {
-		cerr << "Usage:" << endl;
-		cerr << "fitdata <geom.root> <rundata.root>" << endl;
-		return -1;
-	}
-	
-	// Start 'the app' -- this is so we are able to enter into a ROOT session after the program has run, instead of just quitting. Useful to play with histograms.
-	TRint *theApp = new TRint("FittingApp", &argc, argv);
-	
-/*	// -- Read the geometry into memory
-	cout << "-------------------------------------------" << endl;
-	cerr << "Reading Geometry from " << geomFile << endl;
-	cout << "-------------------------------------------" << endl;
-	TGeoManager* geoManager = TGeoManager::Import(geomFile);
-	
-	// -- Read the rundata into memory
-	cout << "-------------------------------------------" << endl;
-	cerr << "Reading RunData from " << dataFile << endl;
-	cout << "-------------------------------------------" << endl;
-	TFile * file = new TFile(dataFile, "UPDATE");
-	if ( !file->IsOpen() ) {
-		cerr << "Could not open file " << dataFile << endl;
-		cerr << "Exiting..." << endl;
-		exit(-1);
-	}
-	// Check contents of the file
-	file->ls();	
-	TIter next(file->GetListOfKeys()); 
-	TKey* key;
-	while ((key=(TKey*)next())) {
-		printf("key: %s points to an object of class: %s at %i , with cycle number: %i \n", key->GetName(), key->GetClassName(),key->GetSeekKey(),key->GetCycle());
-	}
-	cout << "-------------------------------------------" << endl;
-	// Get the FieldManager and the Experiment From the File
-	TUCNExperiment* experiment = 0;
-	file->GetObject("Experiment;1", experiment);
-	TUCNFieldManager* fieldManager = 0;
-	file->GetObject("FieldManager;1", fieldManager);
-	
-	cout << "-------------------------------------------" << endl;
-	cout << "Importing from files completed." << endl;
-	cout << "-------------------------------------------" << endl;
-	
-	///////////////////////////////////////////////////////////////////////////////////////
-	// -- FITTING 
-	///////////////////////////////////////////////////////////////////////////////////////
-		
-	// Draw Final Positions 
-//	TCanvas * canvas1 = new TCanvas("canvas1", "Final Particle Positions", 800, 10, 600, 600);
-//	PlotFinalPositions(canvas1, experiment);
-*/	
-	///////////////////////////////////////////////////////////////////////////////////////
-	// -- FITTING 
-/*	Int_t nbins = 50;
-	Double_t maxlength = 0.12;
-	
-	// Plot Histogram
-	TH1F * Histogram1 = new TH1F("Histogram1","Neutron Density versus height", nbins, 0.0, maxlength);	
-	TH1F * Histogram2 = new TH1F("Histogram2","Avg Field Sampled by Neutron", nbins, 0.001, 0.002);	
-	TH1F * Histogram3 = new TH1F("Histogram3","Distance Travelled", nbins, 500, 700.);	
-	
-	for (Int_t i = 0; i < particles; i++) {
-		// Get each Track
-		TUCNParticle* particle = run->GetParticle(i);
-		if (particle->Lost() == kTRUE) continue;
-		Histogram1->Fill(particle->Vz());
-		Histogram2->Fill(particle->AvgMagField()/particle->Distance());
-		Histogram3->Fill(particle->Distance());
-	}
-
-	// --------------------------------------------------------------------------------------
-	// Fit Neutron Density versus Height
-	TCanvas * histcanvas = new TCanvas("HistCanvas","Neutron Density versus height",20,20,800,800);
-   histcanvas->Divide(1,2);
-	histcanvas->SetGrid();
-	histcanvas->cd(1);
-
-	// -- Max height of neutrons
-	Double_t maxheight = totalEnergy/(Constants::neutron_mass*(Constants::grav_acceleration));
-
-	TF1 * fitdensf = new TF1("fitdensf", densityf, 0.0, maxheight, 1); 
-	fitdensf->SetParName(0,"Const");
-	fitdensf->SetParameter(0, 240);
-	fitdensf->SetLineColor(kRed);
-
-	Histogram1->SetLineColor(kBlack);
-	Histogram1->SetXTitle("Height from bottom of Tube (m)");
-	Histogram1->SetYTitle("Number of Neutrons");
-
-	Histogram1->Fit("fitdensf", "R");
-	Histogram1->Draw("E1");
-
-	// -------------------------------------------------------------------------------------- 
-	// -- Plot difference between bin content and fitted distribution of above histogram
-	histcanvas->cd(2);	
-	Int_t n = nbins;
-  	Double_t ex[n], ey[n], x[n], y[n]; 
-  	for (Int_t i=1;i<n;i++) { 
-		x[i] = Histogram1->GetBinCenter(i); 
-		y[i] = Histogram1->GetBinContent(i) - fitdensf->Eval(x[i]);
-		ex[i] = 0.;
-		ey[i] = Histogram1->GetBinError(i);
-	} 
-  	// create graph 
-  	TGraphErrors* gr1  = new TGraphErrors(n,x,y,ex,ey); 
-	gr1->SetTitle("Bin value minus fitted value versus height");
-	gr1->Draw("AC*");
-
-	// -------------------------------------------------------------------------------------- 
-	// -- Plot Avg Field sampled by neutrons
-	TCanvas * histcanvas2 = new TCanvas("HistCanvas2","Avg Field Sampled by Neutron",20,20,800,800);
-	histcanvas2->cd();
-	Histogram2->SetLineColor(kBlack);
-	Histogram2->SetXTitle("Avg Field (T)");
-	Histogram2->SetYTitle("Number of Neutrons");
-	Histogram2->Draw("");
-	
-	cout << Histogram2->GetEntries() << endl;
-	
-	TCanvas * histcanvas3 = new TCanvas("HistCanvas3","Distance Travelled by Neutron",20,20,800,800);
-	histcanvas3->cd();
-	Histogram3->SetLineColor(kBlack);
-	Histogram3->SetXTitle("Distance (m)");
-	Histogram3->SetYTitle("Number of Neutrons");
-	Histogram3->Draw("");
-	
-*/	
-/*	///////////////////////////////////////////////////////////////////////////////////////
-	// -- Fitting
-	
-	//	void PlotWallLossFunction(TCanvas* canvas, TUCNExperiment* experiment) {
-		
-	// First we plot the number of bounces before particle was lost. Fitting this to an exponential gives the lifetime, and hence the probability of loss
-	// averaged over all collisions (which should, for enough particles and uniform distributions..., be the probability of loss averaged over all angles-of-incidence)
-	// Store this value for each energy. 
-	cout << "-------------------------------------------" << endl;
-	cout << " Plotting Wall-Loss-Probability Function" << endl;
-	cout << "-------------------------------------------" << endl;
-	TCanvas* histcanvas = new TCanvas("HistCanvas","CollisonsBeforeLoss",600,20,600,600);
-	
-	// Begin Fit
-	Int_t numberOfRuns = experiment->NumberOfRuns();
-	static const Double_t V = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->FermiPotential();
-	static const Double_t f = static_cast<TUCNGeoMaterial*>(geoManager->GetMaterial("Boundary Material"))->Eta();
-	
-	Double_t point_x[numberOfRuns], point_y[numberOfRuns], error_x[numberOfRuns], error_y[numberOfRuns];
-	
-	for(Int_t i = 0; i < numberOfRuns; i++) {
-		// Get Run Parameters
-		TUCNRun* run = experiment->GetRun(i);
-		Int_t particles = run->Particles(); 
-		Double_t totalEnergy = run->TotalEnergy();
-		
-		Int_t nbins = 100;
-		Int_t range = 20000;
-	
-		histcanvas->cd();
-		TH1F *Histogram = new TH1F("Histogram","Number of collisions before loss", nbins, 0.0, range);
-		TF1 *f1 = new TF1("f1", "expo", range);
-		cout << "Filling Histogram..." << endl;
-	
-		for (Int_t j = 0; j < particles; j++) {
-			// Get each Track
-			TUCNParticle* particle = run->GetParticle(j);
-			Histogram->Fill(particle->Bounces());
-		}
-	
-		Histogram->Fit("f1", "R");
-	
-		Double_t p1 = f1->GetParameter(0);
-		Double_t e1 = f1->GetParError(0);
-		Double_t p2 = f1->GetParameter(1);
-		Double_t e2 = f1->GetParError(1);
-		cout <<  "After Fit: " << "\t" << "p1: " << p1 << "\t" << "p2: " << p2 << "\t" << "e1: " << e1 << "\t" << "e2: " << e2 << endl;
-
-		point_x[i] = totalEnergy/V;
-		point_y[i] = TMath::Abs(p2)/f;
-		error_x[i] = 0.;
-		error_y[i] = e2/f;
-
-		cout << "Pointx: " << point_x[i] << "\t" << "Pointy: " << point_y[i] << endl;
-		cout << "Errorx: " << error_x[i] << "\t" << "Errory: " << error_y[i] << endl;
-	}
-
-	//	Histogram->Draw();
-
-	TCanvas * histcanvas4 = new TCanvas("HistCanvas4","Loss Function",20,20,600,600);
-	histcanvas4->cd();
-
-	TF1 *lossf = new TF1("lossf",lossFunc,0.0,1.0,0);
-	lossf->SetRange(0.0, 1.0);
-	lossf->Draw();
-	cout << lossf->Eval(1.,0.,0.,0.) << endl;
-
-
-	//	Double_t point_x[13] = {0.01, 0.05, 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.95,1.0};
-	//	Double_t point_y[13] = {0.134027*f, 7.64717e-05, 0.000111426, 0.000162566, 0.780407*f, 0.000252422, 0.000301221, 0.00034624, 0.000389121, 0.000449889, 0.000510026, 0.000552799, 0.000782759 };	
-	//	Double_t error_x[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
-	//	Double_t error_y[13] = {0.00578513*f, 2.97809e-06, 6.76548e-06, 6.31687e-06, 1.91486e-06, 1.00426e-05, 1.03125e-05, 1.1159e-05, 1.42658e-05, 1.58957e-05, 2.26283e-05, 2.96299e-05, 3.39148e-05};
-	//	Int_t numberOfRuns = 13;
-	//	for (Int_t i = 0; i < numberOfRuns; i++) {
-	//		point_y[i] = point_y[i]/f;
-	//		error_y[i] = error_y[i]/f;
-	//	}
-
-	TGraphErrors* lossProb = new TGraphErrors(numberOfRuns, point_x, point_y, error_x, error_y);
-	lossProb->SetTitle("TGraphErrors Example");
-	lossProb->SetMarkerColor(4);
-	lossProb->SetMarkerSize(1);
-	lossProb->SetMarkerStyle(21);
-	lossProb->Draw("PSame");
-
-
-	lossf->GetXaxis()->SetRangeUser(0,1);
-	lossf->GetYaxis()->SetRangeUser(0.,3.2);
-	lossf->GetXaxis()->SetTitle("E/V");
-	lossf->GetYaxis()->SetTitle("Loss Probability");
-*/	
-	
-/*	// -- Plot the Average Mag Field
-	TCanvas* histcanvas = new TCanvas("HistCanvas","AvgMagField",20,20,600,600);
-	
-	// Begin Fit
-	Int_t numberOfRuns = experiment->NumberOfRuns();
-	
-	for(Int_t i = 0; i < numberOfRuns; i++) {
-		// Get Run Parameters
-		TUCNRun* run = experiment->GetRun(i);
-		Int_t particles = run->Particles();
-		cout << "Total Particles: " << run->Particles() << "\t"
-			  << "Lost To Boundary: " << run->LostToBoundary() << "\t"
-			  << "Remaining: " << run->Particles() - run->LostToBoundary() << endl;
-		Double_t totalEnergy = run->TotalEnergy();
-		
-		Int_t nbins = 100;
-		Int_t range = 1.0;
-	
-		histcanvas->cd();
-		TH1F *Histogram = new TH1F("Histogram","Number of collisions before loss", nbins, 0.9, range);
-		cout << "Filling Histogram..." << endl;
-
-		for (Int_t j = 0; j < particles; j++) {
-			// Get each Track
-			TUCNParticle* particle = run->GetParticle(j);
-			if (particle->LostToBoundary()) { 
-				continue; 
-			} else {
-				Histogram->Fill(particle->AvgMagField());
-			}
-		}
-		
-		Histogram->SetXTitle("Step-Averaged BField seen by Neutron (Normalised)");
-		Histogram->SetYTitle("Number of Neutrons");
-		Histogram->SetTitle("E: 0.57V, DiffuseCoeff: 0.1, RunTime: 150s");
-		Histogram->Draw("E1");
-		
-	}
-*/	theApp->Run();
-	
-	return 0;
-}	
-
+   ///////////////////////////////////////////////////////////////////////////////////////
+   TString configFileName, treeName;
+   if (argc == 3) {
+      configFileName = argv[1];
+      treeName = argv[2];
+   } else {
+      cerr << "Usage:" << endl;
+      cerr << "fitdata <configfile.cfg> <treename>" << endl;
+      return -1;
+   }
+   
+   // Start 'the app' -- this is so we are able to enter into a ROOT session
+   // after the program has run, instead of just quitting.
+   TRint *theApp = new TRint("FittingApp", &argc, argv);
+   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // Build the ConfigFile
+   ///////////////////////////////////////////////////////////////////////////////////////
+   TUCNConfigFile configFile(configFileName.Data());
+   // Check number of runs
+   const Int_t numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
+   if (numberOfRuns < 1) {
+      cerr << "Cannot read valid number of runs from ConfigFile" << endl;
+      return EXIT_FAILURE;
+   }
+   cout << "Number of Runs: " << numberOfRuns << endl << endl;
+   if (numberOfRuns > 1) {
+      cout << "More than one Run specified. Plot_rundata needs updating to handle this." << endl;
+      return EXIT_FAILURE;
+   }
+   // Read the outputfile name
+   Char_t runName[20];
+   sprintf(runName,"Run%d",numberOfRuns);
+   TString dataFileName = configFile.GetString("OutputDataFile",runName);
+   if (dataFileName == "") { 
+      cout << "No File holding the particle data has been specified" << endl;
+      return kFALSE;
+   }
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Open File
+   TFile *file = 0;
+   file = TFile::Open(dataFileName, "update");
+   if (!file || file->IsZombie()) {
+      cerr << "Cannot open file: " << dataFileName << endl;
+      return 0;
+   }
+   // -- Extract Run Object
+   cout << "Fetching run: " << runName << endl;
+   TUCNRun* run = new TUCNRun();
+   file->GetObject(static_cast<const char*>(runName), run);
+   if (run == NULL) {
+      cerr << "Could not find run: " << runName << endl;
+      return kFALSE;
+   }
+   cout << "Successfully Loaded Run: " << runName << endl;
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Plot angles and momenta
+   PlotAngularDistribution(run, treeName);
+   PlotPhaseSpace(run, treeName);
+   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Plot the positions
+   TString geomFileName = configFile.GetString("GeomVisFile",runName);
+   if (geomFileName == "") { 
+      cout << "No File holding the geometry can be found" << endl;
+      return kFALSE;
+   }
+   
+   cout << "-------------------------------------------" << endl;
+   cout << "Import GeoManager from: " << geomFileName << endl;
+   cout << "-------------------------------------------" << endl;
+   TGeoManager* geoManager = TGeoManager::Import(geomFileName); 
+   geoManager->GetTopVolume()->Draw();
+   geoManager->SetVisLevel(4);
+   geoManager->SetVisOption(0);
+   // Needs to be imported first because we draw the volumes in certain histograms
+   // from it, so we do not want it deleted in each function.
+   PlotPositions(geoManager, run, treeName);
+   
+   theApp->Run();
+   
+   return 0;
+}
 
 // -------------------------------------------------------------------------------------- 
-Double_t densityf(Double_t* x, Double_t* par)
+Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeName) 
 {
-	Double_t value = (total_energy - (Constants::neutron_mass)*(Constants::grav_acceleration)*x[0])/total_energy;
-	assert(value >= 0.0);
-	return par[0]*sqrt(value);
+// -- Create a TPolyMarker3D object to store the final positions
+// -- of the neutrons and write this to file. 
+   cout << "-------------------------------------------" << endl;
+   cout << "PlotPositions" <<  endl;
+   cout << "-------------------------------------------" << endl;
+   // -- Fetch Tree
+   TTree* tree = run->GetData()->FetchTree(treeName);
+   if (tree == NULL) {
+      cout << "Failed to Fetch Tree: " << treeName << endl;
+      return kFALSE;
+   }
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Create the points
+   Int_t neutrons = tree->GetEntriesFast();
+   TPolyMarker3D* points = new TPolyMarker3D(neutrons, 1); // 1 is marker style
+   for (Int_t i = 0; i < neutrons; i++) {
+      TUCNParticle* particle = run->GetData()->GetParticleState(tree, i);
+      if (particle == NULL) continue;
+      points->SetPoint(i, particle->X(), particle->Y(), particle->Z());
+   }
+   cout << "Created Initial Points." << endl;
+   points->SetMarkerColor(2);
+   points->SetMarkerStyle(6);
+   // -- Write the points to the File
+   Char_t name[20];
+   sprintf(name,"%s:NeutronPositions",tree->GetName());
+   points->SetName(name);
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Clean Up
+   TCanvas *canvas = new TCanvas("Positions","Neutron Positions",60,0,800,800);
+   canvas->cd();
+   cout << "Drawing positions" << endl;
+   points->Draw();
+   return kTRUE;
 }
 
 // -------------------------------------------------------------------------------------- 
-Double_t lossFunc(Double_t* x, Double_t* /*par*/) {
-	Double_t value = (2.*((1./x[0])*TMath::ASin(TMath::Sqrt(x[0])) - TMath::Sqrt((1./x[0]) - 1.)));   
-	return value;
+Bool_t PlotAngularDistribution(TUCNRun* run, const TString& treeName) 
+{
+// -- Create a Histogram object to store the angular distribution 
+// -- (as in, their initial and final directions about the origin). 
+   cout << "-------------------------------------------" << endl;
+   cout << "PlotInitialAndFinalAngularDistribution" <<  endl;
+   cout << "-------------------------------------------" << endl;
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // Get Tree
+   TTree* tree = run->GetData()->FetchTree(treeName);
+   if (tree == NULL) return kFALSE;
+   // -- Plot the Initial and Final Directions
+   Int_t nbins = 50;
+   Char_t name[20];
+   sprintf(name,"%s:Theta",tree->GetName());
+   TH1F* thetaHist = new TH1F(name,"Direction: Theta, Units of Pi", nbins, 0.0, 1.0);
+   sprintf(name,"%s:Phi",tree->GetName());
+   TH1F* phiHist = new TH1F(name,"Direction: Phi, Units of Pi", nbins, 0.0, 2.0);
+   
+   for (Int_t i = 0; i < tree->GetEntriesFast(); i++) {
+      TUCNParticle* particle = run->GetData()->GetParticleState(tree, i);
+      if (particle == NULL) continue;
+      thetaHist->Fill(particle->Theta()/TMath::Pi());
+      phiHist->Fill(particle->Phi()/TMath::Pi());
+   }
+   // -- Write the points to the File
+   TCanvas *canvas = new TCanvas("Directions","Neutron Directions",60,0,800,800);
+   canvas->Divide(2,1);
+   canvas->cd(1);
+   thetaHist->Draw();
+   canvas->cd(2);
+   phiHist->Draw();
+   return kTRUE;
 }
 
 // -------------------------------------------------------------------------------------- 
-void	PlotFinalPositions(TCanvas* /*canvas*/, TUCNExperiment* /*experiment*/) {
-/*	// Take canvas, divide into segments proportional to number of runs. Then plot final positions onto canvas.
-	Int_t nRuns = experiment->NumberOfRuns();
-	// If more than one run, divide the canvas appropriately
-	if (nRuns != 1) 	canvas->Divide((nRuns%2 == 0 ? nRuns/2:(nRuns/2+1)),2);
-	// Draw the final positions of the particles on the canvas
-	for (Int_t plotNumber = 1; plotNumber <= nRuns; plotNumber++) {
-		canvas->cd(plotNumber);
-		TPolyMarker3D* finalPoints = new TPolyMarker3D(gGeoManager->GetNtracks(), 1);
-		experiment->GetRun(0)->DrawParticles(canvas, finalPoints);
-	}
-*/
+Bool_t PlotPhaseSpace(TUCNRun* run, const TString& treeName) 
+{
+// -- Create a Histogram object to store the angular distribution (as in, their initial and final directions about the origin). 
+   cout << "-------------------------------------------" << endl;
+   cout << "PlotInitialAndFinalPhaseSpace" <<  endl;
+   cout << "-------------------------------------------" << endl;
+   // Get Tree
+   TTree* tree = run->GetData()->FetchTree(treeName);
+   if (tree == NULL) return kFALSE;
+   
+   Double_t maximumVelocity = 15.0;
+   Double_t maximumMomentum = 20*Units::eV;
+   Double_t runTime = 100*Units::s;
+   Double_t maximumDistance = 1000*Units::m;
+   // -- Set up the histograms
+   Int_t nbins = 50;
+   Char_t name[20];
+   
+   sprintf(name,"%s:Velocity",tree->GetName());
+   TH1F* energyHist = new TH1F(name,"Velocity: Units of m/s", nbins, 0.0, maximumVelocity);      
+   energyHist->SetXTitle("Velocity (m/s)");
+   energyHist->SetYTitle("Neutrons");
+   
+   sprintf(name,"%s:Px",tree->GetName());
+   TH1F* pxHist = new TH1F(name,"Px: Units of eV", nbins, -maximumMomentum, maximumMomentum);
+   pxHist->SetXTitle("Px (eV)");
+   pxHist->SetYTitle("Neutrons");
+   
+   sprintf(name,"%s:Py",tree->GetName());
+   TH1F* pyHist = new TH1F(name,"Py: Units of eV", nbins, -maximumMomentum, maximumMomentum);
+   pyHist->SetXTitle("Py (eV)");
+   pyHist->SetYTitle("Neutrons");
+   
+   sprintf(name,"%s:Pz",tree->GetName());
+   TH1F* pzHist = new TH1F(name,"Pz: Units of eV", nbins, -maximumMomentum, maximumMomentum);
+   pzHist->SetXTitle("Pz (eV)");
+   pzHist->SetYTitle("Neutrons");
+   
+   sprintf(name,"%s:Time",tree->GetName());
+   TH1F* timeHist = new TH1F(name,"Time: Units of s", nbins, 0.0, runTime+10);
+   timeHist->SetXTitle("Time (s)");
+   timeHist->SetYTitle("Neutrons");
+   
+   sprintf(name,"%s:Dist",tree->GetName());
+   TH1F* distHist = new TH1F(name,"Distance: Units of m", nbins, 0.0, maximumDistance);
+   distHist->SetXTitle("Distance (m)");
+   distHist->SetYTitle("Neutrons");
+   // Fill Histograms
+   for (Int_t i = 0; i < tree->GetEntriesFast(); i++) {
+      TUCNParticle* particle = run->GetData()->GetParticleState(tree, i);
+      if (particle == NULL) continue;
+      energyHist->Fill(particle->V());
+      pxHist->Fill(particle->Px()/Units::eV);
+      pyHist->Fill(particle->Py()/Units::eV);
+      pzHist->Fill(particle->Pz()/Units::eV);
+      timeHist->Fill(particle->T()/Units::s);
+      distHist->Fill(particle->Distance()/Units::m);
+   }
+   
+   // -- Draw histograms
+   TCanvas *canvas = new TCanvas("PhaseSpace","Phase Space",60,0,1000,800);
+   canvas->Divide(3,2);
+   canvas->cd(1);
+   energyHist->Draw();
+   canvas->Update();   
+   canvas->cd(2);
+   pxHist->Draw();
+   canvas->cd(3);
+   pyHist->Draw();
+   canvas->cd(4);
+   pzHist->Draw();
+   canvas->cd(5);
+   distHist->Draw();
+   canvas->cd(6);
+   timeHist->Draw();
+   
+   // Fit Final Time to Exponential - determine emptying time
+   sprintf(name,"%s:Expo",tree->GetName());
+   TF1 *expo = new TF1(name, ExponentialDecay, 2., run->RunTime(), 2);
+   expo->SetParameters(100.0,10.0);
+   expo->SetParNames("Initial Number","Emptying Time(s)");
+   timeHist->Fit(expo, "R");
+   Double_t decayConstant = expo->GetParameter(1);
+   Double_t decayConstantError = expo->GetParError(1);
+   cout << "DecayConstant: " << decayConstant << "\t" << "Error: " << decayConstantError << endl;
+   
+   Double_t emptyingTime = 1.0/decayConstant;
+   Double_t emptyingTimeError = decayConstantError/(decayConstant*decayConstant);
+   
+   cout << "EmptyingTime: " << emptyingTime << "\t" << "Error: " << emptyingTimeError << endl;
+   
+   return kTRUE;
 }
+
+// -------------------------------------------------------------------------------------- 
+Double_t ExponentialDecay(Double_t *x, Double_t *par)
+{
+   Double_t t = x[0];
+   Double_t f = par[0]*TMath::Exp(-t/par[1]);
+   return f;
+}
+
 
