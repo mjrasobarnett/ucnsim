@@ -16,10 +16,10 @@ if [[ `uname -n` == "MJRasoBarnett.local" ]] ; then
 		export PATH=${ROOTSYS}/bin:${PATH}
 		export MANPATH=${ROOTSYS}/man:${MANPATH}
 	fi
-elif [[ `uname -n` == "sjp39.local" ]] ; then # Need Simon's local hostname
+elif [[ `uname -n` == "simon-mbp.pact.cpes.susx.ac.uk" ]] ; then # Need Simon's local hostname
 	# Test if we are running on simon's machine
 	echo "Configuring for Simon's local machine"
-	export UCNSIM=${HOME}/Software/ucnsim/trunk # Simon to fill in here where he stores the code	
+	export UCNSIM=${HOME}/Software/ucnsim # Simon to fill in here where he stores the code	
 	export UCN_GEOM=${UCNSIM}/geom
 	export PATH=${UCNSIM}/bin:${PATH}
 	if [[ -z "${ROOTSYS}" ]] ; then
@@ -30,12 +30,12 @@ elif [[ `uname -n` == "sjp39.local" ]] ; then # Need Simon's local hostname
 elif [[ `uname -n` == "neutrino.pact.cpes.susx.ac.uk" ]] ; then 
 	# Test if we are running on neutrino
 	echo "Configuring for neutrino remote machine"
-	export UCNSIM=/export/eppcode/matt/dev/ucnsim
+	export UCNSIM=/export/eppcode/ucnsim
 	export UCN_GEOM=${UCNSIM}/geom
 	export PATH=${UCNSIM}/bin:${PATH}
 	export default="default"
    if [[ "${ROOTSYS:-default}" == "default" ]] ; then
-		export ROOTSYS=/export/eppcode/matt/root/root
+		export ROOTSYS=/export/eppcode/ROOT/v5.24.00b
 		export PATH=${ROOTSYS}/bin:${PATH}
 		export MANPATH=${ROOTSYS}/man:${MANPATH}
 	fi
