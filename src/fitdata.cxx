@@ -101,15 +101,12 @@ Int_t main(Int_t argc,Char_t **argv)
    cout << "Import GeoManager from: " << geomFileName << endl;
    cout << "-------------------------------------------" << endl;
    TGeoManager* geoManager = TGeoManager::Import(geomFileName); 
-   geoManager->GetTopVolume()->Draw();
-   geoManager->SetVisLevel(4);
-   geoManager->SetVisOption(0);
    // Needs to be imported first because we draw the volumes in certain histograms
    // from it, so we do not want it deleted in each function.
    PlotPositions(geoManager, run, treeName);
    
+   cout << "Finished" << endl;
    theApp->Run();
-   
    return 0;
 }
 
@@ -133,7 +130,10 @@ Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeN
    TPolyMarker3D* points = new TPolyMarker3D(neutrons, 1); // 1 is marker style
    for (Int_t i = 0; i < neutrons; i++) {
       TUCNParticle* particle = run->GetData()->GetParticleState(tree, i);
-      if (particle == NULL) continue;
+      if (particle == NULL) {
+         cout << "Error" << endl;
+         continue;
+      }
       points->SetPoint(i, particle->X(), particle->Y(), particle->Z());
    }
    cout << "Created Initial Points." << endl;
@@ -143,10 +143,14 @@ Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeN
    Char_t name[20];
    sprintf(name,"%s:NeutronPositions",tree->GetName());
    points->SetName(name);
+   points->Print();
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Clean Up
    TCanvas *canvas = new TCanvas("Positions","Neutron Positions",60,0,800,800);
    canvas->cd();
+//   geoManager->GetTopVolume()->Draw();
+//   geoManager->SetVisLevel(4);
+//   geoManager->SetVisOption(0);
    cout << "Drawing positions" << endl;
    points->Draw();
    return kTRUE;
