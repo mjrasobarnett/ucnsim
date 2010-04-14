@@ -6,7 +6,6 @@
 
 #include "include/Constants.h"
 #include "include/Units.h"
-#include "include/FitSuite.h"
 
 
 Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeName);
