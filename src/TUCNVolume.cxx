@@ -241,7 +241,9 @@ Bool_t TUCNBoundary::Interact(TUCNParticle* particle, Double_t* normal, TGeoNavi
    // Attempt to locate particle within the current node
    Bool_t locatedParticle = particle->LocateInGeometry(particle, navigator, boundaryNode, boundaryMatrix, crossedNode);
    if (locatedParticle == kFALSE) {
-      cout << "Error - After Bounce - Unable to locate particle correctly in Geometry"<< endl;
+      #ifdef VERBOSE_MODE
+         cout << "Error - After Bounce - Unable to locate particle correctly in Geometry"<< endl;
+      #endif
       // Change state
       particle->Bad();
       throw runtime_error("Unable to locate particle uniquely in correct volume");
