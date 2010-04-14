@@ -7,14 +7,14 @@
 #include "include/Constants.h"
 #include "include/Units.h"
 
-
+Int_t plot_rundata(const char* configFileName, const char* treeName, const char* runName="Run1");
 Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeName);
 Bool_t PlotAngularDistribution(TUCNRun* run, const TString& treeName);
 Bool_t PlotPhaseSpace(TUCNRun* run, const TString& treeName); 
 Double_t ExponentialDecay(Double_t *x, Double_t *par);
 
 // -------------------------------------------------------------------------------------- 
-Int_t plot_rundata(const char* configFileName, const char* treeName) {
+Int_t plot_rundata(const char* configFileName, const char* treeName, const char* runName) {
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
@@ -29,11 +29,9 @@ Int_t plot_rundata(const char* configFileName, const char* treeName) {
    cout << "Number of Runs: " << numberOfRuns << endl << endl;
    if (numberOfRuns > 1) {
       cout << "More than one Run specified. Plot_rundata needs updating to handle this." << endl;
-      return EXIT_FAILURE;
+//      return EXIT_FAILURE;
    }
    // Read the outputfile name
-   Char_t runName[20];
-   sprintf(runName,"Run%d",numberOfRuns);
    TString dataFileName = configFile.GetString("OutputDataFile",runName);
    if (dataFileName == "") { 
       cout << "No File holding the particle data has been specified" << endl;
@@ -161,10 +159,10 @@ Bool_t PlotPhaseSpace(TUCNRun* run, const TString& treeName)
    TTree* tree = run->GetData()->FetchTree(treeName);
    if (tree == NULL) return kFALSE;
    
-   Double_t maximumVelocity = 15.0;
+   Double_t maximumVelocity = 8.0;
    Double_t maximumMomentum = 20*Units::eV;
-   Double_t runTime = 100*Units::s;
-   Double_t maximumDistance = 1000*Units::m;
+   Double_t runTime = 800*Units::s;
+   Double_t maximumDistance = 10000*Units::m;
    // -- Set up the histograms
    Int_t nbins = 50;
    Char_t name[20];
@@ -228,7 +226,7 @@ Bool_t PlotPhaseSpace(TUCNRun* run, const TString& treeName)
    timeHist->Draw();
    // Fit Final Time to Exponential - determine emptying time
    sprintf(name,"%s:Expo",tree->GetName());
-   TF1 *expo = new TF1(name, ExponentialDecay, 2., run->RunTime(), 2);
+   TF1 *expo = new TF1(name, ExponentialDecay, 100., run->RunTime(), 2);
    expo->SetParameters(100.0,10.0);
    expo->SetParNames("Initial Number","Emptying Time(s)");
    timeHist->Fit(expo, "R");
