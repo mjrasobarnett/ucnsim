@@ -28,7 +28,7 @@ protected:
    Bool_t               fWallLosses;
    
    Bool_t               LoadParticles(TUCNConfigFile& configFile);
-   void                 PrintProgress(Int_t entry, Float_t nEntriesF, Int_t mintime=5);
+   void                 PrintProgress(Int_t entry, Float_t nEntriesF, Int_t mintime=2);
    
 public:
    // -- constructors

@@ -143,7 +143,7 @@ Bool_t TUCNRun::Initialise(TUCNConfigFile& configFile)
    if (fMaxStepTime == 0.0) { Error("Initialise","No maxsteptime set!"); return kFALSE; }
    // Determine if we will have any wall losses
    Bool_t wallLosses = configFile.GetBool("WallLosses", this->GetName());
-   cout << "Wall Losses needs to be re-implemented" << endl;
+   cout << "Wall Losses switch on/off needs to be re-implemented" << endl;
    /*
       Need a new way to do this
    */
@@ -362,7 +362,7 @@ Bool_t TUCNRun::LoadParticles(TUCNConfigFile& configFile)
    // - state or not. This will always be done, except for those particles in the Propagating Tree,
    // - where we can either re-start, or continue to propagate from their final state
    Bool_t fromBeginning = configFile.GetBool("FromBeginning",this->GetName());
-   if (fromBeginning == kFALSE && TString(inputTree->GetName()) == "PropagatingParticles") {
+   if (fromBeginning == kFALSE && TString(inputTree->GetName()) == "Propagating") {
       // - In this case, we are continuing to propagate the particles from their states in the
       // - 'propagating' tree, so we will store this tree. 
       // Loop over all entries in the Propagating Tree
