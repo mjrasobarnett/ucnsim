@@ -8,7 +8,7 @@ echo "------------------------------------------------------------------------"
 if [[ `uname -n` == "MJRasoBarnett.local" ]] ; then
 	# First test if we are running on matt's machine
 	echo "Configuring for Matt's local machine"
-	export UCNSIM=${HOME}/Projects/git/ucnsim
+	export UCNSIM=${HOME}/Projects/ucnsim/source/
 	export UCN_GEOM=${UCNSIM}/geom
 	export PATH=${UCNSIM}/bin:${PATH}
 	if [[ -z "${ROOTSYS}" ]] ; then
