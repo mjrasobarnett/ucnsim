@@ -10,6 +10,7 @@
 Int_t plot_rundata(const char* configFileName, const char* treeName, const char* runName="Run1");
 Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeName);
 Bool_t PlotAngularDistribution(TUCNRun* run, const TString& treeName);
+Bool_t PlotBounces(TUCNRun* run, const TString& treeName); 
 Bool_t PlotPhaseSpace(TUCNRun* run, const TString& treeName); 
 Double_t ExponentialDecay(Double_t *x, Double_t *par);
 
@@ -57,6 +58,7 @@ Int_t plot_rundata(const char* configFileName, const char* treeName, const char*
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Plot angles and momenta
    PlotAngularDistribution(run, treeName);
+   PlotBounces(run,treeName);
    PlotPhaseSpace(run, treeName);
    
    ///////////////////////////////////////////////////////////////////////////////////////
@@ -145,6 +147,48 @@ Bool_t PlotAngularDistribution(TUCNRun* run, const TString& treeName)
    thetaHist->Draw();
    canvas->cd(2);
    phiHist->Draw();
+   return kTRUE;
+}
+
+// -------------------------------------------------------------------------------------- 
+Bool_t PlotBounces(TUCNRun* run, const TString& treeName) 
+{
+// -- Create a Histogram object to store the angular distribution 
+// -- (as in, their initial and final directions about the origin). 
+   cout << "-------------------------------------------" << endl;
+   cout << "PlotBounces" <<  endl;
+   cout << "-------------------------------------------" << endl;
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // Get Tree
+   TTree* tree = run->GetData()->FetchTree(treeName);
+   if (tree == NULL) return kFALSE;
+   // -- Plot the Initial and Final Directions
+   Int_t nbins = 50;
+   Char_t name[20];
+   sprintf(name,"%s:Bounces",tree->GetName());
+   TH1F* bounceHist = new TH1F(name,"Bounces", nbins, 0.0, 50000);
+   sprintf(name,"%s:Specular",tree->GetName());
+   TH1F* specHist = new TH1F(name,"Specular", nbins, 0.0, 50000);
+   sprintf(name,"%s:Diffuse",tree->GetName());
+   TH1F* diffHist = new TH1F(name,"Diffuse", nbins, 0.0, 50000);
+   
+   for (Int_t i = 0; i < tree->GetEntriesFast(); i++) {
+      TUCNParticle* particle = run->GetData()->GetParticleState(tree, i);
+      if (particle == NULL) continue;
+      bounceHist->Fill(particle->Bounces());
+      specHist->Fill(particle->SpecularBounces());
+      diffHist->Fill(particle->DiffuseBounces());
+      cout << particle->Id() << "\t" << particle->Bounces() << "\t" << particle->SpecularBounces() << "\t" << particle->DiffuseBounces() << endl;
+   }
+   // -- Write the points to the File
+   TCanvas *canvas = new TCanvas("Directions","Neutron Directions",60,0,800,800);
+   canvas->Divide(3,1);
+   canvas->cd(1);
+   bounceHist->Draw();
+   canvas->cd(2);
+   specHist->Draw();
+   canvas->cd(3);
+   diffHist->Draw();
    return kTRUE;
 }
 
