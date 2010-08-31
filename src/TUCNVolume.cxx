@@ -28,7 +28,7 @@ ClassImp(TUCNVolume)
 
 //_____________________________________________________________________________
 TUCNVolume::TUCNVolume()
-             :TGeoVolume()
+           :TGeoVolume(), fMagField(NULL)
 {
 // Default constructor
    Info("TUCNVolume", "Default Constructor");
@@ -36,27 +36,28 @@ TUCNVolume::TUCNVolume()
 
 //_____________________________________________________________________________
 TUCNVolume::TUCNVolume(const char *name, const TGeoShape* shape, const TGeoMedium* med)
-             :TGeoVolume(name,shape,med)
+           :TGeoVolume(name,shape,med), fMagField(NULL)
 {
 // constructor
    Info("TUCNVolume", "Constructor");
 }
 
 //_____________________________________________________________________________
-TUCNVolume::TUCNVolume(const TUCNVolume& m)
-             :TGeoVolume(m)
+TUCNVolume::TUCNVolume(const TUCNVolume& other)
+           :TGeoVolume(other), fMagField(other.fMagField)
 {
    //copy constructor
    Info("TUCNVolume", "Copy Constructor");  
 }
 
 //_____________________________________________________________________________
-TUCNVolume& TUCNVolume::operator=(const TUCNVolume& m) 
+TUCNVolume& TUCNVolume::operator=(const TUCNVolume& other) 
 {
    //assignment operator
    Info("TUCNVolume", "Assignment");
-   if(this!=&m) {
-      TGeoVolume::operator=(m);
+   if(this!=&other) {
+      TGeoVolume::operator=(other);
+      fMagField = other.fMagField;
    }
    return *this;
 }
@@ -66,6 +67,7 @@ TUCNVolume::~TUCNVolume()
 {
 // Destructor
    Info("TUCNVolume", "Destructor");
+   if (fMagField != NULL) delete fMagField;
 }
 
 //_____________________________________________________________________________

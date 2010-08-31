@@ -4,9 +4,8 @@
 #ifndef ROOT_TUCNVolume
 #define ROOT_TUCNVolume
 
-#ifndef  ROOT_TGeoVolume
-   #include "TGeoVolume.h"
-#endif
+#include "TGeoVolume.h"
+#include "TUCNMagField.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -21,7 +20,8 @@ class TGeoMedium;
 
 class TUCNVolume : public TGeoVolume
 {
-protected:
+private:
+   TUCNMagField* fMagField; // Each TUCNVolume owns its own (local) magnetic fields
    
 public:
    
@@ -40,6 +40,9 @@ public:
    virtual Double_t FermiPotential() const;
    virtual Double_t WPotential() const;
    virtual Double_t LossFactor() const;
+   
+   virtual void AttachLocalMagField(TUCNMagField* magField) {fMagField = magField;}
+   virtual TUCNMagField* GetLocalMagField() {return fMagField;}
    
    ClassDef(TUCNVolume, 1)
 };
