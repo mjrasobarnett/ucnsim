@@ -16,9 +16,6 @@
 
 class TUCNMagField : public TNamed {
 
-private:   
-   std::string fName;
-   
 public:
    TUCNMagField();
    TUCNMagField(const std::string& name);

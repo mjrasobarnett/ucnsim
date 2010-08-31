@@ -230,15 +230,14 @@ namespace Units
 	// Magnetic Flux [T][E][Q^-1]
 	//
 	static const Double_t weber = volt*second;	// weber = 1000*megavolt*ns
-
+	
 	//
-	// Magnetic Field [T][E][Q^-1][L^-2]
+	// Magnetic Field [T]
 	//
-	static const Double_t tesla     = volt*second/meter2;	// tesla =0.001*megavolt*ns/mm2
-
-	static const Double_t gauss     = 1.e-4*tesla;
-	static const Double_t kilogauss = 1.e-1*tesla;
-
+	static const Double_t tesla     = 1.0;
+	static const Double_t uT        = 1.E-6*tesla;
+   static const Double_t nT        = 1.E-9*tesla;
+   
 	//
 	// Inductance [T^2][E][Q^-2]
 	//

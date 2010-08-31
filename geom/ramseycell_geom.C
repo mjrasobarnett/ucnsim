@@ -17,6 +17,11 @@ namespace ModelParameters {
    const Double_t ramseyCellRMax = 235.0*Units::mm;
    const Double_t ramseyCellHalfLength = 120.*Units::mm;
    const Double_t ramseyCellAngle = 90.0;
+
+   const Double_t bFieldX = 0.;
+   const Double_t bFieldY = 0.;
+   const Double_t bFieldZ = 5.0*Units::uT;
+   
 }
 
 using namespace ModelParameters;
@@ -65,7 +70,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    top->AddNode(chamber,1);
    
    // -------------------------------------
-   // -- Ramsey-Cell
+   // -- Build Ramsey-Cell Volume
    TUCNGeoTube *ramseyCellShape = new TUCNGeoTube("RamseyCell", ramseyCellRMin, ramseyCellRMax, ramseyCellHalfLength);
    TUCNTrackingVolume* ramseyCell = new TUCNTrackingVolume("RamseyCell", ramseyCellShape, heliumII);
    ramseyCell->SetLineColor(kAzure-4);
@@ -83,7 +88,15 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    Char_t ramseyCellName[14];
    sprintf(ramseyCellName, "RamseyCellMat"); 
    ramseyCellMat.SetName(ramseyCellName);
+   
+   // -------------------------------------
+   // -- Add Volume to Geometry
    chamber->AddNode(ramseyCell, 1, new TGeoHMatrix(ramseyCellMat));
+   
+   // -------------------------------------
+   // -- Create and Attach Magnetic Field defined in local coordinate system
+   TUCNMagField* magField = new TUCNUniformMagField("SolenoidField", bFieldX, bFieldY, bFieldZ);
+   ramseyCell->AttachLocalMagField(magField);
    
    // -------------------------------------
    // -- Close Geometry
