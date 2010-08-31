@@ -21,6 +21,7 @@
 using std::cout;
 using std::endl;
 using std::cerr;
+using std::string;
 
 //#define VERBOSE_MODE
 
@@ -125,7 +126,7 @@ TUCNMagField* TUCNFieldManager::AddUniformMagField(const Double_t Bx, const Doub
 		delete fMagField;
 		fMagField = 0;
 	}
-	const char* name = "UniformMagField";
+	string name = "UniformMagField";
 	fMagField = new TUCNUniformMagField(name, Bx, By, Bz);
 	return fMagField;
 }
@@ -138,7 +139,7 @@ TUCNMagField* TUCNFieldManager::AddParabolicMagField(const Double_t maxB, const 
 		delete fMagField;
 		fMagField = 0;
 	}
-	const char* name = "ParabolicMagField";
+	string name = "ParabolicMagField";
 	fMagField = new TUCNParabolicMagField(name, maxB, alpha, maxR);
 	return fMagField;
 }

@@ -1,75 +1,66 @@
 // TUCNUniformMagField
 // Author: Matthew Raso-Barnett  22/05/2009
 #include "TMath.h"
-
 #include "TUCNUniformMagField.h"
+
+using namespace std;
 
 ClassImp(TUCNUniformMagField)
 
 //_____________________________________________________________________________
 TUCNUniformMagField::TUCNUniformMagField()
-						  :TUCNMagField()
+                    :TUCNMagField()
 {
 // Default constructor.
-	Info("TUCNUniformMagField", "Dummy Constructor");
+   Info("TUCNUniformMagField", "Default Constructor");
 } 
 
 //_____________________________________________________________________________
-TUCNUniformMagField::TUCNUniformMagField(const char *name, Double_t Bx, Double_t By, Double_t Bz)
-						  :TUCNMagField(name)
+TUCNUniformMagField::TUCNUniformMagField(const string& name, const Double_t& Bx, const Double_t& By, const Double_t& Bz)
+                    :TUCNMagField(name)
 {
 // Default constructor.
-	Info("TUCNUniformMagField", "Constructor");
-	fBField[0] = Bx;
-	fBField[1] = By;
-	fBField[2] = Bz;
+   Info("TUCNUniformMagField", "Constructor");
+   fBx = Bx;
+   fBy = By;
+   fBz = Bz;
+   fBMag = TMath::Sqrt(fBx*fBx + fBy*fBy + fBz*fBz);
 } 
 
 //_____________________________________________________________________________
 TUCNUniformMagField::TUCNUniformMagField(const TUCNUniformMagField& other)
-						  :TUCNMagField(other)
+                    :TUCNMagField(other), fBx(other.fBx), fBy(other.fBy), fBz(other.fBz),
+                     fBMag(other.fBMag)
 {
 // Copy constructor.
 } 
 
 //_____________________________________________________________________________
-TUCNUniformMagField &TUCNUniformMagField::operator=(const TUCNUniformMagField& mf)
+TUCNUniformMagField &TUCNUniformMagField::operator=(const TUCNUniformMagField& other)
 {
 // Assignment.
-   if(this != &mf) {
-		TUCNMagField::operator=(mf);
-		for (Int_t i=0; i < 3; i++)
-			fBField[i] = mf.fBField[i];
-	}
-	return *this;
+   if(this != &other) {
+      TUCNMagField::operator=(other);
+      fBx = other.fBx;
+      fBy = other.fBy;
+      fBz = other.fBz;
+      fBMag = other.fBMag;
+   }
+   return *this;
 }
 
 //_____________________________________________________________________________
 TUCNUniformMagField::~TUCNUniformMagField()
 {
 // Destructor.
-	Info("TUCNUniformMagField", "Destructor");
+   Info("TUCNUniformMagField", "Destructor");
 }   
 
 //_____________________________________________________________________________
-void TUCNUniformMagField::Field(const Double_t* /*pos*/, Double_t* field)
+void TUCNUniformMagField::GetFieldVector(const TVector3& /*pos*/, TVector3& field) const
 {
-	field[0] = fBField[0];
-	field[1] = fBField[1];
-	field[2] = fBField[2];
-}   
-
-//_____________________________________________________________________________
-Double_t TUCNUniformMagField::FieldStrength(const Double_t* /*pos*/) const
-{
-	Double_t fieldStrength = TMath::Sqrt(fBField[0]*fBField[0] + fBField[1]*fBField[1] + fBField[2]*fBField[2]);
-	return fieldStrength;
-}
-
-//_____________________________________________________________________________
-Double_t TUCNUniformMagField::IntegratedField(const Double_t /*stepTime*/, const TUCNParticle* /*initialState*/, const TUCNGravField* /*gravField*/) const
-{
-	// Calculate the integrated field strength along the path defined by stepTime and initialState
-	// This only works for vertical Tube setup currently
-	return 0;
+   // Copy field vector to provided vector
+   field.SetX(fBx);
+   field.SetY(fBy);
+   field.SetZ(fBz);
 }

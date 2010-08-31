@@ -4,29 +4,35 @@
 #ifndef ROOT_TUCNMagField
 #define ROOT_TUCNMagField
 
-#ifndef ROOT_TNamed
 #include "TNamed.h"
-#endif
+#include "TVector3.h"
+#include <string>
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
 // TUCNMagField - ABC for magnetic field.                                 //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-class TUCNParticle;
-class TUCNGravField;
 
-class TUCNMagField : public TNamed
-{
+class TUCNMagField : public TNamed {
+
+private:   
+   std::string fName;
+   
 public:
-	TUCNMagField();
-	TUCNMagField(const char *name);
+   TUCNMagField();
+   TUCNMagField(const std::string& name);
+   TUCNMagField(const TUCNMagField&);
+   TUCNMagField& operator=(const TUCNMagField&);
    virtual ~TUCNMagField();
    
-   virtual void Field(const Double_t *pos, Double_t *field) = 0;
-	virtual Double_t FieldStrength(const Double_t *pos) const = 0;
-	virtual Double_t IntegratedField(const Double_t stepTime, const TUCNParticle* initialState, const TUCNGravField* gravField=0) const = 0;
-	
+   virtual Double_t Bx(const TVector3& pos) const = 0;
+   virtual Double_t By(const TVector3& pos) const = 0;
+   virtual Double_t Bz(const TVector3& pos) const = 0;
+   virtual Double_t B(const TVector3& pos) const = 0;
+   
+   virtual void GetFieldVector(const TVector3& pos, TVector3& field) const = 0;
+
    ClassDef(TUCNMagField, 1)              // Abstract base Mag field class
 };
 

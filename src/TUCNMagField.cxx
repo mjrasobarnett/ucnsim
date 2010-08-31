@@ -4,9 +4,7 @@
 #include "TUCNMagField.h"
 
 //______________________________________________________________________________
-// TUCNMagField - ABC for magnetic field. Derived classes are encouraged to
-// use the TVirtualMagField named constructor and must implement the method:
-//    Field(const Double_t *x, Double_t *B)
+// TUCNMagField - ABC for magnetic field.
 //
 //______________________________________________________________________________
 
@@ -14,23 +12,40 @@ ClassImp(TUCNMagField)
 
 //_____________________________________________________________________________
 TUCNMagField::TUCNMagField()
-				 :TNamed()
+             :TNamed()
 {
 // Default constructor.
-	Info("TUCNMagField", "Dummy Constructor");
+   Info("TUCNMagField", "Default Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNMagField::TUCNMagField(const std::string& name)
+             :TNamed(name, "")
+{
+// Default constructor.
+   Info("TUCNMagField", "Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNMagField::TUCNMagField(const TUCNMagField& other)
+             :TNamed(other)
+{
+// Copy constructor.
 } 
 
 //_____________________________________________________________________________
-TUCNMagField::TUCNMagField(const char *name)
-				 :TNamed(name, "")
+TUCNMagField &TUCNMagField::operator=(const TUCNMagField& other)
 {
-// Default constructor.
-	Info("TUCNMagField", "Constructor");
+// Assignment.
+   if(this != &other) {
+      TNamed::operator=(other);
+   }
+   return *this;
 }
 
 //______________________________________________________________________________
 TUCNMagField::~TUCNMagField()
 {
 // Destructor.
-	Info("TUCNMagField", "Destructor");
+   Info("TUCNMagField", "Destructor");
 }
