@@ -28,12 +28,98 @@ namespace ModelParameters {
 using namespace ModelParameters;
 
 
+Bool_t FillSourceTube(const char* configFileName);
+Bool_t FillRamseyCell(const char* configFileName);
+
 Bool_t GenerateParticles(const Int_t neutrons, const Double_t fillTime, const Double_t vmax, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree);
 Bool_t CreateRandomParticle(TUCNParticle* particle, const Double_t fillTime, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
 Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnergy);
 
 //__________________________________________________________________________
 Int_t generate_particles(const char* configFileName)
+{
+//   FillSourceTube(configFileName);
+   FillRamseyCell(configFileName);
+   return 0;
+}
+
+//__________________________________________________________________________
+Bool_t FillRamseyCell(const char* configFileName)
+{
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Build the ConfigFile
+   TUCNConfigFile configFile(configFileName);
+   
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Generate the particles
+   
+   // Check number of runs
+   const Int_t numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
+   if (numberOfRuns < 1) {
+      cerr << "Cannot read valid number of runs from ConfigFile" << endl;
+      return EXIT_FAILURE;
+   }
+   cout << "Number of Runs: " << numberOfRuns << endl << endl;
+   if (numberOfRuns > 1) {
+      cout << "More than one Run specified. Plot_rundata needs updating to handle this." << endl;
+      return EXIT_FAILURE;
+   }
+   
+   // Create the run to store particles
+   Char_t runName[20], runTitle[20];
+   sprintf(runName,"Run%d",numberOfRuns);
+   sprintf(runTitle,"Run no:%d",1);
+   TUCNRun* run = new TUCNRun(runName,runTitle);
+   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Find the initial volume
+   TString geomFileName = configFile.GetString("GeomFile",runName);
+   TGeoManager* geoManager = TGeoManager::Import(geomFileName);
+   
+   TGeoVolume* volume = 0;
+   TGeoMatrix* matrix = 0;
+   volume = geoManager->GetVolume("RamseyCell");
+   matrix = (TGeoMatrix*)geoManager->GetListOfMatrices()->FindObject("RamseyCellMat");
+   
+   if (volume == 0 || matrix == 0) {
+      cout << volume << "\t" << matrix << endl;
+      cout << "Unable to find requested volume or matrix" << endl;
+      return false;
+   }
+   
+   Int_t particles = TMath::Abs(configFile.GetInt("InitialParticles", runName));
+   Double_t vmax = TMath::Abs(configFile.GetFloat("InitialMaxVelocity", runName))*Units::m/Units::s;
+   Double_t fillTime = TMath::Abs(configFile.GetFloat("FillingTime", runName))*Units::s;
+   
+   GenerateParticles(particles, fillTime, vmax, volume, matrix, run->GetData());
+   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Write out the particle tree
+   TString dataFileName = configFile.GetString("InputDataFile",runName);
+   if (dataFileName == "") { 
+      cout << "No File holding the particle data has been specified" << endl;
+      return kFALSE;
+   }
+   // -- Open and Write to File
+   TFile *file = TFile::Open(dataFileName, "recreate");
+   if (!file || file->IsZombie()) {
+      cerr << "Cannot open file: " << dataFileName << endl;
+      return 0;
+   }
+   run->Write("Run1");
+   cout << "Initial Particle Data for: " << run->GetName();
+   cout << " was successfully written to file" << endl;
+   cout << "-------------------------------------------" << endl;
+   file->ls(); // List the contents of the file
+   cout << "-------------------------------------------" << endl;
+   delete file;
+   
+   // -- Enter Root interactive session
+   return 0;
+}
+
+//__________________________________________________________________________
+Int_t FillSourceTube(const char* configFileName)
 {
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Build the ConfigFile
