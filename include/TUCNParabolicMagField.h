@@ -4,40 +4,39 @@
 #ifndef ROOT_TUCNParabolicMagField
 #define ROOT_TUCNParabolicMagField
 
-#ifndef ROOT_TUCNMagField
 #include "TUCNMagField.h"
-#endif
+#include "TVector3.h"
+#include <string>
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-// TUCNParabolicMagField                                                    //
+// TUCNParabolicMagField                                                  //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-class TUCNParticle;
-class TUCNGravField;
 
-class TUCNParabolicMagField : public TUCNMagField
-{
+class TUCNParabolicMagField : public TUCNMagField {
 private:
-	Double_t						fBMax;					// Field along z-axis, r = 0
-	Double_t                fParabolicGradient; 	// Parabolic Gradient: A, in the formula
-   Double_t						fFieldRadius;			// Radius of the containing vessel
-	
+   Double_t fBMax;   // Field along z-axis, r = 0
+   Double_t fParabolicGradient;  // Parabolic Gradient: A, in the formula
+   Double_t fFieldRadius;  // Radius of the containing vessel
+   
 protected:
    TUCNParabolicMagField(const TUCNParabolicMagField&);
    TUCNParabolicMagField& operator=(const TUCNParabolicMagField&);
-	
+   
 public:
-	TUCNParabolicMagField();
-	TUCNParabolicMagField(const char *name, Double_t maxB, Double_t parabolicGradient, Double_t fieldRadius);
+   TUCNParabolicMagField();
+   TUCNParabolicMagField(const std::string& name, const Double_t& maxB, const Double_t& gradient, const Double_t& radius);
    virtual ~TUCNParabolicMagField();
    
-	virtual void Field(const Double_t* pos, Double_t* field);
-	virtual Double_t FieldStrength(const Double_t* pos) const;
-	virtual Double_t IntegratedField(const Double_t stepTime, const TUCNParticle* initialState, const TUCNGravField* gravField=0) const;
-	
-	
-   ClassDef(TUCNParabolicMagField, 1)              // parabolic mag field class
+   virtual Double_t Bx(const TVector3& pos) const;
+   virtual Double_t By(const TVector3& pos) const;
+   virtual Double_t Bz(const TVector3& pos) const;
+   virtual Double_t B(const TVector3& pos) const;
+   
+   virtual void GetFieldVector(const TVector3& pos, TVector3& field) const;
+   
+   ClassDef(TUCNParabolicMagField, 1)  // parabolic mag field class
 };
 
 #endif

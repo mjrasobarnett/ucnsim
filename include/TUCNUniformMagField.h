@@ -4,36 +4,36 @@
 #ifndef ROOT_TUCNUniformMagField
 #define ROOT_TUCNUniformMagField
 
-#ifndef ROOT_TUCNMagField
 #include "TUCNMagField.h"
-#endif
+#include "TVector3.h"
+#include <string>
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
 // TUCNUniformMagField                                                    //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-class TUCNParticle;
-class TUCNGravField;
 
 class TUCNUniformMagField : public TUCNMagField
 {
 private:
-   Double_t                fBField[3]; // Magnetic field vector
-
-protected:
+   Double_t fBx, fBy, fBz; // Magnetic field vector
+   Double_t fBMag;
+   
+public:
+   TUCNUniformMagField();
+   TUCNUniformMagField(const std::string& name, const Double_t& Bx, const Double_t& By, const Double_t& Bz);
    TUCNUniformMagField(const TUCNUniformMagField&);
    TUCNUniformMagField& operator=(const TUCNUniformMagField&);
-	
-public:
-	TUCNUniformMagField();
-	TUCNUniformMagField(const char *name, Double_t Bx, Double_t By, Double_t Bz);
    virtual ~TUCNUniformMagField();
    
-	virtual void Field(const Double_t* pos, Double_t* field);
-	virtual Double_t FieldStrength(const Double_t* pos) const;
-	virtual Double_t IntegratedField(const Double_t stepTime, const TUCNParticle* initialState, const TUCNGravField* gravField=0) const;
-	
+   virtual Double_t Bx(const TVector3& /*pos*/) const {return fBx;}
+   virtual Double_t By(const TVector3& /*pos*/) const {return fBy;}
+   virtual Double_t Bz(const TVector3& /*pos*/) const {return fBz;}
+   virtual Double_t B(const TVector3& /*pos*/) const {return fBMag;}
+   
+   virtual void GetFieldVector(const TVector3& pos, TVector3& field) const;
+   
    ClassDef(TUCNUniformMagField, 1)              // uniform mag field class
 };
 
