@@ -6,6 +6,7 @@
 
 #include "TUCNMagField.h"
 #include "TVector3.h"
+#include "TUCNParticle.h"
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////
@@ -35,6 +36,8 @@ public:
    virtual Double_t B(const TVector3& pos) const;
    
    virtual void GetFieldVector(const TVector3& pos, TVector3& field) const;
+   
+   virtual Bool_t Interact(TUCNParticle& particle, const Double_t stepTime) const;
    
    ClassDef(TUCNParabolicMagField, 1)  // parabolic mag field class
 };

@@ -49,3 +49,4 @@ TUCNMagField::~TUCNMagField()
 // Destructor.
    Info("TUCNMagField", "Destructor");
 }
+

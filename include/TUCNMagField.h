@@ -6,6 +6,7 @@
 
 #include "TNamed.h"
 #include "TVector3.h"
+#include "TUCNParticle.h"
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////
@@ -16,6 +17,8 @@
 
 class TUCNMagField : public TNamed {
 
+protected:
+   
 public:
    TUCNMagField();
    TUCNMagField(const std::string& name);
@@ -27,9 +30,10 @@ public:
    virtual Double_t By(const TVector3& pos) const = 0;
    virtual Double_t Bz(const TVector3& pos) const = 0;
    virtual Double_t B(const TVector3& pos) const = 0;
-   
    virtual void GetFieldVector(const TVector3& pos, TVector3& field) const = 0;
-
+   
+   virtual Bool_t Interact(TUCNParticle& particle, const Double_t stepTime) const = 0;
+   
    ClassDef(TUCNMagField, 1)              // Abstract base Mag field class
 };
 

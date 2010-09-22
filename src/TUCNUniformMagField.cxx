@@ -64,3 +64,11 @@ void TUCNUniformMagField::GetFieldVector(const TVector3& /*pos*/, TVector3& fiel
    field.SetY(fBy);
    field.SetZ(fBz);
 }
+
+//______________________________________________________________________________
+Bool_t TUCNUniformMagField::Interact(TUCNParticle& particle, const Double_t stepTime) const
+{
+   // -- Precess spin vector of particle over period of time defined by stepTime
+   
+   return kTRUE;
+}
