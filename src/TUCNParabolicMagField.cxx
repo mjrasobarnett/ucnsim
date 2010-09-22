@@ -99,6 +99,13 @@ Double_t TUCNParabolicMagField::Bz(const TVector3& /*pos*/) const
    return 0.;
 }
 
+//______________________________________________________________________________
+Bool_t TUCNParabolicMagField::Interact(TUCNParticle& particle, const Double_t stepTime) const
+{
+   
+   return kTRUE;
+}
+
 /*
 //_____________________________________________________________________________
 Double_t TUCNParabolicMagField::IntegratedField(const Double_t stepTime, const TUCNParticle* initialState, const TUCNGravField* gravField) const
