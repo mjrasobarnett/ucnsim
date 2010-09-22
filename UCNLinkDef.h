@@ -15,6 +15,7 @@
 #pragma link C++ class TUCNDetector;
 #pragma link C++ class TUCNBlackHole;
 #pragma link C++ class TUCNParticle;
+#pragma link C++ class TUCNSpin;
 #pragma link C++ class TUCNState;
 #pragma link C++ class TUCNPropagating;
 #pragma link C++ class TUCNDecayed;

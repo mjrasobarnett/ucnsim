@@ -3,6 +3,7 @@
 // Re-write: 19/02/2010
 
 #include "TObject.h"
+#include "TVector3.h"
 
 #ifndef TUCNPARTICLE_H
 #define TUCNPARTICLE_H
@@ -21,6 +22,7 @@
 //    TParticle.                                                           //                                                                     
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
+class TUCNSpin;
 class TUCNState;
 class TUCNFieldManager;
 class TUCNGravField;
@@ -156,6 +158,29 @@ public:
    ClassDef(TUCNParticle,1)   // Ultra-Cold Neutron
 };
 
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNSpin - Spin vector object                                        //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+class TUCNSpin : public TObject
+{
+protected:
+   TVector3 fSpin;
+   
+public:
+   // -- Constructors
+   TUCNSpin();
+   TUCNSpin(const TUCNSpin&);
+   TUCNSpin& operator=(const TUCNSpin&);
+   virtual ~TUCNSpin();
+   
+   // -- Methods
+   Bool_t Precess(const TVector3& localMagField, const Double_t precessTime);
+
+   ClassDef(TUCNSpin, 1)
+};
 
 
 /////////////////////////////////////////////////////////////////////////////

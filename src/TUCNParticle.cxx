@@ -19,6 +19,7 @@
 #include "TUCNParticle.h"
 #include "TUCNGeoBBox.h"
 #include "TUCNParabola.h"
+#include "TUCNMagField.h"
 
 #include "TGeoManager.h"
 #include "TGeoNavigator.h"
@@ -243,6 +244,59 @@ void TUCNParticle::Bad()
 {
    fState->Bad(this);
 }
+
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNSpin                                                             //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+ClassImp(TUCNSpin)
+
+//_____________________________________________________________________________
+TUCNSpin::TUCNSpin()
+          :TObject()
+{
+   // Constructor
+//   Info("TUCNSpin","Default Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNSpin::TUCNSpin(const TUCNSpin& other)
+         :TObject(other), fSpin(other.fSpin)
+{
+   // Copy Constructor
+//   Info("TUCNSpin","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNSpin& TUCNSpin::operator=(const TUCNSpin& other)
+{
+   // Assignment
+//   Info("TUCNSpin","Assignment");
+   if(this!=&other) {
+      TObject::operator=(other);
+      fSpin = other.fSpin;   
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+TUCNSpin::~TUCNSpin()
+{
+   // Destructor
+//   Info("TUCNSpin","Destructor");
+}
+
+//_____________________________________________________________________________
+Bool_t Precess(const TVector3& localMagField, const Double_t precessTime)
+{
+   // Take mag field in the same coordinate system as spin vector and precess about it
+   
+   return kTRUE;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -625,15 +679,7 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    // -- We should now have propagated our point by some stepsize and be inside the correct volume 
    
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Step 4 - Sample Magnetic Field if there is one	
-   ///////////////////////////////////////////////////////////////////////////////////////   
-// if (magField != NULL) {
-//    const Double_t integratedField = magField->IntegratedField(stepTime, particle, gravField);
-//    particle->SampleMagField(integratedField, stepTime);	
-// }
-   
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Step 5 - Determine whether we collided with a wall, decayed, or any other
+   // -- Step 4 - Determine whether we collided with a wall, decayed, or any other
    // -- state change occured
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Check whether particle has decayed in the last step
@@ -658,6 +704,15 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
       // Particle reached a final state
       return kFALSE;
    }
+   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Step 5 - Sample Magnetic Field if there is one
+   ///////////////////////////////////////////////////////////////////////////////////////   
+   TUCNMagField* magField = currentVolume->GetMagField();
+   if (magField != NULL) {
+      magField->Interact(*particle, stepTime);	
+   }
+   
    // End of MakeStep.
    return kTRUE;
 }
