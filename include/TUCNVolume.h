@@ -21,7 +21,7 @@ class TGeoMedium;
 class TUCNVolume : public TGeoVolume
 {
 private:
-   TUCNMagField* fMagField; // Each TUCNVolume owns its own (local) magnetic fields
+   TUCNMagField* fMagField; // Each TUCNVolume owns its own magnetic fields
    
 public:
    
@@ -41,8 +41,8 @@ public:
    virtual Double_t WPotential() const;
    virtual Double_t LossFactor() const;
    
-   virtual void AttachLocalMagField(TUCNMagField* magField) {fMagField = magField;}
-   virtual TUCNMagField* GetLocalMagField() {return fMagField;}
+   virtual void AttachMagField(TUCNMagField* magField) {fMagField = magField;}
+   virtual TUCNMagField* GetMagField() {return fMagField;}
    
    ClassDef(TUCNVolume, 1)
 };
