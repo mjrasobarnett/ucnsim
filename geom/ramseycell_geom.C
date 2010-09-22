@@ -96,7 +96,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // -- Create and Attach Magnetic Field defined in local coordinate system
    TUCNMagField* magField = new TUCNUniformMagField("SolenoidField", bFieldX, bFieldY, bFieldZ);
-   ramseyCell->AttachLocalMagField(magField);
+   ramseyCell->AttachMagField(magField);
    
    // -------------------------------------
    // -- Close Geometry
