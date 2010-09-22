@@ -32,10 +32,23 @@
 		TString ucnlib = ucnsim + "/lib/libUCN.so";
 		cerr << ucnlib.Data() << endl;
 		if ( gSystem->Load(ucnlib.Data()) == 0 ) {
-		cout << "Successfully loaded libUCN.so" << endl;
-  	}
+		   cout << "Successfully loaded libUCN.so" << endl;
+  	   }
 	}
-
-		cout << "-------------------------------------" << endl;
+   
+   TString magdir = gSystem->Getenv("MAGDIR");
+	if ( magdir.Length() == 0 ) {
+		cerr << "-------------------------------------" << endl;
+		cerr << "Warning: Failed to find env. variable MAGDIR" << endl;
+		cerr << "-------------------------------------" << endl;
+	}
+	else {
+		TString maglib = magdir + "/lib/libEDM.so";
+		cerr << maglib.Data() << endl;
+		if ( gSystem->Load(maglib.Data()) == 0 ) {
+		   cout << "Successfully loaded libEDM.so" << endl;
+  	   }
+   }
+	cout << "-------------------------------------" << endl;
 	set_my_style();
 } 
