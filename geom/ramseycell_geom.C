@@ -42,8 +42,10 @@ Int_t ramseycell_geom()
 Bool_t Build_Geom(const TGeoManager* geoManager) 
 {
    // -------------------------------------
-   // BUILDING GEOMETRY
-   // Materials - Define the materials used. Leave the neutron properties to be defined on a run-by-run basis
+   // *** BUILDING GEOMETRY
+   // -------------------------------------
+   // Materials - Define the materials used. 
+   // Leave the neutron properties to be defined on a run-by-run basis
    
    Materials::BuildMaterials(geoManager);
    TGeoMedium* beryllium = geoManager->GetMedium("Beryllium");
@@ -93,6 +95,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -- Add Volume to Geometry
    chamber->AddNode(ramseyCell, 1, new TGeoHMatrix(ramseyCellMat));
    
+   // -------------------------------------
+   // *** CREATING MAGFIELDS
    // -------------------------------------
    // -- Create and Attach Magnetic Field defined in local coordinate system
    TUCNMagField* magField = new TUCNUniformMagField("SolenoidField", bFieldX, bFieldY, bFieldZ);
