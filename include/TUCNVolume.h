@@ -21,7 +21,7 @@ class TGeoMedium;
 class TUCNVolume : public TGeoVolume
 {
 private:
-   TUCNMagField* fMagField; // Each TUCNVolume owns its own magnetic fields
+   TUCNMagField* fMagField; // Each TUCNVolume holds pointer to its own magnetic fields
    
 public:
    
