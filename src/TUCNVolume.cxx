@@ -67,7 +67,6 @@ TUCNVolume::~TUCNVolume()
 {
 // Destructor
    Info("TUCNVolume", "Destructor");
-   if (fMagField != NULL) delete fMagField;
 }
 
 //_____________________________________________________________________________
