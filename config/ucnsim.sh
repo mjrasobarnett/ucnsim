@@ -16,6 +16,9 @@ if [[ `uname -n` == "MJRasoBarnett.local" ]] ; then
 		export PATH=${ROOTSYS}/bin:${PATH}
 		export MANPATH=${ROOTSYS}/man:${MANPATH}
 	fi
+	# Define path to Boost installation
+	export BOOST=${HOME}/Apps/Boost/boost
+	
 elif [[ `uname -n` == "simon-mbp.pact.cpes.susx.ac.uk" ]] ; then # Need Simon's local hostname
 	# Test if we are running on simon's machine
 	echo "Configuring for Simon's local machine"
