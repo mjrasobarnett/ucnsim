@@ -22,7 +22,7 @@
 	if ( gSystem->Load("libMathMore.so") == 0 ) {
 	    cout << "Successfully loaded libMathCore.so" << endl;
 	}
-	TString ucnsim = gSystem->Getenv("UCNSIM");
+	TString ucnsim = gSystem->Getenv("UCN_DIR");
 	if ( ucnsim.Length() == 0 ) {
 		cerr << "-------------------------------------" << endl;
 		cerr << "Warning: Failed to find env. variable UCNSIM" << endl;
