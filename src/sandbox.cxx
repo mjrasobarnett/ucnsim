@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 
+#include <boost/shared_ptr.hpp>
+
 #include "TUCNConfigFile.h"
 #include "TUCNRun.h"
 #include "TUCNParticle.h"
@@ -13,18 +15,12 @@
 #include "TMath.h"
 #include "TRint.h"
 
+#include "TUCNParticle.h"
+
 #include "Constants.h"
 #include "Units.h"
 
 using namespace std;
-
-// -------------------------------------------------------------------------------------- 
-Double_t ExponentialDecay(Double_t *x, Double_t *par)
-{
-   Double_t t = x[0];
-   Double_t f = par[0]*TMath::Exp(-t/par[1]);
-   return f;
-}
 
 // -------------------------------------------------------------------------------------- 
 Int_t main(Int_t argc,Char_t **argv)
@@ -32,6 +28,14 @@ Int_t main(Int_t argc,Char_t **argv)
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////
+   boost::shared_ptr<TUCNParticle> myParticle(new TUCNParticle());
+//   TUCNParticle* particle = new TUCNParticle();
+   
+   return EXIT_SUCCESS;
+}
+
+/*   
+{   
    string configFileName, treeName;
    if (argc == 3) {
       configFileName= argv[1];
@@ -41,9 +45,9 @@ Int_t main(Int_t argc,Char_t **argv)
       cerr << "Usage, ucnsim <configFile.cfg> <treename>" << endl;
       return EXIT_FAILURE;
    }
-   TUCNConfigFile configFile(configFileName);
    
    TRint *theApp = new TRint("FittingApp", &argc, argv);
+   TUCNConfigFile configFile(configFileName);
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Fetch the Number of Runs
@@ -171,8 +175,18 @@ Int_t main(Int_t argc,Char_t **argv)
    
    theApp->Run();
    
-   return EXIT_SUCCESS;
 }
+
+
+// -------------------------------------------------------------------------------------- 
+Double_t ExponentialDecay(Double_t *x, Double_t *par)
+{
+   Double_t t = x[0];
+   Double_t f = par[0]*TMath::Exp(-t/par[1]);
+   return f;
+}
+   
+*/
 
 
 
