@@ -2,6 +2,8 @@
 #include <string>
 #include <memory>
 
+#include <boost/shared_ptr.hpp>
+
 #include "TUCNConfigFile.h"
 #include "TUCNRun.h"
 #include "TUCNParticle.h"

@@ -79,7 +79,7 @@ TUCNMAGFIELDMANAGERS = src/TUCNMagFieldManager.$(SrcSuf) UCNDict.$(SrcSuf)
 #------------------------------------------------------------------------------
 LINKDEF			= UCNLinkDef.h
 UCNSO				= lib/libUCN.$(DllSuf)
-UCNLIB			= -L./lib -lUCN -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter -lMathMore
+UCNLIB			= -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter -lMathMore
 #------------------------------------------------------------------------------
 OBJS				=	$(UCNSIMO) $(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(TUCNGEOBUILDERO) \
  						$(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) $(TUCNGRAVFIELDO) \
@@ -194,4 +194,4 @@ UCNDict.$(SrcSuf):      include/TUCNGeoBuilder.h include/TUCNGeoBBox.h include/T
 								$(ROOTCINT) -f $@ -c $^
 
 .$(SrcSuf).$(ObjSuf):
-	$(CXX)  $(CXXFLAGS) -I./include -c $< -o $@
+	$(CXX)  $(CXXFLAGS) -I$(UCN_DIR)/include -I$(BOOST) -c $< -o $@
