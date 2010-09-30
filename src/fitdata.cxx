@@ -136,11 +136,11 @@ Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeN
       }
       points->SetPoint(i, particle->X(), particle->Y(), particle->Z());
    }
-   cout << "Created Initial Points." << endl;
+   cout << "Created Initial Points: " << points->GetN() << endl;
    points->SetMarkerColor(2);
    points->SetMarkerStyle(6);
    // -- Write the points to the File
-   Char_t name[20];
+   Char_t name[40];
    sprintf(name,"%s:NeutronPositions",tree->GetName());
    points->SetName(name);
    points->Print();
@@ -148,9 +148,9 @@ Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeN
    // -- Clean Up
    TCanvas *canvas = new TCanvas("Positions","Neutron Positions",60,0,800,800);
    canvas->cd();
-//   geoManager->GetTopVolume()->Draw();
-//   geoManager->SetVisLevel(4);
-//   geoManager->SetVisOption(0);
+   geoManager->GetTopVolume()->Draw();
+   geoManager->SetVisLevel(4);
+   geoManager->SetVisOption(0);
    cout << "Drawing positions" << endl;
    points->Draw();
    return kTRUE;
