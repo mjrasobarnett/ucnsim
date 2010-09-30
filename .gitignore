@@ -11,3 +11,4 @@ data/oldformat/*
 *.d
 .DS_Store
 temp/*
+*.root
