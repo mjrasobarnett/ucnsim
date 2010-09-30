@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <memory>
 
 #include "TUCNConfigFile.h"
 #include "TUCNRun.h"
@@ -13,11 +14,87 @@
 #include "TMath.h"
 #include "TRint.h"
 
+#include "TUCNUniformMagField.h"
+#include "TUCNMagFieldManager.h"
+
 #include "Constants.h"
 #include "Units.h"
 
 using namespace std;
 
+int TestFieldManager();
+
+// -------------------------------------------------------------------------------------- 
+Int_t main(Int_t argc,Char_t **argv)
+{
+   TestFieldManager();
+   
+   return EXIT_SUCCESS;
+}
+
+
+// -------------------------------------------------------------------------------------- 
+int TestFieldManager()
+{
+   // -- Simple function tests putting a magfield into MagFieldManager object, and then writing
+   // the manager out to file and succesfully reading it back in. We should find that root makes a
+   // new copy of the fields stored by the manager when this is read back in from file.
+   
+   TUCNMagField* magfield1 = new TUCNUniformMagField("1", 0.,0.,0.);
+   TUCNMagField* magfield2 = new TUCNUniformMagField("2", 0.,0.,0.);
+   
+   TUCNMagFieldManager* manager1(new TUCNMagFieldManager());
+   manager1->AddField(magfield1);
+   manager1->AddField(magfield2);
+   
+   TFile *f = TFile::Open("test.root","recreate");
+   if (!f || f->IsZombie()) {
+      Error("Export","Cannot open file");
+      return EXIT_FAILURE;
+   }
+   manager1->Write(manager1->GetName());
+   f->ls();
+   cout << "-------------------------------------------" << endl;
+   // -- Clean up
+   delete f;
+   f = 0;
+   
+   
+   // -- Open File
+   f = TFile::Open("test.root", "read");
+   if (!f || f->IsZombie()) {
+      Error("Export","Cannot open file");
+      return EXIT_FAILURE;
+   }
+   
+   // -- Extract Object
+   cout << "Fetching manaer" << endl;
+   TUCNMagFieldManager* manager2(new TUCNMagFieldManager());
+   f->GetObject("MagFieldManager", manager2);
+   if (manager2 == NULL) {
+      Error("Export","Cannot extract manager from file");
+      return EXIT_FAILURE;
+   }
+   cout << "Successfully Loaded Manager" << endl;
+   
+   // Look to see if addresses of fields held are different. If yes, then these objects were copied
+   // when read in from file.
+   // These methods need to be reimplemented in Manager when testing as I am not committing them.
+//   manager1->List(); // List addresses of fields held
+//   manager2->List(); // List addresses of fields held
+   
+   delete manager1;
+   manager1 = 0;
+   delete manager2;
+   manager2 = 0;
+   delete f;
+   f = 0;
+   
+   return EXIT_SUCCESS;
+}
+
+
+/* 
 // -------------------------------------------------------------------------------------- 
 Double_t ExponentialDecay(Double_t *x, Double_t *par)
 {
@@ -26,8 +103,8 @@ Double_t ExponentialDecay(Double_t *x, Double_t *par)
    return f;
 }
 
-// -------------------------------------------------------------------------------------- 
-Int_t main(Int_t argc,Char_t **argv)
+
+
 {
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
@@ -170,9 +247,7 @@ Int_t main(Int_t argc,Char_t **argv)
    cin >> a;
    
    theApp->Run();
-   
-   return EXIT_SUCCESS;
-}
-
+}   
+*/
 
 
