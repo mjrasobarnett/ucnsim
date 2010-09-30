@@ -717,10 +717,10 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Step 5 - Sample Magnetic Field if there is one
    ///////////////////////////////////////////////////////////////////////////////////////   
-   TUCNMagField* magField = currentVolume->GetMagField();
-   if (magField != NULL) {
-      magField->Interact(*particle, stepTime);	
-   }
+//   TUCNMagField* magField = currentVolume->GetMagField();
+//   if (magField != NULL) {
+//      magField->Interact(*particle, stepTime);	
+//   }
    
    // End of MakeStep.
    return kTRUE;
