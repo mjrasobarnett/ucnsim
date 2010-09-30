@@ -221,6 +221,15 @@ Bool_t TUCNParticle::LocateInGeometry(TUCNParticle* particle, TGeoNavigator* nav
    return fState->LocateInGeometry(particle, navigator, initialNode, initialMatrix, crossedNode);
 }
 
+//______________________________________________________________________________
+Bool_t TUCNParticle::WillDecay(const Double_t timeInterval)
+{
+   // Calculate probability particle will decay within timeInterval, and then roll the dice!
+   Double_t probDecay = (timeInterval/this->Lifetime());
+   if (gRandom->Uniform(0.0, 1.0) < probDecay) { return kTRUE; }
+   return kFALSE;
+}
+
 //_____________________________________________________________________________
 void TUCNParticle::Detected()
 {
@@ -684,7 +693,7 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Check whether particle has decayed in the last step
    
-   if(this->WillDecay(stepTime) == kTRUE) {
+   if(particle->WillDecay(stepTime) == kTRUE) {
       this->ChangeState(particle, new TUCNDecayed());
       return kFALSE;
    }
@@ -1521,13 +1530,6 @@ Bool_t TUCNPropagating::FindBoundaryNormal(Double_t* normal, TGeoNavigator* navi
    crossedNode->GetVolume()->GetShape()->ComputeNormal(local, ldir, lnorm);
    navigator->GetHMatrix()->LocalToMasterVect(lnorm, normal);
    return kTRUE;
-}
-
-//______________________________________________________________________________
-Bool_t TUCNPropagating::WillDecay(const Double_t /*timeInterval*/)
-{
-   // Placeholder for method to calculate probability particle will decay within timeInterval, and then roll the dice!
-   return kFALSE;
 }
 
 //_____________________________________________________________________________

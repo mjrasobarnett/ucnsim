@@ -150,6 +150,7 @@ public:
    Bool_t               LocateInGeometry(TUCNParticle* particle, TGeoNavigator* navigator,
                            const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
                            const TGeoNode* crossedNode);
+   Bool_t               WillDecay(const Double_t timeInterval);
    void                 Detected();
    void                 Lost();
    void                 Absorbed();
@@ -258,8 +259,6 @@ protected:
    // Wall reflection
    virtual Bool_t    FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator,
                                     const TGeoNode* crossedNode);
-
-   virtual Bool_t    WillDecay(const Double_t timeInterval);
    
 public:
    // -- Constructors
