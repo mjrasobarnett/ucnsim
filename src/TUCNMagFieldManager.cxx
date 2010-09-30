@@ -19,13 +19,13 @@ ClassImp(TUCNMagFieldManager)
 TUCNMagFieldManager::TUCNMagFieldManager()
                     :TNamed("MagFieldManager","Default Magnetic Field Manager")
 {
-// Default constructor
+   // Default constructor
    Info("TUCNMagFieldManager", "Default Constructor");
 }
 
 //_____________________________________________________________________________
 TUCNMagFieldManager::TUCNMagFieldManager(const TUCNMagFieldManager& other)
-                    :TNamed(other)
+                    :TNamed(other), fFieldList(other.fFieldList)
 {
    //copy constructor
    Info("TUCNMagFieldManager", "Copy Constructor");  
@@ -38,6 +38,7 @@ TUCNMagFieldManager& TUCNMagFieldManager::operator=(const TUCNMagFieldManager& o
    Info("TUCNMagFieldManager", "Assignment");
    if(this!=&other) {
       TNamed::operator=(other);
+      fFieldList = other.fFieldList;
    }
    return *this;
 }
@@ -45,6 +46,25 @@ TUCNMagFieldManager& TUCNMagFieldManager::operator=(const TUCNMagFieldManager& o
 //_____________________________________________________________________________
 TUCNMagFieldManager::~TUCNMagFieldManager()
 {
-// Destructor
+   // Destructor
    Info("TUCNMagFieldManager", "Destructor");
+   this->PurgeFields();
+}
+
+//_____________________________________________________________________________
+void TUCNMagFieldManager::PurgeFields()
+{
+   // -- Cleanup container of field pointers
+   FieldContainer::iterator fieldIter;
+   for(fieldIter = fFieldList.begin(); fieldIter != fFieldList.end(); ++fieldIter) {
+       if(fieldIter->second) delete fieldIter->second;
+       fieldIter->second = 0;
+   }
+}
+
+//_____________________________________________________________________________
+void TUCNMagFieldManager::AddField(TUCNMagField* field)
+{
+   // -- Add field to container
+   fFieldList.insert(pair<string, TUCNMagField*>(field->GetName(), field));
 }
