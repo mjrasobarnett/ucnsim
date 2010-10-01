@@ -5,13 +5,14 @@
 #define ROOT_TUCNFieldManager
 
 #include "TNamed.h"
+#include "TUCNGravField.h"
+#include "TUCNMagFieldManager.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
 //    TUCNFieldManager                                                    //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-class TUCNGravField;
 class TUCNConfigFile;
 class TUCNRun;
 
@@ -19,7 +20,8 @@ class TUCNFieldManager : public TNamed
 {
 protected:
    TUCNGravField*    fGravField;
-
+   TUCNMagFieldManager* fMagFieldManager;
+   
 public:
    // -- constructors
    TUCNFieldManager();

@@ -6,6 +6,8 @@
 #include <string>
 
 #include "TObjArray.h"
+#include "TFile.h"
+#include "TString.h"
 #include "TUCNConfigFile.h"
 #include "TUCNRun.h"
 #include "TUCNGravField.h"
@@ -29,17 +31,17 @@ ClassImp(TUCNFieldManager)
 
 //_____________________________________________________________________________
 TUCNFieldManager::TUCNFieldManager()
-                 :TNamed("FieldManager", "Default Field Manager")
+                 :TNamed("FieldManager", "Default Field Manager"), fGravField(NULL),
+                  fMagFieldManager(NULL)
 {
 // -- Default constructor
-   Info("TUCNFieldManager", "Constructor");
-   fGravField = 0;
+   Info("TUCNFieldManager", "Default Constructor");
 } 
 
 //_____________________________________________________________________________
 TUCNFieldManager::TUCNFieldManager(const TUCNFieldManager& other)
-                 :TNamed(other),
-                  fGravField(other.fGravField)
+                 :TNamed(other), fGravField(other.fGravField),
+                  fMagFieldManager(other.fMagFieldManager)
 {
 // -- Copy Constructor
    Info("TUCNFieldManager", "Copy Constructor");
@@ -52,6 +54,7 @@ TUCNFieldManager& TUCNFieldManager::operator=(const TUCNFieldManager& other)
    if(this!=&other) {
       TNamed::operator=(other);
       fGravField = other.fGravField;
+      fMagFieldManager = other.fMagFieldManager;
    }
    return *this;
 }
@@ -62,6 +65,7 @@ TUCNFieldManager::~TUCNFieldManager()
 // -- Destructor
    Info("TUCNFieldManager", "Destructor");
    if (fGravField) delete fGravField;
+   if (fMagFieldManager) delete fMagFieldManager;
 }
 
 // -- METHODS --
