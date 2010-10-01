@@ -27,7 +27,7 @@ using namespace std;
 int TestFieldManager();
 
 // -------------------------------------------------------------------------------------- 
-Int_t main(Int_t argc,Char_t **argv)
+Int_t main(Int_t /*argc*/,Char_t ** /*argv*/)
 {
    TestFieldManager();
    

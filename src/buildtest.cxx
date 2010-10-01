@@ -57,7 +57,7 @@ Bool_t PlotFinalHeightDistribution(const TString& dataFileName);
 Bool_t PlotLossFunction(const TString& dataFileName);
 Bool_t PlotAvgMagField(const TString& dataFileName);
 
-Int_t main(Int_t argc,Char_t ** argv)
+Int_t main(Int_t /*argc*/,Char_t ** /*argv*/)
 {
 /*	
 	TRint *theApp = new TRint("FittingApp", &argc, argv);
