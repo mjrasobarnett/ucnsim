@@ -12,14 +12,12 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 class TUCNGravField;
-class TUCNMagField;
 class TUCNConfigFile;
 class TUCNRun;
 
 class TUCNFieldManager : public TNamed 
 {
 protected:
-   TUCNMagField*     fMagField;
    TUCNGravField*    fGravField;
 
 public:
@@ -39,9 +37,6 @@ public:
    TUCNGravField* GravField() const {return fGravField;}
    
    // Mag Fields
-   TUCNMagField* AddUniformMagField(const Double_t Bx=0, const Double_t By=0, const Double_t Bz=0);
-   TUCNMagField* AddParabolicMagField(const Double_t maxB, const Double_t alpha, const Double_t maxR);
-   TUCNMagField* MagField() const {return fMagField;};
    
    ClassDef(TUCNFieldManager,1)
 };
