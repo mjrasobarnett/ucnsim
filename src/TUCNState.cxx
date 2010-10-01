@@ -315,11 +315,6 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    const TGeoNode* initialNode = navigator->GetCurrentNode();
    TGeoHMatrix initMatrix = *(navigator->GetCurrentMatrix()); // Copy the initial matrix here
    TGeoMatrix* initialMatrix = &initMatrix; // Hold pointer to the stored matrix
-   // N.B: We do this because I have noticed that just storing a pointer to the navigator's
-   // current matrix here actually leads to the initialMatrix changing later on in some cases.
-   // Not sure what is causing this, as the initialNode seems to stay the same, but I think
-   // it has something to do with the cache in the navigator, and restoring the matrix from there
-   // rather than from a list of all the matrices, which would be more constant in time.
    
    // -- Determine the current local coordinates
    Double_t* currentGlobalPoint = 0;
@@ -450,7 +445,6 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    if (magField != NULL) {
       magField->Interact(*particle, stepTime);
    }
-   
    // End of MakeStep.
    return kTRUE;
 }
