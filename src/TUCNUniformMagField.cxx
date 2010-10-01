@@ -57,7 +57,13 @@ TUCNUniformMagField::~TUCNUniformMagField()
 //_____________________________________________________________________________
 Bool_t TUCNUniformMagField::Contains(const TVector3& point) const
 {
-   return kFALSE;
+   // -- Check whether supplied point is contained by Field-shape
+   // First convert point to local coordinates
+   Double_t masterPoint[3] = {point[0], point[1], point[2]};
+   Double_t localPoint[3] = {0.,0.,0.};
+   fFieldMatrix->MasterToLocal(masterPoint, localPoint);   
+   // Check and return whether its contained
+   return fFieldShape->Contains(localPoint);
 }
 
 //_____________________________________________________________________________
