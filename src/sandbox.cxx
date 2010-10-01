@@ -15,7 +15,7 @@
 #include "TCanvas.h"
 #include "TMath.h"
 #include "TRint.h"
-
+#include "TVector3.h"
 #include "TUCNUniformMagField.h"
 #include "TUCNMagFieldManager.h"
 
@@ -41,9 +41,9 @@ int TestFieldManager()
    // -- Simple function tests putting a magfield into MagFieldManager object, and then writing
    // the manager out to file and succesfully reading it back in. We should find that root makes a
    // new copy of the fields stored by the manager when this is read back in from file.
-   
-   TUCNMagField* magfield1 = new TUCNUniformMagField("1", 0.,0.,0.);
-   TUCNMagField* magfield2 = new TUCNUniformMagField("2", 0.,0.,0.);
+   TVector3 vec(0.,0.,0.);
+   TUCNMagField* magfield1 = new TUCNUniformMagField("1", vec,0, 0);
+   TUCNMagField* magfield2 = new TUCNUniformMagField("2", vec,0, 0);
    
    TUCNMagFieldManager* manager1(new TUCNMagFieldManager());
    manager1->AddField(magfield1);
