@@ -74,7 +74,7 @@ protected:
    // Boundary Finding
    virtual TGeoNode* ParabolicBoundaryFinder(Double_t& stepTime, TUCNParticle* particle,
                                           TGeoNavigator* navigator, TGeoNode* crossedNode,
-                                          TUCNGravField* field);
+                                          const TUCNGravField* const field);
    virtual TGeoNode* ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator,
                                     Double_t* point, Double_t* velocity, Double_t* field,
                                     Int_t &idaughter, Bool_t compmatrix=kFALSE);

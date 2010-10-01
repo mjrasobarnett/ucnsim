@@ -295,8 +295,7 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Step 1 - Get the initial parameters
    ///////////////////////////////////////////////////////////////////////////////////////
-   TUCNGravField* gravField = 0;
-   gravField = fieldManager->GravField();
+   const TUCNGravField* const gravField = fieldManager->GetGravField();
    /*   
    TUCNMagField* magField = 0;
    // -- Check if we are to sample the mag field
@@ -308,6 +307,9 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
       }
    }
    */
+   // -- Store initial position
+   const TVector3 initialPosition(particle->X(), particle->Y(), particle->Z());
+   
    
    // -- Store the Initial Node and Initial Matrix
    const TGeoNode* initialNode = navigator->GetCurrentNode();
@@ -429,7 +431,7 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    if (gravField) {
       this->FindBoundaryNormal(normal, navigator, crossedNode);
    } else {
-      throw runtime_error("Need to sort out behaviour of normals in particle");     
+      throw runtime_error("Need to sort out behaviour of normals in particle");
       //normal = navigator->FindNormal();
    }
    
@@ -442,11 +444,12 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Step 5 - Sample Magnetic Field if there is one
-   ///////////////////////////////////////////////////////////////////////////////////////   
-//   TUCNMagField* magField = currentVolume->GetMagField();
-//   if (magField != NULL) {
-//      magField->Interact(*particle, stepTime);	
-//   }
+   ///////////////////////////////////////////////////////////////////////////////////////
+   const string initialVolumeName = initialNode->GetVolume()->GetName();
+   const TUCNMagField* const magField = fieldManager->GetMagField(initialPosition, initialVolumeName);
+   if (magField != NULL) {
+      magField->Interact(*particle, stepTime);
+   }
    
    // End of MakeStep.
    return kTRUE;
@@ -470,7 +473,7 @@ Double_t TUCNPropagating::DetermineNextStepTime(TUCNParticle* particle, const Do
 }
 
 //_____________________________________________________________________________
-TGeoNode* TUCNPropagating::ParabolicBoundaryFinder(Double_t& stepTime, TUCNParticle* particle, TGeoNavigator* navigator, TGeoNode* crossedNode, TUCNGravField* field)
+TGeoNode* TUCNPropagating::ParabolicBoundaryFinder(Double_t& stepTime, TUCNParticle* particle, TGeoNavigator* navigator, TGeoNode* crossedNode, const TUCNGravField* const field)
 {
 // Compute distance to next boundary within STEPMAX. If no boundary is found,
 // propagate current point along current direction with fStep=STEPMAX. Otherwise
