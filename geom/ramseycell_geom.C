@@ -17,10 +17,12 @@ using namespace ModelParameters;
 //__________________________________________________________________________
 Int_t ramseycell_geom()
 {
-   // Create the geoManager
+   // Create the geoManager and list of standard materials
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
+   Materials::BuildMaterials(geoManager);
    // Build and write to file the simulation and visualisation geoms
    Build_Geom(geoManager);
+   // Draw geometry
    Draw_Geom(geoManager);
    
    return 0;
@@ -32,17 +34,18 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // *** BUILDING GEOMETRY
    // -------------------------------------
+   cout << "--------------------------------" << endl;
+   cout << "Building Geometry" << endl;
+   cout << "--------------------------------" << endl;
    // Materials - Define the materials used. 
    // Leave the neutron properties to be defined on a run-by-run basis
-   
-   Materials::BuildMaterials(geoManager);
    TGeoMedium* beryllium = geoManager->GetMedium("Beryllium");
    TGeoMedium* blackhole = geoManager->GetMedium("BlackHole");
    TGeoMedium* heliumII = geoManager->GetMedium("HeliumII");
    
    // -------------------------------------
    // -- Making Top Volume
-   TUCNGeoBBox* topShape = new TUCNGeoBBox("Top",100,100,100);
+   TUCNGeoBBox* topShape = new TUCNGeoBBox("Top",topX,topY,topZ);
    TUCNBlackHole* top = new TUCNBlackHole("Top", topShape, blackhole);
    geoManager->SetTopVolume(top);
    top->SetVisibility(kFALSE);
@@ -50,7 +53,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -- Make the boundary volume in which all the others sit
    // -- This is what we will be reflecting off all the time
    Double_t surfaceRoughness = 0.05;
-   TUCNGeoBBox* chamberShape = new TUCNGeoBBox("Chamber",10,10,10);
+   TUCNGeoBBox* chamberShape = new TUCNGeoBBox("Chamber",chamberX,chamberY,chamberZ);
    TUCNBoundary* chamber = new TUCNBoundary("Chamber", chamberShape, beryllium, surfaceRoughness);
    chamber->SetLineColor(kOrange-7);
    chamber->SetLineWidth(1);
@@ -84,13 +87,6 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    chamber->AddNode(ramseyCell, 1, new TGeoHMatrix(ramseyCellMat));
    
    // -------------------------------------
-   // *** CREATING MAGFIELDS
-   // -------------------------------------
-   // -- Create and Attach Magnetic Field defined in local coordinate system
-   TUCNMagField* magField = new TUCNUniformMagField("SolenoidField", bFieldX, bFieldY, bFieldZ);
-   ramseyCell->AttachMagField(magField);
-   
-   // -------------------------------------
    // -- Close Geometry
    geoManager->CloseGeometry();
    
@@ -100,6 +96,41 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    cerr << "Simulation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    
+   // -------------------------------------
+   // *** BUILDING MAGNETIC FIELDS
+   // -------------------------------------
+   cout << "--------------------------------" << endl;
+   cout << "Initialising Magnetic fields" << endl;
+   cout << "--------------------------------" << endl;
+   TUCNMagFieldManager* magFieldManager = new TUCNMagFieldManager();
+   
+   // -- Define solenoid field - uniform magnetic field
+   // Define shape of field
+   TGeoShape* fieldShape = new TUCNGeoTube("SolenoidFieldShape",ramseyCellRMin, ramseyCellRMax, ramseyCellHalfLength);
+   // Define transformation that locates field in geometry
+   TGeoMatrix* fieldPosition = new TGeoHMatrix(ramseyCellMat);
+   // Define field vector
+   TVector3 fieldStrength(solenoidBx, solenoidBy, solenoidBz);
+   // Define field object
+   TUCNMagField* uniformField = new TUCNUniformMagField("SolenoidField", fieldStrength, fieldShape, fieldPosition);
+   
+   // Add field to magfield manager
+   magFieldManager->AddField(uniformField);
+   
+   // -- Write magfieldmanager to geometry file
+   const char *magFileName = "$(UCN_DIR)/geom/ramseycell_fields.root";
+   TFile *f = TFile::Open(magFileName,"recreate");
+   if (!f || f->IsZombie()) {
+     Error("Export","Cannot open file: %s", magFileName);
+     return kFALSE;
+   }
+   magFieldManager->Write(magFieldManager->GetName());
+   f->ls();
+   f->Close();
+   if (magFieldManager) delete magFieldManager;
+   magFieldManager = 0;
+   cout << "--------------------------------" << endl;   
+   // -------------------------------------
    return kTRUE;
 }
 
