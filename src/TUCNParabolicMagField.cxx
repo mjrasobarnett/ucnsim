@@ -58,6 +58,12 @@ TUCNParabolicMagField::~TUCNParabolicMagField()
 }   
 
 //_____________________________________________________________________________
+Bool_t TUCNParabolicMagField::Contains(const TVector3& point) const
+{
+   return kFALSE;
+}
+
+//_____________________________________________________________________________
 void TUCNParabolicMagField::GetFieldVector(const TVector3& /*pos*/, TVector3& /*field*/) const
 {
    // B(r,z) = Bmax - A(r^2)/(R^2) with A=(0.1)Bmax

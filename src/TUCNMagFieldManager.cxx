@@ -68,3 +68,16 @@ void TUCNMagFieldManager::AddField(TUCNMagField* field)
    // -- Add field to container
    fFieldList.insert(pair<string, TUCNMagField*>(field->GetName(), field));
 }
+
+//_____________________________________________________________________________
+const TUCNMagField* const TUCNMagFieldManager::GetMagField(const TVector3& point, const string& /*volume*/) const
+{
+   // -- Determine which field contains the current particle
+   FieldContainer::const_iterator fieldIter;
+   for(fieldIter = fFieldList.begin(); fieldIter != fFieldList.end(); ++fieldIter) {
+      if (fieldIter->second->Contains(point) == kTRUE) {
+         return fieldIter->second;
+      }
+   }
+   return NULL;
+}

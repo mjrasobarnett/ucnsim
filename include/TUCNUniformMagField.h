@@ -34,6 +34,8 @@ public:
    TUCNUniformMagField& operator=(const TUCNUniformMagField&);
    virtual ~TUCNUniformMagField();
    
+   virtual Bool_t Contains(const TVector3& point) const;
+   
    virtual void GetFieldVector(const TVector3& pos, TVector3& field) const;
    
    virtual Bool_t Interact(TUCNParticle& particle, const Double_t stepTime) const;

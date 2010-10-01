@@ -131,11 +131,18 @@ Bool_t TUCNFieldManager::Initialise(TUCNConfigFile& configFile, const TUCNRun& r
 TUCNGravField* TUCNFieldManager::AddGravField()
 {
 // Create and store reference to grav field object	
-	if (fGravField) {
-		Warning("AddGravField","GravField: %s already exists!", fGravField->GetName());
-	} else {
-		fGravField = new TUCNGravField();
-		Info("AddGravField","GravField: %s created.", fGravField->GetName());
-	}
-	return fGravField;
+   if (fGravField) {
+      Warning("AddGravField","GravField: %s already exists!", fGravField->GetName());
+   } else {
+      fGravField = new TUCNGravField();
+      Info("AddGravField","GravField: %s created.", fGravField->GetName());
+   }
+   return fGravField;
 }
+
+//______________________________________________________________________________
+const TUCNMagField* const TUCNFieldManager::GetMagField(const TVector3& position, const string& volume) const
+{
+   return fMagFieldManager->GetMagField(position, volume);
+}
+

@@ -55,6 +55,12 @@ TUCNUniformMagField::~TUCNUniformMagField()
 }   
 
 //_____________________________________________________________________________
+Bool_t TUCNUniformMagField::Contains(const TVector3& point) const
+{
+   return kFALSE;
+}
+
+//_____________________________________________________________________________
 void TUCNUniformMagField::GetFieldVector(const TVector3& /*pos*/, TVector3& /*field*/) const
 {
    // Copy field vector to provided vector
@@ -64,6 +70,5 @@ void TUCNUniformMagField::GetFieldVector(const TVector3& /*pos*/, TVector3& /*fi
 Bool_t TUCNUniformMagField::Interact(TUCNParticle& /*particle*/, const Double_t /*stepTime*/) const
 {
    // -- Precess spin vector of particle over period of time defined by stepTime
-   
    return kTRUE;
 }

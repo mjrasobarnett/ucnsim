@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include "TVector3.h"
 
 #include "TUCNMagField.h"
 
@@ -42,6 +43,9 @@ public:
    // -- destructor
    virtual ~TUCNMagFieldManager();
 
+   // -- methods
+   const TUCNMagField* const GetMagField(const TVector3&, const string&) const;
+   
    ClassDef(TUCNMagFieldManager, 1)
 };
 

@@ -7,6 +7,8 @@
 #include "TNamed.h"
 #include "TUCNGravField.h"
 #include "TUCNMagFieldManager.h"
+#include "TVector3.h"
+#include <string>
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -18,9 +20,11 @@ class TUCNRun;
 
 class TUCNFieldManager : public TNamed 
 {
-protected:
+private:
    TUCNGravField*    fGravField;
    TUCNMagFieldManager* fMagFieldManager;
+   
+   TUCNGravField* AddGravField();
    
 public:
    // -- constructors
@@ -35,10 +39,10 @@ public:
    Bool_t Initialise(TUCNConfigFile& configFile, const TUCNRun& run);
    
    // Grav Fields
-   TUCNGravField* AddGravField();
-   TUCNGravField* GravField() const {return fGravField;}
+   const TUCNGravField* const GetGravField() const {return fGravField;}
    
    // Mag Fields
+   const TUCNMagField* const GetMagField(const TVector3&, const string&) const;
    
    ClassDef(TUCNFieldManager,1)
 };
