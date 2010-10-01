@@ -321,7 +321,6 @@ Bool_t TUCNRun::LoadParticles(TUCNConfigFile& configFile)
    TUCNData* importedData = importedRun->GetData();
    cout << "Located Data: " << importedData->GetName();
    cout << " inside " << importedRun->GetName() << endl;
-   cout << "GeoManager: " << importedRun->GetExperiment()->GeoManager() << endl;
    cout << "Determining which particles to load..." << endl;
    
    ///////////////////////////////////////////////////////////////////////
