@@ -58,7 +58,7 @@ TUCNParabolicMagField::~TUCNParabolicMagField()
 }   
 
 //_____________________________________________________________________________
-void TUCNParabolicMagField::GetFieldVector(const TVector3& /*pos*/, TVector3& field) const
+void TUCNParabolicMagField::GetFieldVector(const TVector3& /*pos*/, TVector3& /*field*/) const
 {
    // B(r,z) = Bmax - A(r^2)/(R^2) with A=(0.1)Bmax
    // For now we assume we are in the local coordinates of the cylinder
@@ -66,41 +66,10 @@ void TUCNParabolicMagField::GetFieldVector(const TVector3& /*pos*/, TVector3& fi
    Double_t theta = TMath::ACos(pos.X()/r);
    Double_t bMag = this->B(pos);
 */
-   field.SetX(0.);
-   field.SetY(0.);
-   field.SetZ(0.);
-}
-
-//_____________________________________________________________________________
-Double_t TUCNParabolicMagField::B(const TVector3& pos) const
-{
-   // B(r,z) = Bmax - A(r^2)/(R^2) with A=(0.1)Bmax
-   // For now we assume we are in the local coordinates of the cylinder
-   Double_t rsquared = pos.X()*pos.X() + pos.Y()*pos.Y();
-   Double_t B = fBMax - ((fParabolicGradient*rsquared)/(fFieldRadius*fFieldRadius));
-   return B;
-}
-
-//_____________________________________________________________________________
-Double_t TUCNParabolicMagField::Bx(const TVector3& /*pos*/) const
-{
-   return 0.;
-}
-
-//_____________________________________________________________________________
-Double_t TUCNParabolicMagField::By(const TVector3& /*pos*/) const
-{
-   return 0.;
-}
-
-//_____________________________________________________________________________
-Double_t TUCNParabolicMagField::Bz(const TVector3& /*pos*/) const
-{
-   return 0.;
 }
 
 //______________________________________________________________________________
-Bool_t TUCNParabolicMagField::Interact(TUCNParticle& particle, const Double_t stepTime) const
+Bool_t TUCNParabolicMagField::Interact(TUCNParticle& /*particle*/, const Double_t /*stepTime*/) const
 {
    
    return kTRUE;

@@ -30,11 +30,6 @@ public:
    TUCNParabolicMagField(const std::string& name, const Double_t& maxB, const Double_t& gradient, const Double_t& radius);
    virtual ~TUCNParabolicMagField();
    
-   virtual Double_t Bx(const TVector3& pos) const;
-   virtual Double_t By(const TVector3& pos) const;
-   virtual Double_t Bz(const TVector3& pos) const;
-   virtual Double_t B(const TVector3& pos) const;
-   
    virtual void GetFieldVector(const TVector3& pos, TVector3& field) const;
    
    virtual Bool_t Interact(TUCNParticle& particle, const Double_t stepTime) const;

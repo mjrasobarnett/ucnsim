@@ -6,8 +6,11 @@
 
 #include "TUCNMagField.h"
 #include "TVector3.h"
-#include "TUCNParticle.h"
+#include "TGeoShape.h"
+#include "TGeoMatrix.h"
+
 #include <string>
+#include "TUCNParticle.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -18,20 +21,18 @@
 class TUCNUniformMagField : public TUCNMagField
 {
 private:
-   Double_t fBx, fBy, fBz; // Magnetic field vector
-   Double_t fBMag;
+   // Magnetic field vector
+   TVector3 fField;
+   // Field Extent -- a virtual volume that defines the extent of this field in the geometry
+   const TGeoShape* fFieldShape;
+   const TGeoMatrix* fFieldMatrix;
    
 public:
    TUCNUniformMagField();
-   TUCNUniformMagField(const std::string& name, const Double_t& Bx, const Double_t& By, const Double_t& Bz);
+   TUCNUniformMagField(const std::string& name, const TVector3& field, const TGeoShape* fieldShape, const TGeoMatrix* fieldPosition);
    TUCNUniformMagField(const TUCNUniformMagField&);
    TUCNUniformMagField& operator=(const TUCNUniformMagField&);
    virtual ~TUCNUniformMagField();
-   
-   virtual Double_t Bx(const TVector3& /*pos*/) const {return fBx;}
-   virtual Double_t By(const TVector3& /*pos*/) const {return fBy;}
-   virtual Double_t Bz(const TVector3& /*pos*/) const {return fBz;}
-   virtual Double_t B(const TVector3& /*pos*/) const {return fBMag;}
    
    virtual void GetFieldVector(const TVector3& pos, TVector3& field) const;
    

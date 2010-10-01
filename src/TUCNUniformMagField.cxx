@@ -9,28 +9,25 @@ ClassImp(TUCNUniformMagField)
 
 //_____________________________________________________________________________
 TUCNUniformMagField::TUCNUniformMagField()
-                    :TUCNMagField()
+                    :TUCNMagField(), fFieldShape(NULL), fFieldMatrix(NULL)
 {
 // Default constructor.
    Info("TUCNUniformMagField", "Default Constructor");
 } 
 
 //_____________________________________________________________________________
-TUCNUniformMagField::TUCNUniformMagField(const string& name, const Double_t& Bx, const Double_t& By, const Double_t& Bz)
-                    :TUCNMagField(name)
+TUCNUniformMagField::TUCNUniformMagField(const string& name, const TVector3& field, const TGeoShape* fieldShape, const TGeoMatrix* fieldMatrix)
+                    :TUCNMagField(name), fField(field), fFieldShape(fieldShape),
+                     fFieldMatrix(fieldMatrix)
 {
 // Default constructor.
    Info("TUCNUniformMagField", "Constructor");
-   fBx = Bx;
-   fBy = By;
-   fBz = Bz;
-   fBMag = TMath::Sqrt(fBx*fBx + fBy*fBy + fBz*fBz);
-} 
+}
 
 //_____________________________________________________________________________
 TUCNUniformMagField::TUCNUniformMagField(const TUCNUniformMagField& other)
-                    :TUCNMagField(other), fBx(other.fBx), fBy(other.fBy), fBz(other.fBz),
-                     fBMag(other.fBMag)
+                    :TUCNMagField(other), fField(other.fField), fFieldShape(other.fFieldShape),
+                     fFieldMatrix(other.fFieldMatrix)
 {
 // Copy constructor.
 } 
@@ -41,10 +38,9 @@ TUCNUniformMagField &TUCNUniformMagField::operator=(const TUCNUniformMagField& o
 // Assignment.
    if(this != &other) {
       TUCNMagField::operator=(other);
-      fBx = other.fBx;
-      fBy = other.fBy;
-      fBz = other.fBz;
-      fBMag = other.fBMag;
+      fField = other.fField;
+      fFieldShape = other.fFieldShape;
+      fFieldMatrix = other.fFieldMatrix;
    }
    return *this;
 }
@@ -54,19 +50,18 @@ TUCNUniformMagField::~TUCNUniformMagField()
 {
 // Destructor.
    Info("TUCNUniformMagField", "Destructor");
+   if(fFieldShape) delete fFieldShape;
+   if(fFieldMatrix) delete fFieldMatrix;
 }   
 
 //_____________________________________________________________________________
-void TUCNUniformMagField::GetFieldVector(const TVector3& /*pos*/, TVector3& field) const
+void TUCNUniformMagField::GetFieldVector(const TVector3& /*pos*/, TVector3& /*field*/) const
 {
    // Copy field vector to provided vector
-   field.SetX(fBx);
-   field.SetY(fBy);
-   field.SetZ(fBz);
 }
 
 //______________________________________________________________________________
-Bool_t TUCNUniformMagField::Interact(TUCNParticle& particle, const Double_t stepTime) const
+Bool_t TUCNUniformMagField::Interact(TUCNParticle& /*particle*/, const Double_t /*stepTime*/) const
 {
    // -- Precess spin vector of particle over period of time defined by stepTime
    

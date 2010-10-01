@@ -26,10 +26,6 @@ public:
    TUCNMagField& operator=(const TUCNMagField&);
    virtual ~TUCNMagField();
    
-   virtual Double_t Bx(const TVector3& pos) const = 0;
-   virtual Double_t By(const TVector3& pos) const = 0;
-   virtual Double_t Bz(const TVector3& pos) const = 0;
-   virtual Double_t B(const TVector3& pos) const = 0;
    virtual void GetFieldVector(const TVector3& pos, TVector3& field) const = 0;
    
    virtual Bool_t Interact(TUCNParticle& particle, const Double_t stepTime) const = 0;
