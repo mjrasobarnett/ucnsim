@@ -5,8 +5,6 @@
 #ifndef TUCNSTATE_H
 #define TUCNSTATE_H
 
-#include "TUCNParticle.h"
-
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
 //    TUCNState - Following the State design pattern, a Particle           //

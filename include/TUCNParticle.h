@@ -9,7 +9,6 @@
 #include "TVector3.h"
 #include "TUCNSpin.h";
 #include "TUCNState.h";
-#include "TUCNRun.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -28,8 +27,6 @@
 class TUCNFieldManager;
 class TUCNGravField;
 class TUCNRun;
-class TUCNState;
-class TUCNSpin;
 
 class TGeoNode;
 class TGeoMatrix;

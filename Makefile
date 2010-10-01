@@ -26,6 +26,14 @@ FITDATA			= bin/fitdata$(ExeSuf)
 #------------------------------------------------------------------------------
 # my classes
 #------------------------------------------------------------------------------
+TUCNCONFIGFILEO 		= src/TUCNConfigFile.$(ObjSuf) UCNDict.$(ObjSuf)
+TUCNCONFIGFILES 		= src/TUCNConfigFile.$(SrcSuf) UCNDict.$(SrcSuf)
+TUCNRUNO					= src/TUCNRun.$(ObjSuf)  UCNDict.$(ObjSuf)
+TUCNRUNS					= src/TUCNRun.$(SrcSuf)  UCNDict.$(SrcSuf)
+TUCNEXPERIMENTO		= src/TUCNExperiment.$(ObjSuf)  UCNDict.$(ObjSuf)
+TUCNEXPERIMENTS		= src/TUCNExperiment.$(SrcSuf)  UCNDict.$(SrcSuf)
+TUCNFIELDMANAGERO 	= src/TUCNFieldManager.$(ObjSuf) UCNDict.$(ObjSuf)
+TUCNFIELDMANAGERS 	= src/TUCNFieldManager.$(SrcSuf) UCNDict.$(SrcSuf)
 TUCNGEOBUILDERO		= src/TUCNGeoBuilder.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNGEOBUILDERS		= src/TUCNGeoBuilder.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNGEOBBOXO			= src/TUCNGeoBBox.$(ObjSuf)  UCNDict.$(ObjSuf)
@@ -42,8 +50,6 @@ TUCNSTATEO				= src/TUCNState.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNSTATES				= src/TUCNState.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNSPINO				= src/TUCNSpin.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNSPINS				= src/TUCNSpin.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNEXPERIMENTO		= src/TUCNExperiment.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNEXPERIMENTS		= src/TUCNExperiment.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNDATAPARSERO		= src/TUCNDataParser.$(ObjSuf)   UCNDict.$(ObjSuf)
 TUCNDATAPARSERS		= src/TUCNDatParser.$(SrcSuf)  	 UCNDict.$(SrcSuf)
 TUCNPARABOLAO			= src/TUCNParabola.$(ObjSuf)  UCNDict.$(ObjSuf)
@@ -52,20 +58,12 @@ TUCNPOLYNOMIALO		= src/TUCNPolynomial.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNPOLYNOMIALS		= src/TUCNPolynomial.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNDATAO				= src/TUCNData.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNDATAS				= src/TUCNData.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNEXPERIMENTO		= src/TUCNExperiment.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNEXPERIMENTS		= src/TUCNExperiment.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNMAGFIELDO			= src/TUCNMagField.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNMAGFIELDS			= src/TUCNMagField.$(SrcSuf) UCNDict.$(SrcSuf)
 TUCNUNIFORMMAGFIELDO	= src/TUCNUniformMagField.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNUNIFORMMAGFIELDS	= src/TUCNUniformMagField.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNRUNO					= src/TUCNRun.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNRUNS					= src/TUCNRun.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNPARABOLICMAGFIELDO	= src/TUCNParabolicMagField.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNPARABOLICMAGFIELDS	= src/TUCNParabolicMagField.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNFIELDMANAGERO 	= src/TUCNFieldManager.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNFIELDMANAGERS 	= src/TUCNFieldManager.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNCONFIGFILEO 		= src/TUCNConfigFile.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNCONFIGFILES 		= src/TUCNConfigFile.$(SrcSuf) UCNDict.$(SrcSuf)
 TUCNGEOCOMPOSITESHAPEO		= src/TUCNGeoCompositeShape.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNGEOCOMPOSITESHAPES		= src/TUCNGeoCompositeShape.$(SrcSuf) UCNDict.$(SrcSuf)
 TUCNGEOBOOLNODEO		= src/TUCNGeoBoolNode.$(ObjSuf) UCNDict.$(ObjSuf)
@@ -85,11 +83,11 @@ LINKDEF			= UCNLinkDef.h
 UCNSO				= lib/libUCN.$(DllSuf)
 UCNLIB			= -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter -lMathMore
 #------------------------------------------------------------------------------
-OBJS				=	$(UCNSIMO) $(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(TUCNGEOBUILDERO) \
+OBJS				=	$(UCNSIMO) $(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(TUCNRUNO) $(TUCNGEOBUILDERO) \
  						$(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) $(TUCNGRAVFIELDO) \
  						$(TUCNPARTICLEO) $(TUCNSTATEO) $(TUCNSPINO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
  						$(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) $(TUCNMAGFIELDO) \
- 						$(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO) $(TUCNPARABOLICMAGFIELDO) \
+ 						$(TUCNUNIFORMMAGFIELDO)  $(TUCNPARABOLICMAGFIELDO) \
 						$(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) \
 						$(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) $(TUCNELEMENTO) $(TUCNMAGFIELDMANAGERO)
 PROGRAMS			=	$(UCNSO) $(UCNSIM) $(BUILDTEST) $(FITDATA) $(SANDBOX) 
@@ -131,10 +129,10 @@ $(FITDATA):		$(FITDATAO) $(TUCNDATAPARSERO)
 					@echo "$@ done"
 					
 UCN:				$(UCNSO)
-$(UCNSO):		$(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) \
+$(UCNSO):		$(TUCNRUNO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) \
                $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNSTATEO) $(TUCNSPINO) $(TUCNDATAPARSERO) \
 					$(TUCNPARABOLAO) $(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) \
-					$(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO) $(TUCNPARABOLICMAGFIELDO) \
+					$(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO)  $(TUCNPARABOLICMAGFIELDO) \
 					$(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) \
 					$(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) $(TUCNELEMENTO) $(TUCNMAGFIELDMANAGERO)
 
