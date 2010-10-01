@@ -17,7 +17,7 @@
 
 using std::cout;
 using std::endl;
-   
+
 // Namespace holding all ucn relevant elements properties
 namespace Elements {
    
@@ -184,6 +184,7 @@ namespace Materials
       // Create the materials/media defined above
       cout << "---------------------------------" << endl;
       cout << "Building Experiment Materials List" << endl;
+      cout << "---------------------------------" << endl;
       if (!geoManager) {
          cout << "Error: Initialise GeoManager First before instantiating Materials" << endl;
          return kFALSE;
@@ -194,6 +195,7 @@ namespace Materials
       TUCNElement* elemHydrogen = new TUCNElement("H", "Hydrogen", Hydrogen::z, Hydrogen::a, Hydrogen::scatLength, Hydrogen::cohCrossSec, Hydrogen::incohCrossSec, Hydrogen::absCrossSec);
       TUCNMaterial* matHydrogen = new TUCNMaterial("Hydrogen", elemHydrogen, Densities::hydrogen);
       TGeoMedium* hydrogen = new TGeoMedium("Hydrogen", 1, matHydrogen);
+      /*
       cout << "---------------------------------" << endl;
       cout << "Added Material: " << hydrogen->GetName() << endl;
       cout << "Density (kg/m^3): " << Densities::hydrogen << endl;
@@ -206,14 +208,14 @@ namespace Materials
       cout << "W: " << matHydrogen->WPotential() << endl;
       cout << "LossFactor: " << matHydrogen->LossFactor() << endl;
       cout << "---------------------------------" << endl;
-      
+      */
       // - Beryllium
       TUCNElement* elemBeryllium = new TUCNElement("Be", "Beryllium", Beryllium::z, Beryllium::a, Beryllium::scatLength, Beryllium::cohCrossSec, Beryllium::incohCrossSec, Beryllium::absCrossSec);
       TUCNMaterial* matBeryllium = new TUCNMaterial("Beryllium", elemBeryllium, Densities::beryllium);
       TGeoMedium* beryllium = new TGeoMedium("Beryllium", 1, matBeryllium);
       // Set Beryllium Loss factor to the experimentally determined value
       matBeryllium->LossFactor(LossFactor::beryllium);
-      
+      /*
       cout << "---------------------------------" << endl;
       cout << "Added Material: " << beryllium->GetName() << endl;
       cout << "Density (kg/m^3): " << Densities::beryllium << endl;
@@ -226,11 +228,12 @@ namespace Materials
       cout << "W: " << matBeryllium->WPotential() << endl;
       cout << "LossFactor: " << matBeryllium->LossFactor() << endl;
       cout << "---------------------------------" << endl;
-      
+      */
       // - Copper
       TUCNElement* elemCopper = new TUCNElement("Cu", "Copper", Copper::z, Copper::a, Copper::scatLength, Copper::cohCrossSec, Copper::incohCrossSec, Copper::absCrossSec);
       TUCNMaterial* matCopper = new TUCNMaterial("Copper", elemCopper, Densities::copper);
       TGeoMedium* copper = new TGeoMedium("Copper", 1, matCopper);
+      /*
       cout << "---------------------------------" << endl;
       cout << "Added Material: " << copper->GetName() << endl;
       cout << "Density (kg/m^3): " << Densities::copper << endl;
@@ -243,11 +246,12 @@ namespace Materials
       cout << "W: " << matCopper->WPotential() << endl;
       cout << "LossFactor: " << matCopper->LossFactor() << endl;
       cout << "---------------------------------" << endl;
-      
+      */
       // - Aluminium
       TUCNElement* elemAluminium = new TUCNElement("Al", "Aluminium", Aluminium::z, Aluminium::a, Aluminium::scatLength, Aluminium::cohCrossSec, Aluminium::incohCrossSec, Aluminium::absCrossSec);
       TUCNMaterial* matAluminium = new TUCNMaterial("Aluminium", elemAluminium, Densities::aluminium);
       TGeoMedium* aluminium = new TGeoMedium("Aluminium", 1, matAluminium);
+      /*
       cout << "---------------------------------" << endl;
       cout << "Added Material: " << aluminium->GetName() << endl;
       cout << "Density (kg/m^3): " << Densities::aluminium << endl;
@@ -260,13 +264,14 @@ namespace Materials
       cout << "W: " << matAluminium->WPotential() << endl;
       cout << "LossFactor: " << matAluminium->LossFactor() << endl;
       cout << "---------------------------------" << endl;
-      
+      */
       //________________________________________
       // TRACKING MATERIALS
       // - HeliumII
       TUCNElement* elemHeliumII = new TUCNElement("He", "HeliumII", HeliumII::z, HeliumII::a, HeliumII::scatLength, HeliumII::cohCrossSec, HeliumII::incohCrossSec, HeliumII::absCrossSec);
       TUCNMaterial* matHeliumII = new TUCNMaterial("HeliumII", elemHeliumII, Densities::heliumII);
       TGeoMedium* heliumII = new TGeoMedium("HeliumII", 1, matHeliumII);
+      /*
       cout << "---------------------------------" << endl;
       cout << "Added Material: " << heliumII->GetName() << endl;
       cout << "Density (kg/m^3): " << Densities::heliumII << endl;
@@ -279,13 +284,14 @@ namespace Materials
       cout << "W: " << matHeliumII->WPotential() << endl;
       cout << "LossFactor: " << matHeliumII->LossFactor() << endl;
       cout << "---------------------------------" << endl;
-            
+      */
       //________________________________________
       // BLACKHOLE MATERIALS
       // - Vacuum
       TUCNElement* elemVacuum = new TUCNElement("H", "Vacuum", Vacuum::z, Vacuum::a, Vacuum::scatLength, Vacuum::cohCrossSec, Vacuum::incohCrossSec, Vacuum::absCrossSec);
       TUCNMaterial* matVacuum = new TUCNMaterial("Vacuum", elemVacuum, Densities::vacuum);
       TGeoMedium* vacuum = new TGeoMedium("Vacuum", 1, matVacuum);
+      /*
       cout << "---------------------------------" << endl;
       cout << "Added Material: " << vacuum->GetName() << endl;
       cout << "Density (kg/m^3): " << Densities::vacuum << endl;
@@ -298,13 +304,14 @@ namespace Materials
       cout << "W: " << matVacuum->WPotential() << endl;
       cout << "LossFactor: " << matVacuum->LossFactor() << endl;
       cout << "---------------------------------" << endl;
-            
+      */
       //________________________________________
       // DETECTOR MATERIALS
       // - Lithium6
       TUCNElement* elemLithium6 = new TUCNElement("H", "Lithium6", Lithium6::z, Lithium6::a, Lithium6::scatLength, Lithium6::cohCrossSec, Lithium6::incohCrossSec, Lithium6::absCrossSec);
       TUCNMaterial* matLithium6 = new TUCNMaterial("Lithium6", elemLithium6, Densities::lithium6);
       TGeoMedium* lithium6 = new TGeoMedium("Lithium6", 1, matLithium6);
+      /*
       cout << "---------------------------------" << endl;
       cout << "Added Material: " << lithium6->GetName() << endl;
       cout << "Density (kg/m^3): " << Densities::lithium6 << endl;
@@ -317,9 +324,8 @@ namespace Materials
       cout << "W: " << matLithium6->WPotential() << endl;
       cout << "LossFactor: " << matLithium6->LossFactor() << endl;
       cout << "---------------------------------" << endl;
-   
+      */
       cout << "Completed Initialising UCN Materials" << endl;
-      cout << "---------------------------------" << endl << endl;
       return kTRUE;
    }
 }
