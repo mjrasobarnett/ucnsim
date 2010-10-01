@@ -84,7 +84,42 @@ Bool_t TUCNFieldManager::Initialise(TUCNConfigFile& configFile, const TUCNRun& r
    } else {
       Info("Initialise","Gravitational Field set to be OFF.");
    }
-   // Set-up the magnetic field
+   // Set-up the magnetic fields
+   if (configFile.GetBool("MagFields",run.GetName())) {
+      // Look for Fields file
+      Info("Initialise","Magnetic Environment set to be ON. Creating...");
+      TString fieldsFileName = configFile.GetString("FieldsFile",run.GetName());
+      if (fieldsFileName == "") { 
+         Error("Initialise","No Fields File has been specified");
+         return kFALSE;
+      }
+      cout << "Loading Electromagnetic Field environment from file: " << fieldsFileName << endl;
+      // Open Electro-magnetic Field file
+      TFile *f = TFile::Open(fieldsFileName,"read");
+      if (!f || f->IsZombie()) {
+         Error("Initialise","Cannot open file: %s", fieldsFileName.Data());
+         return kFALSE;
+      }
+      f->ls();
+      // Search for Magnetic Field Manager
+      TString magManagerName = "MagFieldManager";
+      TUCNMagFieldManager* importedMagFieldManager = 0;
+      f->GetObject(magManagerName,importedMagFieldManager);
+      if (importedMagFieldManager == NULL) {
+         Error("Initialise","Could not find MagFieldManager: %s in file", magManagerName.Data());
+         return kFALSE;
+      }
+      // Store MagField Manager
+      fMagFieldManager = importedMagFieldManager;
+      // Clean up
+      importedMagFieldManager = 0;
+      f->Close();
+      delete f;
+      f = 0;
+      
+   } else {
+      Info("Initialise","Magnetic Environment set to be OFF.");
+   }
    
    cout << "-------------------------------------------" << endl;
    cout << "Field Environment initialised successfully" << endl;
