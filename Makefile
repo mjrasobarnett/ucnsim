@@ -38,6 +38,10 @@ TUCNGRAVFIELDO			= src/TUCNGravField.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNGRAVFIELDS			= src/TUCNGravField.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNPARTICLEO			= src/TUCNParticle.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNPARTICLES			= src/TUCNParticle.$(SrcSuf)  UCNDict.$(SrcSuf)
+TUCNSTATEO				= src/TUCNState.$(ObjSuf)  UCNDict.$(ObjSuf)
+TUCNSTATES				= src/TUCNState.$(SrcSuf)  UCNDict.$(SrcSuf)
+TUCNSPINO				= src/TUCNSpin.$(ObjSuf)  UCNDict.$(ObjSuf)
+TUCNSPINS				= src/TUCNSpin.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNEXPERIMENTO		= src/TUCNExperiment.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNEXPERIMENTS		= src/TUCNExperiment.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNDATAPARSERO		= src/TUCNDataParser.$(ObjSuf)   UCNDict.$(ObjSuf)
@@ -83,11 +87,11 @@ UCNLIB			= -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter -l
 #------------------------------------------------------------------------------
 OBJS				=	$(UCNSIMO) $(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(TUCNGEOBUILDERO) \
  						$(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) $(TUCNGRAVFIELDO) \
- 						$(TUCNPARTICLEO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) $(TUCNPOLYNOMIALO) \
- 						$(TUCNEXPERIMENTO) $(TUCNDATAO) $(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) \
- 						$(TUCNRUNO) $(TUCNPARABOLICMAGFIELDO) $(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) \
- 						$(TUCNGEOCOMPOSITESHAPEO) $(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) $(TUCNELEMENTO) \
-						$(TUCNMAGFIELDMANAGERO)
+ 						$(TUCNPARTICLEO) $(TUCNSTATEO) $(TUCNSPINO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
+ 						$(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) $(TUCNMAGFIELDO) \
+ 						$(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO) $(TUCNPARABOLICMAGFIELDO) \
+						$(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) \
+						$(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) $(TUCNELEMENTO) $(TUCNMAGFIELDMANAGERO)
 PROGRAMS			=	$(UCNSO) $(UCNSIM) $(BUILDTEST) $(FITDATA) $(SANDBOX) 
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
@@ -128,11 +132,11 @@ $(FITDATA):		$(FITDATAO) $(TUCNDATAPARSERO)
 					
 UCN:				$(UCNSO)
 $(UCNSO):		$(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) \
-               $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
-					$(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) $(TUCNMAGFIELDO) \
-					$(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO) $(TUCNPARABOLICMAGFIELDO) $(TUCNFIELDMANAGERO) \
-					$(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) $(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) \
-					$(TUCNELEMENTO) $(TUCNMAGFIELDMANAGERO)
+               $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNSTATEO) $(TUCNSPINO) $(TUCNDATAPARSERO) \
+					$(TUCNPARABOLAO) $(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) \
+					$(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO) $(TUCNRUNO) $(TUCNPARABOLICMAGFIELDO) \
+					$(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) \
+					$(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) $(TUCNELEMENTO) $(TUCNMAGFIELDMANAGERO)
 
 ifeq ($(ARCH),aix)
 		/usr/ibmcxx/bin/makeC++SharedLib $(OutPutOpt) $@ $(LIBS) -p 0 $^
@@ -164,6 +168,8 @@ TUCNGEOTUBEO:					include/TUCNGeoTube.h
 TUCNMATERIALO:					include/TUCNMaterial.h
 TUCNGRAVFIELDO:				include/TUCNGravField.h
 TUCNPARTICLEO:					include/TUCNParticle.h
+TUCNSTATEO:						include/TUCNState.h
+TUCNSPINO:						include/TUCNSpin.h
 TUCNDATAPARSERO:				include/TUCNDataParser.h
 TUCNPARABOLAO:					include/TUCNParabola.h
 TUCNPOLYNOMIALO:				include/TUCNPolynomial.h
@@ -182,13 +188,14 @@ TUCNELEMENTO:              include/TUCNElement.h
 TUCNMAGFIELDMANAGERO:		include/TUCNMagFieldManager.h
 
 UCNDict.$(SrcSuf):      include/TUCNGeoBuilder.h include/TUCNGeoBBox.h include/TUCNGeoTube.h \
-                        include/TUCNMaterial.h include/TUCNGravField.h include/TUCNParticle.h \
-                        include/TUCNDataParser.h include/TUCNPolynomial.h include/TUCNParabola.h \
-                        include/TUCNExperiment.h include/TUCNData.h include/TUCNMagField.h \
-                        include/TUCNUniformMagField.h include/TUCNParabolicMagField.h \
-                        include/TUCNRun.h include/TUCNFieldManager.h include/TUCNConfigFile.h \
-                        include/TUCNGeoCompositeShape.h include/TUCNGeoBoolNode.h \
-                        include/TUCNVolume.h include/TUCNElement.h include/TUCNMagFieldManager.h \
+								include/TUCNMaterial.h include/TUCNGravField.h include/TUCNParticle.h \
+								include/TUCNState.h include/TUCNSpin.h include/TUCNDataParser.h \
+								include/TUCNPolynomial.h include/TUCNParabola.h \
+								include/TUCNExperiment.h include/TUCNData.h include/TUCNMagField.h \
+								include/TUCNUniformMagField.h include/TUCNParabolicMagField.h \
+								include/TUCNRun.h include/TUCNFieldManager.h include/TUCNConfigFile.h \
+								include/TUCNGeoCompositeShape.h include/TUCNGeoBoolNode.h \
+								include/TUCNVolume.h include/TUCNElement.h include/TUCNMagFieldManager.h \
 								$(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
