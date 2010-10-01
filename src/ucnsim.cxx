@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include "TBenchmark.h"
 
 #include "TUCNConfigFile.h"
 #include "TUCNRun.h"
@@ -11,6 +12,11 @@ using std::string;
 
 Int_t main(Int_t argc,Char_t **argv)
 {
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Set up benchmark
+   TBenchmark benchmark;
+   benchmark.SetName("UCNSIM");
+   benchmark.Start("UCNSIM");   
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////
@@ -70,5 +76,11 @@ Int_t main(Int_t argc,Char_t **argv)
       cout << name << " successfully completed." << endl;
       cout << "-------------------------------------------" << endl << endl;
    }
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Output up benchmark
+   benchmark.Stop("UCNSIM");
+   cout << "-------------------------------------------" << endl;
+   benchmark.Print("UCNSIM");
+   cout << "-------------------------------------------" << endl;
    return EXIT_SUCCESS;
 }
