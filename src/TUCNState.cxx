@@ -296,21 +296,7 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    // -- Step 1 - Get the initial parameters
    ///////////////////////////////////////////////////////////////////////////////////////
    const TUCNGravField* const gravField = fieldManager->GetGravField();
-   /*   
-   TUCNMagField* magField = 0;
-   // -- Check if we are to sample the mag field
-   if (fSampleMagField == kTRUE) {
-      magField = fieldManager->MagField();
-      if (magField == NULL) {
-         Error("PropagateTrack","Configuration asks to sample mag field, but no field can be found!");
-         return kFALSE;
-      }
-   }
-   */
-   // -- Store initial position
-   const TVector3 initialPosition(particle->X(), particle->Y(), particle->Z());
-   
-   
+      
    // -- Store the Initial Node and Initial Matrix
    const TGeoNode* initialNode = navigator->GetCurrentNode();
    TGeoHMatrix initMatrix = *(navigator->GetCurrentMatrix()); // Copy the initial matrix here
@@ -380,9 +366,22 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
       assert(nextNode == navigator->GetCurrentNode());
    }
    
-   // -- Update particle properties
-   this->UpdateParticle(particle, navigator, stepTime, gravField);
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Step 3 - Sample Magnetic Field if there is one
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // Navigator's state now corresponds to the next position of the particle. Before we move the
+   // particle to this position, calculate the motion of the spin vector along this trajectory
+   const TVector3 initialPosition(particle->X(), particle->Y(), particle->Z());
+   const string initialVolumeName = initialNode->GetVolume()->GetName();
+   const TUCNMagField* const magField = fieldManager->GetMagField(initialPosition, initialVolumeName);
+   if (magField != NULL) {
+      magField->Interact(*particle, stepTime);
+   }
    
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Step 4 - Update Particle to final position
+   ///////////////////////////////////////////////////////////////////////////////////////
+   this->UpdateParticle(particle, navigator, stepTime, gravField);
    #ifdef VERBOSE_MODE	
       cout << endl << "------------------- AFTER STEP ----------------------" << endl;
       particle->Print(); // Print verbose
@@ -396,7 +395,7 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    #endif
    
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- STEP 3 - Now we need to determine where we have ended up, and to examine whether
+   // -- STEP 5 - Now we need to determine where we have ended up, and to examine whether
    // -- the current volume is the point's true container
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Attempt to locate particle within the current node
@@ -411,11 +410,10 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
    // -- We should now have propagated our point by some stepsize and be inside the correct volume 
    
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Step 4 - Determine whether we collided with a wall, decayed, or any other
+   // -- Step 6 - Determine whether we collided with a wall, decayed, or any other
    // -- state change occured
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Check whether particle has decayed in the last step
-   
    if(this->WillDecay(stepTime) == kTRUE) {
       this->ChangeState(particle, new TUCNDecayed());
       return kFALSE;
@@ -437,14 +435,6 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
       return kFALSE;
    }
    
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Step 5 - Sample Magnetic Field if there is one
-   ///////////////////////////////////////////////////////////////////////////////////////
-   const string initialVolumeName = initialNode->GetVolume()->GetName();
-   const TUCNMagField* const magField = fieldManager->GetMagField(initialPosition, initialVolumeName);
-   if (magField != NULL) {
-      magField->Interact(*particle, stepTime);
-   }
    // End of MakeStep.
    return kTRUE;
 }
