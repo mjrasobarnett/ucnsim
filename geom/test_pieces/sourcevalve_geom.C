@@ -12,7 +12,7 @@ Int_t simulation_geom();
 Int_t visualisation_geom();
 
 //__________________________________________________________________________
-Int_t model_sourcevalve_geom()
+Int_t sourcevalve_geom()
 {
    // Build and write to file the simulation geom
    simulation_geom();

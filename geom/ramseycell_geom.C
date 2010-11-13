@@ -108,7 +108,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out geometry to file
-   const char *fileName = "$(UCN_DIR)/geom/ramseycell_geom.root";
+   const char *fileName = "$(UCN_GEOM)/ramseycell_geom.root";
    cerr << "Simulation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    

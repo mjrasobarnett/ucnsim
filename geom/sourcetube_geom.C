@@ -131,7 +131,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out geometry to file
-   const char *fileName = "$(UCNSIM)/geom/sourcetube_geom.root";
+   const char *fileName = "$(UCN_GEOM)/sourcetube_geom.root";
    cerr << "Simulation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    

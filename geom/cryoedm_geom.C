@@ -397,7 +397,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out geometry to file
-   const char *fileName = "$(UCNSIM)/geom/cryoedm_geom.root";
+   const char *fileName = "$(UCN_GEOM)/cryoedm_geom.root";
    cerr << "Simulation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    
@@ -414,7 +414,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out visualisation geometry to file
-   const char *visFileName = "$(UCNSIM)/geom/cryoedm_vis.root";
+   const char *visFileName = "$(UCN_GEOM)/cryoedm_vis.root";
    cerr << "Visualisation Geometry Built... Writing to file: " << visFileName << endl;
    geoManager->Export(visFileName);
    
