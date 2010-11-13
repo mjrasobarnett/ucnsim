@@ -107,10 +107,30 @@ Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeN
    // -- Clean Up
    TCanvas *canvas = new TCanvas("Positions","Neutron Positions",60,0,800,800);
    canvas->cd();
-   geoManager->GetTopVolume()->Draw();
+   geoManager->GetTopVolume()->Draw("ogl");
    geoManager->SetVisLevel(4);
    geoManager->SetVisOption(0);
    points->Draw();
+   
+   // -- Get the GLViewer so we can manipulate the camera
+   TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
+   // -- Select Draw style 
+   glViewer->SetStyle(TGLRnrCtx::kFill);
+   // -- Set Background colour
+   glViewer->SetClearColor(TColor::kWhite);
+   // -- Set Camera type
+   TGLViewer::ECameraType camera = 2;
+   glViewer->SetCurrentCamera(camera);
+   glViewer->CurrentCamera().SetExternalCenter(kTRUE);
+   Double_t cameraCentre[3] = {0,3,0};
+   glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
+   // -- Draw Reference Point, Axes
+   Double_t refPoint[3] = {0.,0.,0.};
+   // Int_t axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const Double_t referencePos[3]
+   glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
+   glViewer->UpdateScene();
+   glViewer = 0;
+   
    return kTRUE;
 }
 
@@ -178,7 +198,7 @@ Bool_t PlotBounces(TUCNRun* run, const TString& treeName)
       bounceHist->Fill(particle->Bounces());
       specHist->Fill(particle->SpecularBounces());
       diffHist->Fill(particle->DiffuseBounces());
-      cout << particle->Id() << "\t" << particle->Bounces() << "\t" << particle->SpecularBounces() << "\t" << particle->DiffuseBounces() << endl;
+   //   cout << particle->Id() << "\t" << particle->Bounces() << "\t" << particle->SpecularBounces() << "\t" << particle->DiffuseBounces() << endl;
    }
    // -- Write the points to the File
    TCanvas *canvas = new TCanvas("Directions","Neutron Directions",60,0,800,800);

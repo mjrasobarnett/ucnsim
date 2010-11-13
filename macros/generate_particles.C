@@ -38,8 +38,8 @@ Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnerg
 //__________________________________________________________________________
 Int_t generate_particles(const char* configFileName)
 {
-//   FillSourceTube(configFileName);
-   FillRamseyCell(configFileName);
+   FillSourceTube(configFileName);
+//   FillRamseyCell(configFileName);
    return 0;
 }
 
