@@ -74,6 +74,10 @@ Bool_t TUCNExperiment::BuildGeometry(TUCNConfigFile& configFile, const TUCNRun& 
    }
    // Load the Geometry from the File
    fGeoManager = TGeoManager::Import(geomFileName);
+   if (fGeoManager == NULL) {
+      Error("BuildGeometry","Unable to load Geometry File");
+      return kFALSE;
+   }
    return kTRUE;
 }
 
