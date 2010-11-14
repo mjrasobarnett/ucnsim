@@ -478,7 +478,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // -- GUIDE SECTION
    // Guide section has *probably* 4 segments. 
-   TUCNGeoTube *guideSegShape = new TUCNGeoBBox("GuideSeg", guideSegHalfX, guideSegHalfY, guideSegHalfZ);
+   TUCNGeoBBox *guideSegShape = new TUCNGeoBBox("GuideSeg", guideSegHalfX, guideSegHalfY, guideSegHalfZ);
    TUCNTrackingVolume* guideSeg = new TUCNTrackingVolume("GuideSeg", guideSegShape, heliumII);
    guideSeg->SetLineColor(kCyan-8);
    guideSeg->SetLineWidth(1);
@@ -502,7 +502,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // -- RAMSEY CELL PRE-VOLUME SECTION
    // -- Define General Box shape dimensions
-   TUCNGeoTube *preVolumeBoxShape = new TUCNGeoBBox("PreVolumeBoxShape", preVolumeBoxHalfX, preVolumeBoxHalfY, preVolumeBoxHalfZ);
+   TUCNGeoBBox *preVolumeBoxShape = new TUCNGeoBBox("PreVolumeBoxShape", preVolumeBoxHalfX, preVolumeBoxHalfY, preVolumeBoxHalfZ);
    TGeoRotation preVolumeBoxRot("PreVolumeBoxRot", preVolumeBoxPhi, preVolumeBoxTheta, preVolumeBoxPsi);
    TGeoTranslation preVolumeBoxTra("PreVolumeBoxTra", preVolumeBoxXDisplacement, preVolumeBoxYDisplacement, preVolumeBoxZDisplacement);
    TGeoCombiTrans preVolumeBoxCom(preVolumeBoxTra,preVolumeBoxRot);
@@ -513,7 +513,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -- Define the pieces to make the rounded corners of the pre-volume
    // Make the square pieces to be subtracted from the corners of the box
-   TUCNGeoTube *preVolumeBoxCornerShape = new TUCNGeoBBox("PreVolumeBoxCornerShape", preVolumeBoxCornerHalfX, preVolumeBoxCornerHalfY, preVolumeBoxCornerHalfZ);
+   TUCNGeoBBox *preVolumeBoxCornerShape = new TUCNGeoBBox("PreVolumeBoxCornerShape", preVolumeBoxCornerHalfX, preVolumeBoxCornerHalfY, preVolumeBoxCornerHalfZ);
    // Define Corner Box 1 matrix
    TGeoRotation preVolumeBoxCornerRot("PreVolumeBoxCornerRot", preVolumeBoxCornerPhi, preVolumeBoxCornerTheta, preVolumeBoxCornerPsi);
    TGeoTranslation preVolumeBoxCorner1Tra("PreVolumeBoxCorner1Tra",preVolumeBoxCorner1XDisplacement, preVolumeBoxCorner1YDisplacement, preVolumeBoxCorner1ZDisplacement);
