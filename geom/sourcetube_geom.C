@@ -7,33 +7,10 @@
 #include "../include/Units.h"
 #include "../include/Constants.h"
 #include "../include/Materials.h"
+#include "model_parameters.h"
 
 Bool_t Build_Geom(const TGeoManager* geoManager);
 Bool_t Draw_Geom(const TGeoManager* geoManager);
-
-namespace ModelParameters {
-   // -- SourceTube Segment
-   const Double_t sourceSegRMin = 0.; 
-   const Double_t sourceSegRMax = 31.5*Units::mm;
-   const Double_t sourceSegHalfLength = 125.*Units::mm;
-   const Double_t sourceSegAngle = 90.0;
-   const Double_t sourceSegYDisplacement = 125.*Units::mm;
-   
-   // -- Neutron Beam Area
-   const Double_t neutronBeamAreaRMin = 0.;
-   const Double_t neutronBeamAreaRMax = 15.*Units::mm;
-   const Double_t neutronBeamAreaHalfLength = (13.*sourceSegHalfLength)/2.0;
-   const Double_t neutronBeamAreaAngle = 90.0;
-   const Double_t neutronBeamAreaYDisplacement = neutronBeamAreaHalfLength;
-   
-   // -- Valve Volume Entrance
-   const Double_t valveVolEntranceRMin = 0.;
-   const Double_t valveVolEntranceRMax = 31.5*Units::mm;
-   const Double_t valveVolEntranceHalfLength = 46.*Units::mm;
-   const Double_t valveVolEntranceAngle = 90.0; 
-   const Double_t valveVolEntranceYDisplacement = 13.0*(2.0*sourceSegHalfLength) + valveVolEntranceHalfLength;
-   
-}
 
 using namespace ModelParameters;
 

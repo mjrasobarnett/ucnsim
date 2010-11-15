@@ -1,6 +1,7 @@
-// This is a model of the 'Real' cryoEDM experiment, using dimensions from the model created by
+// This is a model of the cryoEDM experiment, using dimensions from the model created by
 // Vishal Francis. 
-// 9/01/2010 - Model covers the source tube down to the neutron detector
+// 14/11/2010 - Model covers whole neutron facing geometry to a first approximation. 
+// Things missing currently includes valves
 #include "TGeoManager.h"
 #include "TGLViewer.h"
 #include "TGLCamera.h"
@@ -9,101 +10,10 @@
 #include "../include/Units.h"
 #include "../include/Constants.h"
 #include "../include/Materials.h"
+#include "model_parameters.h"
 
 Bool_t Build_Geom(const TGeoManager* geoManager);
 Bool_t Draw_Geom(const TGeoManager* geoManager);
-
-namespace ModelParameters {
-   // -- SourceTube Segment
-   const Double_t sourceSegRMin = 0.; 
-   const Double_t sourceSegRMax = 31.5*Units::mm;
-   const Double_t sourceSegHalfLength = 125.*Units::mm;
-   const Double_t sourceSegAngle = 90.0;
-   const Double_t sourceSegYDisplacement = 125.*Units::mm;
-   
-   // -- Neutron Beam Area
-   const Double_t neutronBeamAreaRMin = 0.;
-   const Double_t neutronBeamAreaRMax = 15.*Units::mm;
-   const Double_t neutronBeamAreaHalfLength = (13.*sourceSegHalfLength)/2.0;
-   const Double_t neutronBeamAreaAngle = 90.0;
-   const Double_t neutronBeamAreaYDisplacement = neutronBeamAreaHalfLength;
-   
-   // -- Valve Volume Entrance
-   const Double_t valveVolEntranceRMin = 0.;
-   const Double_t valveVolEntranceRMax = 31.5*Units::mm;
-   const Double_t valveVolEntranceHalfLength = 46.*Units::mm;
-   const Double_t valveVolEntranceAngle = 90.0; 
-   const Double_t valveVolEntranceYDisplacement = 13.0*(2.0*sourceSegHalfLength) + valveVolEntranceHalfLength;
-   
-   // -- Valve Volume Front
-   const Double_t valveVolFrontRMin = 0.;
-   const Double_t valveVolFrontRMax = 31.5*Units::mm;
-   const Double_t valveVolFrontHalfLength = 12.75.*Units::mm;
-   const Double_t valveVolFrontAngle = 90.0; 
-   const Double_t valveVolFrontYDisplacement = valveVolEntranceYDisplacement + valveVolEntranceHalfLength + valveVolFrontHalfLength;
-   
-   // -- Valve Volume
-   // Valve Volume Back
-   const Double_t valveVolBackRMin = 0.;
-   const Double_t valveVolBackRMax = 36.0*Units::mm;
-   const Double_t valveVolBackHalfLength = 17.75*Units::mm;
-   const Double_t valveVolBackAngle = 90.0;
-   // Bend Entrance
-   const Double_t bendEntranceHalfX = 30.0*Units::mm;
-   const Double_t bendEntranceHalfY = 15.0*Units::mm;
-   const Double_t bendEntranceHalfZ = 55.0*Units::mm;
-   const Double_t bendEntranceAngle = 0.0;
-   const Double_t bendEntranceZDisplacement = bendEntranceHalfZ;
-   // Composite
-   const Double_t valveVolAngle = 0.0;
-   const Double_t valveVolYDisplacement = valveVolFrontYDisplacement + valveVolFrontHalfLength + valveVolBackHalfLength;
-   
-   // -- Bend
-   const Double_t bendRMin = 160.0*Units::mm;
-   const Double_t bendRMax = 220.0*Units::mm;
-   const Double_t bendHalfLength = 15.0*Units::mm;
-   const Double_t bendVolAngle = 90.0;
-   const Double_t bendVolYDisplacement = valveVolYDisplacement;
-   const Double_t bendVolXDisplacement = (bendRMin + bendRMax)/2.0;
-   const Double_t bendVolZDisplacement = 2.0*bendEntranceHalfZ;							
-   
-   // -- Detector Valve Volume
-   const Double_t detectorValveVolHalfX = 55.0*Units::mm;
-   const Double_t detectorValveVolHalfY = 30.0*Units::mm;
-   const Double_t detectorValveVolHalfZ = 30.0*Units::mm;
-   const Double_t detectorValveVolAngle = 0.0;
-   const Double_t detectorValveVolXDisplacement = bendVolXDisplacement + detectorValveVolHalfX;
-   const Double_t detectorValveVolYDisplacement = valveVolYDisplacement;
-   const Double_t detectorValveVolZDisplacement = bendVolZDisplacement + bendVolXDisplacement;
-   
-   // -- Detector Tube Top
-   const Double_t detectorTubeTopRMin = 0.;
-   const Double_t detectorTubeTopRMax = 25.0*Units::mm;
-   const Double_t detectorTubeTopHalfLength = 15.75*Units::mm;
-   const Double_t detectorTubeTopAngle = 0.0;
-   const Double_t detectorTubeTopXDisplacement = detectorValveVolXDisplacement;
-   const Double_t detectorTubeTopYDisplacement = valveVolYDisplacement;
-   const Double_t detectorTubeTopZDisplacement = detectorValveVolZDisplacement + detectorValveVolHalfZ + detectorTubeTopHalfLength;
-   
-   // -- Detector Tube
-   const Double_t detectorTubeRMin = 0.;
-   const Double_t detectorTubeRMax = 27.85*Units::mm;
-   const Double_t detectorTubeHalfLength = 250.75*Units::mm;
-   const Double_t detectorTubeAngle = 0.0;
-   const Double_t detectorTubeXDisplacement = detectorValveVolXDisplacement;
-   const Double_t detectorTubeYDisplacement = valveVolYDisplacement;
-   const Double_t detectorTubeZDisplacement = detectorTubeTopZDisplacement + detectorTubeTopHalfLength + detectorTubeHalfLength;
-   
-   // -- Detector
-   const Double_t detectorRMin = 0.;
-   const Double_t detectorRMax = 27.85*Units::mm;
-   const Double_t detectorHalfLength = 5.*Units::mm;
-   const Double_t detectorAngle = 0.0;
-   const Double_t detectorXDisplacement = detectorValveVolXDisplacement;
-   const Double_t detectorYDisplacement = valveVolYDisplacement;
-   const Double_t detectorZDisplacement = detectorTubeZDisplacement + detectorTubeHalfLength + detectorHalfLength;
-   
-}
 
 using namespace ModelParameters;
 
@@ -153,7 +63,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- SOURCE TUBE
-   // -- Source tube has 13 segments, all of which are identical (except one which has a hole in the top)
+   // Source tube has 13 segments, all of which are identical 
+   // (except one which has a hole in the top)
    
    // -- Make a SourceTube Segment
    TUCNGeoTube *sourceSegShape = new TUCNGeoTube("SourceSeg", sourceSegRMin, sourceSegRMax, sourceSegHalfLength);
@@ -238,7 +149,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    bendEntranceMatrix->RegisterYourself();
    
    // -- Create the composite Valve volume
-   TUCNGeoCompositeShape *valveVolShape = new TUCNGeoCompositeShape("ValveVol","(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
+   TUCNGeoCompositeShape *valveVolShape = new TUCNGeoCompositeShape("ValveVol", "(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
    TUCNTrackingVolume* valveVol = new TUCNTrackingVolume("ValveVol",valveVolShape,heliumII);
    valveVol->SetLineColor(kTeal-5);
    valveVol->SetLineWidth(1);
@@ -312,7 +223,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    chamber->AddNode(bendVol, 1, new TGeoHMatrix(bendVolMat));
    
    // -------------------------------------
-   // -- DetectorValveVol
+   // -- DETECTOR VALVE
+   // DetectorValveVol
    TUCNGeoBBox *detectorValveVolShape = new TUCNGeoBBox("DetectorValveVol", detectorValveVolHalfX, detectorValveVolHalfY, detectorValveVolHalfZ);
    TUCNTrackingVolume* detectorValveVol = new TUCNTrackingVolume("DetectorValveVol", detectorValveVolShape, heliumII);
    detectorValveVol->SetLineColor(kRed+3);
@@ -346,7 +258,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    detectorValveVol->AddNode(detectorValve, 1, new TGeoHMatrix(detectorValveMat));
 */ 
    // -------------------------------------
-   // -- DetectorTubeTop - Entrance into the detector tube
+   // -- DETECTOR TUBE
+   // DetectorTubeTop - Entrance into the detector tube
    TUCNGeoTube *detectorTubeTopShape = new TUCNGeoTube("DetectorTubeTop", detectorTubeTopRMin, detectorTubeTopRMax, detectorTubeTopHalfLength);
    TUCNTrackingVolume* detectorTubeTop = new TUCNTrackingVolume("DetectorTubeTop", detectorTubeTopShape, heliumII);
    detectorTubeTop->SetLineColor(kOrange+1);
@@ -392,6 +305,46 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    chamber->AddNode(detector, 1, new TGeoHMatrix(detectorMat));
    
    // -------------------------------------
+   // -- GUIDE SECTION
+   // Guide section has *probably* 4 segments. 
+   TUCNGeoBBox *guideSegShape = new TUCNGeoBBox("GuideSeg", guideSegHalfX, guideSegHalfY, guideSegHalfZ);
+   TUCNTrackingVolume* guideSeg = new TUCNTrackingVolume("GuideSeg", guideSegShape, heliumII);
+   guideSeg->SetLineColor(kCyan-8);
+   guideSeg->SetLineWidth(1);
+   guideSeg->SetVisibility(kTRUE);
+   guideSeg->SetTransparency(20);
+   Double_t guideSegXPos = guideXDisplacement;
+   for (Int_t segNum = 1; segNum <= 5; segNum++) {
+      // Define Guide Seg matrix
+      TGeoRotation segmentRot("SegmentRot",guidePhi,guideTheta,0); // phi, theta, psi
+      TGeoTranslation segmentTra("SegmentTra",guideSegXPos, guideYDisplacement, guideZDisplacement);
+      TGeoCombiTrans segmentCom(segmentTra,segmentRot);
+      TGeoHMatrix segmentMat = segmentCom;
+      Char_t sourceMatrixName[20];
+      sprintf(sourceMatrixName, "GuideSegMatrix%d", segNum);
+      segmentMat.SetName(sourceMatrixName);
+      chamber->AddNode(guideSeg, segNum, new TGeoHMatrix(segmentMat));
+      // Shift next segment along by length of segment
+      guideSegXPos = guideSegXPos - 2.0*guideSegHalfZ;
+   }
+   
+   // -------------------------------------
+   // -- RAMSEY CELL PRE-VOLUME SECTION
+   // -- Define General Box shape dimensions
+   TUCNGeoBBox *preVolumeBoxShape = new TUCNGeoBBox("PreVolumeBoxShape", preVolumeBoxHalfX, preVolumeBoxHalfY, preVolumeBoxHalfZ);
+   TUCNTrackingVolume* preVolumeBox = new TUCNTrackingVolume("PreVolumeBox", preVolumeBoxShape, heliumII);
+   preVolumeBox->SetLineColor(kMagenta-8);
+   preVolumeBox->SetLineWidth(1);
+   preVolumeBox->SetVisibility(kTRUE);
+   preVolumeBox->SetTransparency(20);
+   TGeoRotation preVolumeBoxRot("PreVolumeBoxRot", preVolumePhi, preVolumeTheta, 45);
+   TGeoTranslation preVolumeBoxTra("PreVolumeBoxTra", preVolumeXDisplacement, preVolumeYDisplacement, preVolumeZDisplacement);
+   TGeoCombiTrans preVolumeBoxCom(preVolumeBoxTra,preVolumeBoxRot);
+   TGeoHMatrix preVolumeBoxMat = preVolumeBoxCom;
+   chamber->AddNode(preVolumeBox, 1, new TGeoHMatrix(preVolumeBoxMat));
+   
+   
+   // -------------------------------------
    // -- Close Geometry
    geoManager->CloseGeometry();
    
@@ -403,13 +356,14 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- VISUALISATION GEOM
-   // -- Here we swap out TUCNCompositeShape for TGeoCompositeShape due to explicit TGeoShape downcasting
-   // -- problems in TGeoPainter. The geometry that is left becomes the visualisation geometry used for drawing
-   
-   // -- First replace the composite shapes in the geometry
+   // -- Here we swap out TUCNCompositeShape for TGeoCompositeShape due to explicit
+   // -- TGeoShape downcasting problems in TGeoPainter. The geometry that is left becomes
+   // --  the visualisation geometry used for drawing
+   // First replace the composite shapes in the geometry
    TGeoCompositeShape *valveVolShapeVis = new TGeoCompositeShape("ValveVolVis",                                    "(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
-   TGeoCompositeShape* bendShapeVis = new TGeoCompositeShape("BendShapeVis","(CircleBend * BendBox:BendBoxMatrix)");
    valveVol->SetShape(valveVolShapeVis);
+   
+   TGeoCompositeShape* bendShapeVis = new TGeoCompositeShape("BendShapeVis","(CircleBend * BendBox:BendBoxMatrix)");
    bendVol->SetShape(bendShapeVis);
    
    // -------------------------------------
@@ -448,7 +402,7 @@ Bool_t Draw_Geom(const TGeoManager* geoManager)
    TGLViewer::ECameraType camera = 2;
    glViewer->SetCurrentCamera(camera);
    glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   Double_t cameraCentre[3] = {bendVolXDisplacement, bendVolYDisplacement, bendVolZDisplacement};
+   Double_t cameraCentre[3] = {preVolumeXDisplacement, preVolumeYDisplacement, preVolumeZDisplacement};
    glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
    // -- Draw Reference Point, Axes
    Double_t refPoint[3] = {0.,0.,0.};

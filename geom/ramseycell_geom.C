@@ -7,22 +7,10 @@
 #include "../include/Units.h"
 #include "../include/Constants.h"
 #include "../include/Materials.h"
+#include "model_parameters.h"
 
 Bool_t Build_Geom(const TGeoManager* geoManager);
 Bool_t Draw_Geom(const TGeoManager* geoManager);
-
-namespace ModelParameters {
-   // -- Ramsey Cell
-   const Double_t ramseyCellRMin = 0.; 
-   const Double_t ramseyCellRMax = 235.0*Units::mm;
-   const Double_t ramseyCellHalfLength = 120.*Units::mm;
-   const Double_t ramseyCellAngle = 90.0;
-
-   const Double_t bFieldX = 0.;
-   const Double_t bFieldY = 0.;
-   const Double_t bFieldZ = 5.0*Units::uT;
-   
-}
 
 using namespace ModelParameters;
 
