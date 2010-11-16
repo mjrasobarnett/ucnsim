@@ -124,47 +124,37 @@ namespace ModelParameters {
    const Double_t preVolumeBoxCornerPhi = preVolumeBoxPhi;
    const Double_t preVolumeBoxCornerTheta = 0;
    const Double_t preVolumeBoxCornerPsi = 0;
-
    const Double_t preVolumeBoxCorner1XDisplacement = 84.0*Units::mm;
    const Double_t preVolumeBoxCorner1YDisplacement = 0.0*Units::mm;
    const Double_t preVolumeBoxCorner1ZDisplacement = 0.0*Units::mm;
-
    const Double_t preVolumeBoxCorner2XDisplacement = 0.0*Units::mm;
    const Double_t preVolumeBoxCorner2YDisplacement = 84.0*Units::mm;
    const Double_t preVolumeBoxCorner2ZDisplacement = 0.0*Units::mm;
-
    const Double_t preVolumeBoxCorner3XDisplacement = -84.0*Units::mm;
    const Double_t preVolumeBoxCorner3YDisplacement = 0.0*Units::mm;
    const Double_t preVolumeBoxCorner3ZDisplacement = 0.0*Units::mm;
-   
    const Double_t preVolumeBoxCorner4XDisplacement = 0.0*Units::mm;
    const Double_t preVolumeBoxCorner4YDisplacement = -84.0*Units::mm;
    const Double_t preVolumeBoxCorner4ZDisplacement = 0.0*Units::mm;
-
-   
+ 
    const Double_t preVolumeCornerRMin = 0.0*Units::mm;
    const Double_t preVolumeCornerRMax = 26.0*Units::mm;
    const Double_t preVolumeCornerHalfZ = preVolumeBoxHalfZ;
    const Double_t preVolumeCornerPhi = 0;
    const Double_t preVolumeCornerTheta = 0;
    const Double_t preVolumeCornerPsi = 0;
-   
    const Double_t preVolumeCorner1XDisplacement = 65.0*Units::mm;
    const Double_t preVolumeCorner1YDisplacement = 0.0*Units::mm;
    const Double_t preVolumeCorner1ZDisplacement = 0.0*Units::mm;
-   
    const Double_t preVolumeCorner2XDisplacement = 0.0*Units::mm;
    const Double_t preVolumeCorner2YDisplacement = 65.0*Units::mm;
    const Double_t preVolumeCorner2ZDisplacement = 0.0*Units::mm;
-   
    const Double_t preVolumeCorner3XDisplacement = -65.0*Units::mm;
    const Double_t preVolumeCorner3YDisplacement = 0.0*Units::mm;
    const Double_t preVolumeCorner3ZDisplacement = 0.0*Units::mm;
-   
    const Double_t preVolumeCorner4XDisplacement = 0.0*Units::mm;
    const Double_t preVolumeCorner4YDisplacement = -65.0*Units::mm;
    const Double_t preVolumeCorner4ZDisplacement = 0.0*Units::mm;
-   
    
    const Double_t preVolumePhi = 90;
    const Double_t preVolumeTheta = 90;
@@ -174,14 +164,135 @@ namespace ModelParameters {
    const Double_t preVolumeZDisplacement = guideZDisplacement;
    
    // -- Ramsey Cell
-   const Double_t ramseyCellRMin = 0.; 
-   const Double_t ramseyCellRMax = 235.0*Units::mm;
-   const Double_t ramseyCellHalfLength = 120.*Units::mm;
-   const Double_t ramseyCellAngle = 90.0;
+   // Neutral Electrode
+   const Double_t neutralElectrodeRMin = 0.0*Units::mm;
+   const Double_t neutralElectrodeRMax = 140.0*Units::mm;
+   const Double_t neutralElectrodeHalfZ = 7.5*Units::mm;
+   const Double_t neutralElectrodePhi = 90;
+   const Double_t neutralElectrodeTheta = 90;
+   const Double_t neutralElectrodePsi = 0;
+   const Double_t neutralElectrodeXDisplacement = preVolumeXDisplacement - preVolumeBoxHalfZ - neutralElectrodeHalfZ + 1*Units::mm;
+   const Double_t neutralElectrodeYDisplacement = preVolumeYDisplacement;
+   const Double_t neutralElectrodeZDisplacement = preVolumeZDisplacement;
+   
+   // Neutral Electrode Valve Holes
+   const Double_t neutralElectrodeHoleRMin = 0.0*Units::mm;
+   const Double_t neutralElectrodeHoleRMax = 15.0*Units::mm;
+   const Double_t neutralElectrodeHoleHalfZ = neutralElectrodeHalfZ;
+/*   const Double_t neutralElectrodeHolePhi = 0.0;
+   const Double_t neutralElectrodeHoleTheta = 0.0;
+   const Double_t neutralElectrodeHolePsi = 0.0;
+   const Double_t neutralElectrodeHoleZDisplacement = 0;
+   const Double_t neutralElectrodeHole1XDisplacement = 0;
+   const Double_t neutralElectrodeHole1YDisplacement = 65.0*Units::mm;
+   const Double_t neutralElectrodeHole1ZDisplacement = neutralElectrodeHoleZDisplacement;
+   const Double_t neutralElectrodeHole2XDisplacement = 65.0*Units::mm;
+   const Double_t neutralElectrodeHole2YDisplacement = 0;
+   const Double_t neutralElectrodeHole2ZDisplacement = neutralElectrodeHoleZDisplacement;
+   const Double_t neutralElectrodeHole3XDisplacement = 0;
+   const Double_t neutralElectrodeHole3YDisplacement = -65.0*Units::mm;
+   const Double_t neutralElectrodeHole3ZDisplacement = neutralElectrodeHoleZDisplacement;
+   const Double_t neutralElectrodeHole4XDisplacement = -65.0*Units::mm;
+   const Double_t neutralElectrodeHole4YDisplacement = 0;
+   const Double_t neutralElectrodeHole4ZDisplacement = neutralElectrodeHoleZDisplacement;
+*/   
+   const Double_t neutralElectrodeHolePhi = neutralElectrodePhi;
+   const Double_t neutralElectrodeHoleTheta = neutralElectrodeTheta;
+   const Double_t neutralElectrodeHolePsi = neutralElectrodePsi;
+   const Double_t neutralElectrodeHole1XDisplacement = neutralElectrodeXDisplacement;
+   const Double_t neutralElectrodeHole1YDisplacement = neutralElectrodeYDisplacement;
+   const Double_t neutralElectrodeHole1ZDisplacement = neutralElectrodeZDisplacement+65.0*Units::mm;
+   const Double_t neutralElectrodeHole2XDisplacement = neutralElectrodeXDisplacement;
+   const Double_t neutralElectrodeHole2YDisplacement = neutralElectrodeYDisplacement+65.0*Units::mm;
+   const Double_t neutralElectrodeHole2ZDisplacement = neutralElectrodeZDisplacement;
+   const Double_t neutralElectrodeHole3XDisplacement = neutralElectrodeXDisplacement;
+   const Double_t neutralElectrodeHole3YDisplacement = neutralElectrodeYDisplacement;
+   const Double_t neutralElectrodeHole3ZDisplacement = neutralElectrodeZDisplacement-65.0*Units::mm;
+   const Double_t neutralElectrodeHole4XDisplacement = neutralElectrodeXDisplacement;
+   const Double_t neutralElectrodeHole4YDisplacement = neutralElectrodeYDisplacement-65.0*Units::mm;
+   const Double_t neutralElectrodeHole4ZDisplacement = neutralElectrodeZDisplacement;
+   
+   // Neutral Cell
+   const Double_t neutralCellRMin = 0.0*Units::mm;
+   const Double_t neutralCellRMax = 125.0*Units::mm;
+   const Double_t neutralCellHalfZ = 27.5*Units::mm;
+   const Double_t neutralCellPhi = 90;
+   const Double_t neutralCellTheta = 90;
+   const Double_t neutralCellPsi = 0;
+   const Double_t neutralCellXDisplacement = neutralElectrodeXDisplacement - neutralElectrodeHalfZ - neutralCellHalfZ;
+   const Double_t neutralCellYDisplacement = neutralElectrodeYDisplacement;
+   const Double_t neutralCellZDisplacement = neutralElectrodeZDisplacement;
+   
+   // Cell connector tube
+   const Double_t cellConnectorRMin = 15.0*Units::mm;
+   const Double_t cellConnectorRMax = 17.5*Units::mm;
+   const Double_t cellConnectorHalfZ = 27.5*Units::mm;
+   const Double_t cellConnectorPhi = 90;
+   const Double_t cellConnectorTheta = 90;
+   const Double_t cellConnectorPsi = 0;
+   const Double_t cellConnectorXDisplacement = neutralCellXDisplacement;
+   const Double_t cellConnectorYDisplacement = neutralCellYDisplacement;
+   const Double_t cellConnectorZDisplacement = neutralCellZDisplacement + 65.0*Units::mm;
+/*   
+   const Double_t cellConnectorPhi = 0;
+   const Double_t cellConnectorTheta = 0;
+   const Double_t cellConnectorPsi = 0;
+   const Double_t cellConnectorXDisplacement = 0;
+   const Double_t cellConnectorYDisplacement = 65.0*Units::mm;
+   const Double_t cellConnectorZDisplacement = 0;
+*/ 
 
-   const Double_t bFieldX = 0.;
-   const Double_t bFieldY = 0.;
-   const Double_t bFieldZ = 5.0*Units::uT;
+   // Central Electrode
+   const Double_t centralElectrodeRMin = 0.0*Units::mm;
+   const Double_t centralElectrodeRMax = 140.0*Units::mm;
+   const Double_t centralElectrodeHalfZ = 7.0*Units::mm;
+   const Double_t centralElectrodePhi = 90;
+   const Double_t centralElectrodeTheta = 90;
+   const Double_t centralElectrodePsi = 0;
+   const Double_t centralElectrodeXDisplacement = neutralCellXDisplacement - neutralCellHalfZ - neutralElectrodeHalfZ + 1.0*Units::mm;
+   const Double_t centralElectrodeYDisplacement = neutralCellYDisplacement;
+   const Double_t centralElectrodeZDisplacement = neutralCellZDisplacement;
+   
+   // Central Electrode Hole
+   const Double_t centralElectrodeHoleRMin = 0.0*Units::mm;
+   const Double_t centralElectrodeHoleRMax = 15.0*Units::mm;
+   const Double_t centralElectrodeHoleHalfZ = centralElectrodeHalfZ;
+/*   const Double_t centralElectrodeHolePhi = 0.0;
+   const Double_t centralElectrodeHoleTheta = 0.0;
+   const Double_t centralElectrodeHolePsi = 0.0;
+   const Double_t centralElectrodeHoleXDisplacement = 0;
+   const Double_t centralElectrodeHoleYDisplacement = 65.0*Units::mm;
+   const Double_t centralElectrodeHoleZDisplacement = centralElectrodeHoleZDisplacement;
+*/   
+   const Double_t centralElectrodeHolePhi = centralElectrodePhi;
+   const Double_t centralElectrodeHoleTheta = centralElectrodeTheta;
+   const Double_t centralElectrodeHolePsi = centralElectrodePsi;
+   const Double_t centralElectrodeHoleXDisplacement = centralElectrodeXDisplacement;
+   const Double_t centralElectrodeHoleYDisplacement = centralElectrodeYDisplacement;
+   const Double_t centralElectrodeHoleZDisplacement = centralElectrodeZDisplacement+65.0*Units::mm;
+
+   // HV Cell
+   const Double_t hvCellRMin = 0.0*Units::mm;
+   const Double_t hvCellRMax = 125.0*Units::mm;
+   const Double_t hvCellHalfZ = 27.5*Units::mm;
+   const Double_t hvCellPhi = 90;
+   const Double_t hvCellTheta = 90;
+   const Double_t hvCellPsi = 0;
+   const Double_t hvCellXDisplacement = centralElectrodeXDisplacement - centralElectrodeHalfZ - hvCellHalfZ;
+   const Double_t hvCellYDisplacement = centralElectrodeYDisplacement;
+   const Double_t hvCellZDisplacement = centralElectrodeZDisplacement;
+   
+   // HV Electrode
+   const Double_t hvElectrodeRMin = 0.0*Units::mm;
+   const Double_t hvElectrodeRMax = 125.0*Units::mm;
+   const Double_t hvElectrodeHalfZ = 2.*Units::mm;
+   const Double_t hvElectrodePhi = 90;
+   const Double_t hvElectrodeTheta = 90;
+   const Double_t hvElectrodePsi = 0;
+   const Double_t hvElectrodeXDisplacement = hvCellXDisplacement - hvCellHalfZ - hvElectrodeHalfZ;
+   const Double_t hvElectrodeYDisplacement = hvCellYDisplacement;
+   const Double_t hvElectrodeZDisplacement = hvCellZDisplacement;
+   
 }
 #endif /* MODEL_PARAMETERS_H */
 
