@@ -468,7 +468,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix hvCellMat = hvCellCom;
    chamber->AddNode(hvCell, 1, new TGeoHMatrix(hvCellMat));
    
-   // Define Central electrode 
+   // Define HV electrode 
    TUCNGeoTube *hvElectrodeShape = new TUCNGeoTube("HVElectrodeShape", hvElectrodeRMin, hvElectrodeRMax, hvElectrodeHalfZ);
    TUCNTrackingVolume* hvElectrode = new TUCNTrackingVolume("HVElectrode", hvElectrodeShape, beryllium);
    hvElectrode->SetLineColor(kRed-8);

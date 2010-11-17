@@ -13,6 +13,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager);
 Bool_t Draw_Geom(const TGeoManager* geoManager);
 
 using namespace ModelParameters;
+using namespace FieldParameters;
 
 //__________________________________________________________________________
 Int_t ramseycell_geom()
@@ -62,29 +63,18 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // Add to geom
    top->AddNode(chamber,1);
    
-   // -------------------------------------
-   // -- Build Ramsey-Cell Volume
-   TUCNGeoTube *ramseyCellShape = new TUCNGeoTube("RamseyCell", ramseyCellRMin, ramseyCellRMax, ramseyCellHalfLength);
-   TUCNTrackingVolume* ramseyCell = new TUCNTrackingVolume("RamseyCell", ramseyCellShape, heliumII);
-   ramseyCell->SetLineColor(kAzure-4);
-   ramseyCell->SetLineWidth(1);
-   ramseyCell->SetVisibility(kTRUE);
-   ramseyCell->SetTransparency(20);
-   
-   // -- Define SourceTube matrix
-   // Rotation seems to be applied before translation so bear that in mind when choosing which
-   // coordinate to transform in translation
-   TGeoRotation ramseyCellRot("ramseyCellRot",0,ramseyCellAngle,0); // phi, theta, psi
-   TGeoTranslation ramseyCellTra("ramseyCellTra",0.,0.,0.); // x, y, z
-   TGeoCombiTrans ramseyCellCom(ramseyCellTra,ramseyCellRot);
-   TGeoHMatrix ramseyCellMat = ramseyCellCom;
-   Char_t ramseyCellName[14];
-   sprintf(ramseyCellName, "RamseyCellMat"); 
-   ramseyCellMat.SetName(ramseyCellName);
-   
-   // -------------------------------------
-   // -- Add Volume to Geometry
-   chamber->AddNode(ramseyCell, 1, new TGeoHMatrix(ramseyCellMat));
+   // HV Cell
+   TUCNGeoTube *hvCellShape = new TUCNGeoTube("HVElectrodeShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
+   TUCNTrackingVolume* hvCell = new TUCNTrackingVolume("HVElectrode", hvCellShape, heliumII);
+   hvCell->SetLineColor(kYellow-8);
+   hvCell->SetLineWidth(1);
+   hvCell->SetVisibility(kTRUE);
+   hvCell->SetTransparency(20);
+   TGeoRotation hvCellRot("HVElectrodeRot", hvCellPhi, hvCellTheta, hvCellPsi);
+   TGeoTranslation hvCellTra("HVElectrodeTra", 0., 0., 0.);
+   TGeoCombiTrans hvCellCom(hvCellTra,hvCellRot);
+   TGeoHMatrix hvCellMat = hvCellCom;   
+   chamber->AddNode(hvCell, 1, new TGeoHMatrix(hvCellMat));
    
    // -------------------------------------
    // -- Close Geometry
@@ -106,9 +96,9 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -- Define solenoid field - uniform magnetic field
    // Define shape of field
-   TGeoShape* fieldShape = new TUCNGeoTube("SolenoidFieldShape",ramseyCellRMin, ramseyCellRMax, ramseyCellHalfLength);
+   TGeoShape* fieldShape = new TUCNGeoTube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
    // Define transformation that locates field in geometry
-   TGeoMatrix* fieldPosition = new TGeoHMatrix(ramseyCellMat);
+   TGeoMatrix* fieldPosition = new TGeoHMatrix(hvCellMat);
    // Define field vector
    TVector3 fieldStrength(solenoidBx, solenoidBy, solenoidBz);
    // Define field object

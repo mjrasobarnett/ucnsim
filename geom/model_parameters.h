@@ -5,6 +5,16 @@
 #include "../include/Constants.h"
 
 namespace ModelParameters {
+   // -- Top
+   const Double_t topX = 100.;
+   const Double_t topY = 100.;
+   const Double_t topZ = 100.;
+   
+   // -- Chamber
+   const Double_t chamberX = 10.;
+   const Double_t chamberY = 10.;
+   const Double_t chamberZ = 10.;   
+   
    // -- SourceTube Segment
    const Double_t sourceSegRMin = 0.; 
    const Double_t sourceSegRMax = 31.5*Units::mm;
@@ -294,5 +304,14 @@ namespace ModelParameters {
    const Double_t hvElectrodeZDisplacement = hvCellZDisplacement;
    
 }
+
+namespace FieldParameters {
+   // -- Uniform Solenoid
+   const Double_t solenoidBx = 0.;
+   const Double_t solenoidBy = 0.;
+   const Double_t solenoidBz = 0.;
+   
+}
+
 #endif /* MODEL_PARAMETERS_H */
 
