@@ -64,16 +64,17 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    top->AddNode(chamber,1);
    
    // HV Cell
-   TUCNGeoTube *hvCellShape = new TUCNGeoTube("HVElectrodeShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
-   TUCNTrackingVolume* hvCell = new TUCNTrackingVolume("HVElectrode", hvCellShape, heliumII);
+   TUCNGeoTube *hvCellShape = new TUCNGeoTube("HVShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
+   TUCNTrackingVolume* hvCell = new TUCNTrackingVolume("HVCell", hvCellShape, heliumII);
    hvCell->SetLineColor(kYellow-8);
    hvCell->SetLineWidth(1);
    hvCell->SetVisibility(kTRUE);
    hvCell->SetTransparency(20);
-   TGeoRotation hvCellRot("HVElectrodeRot", hvCellPhi, hvCellTheta, hvCellPsi);
-   TGeoTranslation hvCellTra("HVElectrodeTra", 0., 0., 0.);
+   TGeoRotation hvCellRot("HVCellRot", hvCellPhi, hvCellTheta, hvCellPsi);
+   TGeoTranslation hvCellTra("HVCellTra", 0., 0., 0.);
    TGeoCombiTrans hvCellCom(hvCellTra,hvCellRot);
    TGeoHMatrix hvCellMat = hvCellCom;   
+   hvCellMat.SetName("HVCellMat");
    chamber->AddNode(hvCell, 1, new TGeoHMatrix(hvCellMat));
    
    // -------------------------------------

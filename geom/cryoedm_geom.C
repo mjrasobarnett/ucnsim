@@ -456,14 +456,14 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    chamber->AddNode(centralElectrodeHole, 1, new TGeoHMatrix(centralElectrodeHoleMat));
    
    // HV Cell
-   TUCNGeoTube *hvCellShape = new TUCNGeoTube("HVElectrodeShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
-   TUCNTrackingVolume* hvCell = new TUCNTrackingVolume("HVElectrode", hvCellShape, heliumII);
+   TUCNGeoTube *hvCellShape = new TUCNGeoTube("HVShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
+   TUCNTrackingVolume* hvCell = new TUCNTrackingVolume("HVCell", hvCellShape, heliumII);
    hvCell->SetLineColor(kYellow-8);
    hvCell->SetLineWidth(1);
    hvCell->SetVisibility(kTRUE);
    hvCell->SetTransparency(20);
-   TGeoRotation hvCellRot("HVElectrodeRot", hvCellPhi, hvCellTheta, hvCellPsi);
-   TGeoTranslation hvCellTra("HVElectrodeTra", hvCellXDisplacement, hvCellYDisplacement, hvCellZDisplacement);
+   TGeoRotation hvCellRot("HVCellRot", hvCellPhi, hvCellTheta, hvCellPsi);
+   TGeoTranslation hvCellTra("HVCellTra", hvCellXDisplacement, hvCellYDisplacement, hvCellZDisplacement);
    TGeoCombiTrans hvCellCom(hvCellTra,hvCellRot);
    TGeoHMatrix hvCellMat = hvCellCom;
    chamber->AddNode(hvCell, 1, new TGeoHMatrix(hvCellMat));

@@ -122,7 +122,7 @@ Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeN
    TGLViewer::ECameraType camera = 2;
    glViewer->SetCurrentCamera(camera);
    glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   Double_t cameraCentre[3] = {-1,3,-0.3};
+   Double_t cameraCentre[3] = {0,0,0};
    glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
    // -- Draw Reference Point, Axes
    Double_t refPoint[3] = {0.,0.,0.};

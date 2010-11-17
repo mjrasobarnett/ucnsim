@@ -3,27 +3,12 @@
 #include "include/Materials.h"
 #include "include/Constants.h"
 #include "include/Units.h"
+#include "geom/model_parameters.h"
 
 using std::cout;
 using std::endl;
 using std::cerr;
 using std::string;
-
-namespace ModelParameters {
-   // -- SourceTube Segment
-   const Double_t sourceSegRMin = 0.; 
-   const Double_t sourceSegRMax = 31.5*Units::mm;
-   const Double_t sourceSegHalfLength = 125.*Units::mm;
-   const Double_t sourceSegAngle = 90.0;
-   const Double_t sourceSegYDisplacement = 125.*Units::mm;
-   
-   // -- Neutron Beam Area
-   const Double_t neutronBeamAreaRMin = 0.;
-   const Double_t neutronBeamAreaRMax = 15.*Units::mm;
-   const Double_t neutronBeamAreaHalfLength = (13.0*sourceSegHalfLength);
-   const Double_t neutronBeamAreaAngle = 90.0;
-   const Double_t neutronBeamAreaYDisplacement = neutronBeamAreaHalfLength;
-}
 
 using namespace ModelParameters;
 
@@ -38,8 +23,8 @@ Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnerg
 //__________________________________________________________________________
 Int_t generate_particles(const char* configFileName)
 {
-   FillSourceTube(configFileName);
-//   FillRamseyCell(configFileName);
+//   FillSourceTube(configFileName);
+   FillRamseyCell(configFileName);
    return 0;
 }
 
@@ -78,8 +63,8 @@ Bool_t FillRamseyCell(const char* configFileName)
    
    TGeoVolume* volume = 0;
    TGeoMatrix* matrix = 0;
-   volume = geoManager->GetVolume("RamseyCell");
-   matrix = (TGeoMatrix*)geoManager->GetListOfMatrices()->FindObject("RamseyCellMat");
+   volume = geoManager->GetVolume("HVCell");
+   matrix = (TGeoMatrix*)geoManager->GetListOfMatrices()->FindObject("HVCellMat");
    
    if (volume == 0 || matrix == 0) {
       cout << volume << "\t" << matrix << endl;
