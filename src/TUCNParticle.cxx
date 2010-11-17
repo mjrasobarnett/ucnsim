@@ -11,6 +11,7 @@
 #include "TUCNRun.h"
 
 #include "TMath.h"
+#include "TRandom.h"
 #include "TGeoManager.h"
 #include "TGeoNavigator.h"
 #include "TGeoNode.h"
