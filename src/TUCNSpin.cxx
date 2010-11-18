@@ -15,11 +15,13 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
+using namespace std;
+
 ClassImp(TUCNSpin)
 
 //_____________________________________________________________________________
 TUCNSpin::TUCNSpin()
-          :TObject()
+         :TObject()
 {
    // Constructor
 //   Info("TUCNSpin","Default Constructor");
@@ -27,7 +29,7 @@ TUCNSpin::TUCNSpin()
 
 //_____________________________________________________________________________
 TUCNSpin::TUCNSpin(const TUCNSpin& other)
-         :TObject(other), fSpin(other.fSpin)
+         :TObject(other), fSpinor(other.fSpinor)
 {
    // Copy Constructor
 //   Info("TUCNSpin","Copy Constructor");
@@ -40,7 +42,7 @@ TUCNSpin& TUCNSpin::operator=(const TUCNSpin& other)
 //   Info("TUCNSpin","Assignment");
    if(this!=&other) {
       TObject::operator=(other);
-      fSpin = other.fSpin;   
+      fSpinor = other.fSpinor;   
    }
    return *this;
 }
@@ -53,11 +55,104 @@ TUCNSpin::~TUCNSpin()
 }
 
 //_____________________________________________________________________________
-Bool_t Precess(const TVector3& /*localMagField*/, const Double_t /*precessTime*/)
+Bool_t TUCNSpin::Precess(const TVector3& /*localMagField*/, const Double_t /*precessTime*/)
 {
    // Take mag field in the same coordinate system as spin vector and precess about it
+   
    
    return kTRUE;
 }
 
+//_____________________________________________________________________________
+void TUCNSpin::Print(Option_t* /*option*/) const
+{
+   fSpinor.Print();
+}
 
+//_____________________________________________________________________________
+Bool_t TUCNSpin::Polarise(const TVector3& axis, const Bool_t up)
+{
+   if (up == kTRUE) {
+      fSpinor.PolariseUp(axis);
+   } else {
+      fSpinor.PolariseDown(axis);
+   }
+   return kTRUE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNSpinor                                                           //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+ClassImp(TUCNSpinor)
+
+//_____________________________________________________________________________
+TUCNSpinor::TUCNSpinor()
+           :TObject()
+{
+   // Constructor
+//   Info("TUCNSpinor","Default Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNSpinor::TUCNSpinor(const TUCNSpinor& other)
+           :TObject(other), fUp(other.fUp), fDown(other.fDown)
+{
+   // Copy Constructor
+//   Info("TUCNSpinor","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNSpinor& TUCNSpinor::operator=(const TUCNSpinor& other)
+{
+   // Assignment
+//   Info("TUCNSpinor","Assignment");
+   if(this!=&other) {
+      TObject::operator=(other);
+      fUp = other.fUp;
+      fDown = other.fDown;
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+TUCNSpinor::~TUCNSpinor()
+{
+   // Destructor
+//   Info("TUCNSpinor","Destructor");
+}
+
+//_____________________________________________________________________________
+void TUCNSpinor::PolariseUp(const TVector3& axis)
+{
+   // -- Set spinor components to be eigenvector of the operator for spin in the direction
+   // -- defined by 'axis'. Expressions derived in notebook.
+   TVector3 unit = axis.Unit();
+   Double_t mag = 1.0/TMath::Sqrt(2.0 + 2.0*TMath::Abs(unit.Z()));
+   TComplex up((unit.Z() + 1.0)/mag, 0);
+   TComplex down(unit.X()/mag, unit.Y()/mag);
+   fUp = up;
+   fDown = down;
+}
+
+//_____________________________________________________________________________
+void TUCNSpinor::PolariseDown(const TVector3& axis)
+{
+   // -- Set spinor components to be eigenvector of the operator for spin in the direction
+   // -- defined by 'axis'. Expressions derived in notebook.
+   TVector3 unit = axis.Unit();
+   Double_t mag = 1.0/TMath::Sqrt(2.0 + 2.0*TMath::Abs(unit.Z()));
+   TComplex up((unit.Z() - 1.0)/mag, 0);
+   TComplex down(unit.X()/mag, unit.Y()/mag);
+   fUp = up;
+   fDown = down;
+}
+
+//_____________________________________________________________________________
+void TUCNSpinor::Print(Option_t* /*option*/) const
+{
+   cout << "Spin Up: " << fUp.Re() << "+ i" << fUp.Im() << endl;
+   cout << "Spin Down: " << fDown.Re() << "+ i" << fDown.Im() << endl;
+}
