@@ -5,17 +5,13 @@
 #include "include/Units.h"
 #include "geom/model_parameters.h"
 
-using std::cout;
-using std::endl;
-using std::cerr;
-using std::string;
-
+using namespace std;
 using namespace ModelParameters;
 
-
+// Function Declarations
+Bool_t ReadInitialConfig(const string& configFileName);
 Bool_t FillSourceTube(const char* configFileName);
 Bool_t FillRamseyCell(const char* configFileName);
-
 Bool_t GenerateParticles(const Int_t neutrons, const Double_t fillTime, const Double_t vmax, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree);
 Bool_t CreateRandomParticle(TUCNParticle* particle, const Double_t fillTime, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
 Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnergy);
@@ -23,8 +19,38 @@ Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnerg
 //__________________________________________________________________________
 Int_t generate_particles(const char* configFileName)
 {
-//   FillSourceTube(configFileName);
-   FillRamseyCell(configFileName);
+   // Read in Batch Configuration file to find the Initial Configuration File
+   TUCNConfigFile configFile(configFileName);
+   const string initialConfigFileName = configFile.GetString("Config","Initialisation");
+   if (initialConfigFileName.empty() == kTRUE) {
+      cout << "Unable to read in Initialisation Configuration file name" <, endl;
+      return -1;
+   }
+   // Read in Initial Configuration from file.
+   TUCNInitialConfig initialConfig(initialConfigFileName);   
+   // Ask User to choose which Volume to fill
+   cout << "Select which volume to fill with UCN: " << endl;
+   cout.width(15);
+   cout << "   Source Tube" << " -- Enter: 1" << endl;
+   cout.width(15);
+   cout << "   HV Cell" << " -- Enter: 2" << endl;
+   cout.width(15);
+   cout << "   Exit" << " -- Enter: 0" << endl;
+   Int_t userInput = -1;   
+   while (userInput != 0) {
+      cin >> userInput;
+      if (userInput == 1) {
+         FillSourceTube(configFileName);
+         break;
+      } else if (userInput == 2) {
+         FillRamseyCell(configFileName);
+         break;
+      } else if (userInput == 0) {
+         break;
+      } else {
+         cout << "Sorry I didn't understand that. Please try again." << endl;
+      }
+   }
    return 0;
 }
 
