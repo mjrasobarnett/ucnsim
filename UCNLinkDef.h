@@ -41,5 +41,6 @@
 #pragma link C++ class TUCNGeoSubtraction;
 #pragma link C++ class TUCNGeoIntersection;
 #pragma link C++ class TUCNMagFieldManager;
+#pragma link C++ class TUCNInitialConfig;
 
 #endif
