@@ -15,8 +15,7 @@
 //    TUCNFieldManager                                                    //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-class TUCNConfigFile;
-class TUCNRun;
+class TUCNRunConfig;
 
 class TUCNFieldManager : public TNamed 
 {
@@ -36,7 +35,7 @@ public:
    virtual ~TUCNFieldManager();
    
    // -- methods
-   Bool_t Initialise(TUCNConfigFile& configFile, const TUCNRun& run);
+   Bool_t Initialise(const TUCNRunConfig& runConfig);
    
    // Grav Fields
    const TUCNGravField* const GetGravField() const {return fGravField;}

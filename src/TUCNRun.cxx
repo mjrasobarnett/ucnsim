@@ -11,6 +11,7 @@
 
 #include "TUCNRun.h"
 #include "TUCNConfigFile.h"
+#include "TUCNRunConfig.h"
 #include "TUCNFieldManager.h"
 #include "TUCNMagField.h"
 #include "TUCNGravField.h"
@@ -52,52 +53,50 @@ ClassImp(TUCNRun)
 
 //_____________________________________________________________________________
 TUCNRun::TUCNRun()
-        :TNamed("Run", "Default Run")
+        :TNamed()
 {
 // -- Default constructor
    Info("TUCNRun", "Default Constructor");
-   // Create the data object
+   // Don't allocate memory here as per ROOT guidelines for reading objects from ROOT files
    fData = 0;
    fExperiment = 0;
-   fRunTime = 0.0;
-   fMaxStepTime = 0.0;
 } 
 
 //_____________________________________________________________________________
-TUCNRun::TUCNRun(const char *name, const char *title)
-        :TNamed(name, title)
+TUCNRun::TUCNRun(const std::string name)
+        :TNamed(name.c_str(), name.c_str())
 {
 // -- Default constructor
    Info("TUCNRun", "Constructor");
-   // Create the data object
+   // Don't allocate memory here as per ROOT guidelines for reading objects from ROOT files
    fData = new TUCNData("UCNData", "Data for UCNSIM Run");
    fExperiment = new TUCNExperiment();
-   fRunTime = 0.0;
-   fMaxStepTime = 0.0;
 }
 
 //_____________________________________________________________________________
-TUCNRun::TUCNRun(const TUCNRun& run)
-        :TNamed(run),
-         fData(run.fData),
-         fExperiment(run.fExperiment),
-         fRunTime(run.fRunTime),
-         fMaxStepTime(run.fMaxStepTime)
+TUCNRun::TUCNRun(const TUCNRun& other)
+        :TNamed(other),
+         fData(other.fData),
+         fExperiment(other.fExperiment),
+         fRunConfig(other.fRunConfig)
 {
 // -- Copy Constructor
    Info("TUCNRunManager", "Copy Constructor");
 }
 
 //_____________________________________________________________________________
-TUCNRun& TUCNRun::operator=(const TUCNRun& run)
+TUCNRun& TUCNRun::operator=(const TUCNRun& other)
 {
 // --assignment operator
-   if(this!=&run) {
-      TNamed::operator=(run);
-      fData = run.fData;
-      fExperiment = run.fExperiment;
-      fRunTime = run.fRunTime;
-      fMaxStepTime = run.fMaxStepTime;
+   if(this!=&other) {
+      TNamed::operator=(other);
+      // deallocate previous memory if necessary
+      if (fData != NULL) delete fData; fData = NULL;
+      fData = other.fData;
+      // deallocate previous memory if necessary
+      if (fExperiment != NULL) delete fExperiment; fExperiment = NULL;
+      fExperiment = other.fExperiment;
+      fRunConfig = other.fRunConfig;
    }
    return *this;
 }
@@ -112,46 +111,58 @@ TUCNRun::~TUCNRun()
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::Initialise(TUCNConfigFile& configFile)
+Bool_t TUCNRun::Initialise(const TUCNRunConfig& runConfig)
 {
-   // Initialise the Run
+   // -- Initialise the Run
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Allocate Memory
+   ///////////////////////////////////////////////////////////////////////////////////////
+   if (fData != NULL) delete fData; fData = NULL;
+   fData = new TUCNData("UCNData", "Data for UCNSIM Run");
+   if (fExperiment != NULL) delete fExperiment; fExperiment = NULL;
+   fExperiment = new TUCNExperiment();
+   fRunConfig = runConfig;
+   this->SetName(this->GetRunConfig().RunName().c_str());
    cout << "-------------------------------------------" << endl;
    cout << "Initialising: " << this->GetName() << endl;
    cout << "-------------------------------------------" << endl;
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Build Geometry
    ///////////////////////////////////////////////////////////////////////////////////////
-   if (!(this->GetExperiment()->Initialise(configFile, *this))) {
+   if (this->GetExperiment()->Initialise(this->GetRunConfig()) == kFALSE) {
       Error("Initialise","Failed to Build the Experiment");
       return kFALSE;
    }
-   
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Load Particles
    ///////////////////////////////////////////////////////////////////////////////////////
-   if (!(this->LoadParticles(configFile))) {
+   if (this->LoadParticles(this->GetRunConfig()) == kFALSE) {
       Error("Initialise","Failed to Load the Initial Particle Distribution from File");
       return kFALSE;
    }  
+   
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Run Parameters
+   // -- Check Run Parameters
    // Run Time
-   fRunTime = TMath::Abs(configFile.GetFloat("RunTime(s)", this->GetName()))*Units::s;
-   if (fRunTime <= 0.0) { Error("Initialise","No RunTime set!"); return kFALSE; }
+   if (this->GetRunConfig().RunTime() <= 0.0) { 
+      Error("Initialise","No RunTime set"); 
+      return kFALSE; 
+   }
    // Max Step Time
-   fMaxStepTime = TMath::Abs(configFile.GetFloat("MaxStepTime(s)", this->GetName()))*Units::s;
-   if (fMaxStepTime == 0.0) { Error("Initialise","No maxsteptime set!"); return kFALSE; }
+   if (this->GetRunConfig().MaxStepTime() == 0.0) { 
+      Error("Initialise","No maxsteptime set!"); 
+      return kFALSE; 
+   }
    // Determine if we will have any wall losses
-   Bool_t wallLosses = configFile.GetBool("WallLosses", this->GetName());
-   cout << "Wall Losses switch on/off needs to be re-implemented" << endl;
-   /*
-      Need a new way to do this
-   */
+   if (this->GetRunConfig().WallLossesOn() == kFALSE) { 
+      Error("Initialise","Wall Losses Off has not been Implemented yet."); 
+      return kFALSE; 
+   }
    ///////////////////////////////////////////////////////////////////////////////////////
    cout << "Particles: " << this->GetData()->InitialParticles() << endl;
-   cout << "RunTime(s): " << fRunTime << endl;
-   cout << "MaxStepTime(s): " << fMaxStepTime << endl;
-   cout << "WallLosses: " << wallLosses << endl;
+   cout << "RunTime(s): " << this->GetRunConfig().RunTime() << endl;
+   cout << "MaxStepTime(s): " << this->GetRunConfig().MaxStepTime() << endl;
+   cout << "WallLosses: " << this->GetRunConfig().WallLossesOn() << endl;
    cout << "-------------------------------------------" << endl;
    cout << "Run successfully initialised" << endl;
    cout << "-------------------------------------------" << endl;
@@ -163,7 +174,7 @@ Bool_t TUCNRun::Start()
 {
 // -- Propagate the particles stored in the Run's Data, specified by configFile
    cout << "-------------------------------------------" << endl;
-   cout << "Starting Simulation of " << this->GetName() << endl;
+   cout << "Starting Simulation of " << this->GetRunConfig().RunName() << endl;
    cout << "Total Particles: " << this->GetData()->InitialParticles() << endl;
    cout << "Number Propagating: " << this->GetData()->PropagatingParticles() << endl;
    cout << "Number Detected: " << this->GetData()->DetectedParticles() << endl;
@@ -237,12 +248,14 @@ Bool_t TUCNRun::Start()
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::Finish(TUCNConfigFile& configFile)
+Bool_t TUCNRun::Finish()
 {
 // -- Export this run to file
-   TString outputFile = configFile.GetString("OutputDataFile",this->GetName());
-   cout << "-------------------------------------------" << endl;
-   cout << "Writing " << this->GetName() << " out to File: " << outputFile << endl;
+   TString outputFile = this->GetRunConfig().OutputFileName();
+   if (outputFile.IsNull() || outputFile.IsWhitespace()) {
+      Warning("Finish","No output file has been specified. Using default filename");
+      outputFile = "outputdata.root";
+   }
    // -- Check that Data 'checks out'
    if (this->GetData()->ChecksOut() == kFALSE) {
       Error("Export", "TUCNData doesn't check out. Cannot Export Run to file.");
@@ -250,15 +263,17 @@ Bool_t TUCNRun::Finish(TUCNConfigFile& configFile)
    }
    // -- Check we have a .root file
    if (!(outputFile.Contains(".root"))) {
-      Error("Export", "OutputFile is not a ROOT filename");
-      return kFALSE;
-   } 
+      Warning("Export", "OutputFile is not a ROOT filename. Using default filename");
+      outputFile = "outputdata.root";
+   }
+   cout << "-------------------------------------------" << endl;
+   cout << "Writing " << this->GetName() << " out to File: " << outputFile << endl;
    // -- Clear the experiment
    this->GetExperiment()->ClearManager();
    // -- Write out
    TFile *f = TFile::Open(outputFile,"recreate");
    if (!f || f->IsZombie()) {
-      Error("Export","Cannot open file");
+      Error("Export","Cannot open file %s",outputFile.Data());
       return kFALSE;
    }
    char keyname[256];
@@ -286,20 +301,20 @@ TUCNParticle* TUCNRun::GetInitialParticle(Int_t index)
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::LoadParticles(TUCNConfigFile& configFile)
+Bool_t TUCNRun::LoadParticles(const TUCNRunConfig& runConfig)
 {
 // Fetch initial particles tree from file specified in Config File
    ///////////////////////////////////////////////////////////////////////
    // Get name of file holding the data from ConfigFile 
-   TString particlesFile = configFile.GetString("InputDataFile",this->GetName());
+   TString particlesFile = runConfig.InputFileName();
    if (particlesFile == "") { 
       Error("LoadParticles","No File holding the initial particle data has been specified");
       return kFALSE;
    }
    ///////////////////////////////////////////////////////////////////////
    // Fetch Data object holding Initial Particles
-   TString inputDataName = configFile.GetString("InputDataName",this->GetName());
-   if (inputDataName == "") { 
+   TString inputDataName = runConfig.InputRunName();
+   if (inputDataName == "") {
       Error("LoadParticles","No Run holding initial particle data has been specified");
       return kFALSE;
    }
@@ -325,7 +340,7 @@ Bool_t TUCNRun::LoadParticles(TUCNConfigFile& configFile)
    
    ///////////////////////////////////////////////////////////////////////
    // Check Config for which particle Tree we wish to load as our initial particles here
-   TString whichParticles = configFile.GetString("WhichParticles",this->GetName());
+   TString whichParticles = runConfig.ParticlesToLoad();
    if (particlesFile == "") { 
       Warning("LoadParticles","No Particle Tree specified in ConfigFile, 'WhichParticles'. Taking 'Initial' Tree by default.");
       whichParticles = "Initial";
@@ -341,7 +356,7 @@ Bool_t TUCNRun::LoadParticles(TUCNConfigFile& configFile)
    vector<Int_t> particleIDs;
    ///////////////////////////////////////////////////////////////////////
    // - Check Config for whether we will take all of the particles in the Tree specified
-   Bool_t allParticles = configFile.GetBool("AllParticles",this->GetName());
+   Bool_t allParticles = runConfig.LoadAllParticles();
    if (allParticles == kFALSE) {
       // Not using all particles -> We need to read in the particleIDs stated
       Error("LoadParticles","Not using All Particles. Not Implemented Yet");
@@ -360,7 +375,7 @@ Bool_t TUCNRun::LoadParticles(TUCNConfigFile& configFile)
    // - Check Config for whether we will re-start the particles specified above from their initial
    // - state or not. This will always be done, except for those particles in the Propagating Tree,
    // - where we can either re-start, or continue to propagate from their final state
-   Bool_t fromBeginning = configFile.GetBool("FromBeginning",this->GetName());
+   Bool_t fromBeginning = runConfig.RestartFromBeginning();
    if (fromBeginning == kFALSE && TString(inputTree->GetName()) == "Propagating") {
       // - In this case, we are continuing to propagate the particles from their states in the
       // - 'propagating' tree, so we will store this tree. 

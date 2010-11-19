@@ -3,6 +3,8 @@
 #include "TBenchmark.h"
 
 #include "TUCNConfigFile.h"
+#include "TUCNRunConfig.h"
+#include "TUCNInitialConfig.h"
 #include "TUCNRun.h"
 
 using std::cout;
@@ -45,17 +47,21 @@ Int_t main(Int_t argc,Char_t **argv)
    // -- Create the Runs
    ///////////////////////////////////////////////////////////////////////////////////////
    for (Int_t runNumber = 1; runNumber <= numberOfRuns; runNumber++) {
+      // Read in the Run Configuration
+      Char_t name[20];
+      sprintf(name,"Run%d",runNumber);
+      const string runConfigFile = configFile.GetString("Config",name);
+      cout << runConfigFile << endl;
+      TUCNRunConfig runConfig(runConfigFile);
       // Create the Run
-      Char_t name[20], title[20];
-      sprintf(name,"Run%d",runNumber); 
-      sprintf(title,"Run no:%d",runNumber);
       cout << "-------------------------------------------" << endl;
-      cout << "Creating New Run, Name: " << name << " Title: " << title << endl;
-      TUCNRun run(name, title);
+      cout << "Creating: " << name << endl;
+      TUCNRun run;
+      
       ///////////////////////////////////////////////////////////////////////////////////////
       // -- Initialise Run
       ///////////////////////////////////////////////////////////////////////////////////////
-      if (!(run.Initialise(configFile))) {
+      if (!(run.Initialise(runConfig))) {
          cerr << name << " failed to initialise successfully. Program aborting." << endl;
          return EXIT_FAILURE;
       }
@@ -69,7 +75,7 @@ Int_t main(Int_t argc,Char_t **argv)
       ///////////////////////////////////////////////////////////////////////////////////////
       // -- Export to File
       ///////////////////////////////////////////////////////////////////////////////////////
-      if (!(run.Finish(configFile))) {
+      if (!(run.Finish())) {
          cerr << name << " failed to finish successfully. Program aborting." << endl;
          return EXIT_FAILURE;
       }

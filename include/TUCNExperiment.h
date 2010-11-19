@@ -12,9 +12,8 @@
 //    TUCNExperiment                                                      //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-class TUCNConfigFile;
+class TUCNRunConfig;
 class TUCNFieldManager;
-class TUCNRun;
 
 class TUCNExperiment : public TNamed 
 {
@@ -23,7 +22,7 @@ protected:
    TGeoManager*         fGeoManager;
    
    // Geometry Building
-   Bool_t               BuildGeometry(TUCNConfigFile& configFile, const TUCNRun& run);
+   Bool_t               BuildGeometry(const TUCNRunConfig& runConfig);
    
 public:
    // -- constructors
@@ -35,7 +34,7 @@ public:
    virtual ~TUCNExperiment();
    
    // -- methods
-   Bool_t               Initialise(TUCNConfigFile& configFile, const TUCNRun& run);
+   Bool_t               Initialise(const TUCNRunConfig& runConfig);
    
    // GeoManager
    void                 ClearManager() {fGeoManager = 0;}

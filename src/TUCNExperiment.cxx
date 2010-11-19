@@ -59,15 +59,15 @@ TUCNExperiment::~TUCNExperiment()
 // -- Destructor
    Info("TUCNExperiment", "Destructor");
    if (fFieldManager) delete fFieldManager;
-//   if (fGeoManager) delete fGeoManager;
+//   Leave GeoManager to be cleaned up by ROOT, otherwise there are problems
 }
 
 // -- METHODS --
 //______________________________________________________________________________
-Bool_t TUCNExperiment::BuildGeometry(TUCNConfigFile& configFile, const TUCNRun& run)
+Bool_t TUCNExperiment::BuildGeometry(const TUCNRunConfig& runConfig)
 {
 // -- Build Geomtery from file
-   TString geomFileName = configFile.GetString("GeomFile",run.GetName());
+   TString geomFileName = runConfig.GeomFileName();
    if (geomFileName == "") { 
       Error("BuildGeometry","No Geometry File has been specified");
       return kFALSE;
@@ -82,7 +82,7 @@ Bool_t TUCNExperiment::BuildGeometry(TUCNConfigFile& configFile, const TUCNRun& 
 }
 
 //______________________________________________________________________________
-Bool_t TUCNExperiment::Initialise(TUCNConfigFile& configFile, const TUCNRun& run)
+Bool_t TUCNExperiment::Initialise(const TUCNRunConfig& runConfig)
 {
 // -- Initialise the Experimental Geometry with the Configuration File
    cout << "-------------------------------------------" << endl;
@@ -92,7 +92,7 @@ Bool_t TUCNExperiment::Initialise(TUCNConfigFile& configFile, const TUCNRun& run
    // Build Geometry
    ///////////////////////////////////////////////////////////////////////////////////////
    new TGeoManager("GeoManager", "The Geometry Manager");
-   if (!(this->BuildGeometry(configFile, run))) { 
+   if (!(this->BuildGeometry(runConfig))) { 
       Error("Initialise","Failed building geometry.");
       return kFALSE;
    }
@@ -103,7 +103,7 @@ Bool_t TUCNExperiment::Initialise(TUCNConfigFile& configFile, const TUCNRun& run
    // -- Field Initialisation
    ///////////////////////////////////////////////////////////////////////////////////////
    fFieldManager = new TUCNFieldManager();
-   if(!(this->FieldManager()->Initialise(configFile, run))) {
+   if(!(this->FieldManager()->Initialise(runConfig))) {
       Error("Initialise","Failed in field initialisation.");
       return kFALSE;
    }

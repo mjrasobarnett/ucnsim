@@ -71,24 +71,24 @@ TUCNFieldManager::~TUCNFieldManager()
 // -- METHODS --
 
 //______________________________________________________________________________
-Bool_t TUCNFieldManager::Initialise(TUCNConfigFile& configFile, const TUCNRun& run)
+Bool_t TUCNFieldManager::Initialise(const TUCNRunConfig& runConfig)
 {
 // -- Read in the field environment for the experiment from configFile.
    cout << "-------------------------------------------" << endl;
    cout << "Initialising the Field Environment" << endl;
    cout << "-------------------------------------------" << endl;
    // Set-up the Grav Field
-   if (configFile.GetBool("GravField",run.GetName())) {
+   if (runConfig.GravFieldOn() == kTRUE) {
       Info("Initialise","Gravitational Field set to be ON. Creating...");
       this->AddGravField();
    } else {
       Info("Initialise","Gravitational Field set to be OFF.");
    }
    // Set-up the magnetic fields
-   if (configFile.GetBool("MagFields",run.GetName())) {
+   if (runConfig.MagFieldOn() == kTRUE) {
       // Look for Fields file
       Info("Initialise","Magnetic Environment set to be ON. Creating...");
-      TString fieldsFileName = configFile.GetString("FieldsFile",run.GetName());
+      TString fieldsFileName = runConfig.FieldsFileName();
       if (fieldsFileName == "") { 
          Error("Initialise","No Fields File has been specified");
          return kFALSE;

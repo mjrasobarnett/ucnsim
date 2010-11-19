@@ -189,15 +189,6 @@ void TUCNParticle::Print(const Option_t* /*option*/) const
    cout << "Energy (neV): " << this->Energy() / Units::neV << endl;
 }
 
-/*//______________________________________________________________________________
-void TUCNParticle::SampleMagField(const Double_t integratedField, const Double_t stepTime)
-{
-   // Adds current field to average field
-   Double_t timeAveragedField = integratedField/stepTime;
-   fAvgMagField = (fAvgMagField*fFieldPointsSampled + timeAveragedField)/(++fFieldPointsSampled);
-}
-*/
-
 //_____________________________________________________________________________
 Bool_t TUCNParticle::Propagate(TUCNRun* run)
 {
