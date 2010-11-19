@@ -41,7 +41,7 @@ Int_t generate_particles(const char* configFileName)
    while (userInput != 0) {
       cin >> userInput;
       if (userInput == 1) {
-         //FillSourceTube(initialConfig);
+         FillSourceTube(initialConfig);
          break;
       } else if (userInput == 2) {
          FillRamseyCell(initialConfig);
