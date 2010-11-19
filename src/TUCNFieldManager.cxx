@@ -143,6 +143,10 @@ TUCNGravField* TUCNFieldManager::AddGravField()
 //______________________________________________________________________________
 const TUCNMagField* const TUCNFieldManager::GetMagField(const TVector3& position, const string& volume) const
 {
-   return fMagFieldManager->GetMagField(position, volume);
+   if (fMagFieldManager != NULL) {
+      return fMagFieldManager->GetMagField(position, volume);
+   } else {
+      return NULL;
+   }
 }
 
