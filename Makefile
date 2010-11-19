@@ -76,6 +76,8 @@ TUCNMAGFIELDMANAGERO = src/TUCNMagFieldManager.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNMAGFIELDMANAGERS = src/TUCNMagFieldManager.$(SrcSuf) UCNDict.$(SrcSuf)
 TUCNINITIALCONFIGO = src/TUCNInitialConfig.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNINITIALCONFIGS = src/TUCNInitialConfig.$(SrcSuf) UCNDict.$(SrcSuf)
+TUCNRUNCONFIGO = src/TUCNRunConfig.$(ObjSuf) UCNDict.$(ObjSuf)
+TUCNRUNCONFIGS = src/TUCNRunConfig.$(SrcSuf) UCNDict.$(SrcSuf)
 
 #------------------------------------------------------------------------------
 # my library with my classes
@@ -91,7 +93,7 @@ OBJS				=	$(UCNSIMO) $(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(TUCNRUNO) $(TUCNGEO
  						$(TUCNUNIFORMMAGFIELDO)  $(TUCNPARABOLICMAGFIELDO) \
 						$(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) \
 						$(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) $(TUCNELEMENTO) $(TUCNMAGFIELDMANAGERO) \
-						$(TUCNINITIALCONFIGO)
+						$(TUCNINITIALCONFIGO) $(TUCNRUNCONFIGO)
 PROGRAMS			=	$(UCNSO) $(UCNSIM) $(BUILDTEST) $(FITDATA) $(SANDBOX) 
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
@@ -137,7 +139,7 @@ $(UCNSO):		$(TUCNRUNO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCN
 					$(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO)  $(TUCNPARABOLICMAGFIELDO) \
 					$(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) \
 					$(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) $(TUCNELEMENTO) $(TUCNMAGFIELDMANAGERO) \
-					$(TUCNINITIALCONFIGO)
+					$(TUCNINITIALCONFIGO) $(TUCNRUNCONFIGO)
 
 ifeq ($(ARCH),aix)
 		/usr/ibmcxx/bin/makeC++SharedLib $(OutPutOpt) $@ $(LIBS) -p 0 $^
@@ -188,6 +190,7 @@ TUCNVOLUMEO:               include/TUCNVolume.h
 TUCNELEMENTO:              include/TUCNElement.h
 TUCNMAGFIELDMANAGERO:		include/TUCNMagFieldManager.h
 TUCNINITIALCONFIGO:			include/TUCNInitialConfig.h
+TUCNRUNCONFIGO:				include/TUCNRunConfig.h
 
 UCNDict.$(SrcSuf):      include/TUCNGeoBuilder.h include/TUCNGeoBBox.h include/TUCNGeoTube.h \
 								include/TUCNMaterial.h include/TUCNGravField.h include/TUCNParticle.h \
@@ -198,7 +201,7 @@ UCNDict.$(SrcSuf):      include/TUCNGeoBuilder.h include/TUCNGeoBBox.h include/T
 								include/TUCNRun.h include/TUCNFieldManager.h include/TUCNConfigFile.h \
 								include/TUCNGeoCompositeShape.h include/TUCNGeoBoolNode.h \
 								include/TUCNVolume.h include/TUCNElement.h include/TUCNMagFieldManager.h \
-								include/TUCNInitialConfig.h $(LINKDEF)
+								include/TUCNInitialConfig.h include/TUCNRunConfig.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 
