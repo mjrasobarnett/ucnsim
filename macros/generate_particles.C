@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 #include "include/Materials.h"
 #include "include/Constants.h"
@@ -10,8 +11,8 @@ using namespace ModelParameters;
 
 // Function Declarations
 Bool_t ReadInitialConfig(const string& configFileName);
-Bool_t FillSourceTube(const char* configFileName);
-Bool_t FillRamseyCell(const char* configFileName);
+Bool_t FillSourceTube(const TUCNInitialConfig& initialConfig);
+Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig);
 Bool_t GenerateParticles(const Int_t neutrons, const Double_t fillTime, const Double_t vmax, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree);
 Bool_t CreateRandomParticle(TUCNParticle* particle, const Double_t fillTime, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
 Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnergy);
@@ -40,10 +41,10 @@ Int_t generate_particles(const char* configFileName)
    while (userInput != 0) {
       cin >> userInput;
       if (userInput == 1) {
-         FillSourceTube(configFileName);
+         //FillSourceTube(initialConfig);
          break;
       } else if (userInput == 2) {
-         FillRamseyCell(configFileName);
+         FillRamseyCell(initialConfig);
          break;
       } else if (userInput == 0) {
          break;
@@ -55,58 +56,36 @@ Int_t generate_particles(const char* configFileName)
 }
 
 //__________________________________________________________________________
-Bool_t FillRamseyCell(const char* configFileName)
-{
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Build the ConfigFile
-   TUCNConfigFile configFile(configFileName);
-   
+Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig)
+{   
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Generate the particles
-   
-   // Check number of runs
-   const Int_t numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
-   if (numberOfRuns < 1) {
-      cerr << "Cannot read valid number of runs from ConfigFile" << endl;
-      return EXIT_FAILURE;
-   }
-   cout << "Number of Runs: " << numberOfRuns << endl << endl;
-   if (numberOfRuns > 1) {
-      cout << "More than one Run specified. Plot_rundata needs updating to handle this." << endl;
-      return EXIT_FAILURE;
-   }
-   
-   // Create the run to store particles
-   Char_t runName[20], runTitle[20];
-   sprintf(runName,"Run%d",numberOfRuns);
-   sprintf(runTitle,"Run no:%d",1);
-   TUCNRun* run = new TUCNRun(runName,runTitle);
-   
+   string runName = initialConfig.RunName();
+   TUCNRun* run = new TUCNRun(runName);
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Find the initial volume
-   TString geomFileName = configFile.GetString("GeomFile",runName);
+   TString geomFileName = initialConfig.GeomFileName();
    TGeoManager* geoManager = TGeoManager::Import(geomFileName);
    
    TGeoVolume* volume = 0;
    TGeoMatrix* matrix = 0;
    volume = geoManager->GetVolume("HVCell");
    matrix = (TGeoMatrix*)geoManager->GetListOfMatrices()->FindObject("HVCellMat");
-   
    if (volume == 0 || matrix == 0) {
       cout << volume << "\t" << matrix << endl;
       cout << "Unable to find requested volume or matrix" << endl;
       return false;
    }
    
-   Int_t particles = TMath::Abs(configFile.GetInt("InitialParticles", runName));
-   Double_t vmax = TMath::Abs(configFile.GetFloat("InitialMaxVelocity", runName))*Units::m/Units::s;
-   Double_t fillTime = TMath::Abs(configFile.GetFloat("FillingTime", runName))*Units::s;
+   Int_t particles = TMath::Abs(initialConfig.InitialParticles());
+   Double_t vmax = TMath::Abs(initialConfig.InitialMaxVelocity())*Units::m/Units::s;
+   Double_t fillTime = TMath::Abs(initialConfig.FillingTime())*Units::s;
    
    GenerateParticles(particles, fillTime, vmax, volume, matrix, run->GetData());
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Write out the particle tree
-   TString dataFileName = configFile.GetString("InputDataFile",runName);
+   TString dataFileName = initialConfig.OutputFileName();
    if (dataFileName == "") { 
       cout << "No File holding the particle data has been specified" << endl;
       return kFALSE;
@@ -117,7 +96,7 @@ Bool_t FillRamseyCell(const char* configFileName)
       cerr << "Cannot open file: " << dataFileName << endl;
       return 0;
    }
-   run->Write("Run1");
+   run->Write(run->GetName());
    cout << "Initial Particle Data for: " << run->GetName();
    cout << " was successfully written to file" << endl;
    cout << "-------------------------------------------" << endl;
@@ -130,12 +109,8 @@ Bool_t FillRamseyCell(const char* configFileName)
 }
 
 //__________________________________________________________________________
-Int_t FillSourceTube(const char* configFileName)
+Int_t FillSourceTube(const TUCNInitialConfig& initialConfig)
 {
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Build the ConfigFile
-   TUCNConfigFile configFile(configFileName);
-   
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Make the particle beam volume
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
@@ -154,34 +129,19 @@ Int_t FillSourceTube(const char* configFileName)
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Generate the particles
-   
-   // Check number of runs
-   const Int_t numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
-   if (numberOfRuns < 1) {
-      cerr << "Cannot read valid number of runs from ConfigFile" << endl;
-      return EXIT_FAILURE;
-   }
-   cout << "Number of Runs: " << numberOfRuns << endl << endl;
-   if (numberOfRuns > 1) {
-      cout << "More than one Run specified. Plot_rundata needs updating to handle this." << endl;
-      return EXIT_FAILURE;
-   }
-   
    // Create the run to store particles
-   Char_t runName[20], runTitle[20];
-   sprintf(runName,"Run%d",numberOfRuns);
-   sprintf(runTitle,"Run no:%d",1);
-   TUCNRun* run = new TUCNRun(runName,runTitle);
+   string runName = initialConfig.RunName();
+   TUCNRun* run = new TUCNRun(runName);
    
-   Int_t particles = TMath::Abs(configFile.GetInt("InitialParticles", runName));
-   Double_t vmax = TMath::Abs(configFile.GetFloat("InitialMaxVelocity", runName))*Units::m/Units::s;
-   Double_t fillTime = TMath::Abs(configFile.GetFloat("FillingTime", runName))*Units::s;
+   Int_t particles = TMath::Abs(initialConfig.InitialParticles());
+   Double_t vmax = TMath::Abs(initialConfig.InitialMaxVelocity())*Units::m/Units::s;
+   Double_t fillTime = TMath::Abs(initialConfig.FillingTime())*Units::s;
    
    GenerateParticles(particles, fillTime, vmax, neutronBeamArea, neutronBeamAreaMatrix, run->GetData());
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Write out the particle tree
-   TString dataFileName = configFile.GetString("InputDataFile",runName);
+   TString dataFileName = initialConfig.OutputFileName();
    if (dataFileName == "") { 
       cout << "No File holding the particle data has been specified" << endl;
       return kFALSE;
@@ -192,7 +152,7 @@ Int_t FillSourceTube(const char* configFileName)
       cerr << "Cannot open file: " << dataFileName << endl;
       return 0;
    }
-   run->Write("Run1");
+   run->Write(run->GetName());
    cout << "Initial Particle Data for: " << run->GetName();
    cout << " was successfully written to file" << endl;
    cout << "-------------------------------------------" << endl;

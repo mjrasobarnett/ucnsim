@@ -34,6 +34,15 @@ public:
    virtual ~TUCNInitialConfig();
    
    // Methods
+   std::string RunName() const {return fRunName;}
+   std::string GeomFileName() const {return fGeomFile;}
+   std::string GeomVisFileName() const {return fGeomVisFile;}
+   std::string OutputFileName() const {return fOutputDataFile;}
+   
+   Int_t InitialParticles() const {return fInitialParticles;}
+   Double_t InitialMaxVelocity() const {return fInitialMaxVelocity;}
+   Double_t FillingTime() const {return fFillingTime;}
+   
    virtual void Print(Option_t* option = "") const;
    
    ClassDef(TUCNInitialConfig, 1)
