@@ -13,9 +13,10 @@ using namespace ModelParameters;
 Bool_t ReadInitialConfig(const string& configFileName);
 Bool_t FillSourceTube(const TUCNInitialConfig& initialConfig);
 Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig);
-Bool_t GenerateParticles(const Int_t neutrons, const Double_t fillTime, const Double_t vmax, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree);
+Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree);
 Bool_t CreateRandomParticle(TUCNParticle* particle, const Double_t fillTime, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
 Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnergy);
+Bool_t DefinePolarisation(TUCNParticle* particle, const TVector3& spinAxis, const Bool_t spinUp);
 
 //__________________________________________________________________________
 Int_t generate_particles(const char* configFileName)
@@ -77,11 +78,7 @@ Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig)
       return false;
    }
    
-   Int_t particles = TMath::Abs(initialConfig.InitialParticles());
-   Double_t vmax = TMath::Abs(initialConfig.InitialMaxVelocity())*Units::m/Units::s;
-   Double_t fillTime = TMath::Abs(initialConfig.FillingTime())*Units::s;
-   
-   GenerateParticles(particles, fillTime, vmax, volume, matrix, run->GetData());
+   GenerateParticles(initialConfig, volume, matrix, run->GetData());
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Write out the particle tree
@@ -133,11 +130,7 @@ Int_t FillSourceTube(const TUCNInitialConfig& initialConfig)
    string runName = initialConfig.RunName();
    TUCNRun* run = new TUCNRun(runName);
    
-   Int_t particles = TMath::Abs(initialConfig.InitialParticles());
-   Double_t vmax = TMath::Abs(initialConfig.InitialMaxVelocity())*Units::m/Units::s;
-   Double_t fillTime = TMath::Abs(initialConfig.FillingTime())*Units::s;
-   
-   GenerateParticles(particles, fillTime, vmax, neutronBeamArea, neutronBeamAreaMatrix, run->GetData());
+   GenerateParticles(initialConfig, neutronBeamArea, neutronBeamAreaMatrix, run->GetData());
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Write out the particle tree
@@ -165,12 +158,17 @@ Int_t FillSourceTube(const TUCNInitialConfig& initialConfig)
 }
 
 //__________________________________________________________________________
-Bool_t GenerateParticles(const Int_t neutrons, const Double_t fillTime, const Double_t vmax, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree)
+Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree)
 {
    // Generates a uniform distribution of particles with random directions all with 
-   // the same total energy (kinetic plus potential) defined at z = 0.
+   // the same total energy (kinetic plus potential) defined at z = 0.   
+   Int_t particles = TMath::Abs(initialConfig.InitialParticles());
+   Double_t vmax = TMath::Abs(initialConfig.InitialMaxVelocity())*Units::m/Units::s;
+   Double_t fillTime = TMath::Abs(initialConfig.FillingTime())*Units::s;
+   TVector3 spinAxis = initialConfig.SpinAxis();
+   Bool_t spinUp = initialConfig.SpinUp();
    cout << "-------------------------------------------" << endl;
-   cout << "Generating " << neutrons << " Particles." << endl;
+   cout << "Generating " << particles << " Particles." << endl;
    
    // Create Histograms to view the initial particle distributions
    Int_t nbins = 100;
@@ -195,13 +193,15 @@ Bool_t GenerateParticles(const Int_t neutrons, const Double_t fillTime, const Do
    cout << "Max Energy (neV): " << maxEnergy/Units::neV << endl;
    
    // -- Loop over the total number of particles to be created. 
-   for (Int_t i = 0; i < neutrons; i++) {
+   for (Int_t i = 0; i < particles; i++) {
       // -- Create particle at a random position inside beam volume
       TUCNParticle* particle = new TUCNParticle();
       particle->SetId(i);
       CreateRandomParticle(particle, fillTime, beamVolume, beamMatrix);
       // -- Initialise particle's momentum
       DetermineParticleMomentum(particle, maxEnergy);
+      // -- Setup polarisation
+      DefinePolarisation(particle, spinAxis, spinUp); 
       // -- Fill histograms
       initialXHist->Fill(particle->X());
       initialYHist->Fill(particle->Y());
@@ -233,7 +233,7 @@ Bool_t GenerateParticles(const Int_t neutrons, const Double_t fillTime, const Do
    initialVZHist->Draw();
    canvas1->cd(8);
    initialVHist->Draw();
-   cout << "Successfully generated " << neutrons << " particles." << endl;
+   cout << "Successfully generated " << particles << " particles." << endl;
    cout << "-------------------------------------------" << endl;	
    return kTRUE;
 }
@@ -307,4 +307,10 @@ Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnerg
    particle->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
    
    return kTRUE;
+}
+
+//__________________________________________________________________________
+Bool_t DefinePolarisation(TUCNParticle* particle, const TVector3& spinAxis, const Bool_t spinUp)
+{
+   particle->GetSpin()->Polarise(spinAxis, spinUp);
 }

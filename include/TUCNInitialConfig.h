@@ -22,15 +22,15 @@ private:
    Double_t fFillingTime;  // s
    
    Double_t fPercentagePolarised;
-   Double_t fSpinAxisX;
-   Double_t fSpinAxisY;
-   Double_t fSpinAxisZ;
+   TVector3 fSpinAxis;
    Bool_t fSpinUp;
    
 public:
    // Constructors
    TUCNInitialConfig();
    TUCNInitialConfig(const std::string& initialConfigFileName);
+   TUCNInitialConfig(const TUCNInitialConfig&); 
+   TUCNInitialConfig& operator=(const TUCNInitialConfig&);
    virtual ~TUCNInitialConfig();
    
    // Methods
@@ -42,6 +42,9 @@ public:
    Int_t InitialParticles() const {return fInitialParticles;}
    Double_t InitialMaxVelocity() const {return fInitialMaxVelocity;}
    Double_t FillingTime() const {return fFillingTime;}
+   
+   TVector3 SpinAxis() const {return fSpinAxis;}
+   Bool_t SpinUp() const {return fSpinUp;}
    
    virtual void Print(Option_t* option = "") const;
    

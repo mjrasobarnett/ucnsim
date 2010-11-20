@@ -37,9 +37,10 @@ TUCNInitialConfig::TUCNInitialConfig(const string& initialConfigFileName)
    
    fPercentagePolarised = initialConfigFile.GetFloat("PercentagePolarised","Spin");
    // -- Read in Axis against which we will polarise our neutrons
-   fSpinAxisX = initialConfigFile.GetFloat("SpinAxisX","Spin");
-   fSpinAxisY = initialConfigFile.GetFloat("SpinAxisY","Spin");
-   fSpinAxisZ = initialConfigFile.GetFloat("SpinAxisZ","Spin");
+   Double_t spinAxisX = initialConfigFile.GetFloat("SpinAxisX","Spin");
+   Double_t spinAxisY = initialConfigFile.GetFloat("SpinAxisY","Spin");
+   Double_t spinAxisZ = initialConfigFile.GetFloat("SpinAxisZ","Spin");
+   fSpinAxis.SetXYZ(spinAxisX, spinAxisY, spinAxisZ);
    
    // -- Read in and check Spin State
    const string spinState = initialConfigFile.GetString("SpinState","Spin");
@@ -53,6 +54,42 @@ TUCNInitialConfig::TUCNInitialConfig(const string& initialConfigFileName)
       fSpinUp = kTRUE;
    }
    this->Print();
+}
+
+//__________________________________________________________________________
+TUCNInitialConfig::TUCNInitialConfig(const TUCNInitialConfig& other)
+                  :TObject(other),
+                   fRunName(other.fRunName),
+                   fGeomFile(other.fGeomFile),
+                   fGeomVisFile(other.fGeomVisFile),
+                   fOutputDataFile(other.fOutputDataFile),
+                   fInitialParticles(other.fInitialParticles),
+                   fInitialMaxVelocity(other.fInitialMaxVelocity),
+                   fFillingTime(other.fFillingTime),
+                   fPercentagePolarised(other.fPercentagePolarised),
+                   fSpinAxis(other.fSpinAxis),
+                   fSpinUp(other.fSpinUp)
+{
+   Info("TUCNInitialConfig","Copy Constructor");
+}
+
+//__________________________________________________________________________
+TUCNInitialConfig& TUCNInitialConfig::operator=(const TUCNInitialConfig& other)
+{
+   if(this!=&other) {
+      TObject::operator=(other);
+      fRunName = other.fRunName;
+      fGeomFile = other.fGeomFile;
+      fGeomVisFile = other.fGeomVisFile;
+      fOutputDataFile = other.fOutputDataFile;
+      fInitialParticles = other.fInitialParticles;
+      fInitialMaxVelocity = other.fInitialMaxVelocity;
+      fFillingTime = other.fFillingTime;
+      fPercentagePolarised = other.fPercentagePolarised;
+      fSpinAxis = other.fSpinAxis;
+      fSpinUp = other.fSpinUp;
+   }
+   return *this;
 }
 
 //__________________________________________________________________________
@@ -74,8 +111,7 @@ void TUCNInitialConfig::Print(Option_t* /*option*/) const
    cout << "InitialMaxVelocity: " << fInitialMaxVelocity << " m/s" << endl;
    cout << "FillingTime: " << fFillingTime << " s" << endl;
    cout << "PercentagePolarised: " << fPercentagePolarised << "%" << endl;
-   cout << "Spin Axis - X: " << fSpinAxisX << "\t Y:";
-   cout << fSpinAxisY << "\t Z: " << fSpinAxisZ << endl; 
    cout << "Spin Up: " << fSpinUp << endl;
+   fSpinAxis.Print();
    cout << "-------------------------------------------" << endl;
 }
