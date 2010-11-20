@@ -55,11 +55,11 @@ TUCNSpin::~TUCNSpin()
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNSpin::Precess(const TVector3& /*localMagField*/, const Double_t /*precessTime*/)
+Bool_t TUCNSpin::Precess(const TVector3& avgMagField, const Double_t precessTime)
 {
-   // Take mag field in the same coordinate system as spin vector and precess about it
-   
-   
+   // -- Choose method for spin precession
+   // Quantum mechanical method
+   fSpinor.Precess(avgMagField, precessTime);
    return kTRUE;
 }
 
@@ -72,6 +72,7 @@ void TUCNSpin::Print(Option_t* /*option*/) const
 //_____________________________________________________________________________
 Bool_t TUCNSpin::Polarise(const TVector3& axis, const Bool_t up)
 {
+   // -- Set Spin's polarisation along defined axis
    if (up == kTRUE) {
       fSpinor.PolariseUp(axis);
    } else {
@@ -80,6 +81,14 @@ Bool_t TUCNSpin::Polarise(const TVector3& axis, const Bool_t up)
    fSpinor.Print();
    return kTRUE;
 }
+
+//_____________________________________________________________________________
+Double_t TUCNSpin::CalculateProbSpinUp(const TVector3& axis) const
+{
+   // -- Calculate probability of being spin 'up' along provided axis
+   return fSpinor.CalculateProbSpinUp(axis);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -156,4 +165,66 @@ void TUCNSpinor::Print(Option_t* /*option*/) const
 {
    cout << "Spin Up: " << fUp.Re() << " + i" << fUp.Im() << endl;
    cout << "Spin Down: " << fDown.Re() << "+ i" << fDown.Im() << endl;
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNSpinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
+{
+   // -- Take mag field (in the global coordinate system) and precess about it
+   Double_t omegaX = Constants::neutron_gyromag_ratio*avgMagField.X();
+   Double_t omegaY = Constants::neutron_gyromag_ratio*avgMagField.Y();
+   Double_t omegaZ = Constants::neutron_gyromag_ratio*avgMagField.Z();
+   // Precession frequency
+   Double_t omega = TMath::Sqrt(omegaX*omegaX + omegaY*omegaY + omegaZ*omegaZ);
+   Double_t precessAngle = (omega*precessTime)/2.0;
+   if (omega == 0.0) return kFALSE;
+   Double_t upRe = fUp.Re();
+   Double_t upIm = fUp.Im();
+   Double_t downRe = fDown.Re();
+   Double_t downIm = fDown.Im();
+   
+   // Spin Up Real Part
+   Double_t newUpRe = upRe*TMath::Cos(precessAngle) + ((upIm*omegaZ - downIm*omegaX - downRe*omegaY)/omega)*TMath::Sin(precessAngle);
+   // Spin Up Imaginary Part
+   Double_t newUpIm = upIm*TMath::Cos(precessAngle) + ((downRe*omegaX - upRe*omegaZ - downIm*omegaY)/omega)*TMath::Sin(precessAngle);
+   
+   // Spin Down Real Part
+   Double_t newDownRe = downRe*TMath::Cos(precessAngle) + ((upIm*omegaX - downIm*omegaZ + upRe*omegaY)/omega)*TMath::Sin(precessAngle);
+   // Spin Down Imaginary Part
+   Double_t newDownIm = downIm*TMath::Cos(precessAngle) + ((downRe*omegaZ - upRe*omegaX + upIm*omegaY)/omega)*TMath::Sin(precessAngle);
+   
+   // Update spinor
+   TComplex newUp(newUpRe, newUpIm);
+   TComplex newDown(newDownRe, newDownIm);
+   fUp = newUp;
+   fDown = newDown;
+   
+//   TVector3 axis(0,1,0);
+//   CalculateProbSpinUp(axis);
+   
+   return kTRUE;
+}
+
+//_____________________________________________________________________________
+Double_t TUCNSpinor::CalculateProbSpinUp(const TVector3& axis) const
+{
+   // -- Calculate probability of being spin 'up' along provided axis
+   // -- See notebook for equations
+   TVector3 measurementAxis = axis.Unit();
+   Double_t ux = measurementAxis.X();
+   Double_t uy = measurementAxis.Y();
+   // Take absolute value of Z component to ensure we don't take uz = -1
+   Double_t uz = TMath::Abs(measurementAxis.Z());
+   Double_t denominator = 2.0 + 2.0*uz;
+   TComplex conjugateUp = TComplex::Conjugate(fUp);
+   TComplex conjugateDown = TComplex::Conjugate(fDown);
+   
+   TComplex numer1 = (uz + 1.0)*(uz + 1.0)*fUp*conjugateUp;
+   TComplex numer2 = (ux*ux + uy*uy)*fDown*conjugateDown;
+   TComplex numer3 = (uz + 1.0)*(ux + TComplex::I()*uy)*fUp*conjugateDown;
+   TComplex numer4 = (uz + 1.0)*(ux - TComplex::I()*uy)*fDown*conjugateUp;
+   
+   TComplex prob = (numer1 + numer2 + numer3 + numer4)/denominator;
+//   cout << "Probability: " << prob.Re() << "\t" << prob.Im() << endl;
+   return prob.Re();
 }

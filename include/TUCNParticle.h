@@ -137,16 +137,13 @@ public:
    Int_t                SpecularBounces()                      {return fSpecularBounces;}
    Int_t                DiffuseBounces()                       {return fDiffuseBounces;}
    
-   // -- Mag Field Tracking
-//   void                 SampleMagField(const Double_t integratedField, const Double_t stepTime);
-//   Double_t             AvgMagField() const {return fAvgMagField;}
-   
    // State
    TUCNState*           GetState()     {return fState;}
    Bool_t               SaveState(TUCNRun* run);
    
    // Spin
    TUCNSpin*            GetSpin();
+   void                 PrecessSpin(const TVector3& field, const Double_t precessTime);
    
    // -- Propagation
    Bool_t               Propagate(TUCNRun* run);

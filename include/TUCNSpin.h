@@ -33,6 +33,9 @@ public:
    void PolariseUp(const TVector3& axis);
    void PolariseDown(const TVector3& axis);
    
+   Bool_t Precess(const TVector3& avgMagField, const Double_t precessTime);
+   Double_t CalculateProbSpinUp(const TVector3& axis) const;
+   
    virtual void Print(Option_t* option = "") const;
    
    ClassDef(TUCNSpinor, 1)
@@ -50,6 +53,8 @@ class TUCNSpin : public TObject
 private:
    TUCNSpinor fSpinor;
    
+   Double_t CalculateProbSpinUp(const TVector3& axis) const;
+   
 public:
    // -- Constructors
    TUCNSpin();
@@ -58,7 +63,7 @@ public:
    virtual ~TUCNSpin();
    
    // -- Methods
-   Bool_t Precess(const TVector3& localMagField, const Double_t precessTime);
+   Bool_t Precess(const TVector3& avgMagField, const Double_t precessTime);
    
    // -- Set initial polarisation
    Bool_t Polarise(const TVector3& axis, const Bool_t up);

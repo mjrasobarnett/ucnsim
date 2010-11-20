@@ -249,4 +249,9 @@ void TUCNParticle::Bad()
    fState->Bad(this);
 }
 
-
+//_____________________________________________________________________________
+void TUCNParticle::PrecessSpin(const TVector3& field, const Double_t precessTime)
+{
+   this->GetSpin()->Precess(field,precessTime);
+   // Placeholder for notifying Observers of spin state change
+}

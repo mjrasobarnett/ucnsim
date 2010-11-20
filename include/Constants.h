@@ -51,7 +51,8 @@ namespace Constants
    static const Double_t     neutron_mass = (neutron_mass_c2/c_squared);
    static const Double_t     neutron_mass_kg = neutron_mass*e_SI;
 
-
+   static const Double_t neutron_gyromag_ratio = electron_charge/(2.0*neutron_mass);
+   
    //
    // permeability of free space mu0    = 2.01334e-16 Mev*(ns*eplus)^2/mm
    // permittivity of free space epsil0 = 5.52636e+10 eplus^2/(MeV*mm)
