@@ -77,6 +77,7 @@ Bool_t TUCNSpin::Polarise(const TVector3& axis, const Bool_t up)
    } else {
       fSpinor.PolariseDown(axis);
    }
+   fSpinor.Print();
    return kTRUE;
 }
 
@@ -90,7 +91,7 @@ ClassImp(TUCNSpinor)
 
 //_____________________________________________________________________________
 TUCNSpinor::TUCNSpinor()
-           :TObject()
+           :TObject(), fUp(0,0), fDown(0,0)
 {
    // Constructor
 //   Info("TUCNSpinor","Default Constructor");
@@ -131,8 +132,8 @@ void TUCNSpinor::PolariseUp(const TVector3& axis)
    // -- defined by 'axis'. Expressions derived in notebook.
    TVector3 unit = axis.Unit();
    Double_t mag = 1.0/TMath::Sqrt(2.0 + 2.0*TMath::Abs(unit.Z()));
-   TComplex up((unit.Z() + 1.0)/mag, 0);
-   TComplex down(unit.X()/mag, unit.Y()/mag);
+   TComplex up((unit.Z() + 1.0)*mag, 0);
+   TComplex down(unit.X()*mag, unit.Y()*mag);
    fUp = up;
    fDown = down;
 }
@@ -144,8 +145,8 @@ void TUCNSpinor::PolariseDown(const TVector3& axis)
    // -- defined by 'axis'. Expressions derived in notebook.
    TVector3 unit = axis.Unit();
    Double_t mag = 1.0/TMath::Sqrt(2.0 + 2.0*TMath::Abs(unit.Z()));
-   TComplex up((unit.Z() - 1.0)/mag, 0);
-   TComplex down(unit.X()/mag, unit.Y()/mag);
+   TComplex up((unit.Z() - 1.0)*mag, 0);
+   TComplex down(unit.X()*mag, unit.Y()*mag);
    fUp = up;
    fDown = down;
 }
@@ -153,6 +154,6 @@ void TUCNSpinor::PolariseDown(const TVector3& axis)
 //_____________________________________________________________________________
 void TUCNSpinor::Print(Option_t* /*option*/) const
 {
-   cout << "Spin Up: " << fUp.Re() << "+ i" << fUp.Im() << endl;
+   cout << "Spin Up: " << fUp.Re() << " + i" << fUp.Im() << endl;
    cout << "Spin Down: " << fDown.Re() << "+ i" << fDown.Im() << endl;
 }
