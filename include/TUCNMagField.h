@@ -28,8 +28,6 @@ public:
    
    virtual Bool_t Contains(const TVector3& point) const = 0;
    
-   virtual void GetFieldVector(const TVector3& pos, TVector3& field) const = 0;
-   
    virtual Bool_t Interact(TUCNParticle& particle, const Double_t stepTime) const = 0;
    
    ClassDef(TUCNMagField, 1)              // Abstract base Mag field class

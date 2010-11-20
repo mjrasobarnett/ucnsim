@@ -21,6 +21,8 @@ private:
    Double_t fParabolicGradient;  // Parabolic Gradient: A, in the formula
    Double_t fFieldRadius;  // Radius of the containing vessel
    
+   void GetFieldVector(const TVector3& pos, TVector3& field) const;
+   
 protected:
    TUCNParabolicMagField(const TUCNParabolicMagField&);
    TUCNParabolicMagField& operator=(const TUCNParabolicMagField&);
@@ -32,7 +34,6 @@ public:
    
    virtual Bool_t Contains(const TVector3& point) const;
    
-   virtual void GetFieldVector(const TVector3& pos, TVector3& field) const;
    
    virtual Bool_t Interact(TUCNParticle& particle, const Double_t stepTime) const;
    

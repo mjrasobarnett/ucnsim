@@ -27,6 +27,8 @@ private:
    const TGeoShape* fFieldShape;
    const TGeoMatrix* fFieldMatrix;
    
+   const TVector3& GetFieldVector(const TVector3& pos) const;
+   
 public:
    TUCNUniformMagField();
    TUCNUniformMagField(const std::string& name, const TVector3& field, const TGeoShape* fieldShape, const TGeoMatrix* fieldPosition);
@@ -35,8 +37,6 @@ public:
    virtual ~TUCNUniformMagField();
    
    virtual Bool_t Contains(const TVector3& point) const;
-   
-   virtual void GetFieldVector(const TVector3& pos, TVector3& field) const;
    
    virtual Bool_t Interact(TUCNParticle& particle, const Double_t stepTime) const;
    

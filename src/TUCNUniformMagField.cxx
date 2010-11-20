@@ -61,20 +61,22 @@ Bool_t TUCNUniformMagField::Contains(const TVector3& point) const
    // First convert point to local coordinates
    Double_t masterPoint[3] = {point[0], point[1], point[2]};
    Double_t localPoint[3] = {0.,0.,0.};
-   fFieldMatrix->MasterToLocal(masterPoint, localPoint);   
+   fFieldMatrix->MasterToLocal(masterPoint, localPoint);
    // Check and return whether its contained
    return fFieldShape->Contains(localPoint);
 }
 
 //_____________________________________________________________________________
-void TUCNUniformMagField::GetFieldVector(const TVector3& /*pos*/, TVector3& /*field*/) const
+const TVector3& TUCNUniformMagField::GetFieldVector(const TVector3& /*pos*/) const
 {
-   // Copy field vector to provided vector
+   // No position dependence for a Uniform field so return field vector
+   return fField;
 }
 
 //______________________________________________________________________________
-Bool_t TUCNUniformMagField::Interact(TUCNParticle& /*particle*/, const Double_t /*stepTime*/) const
+Bool_t TUCNUniformMagField::Interact(TUCNParticle& particle, const Double_t stepTime) const
 {
    // -- Precess spin vector of particle over period of time defined by stepTime
+   particle.PrecessSpin(/*this->GetFieldVector()*/ fField, stepTime);
    return kTRUE;
 }
