@@ -61,12 +61,12 @@ protected:
    
    Int_t       fRandomSeed;         // The seed of TRandom when the particle began to propagate
    
-//   Double_t    fAvgMagField;           // Average Magnetic field seen by the neutron as it travels
-//   Int_t       fFieldPointsSampled;    // Number of times field has been sampled
-   
    // -- State
    friend class TUCNState;
    TUCNState      *fState;
+   
+   // -- Spin
+   TUCNSpin       *fSpin;
    
    // -- Methods
    //_____________________________________________________________________________
@@ -144,6 +144,9 @@ public:
    // State
    TUCNState*           GetState()     {return fState;}
    Bool_t               SaveState(TUCNRun* run);
+   
+   // Spin
+   TUCNSpin*            GetSpin();
    
    // -- Propagation
    Bool_t               Propagate(TUCNRun* run);

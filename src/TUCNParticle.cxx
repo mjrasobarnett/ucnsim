@@ -39,6 +39,7 @@ TUCNParticle::TUCNParticle()
    // -- Default constructor
 //   Info("TUCNParticle","Default Constructor");
    fState = 0;
+   fSpin = 0;
 }
 
 
@@ -52,6 +53,7 @@ TUCNParticle::TUCNParticle(Int_t id, Double_t* pos, Double_t* mom, Double_t ener
    // -- Constructor
 //   Info("TUCNParticle","Constructor");
    fState = new TUCNPropagating();
+   fSpin = new TUCNSpin();
 }
 
 //_____________________________________________________________________________
@@ -61,7 +63,7 @@ TUCNParticle::TUCNParticle(const TUCNParticle& p)
               fPz(p.fPz), fE(p.fE), fDistance(p.fDistance), fId(p.fId),
               fBounces(p.fBounces), fSpecularBounces(p.fSpecularBounces),
               fDiffuseBounces(p.fDiffuseBounces), fRandomSeed(p.fRandomSeed),
-              fState(p.fState)
+              fState(p.fState), fSpin(p.fSpin)
 {
    // -- Copy Constructor
 //   Info("TUCNParticle","Copy Constructor");
@@ -88,7 +90,10 @@ TUCNParticle& TUCNParticle::operator=(const TUCNParticle& p)
       fSpecularBounces = p.fSpecularBounces;
       fDiffuseBounces = p.fDiffuseBounces;
       fRandomSeed = p.fRandomSeed;
+      if (fState) delete fState; fState = NULL;
       fState = p.fState;
+      if (fSpin) delete fSpin; fSpin = NULL;
+      fSpin = p.fSpin;
    }
    return *this;
 }
@@ -99,6 +104,7 @@ TUCNParticle::~TUCNParticle()
    // -- Destructor
 //   Info("TUCNParticle","Destructor");
    if (fState) delete fState;
+   if (fSpin) delete fSpin;
 }
 
 //______________________________________________________________________________
@@ -156,6 +162,13 @@ Double_t TUCNParticle::Theta() const
 Double_t TUCNParticle::Phi() const
 {
    return TMath::Pi()+TMath::ATan2(-fPy,-fPx);
+}
+
+//______________________________________________________________________________
+TUCNSpin* TUCNParticle::GetSpin()
+{
+   if (fSpin == NULL) {fSpin = new TUCNSpin();}
+   return fSpin;
 }
 
 //______________________________________________________________________________
