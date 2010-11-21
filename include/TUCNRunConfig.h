@@ -7,7 +7,7 @@
 
 #include "TObject.h"
 #include <string>
-#include <vector>
+#include "TVector3.h"
 
 class TUCNRunConfig : public TObject {
 private:
@@ -32,6 +32,9 @@ private:
    Double_t fRunTime;
    Double_t fMaxStepTime;
    
+   Bool_t fObsPolarisation;
+   TVector3 fObsMeasAxis;
+   
 public:
    // Constructors
    TUCNRunConfig();
@@ -55,6 +58,9 @@ public:
    Bool_t GravFieldOn() const {return fGravFieldOn;}
    Bool_t MagFieldOn() const {return fMagFieldOn;}
    Bool_t WallLossesOn() const {return fWallLossesOn;}
+   Bool_t ObservePolarisation() const {return fObsPolarisation;}
+   TVector3 PolarisationAxis() const {return fObsMeasAxis;}
+   
    virtual void Print(Option_t* option = "") const;
    
    ClassDef(TUCNRunConfig, 1)

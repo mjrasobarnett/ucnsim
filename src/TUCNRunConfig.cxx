@@ -16,12 +16,14 @@ ClassImp(TUCNRunConfig)
 
 //__________________________________________________________________________
 TUCNRunConfig::TUCNRunConfig()
+              :TObject()
 {
    Info("TUCNRunConfig","Default Constructor");
 }
 
 //__________________________________________________________________________
 TUCNRunConfig::TUCNRunConfig(const string& runConfigFileName)
+              :TObject()
 {
    Info("TUCNRunConfig","Constructor");
    TUCNConfigFile runConfigFile(runConfigFileName);
@@ -44,6 +46,12 @@ TUCNRunConfig::TUCNRunConfig(const string& runConfigFileName)
    fRunTime = runConfigFile.GetFloat("RunTime(s)","Properties");
    fMaxStepTime = runConfigFile.GetFloat("MaxStepTime(s)","Properties");
    
+   fObsPolarisation = runConfigFile.GetBool("Polarisation","Observables");
+   Double_t obsMeasAxisX = runConfigFile.GetFloat("MeasureAxisX","Observables");
+   Double_t obsMeasAxisY = runConfigFile.GetFloat("MeasureAxisY","Observables");
+   Double_t obsMeasAxisZ = runConfigFile.GetFloat("MeasureAxisZ","Observables");
+   fObsMeasAxis.SetXYZ(obsMeasAxisX, obsMeasAxisY, obsMeasAxisZ);
+   
    this->Print();
 }
 
@@ -64,7 +72,9 @@ TUCNRunConfig::TUCNRunConfig(const TUCNRunConfig& other)
                fMagFieldOn(other.fMagFieldOn),
                fWallLossesOn(other.fWallLossesOn),
                fRunTime(other.fRunTime),
-               fMaxStepTime(other.fMaxStepTime)
+               fMaxStepTime(other.fMaxStepTime),
+               fObsPolarisation(other.fObsPolarisation),
+               fObsMeasAxis(other.fObsMeasAxis)
 {
    Info("TUCNRunConfig","Copy Constructor");
 }
@@ -74,7 +84,7 @@ TUCNRunConfig& TUCNRunConfig::operator=(const TUCNRunConfig& other)
 {
    if(this!=&other) {
       TObject::operator=(other);
-      fRunName=other.fRunName;
+      fRunName = other.fRunName;
       fGeomFile=other.fGeomFile;
       fGeomVisFile=other.fGeomVisFile;
       fInputDataFile=other.fInputDataFile;
@@ -89,6 +99,8 @@ TUCNRunConfig& TUCNRunConfig::operator=(const TUCNRunConfig& other)
       fWallLossesOn=other.fWallLossesOn;
       fRunTime=other.fRunTime;
       fMaxStepTime=other.fMaxStepTime;
+      fObsPolarisation=other.fObsPolarisation;
+      fObsMeasAxis=other.fObsMeasAxis;
    }
    return *this;
 }
@@ -119,5 +131,8 @@ void TUCNRunConfig::Print(Option_t* /*option*/) const
    cout << "WallLossesOn: " << fWallLossesOn << endl;
    cout << "RunTime: " << fRunTime << " s"<< endl;
    cout << "MaxStepTime: " << fMaxStepTime << " s"<< endl;
+   cout << "Observe Polarisation: " << fObsPolarisation << endl;
+   cout << "Polrisation Axis: " << fObsMeasAxis.X() << "\t" << fObsMeasAxis.Y();
+   cout << "\t" << fObsMeasAxis.Z() << endl;
    cout << "-------------------------------------------" << endl;
 }
