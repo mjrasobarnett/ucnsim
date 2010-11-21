@@ -312,5 +312,5 @@ Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnerg
 //__________________________________________________________________________
 Bool_t DefinePolarisation(TUCNParticle* particle, const TVector3& spinAxis, const Bool_t spinUp)
 {
-   particle->GetSpin()->Polarise(spinAxis, spinUp);
+   particle->Polarise(spinAxis, spinUp);
 }
