@@ -144,6 +144,7 @@ public:
    // Spin
    TUCNSpin*            GetSpin();
    void                 PrecessSpin(const TVector3& field, const Double_t precessTime);
+   Bool_t               IsSpinUp(const TVector3& axis) const;
    
    // -- Propagation
    Bool_t               Propagate(TUCNRun* run);

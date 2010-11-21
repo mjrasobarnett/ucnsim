@@ -255,3 +255,9 @@ void TUCNParticle::PrecessSpin(const TVector3& field, const Double_t precessTime
    this->GetSpin()->Precess(field,precessTime);
    // Placeholder for notifying Observers of spin state change
 }
+
+//_____________________________________________________________________________
+Bool_t TUCNParticle::IsSpinUp(const TVector3& axis) const
+{
+   return fSpin->IsSpinUp(axis);
+}
