@@ -58,7 +58,7 @@ TUCNParabolicMagField::~TUCNParabolicMagField()
 }   
 
 //_____________________________________________________________________________
-Bool_t TUCNParabolicMagField::Contains(const TVector3& point) const
+Bool_t TUCNParabolicMagField::Contains(const TVector3& /*point*/) const
 {
    return kFALSE;
 }
