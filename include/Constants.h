@@ -35,7 +35,7 @@ namespace Constants
 
    //
    //
-   static const Double_t electron_charge = - eplus; // Units.h
+   static const Double_t electron_charge = -eplus; // Units.h
    static const Double_t e_squared = eplus * eplus;
 
    //
@@ -51,7 +51,8 @@ namespace Constants
    static const Double_t     neutron_mass = (neutron_mass_c2/c_squared);
    static const Double_t     neutron_mass_kg = neutron_mass*e_SI;
 
-   static const Double_t neutron_gyromag_ratio = electron_charge/(2.0*neutron_mass);
+   static const Double_t neutron_g_factor = -3.82608545;
+   static const Double_t neutron_gyromag_ratio = 1.83247185626E+8; /*29.1646954E+6 * 2pi*/
    
    //
    // permeability of free space mu0    = 2.01334e-16 Mev*(ns*eplus)^2/mm
