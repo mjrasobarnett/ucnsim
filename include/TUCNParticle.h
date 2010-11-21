@@ -7,8 +7,10 @@
 
 #include "TObject.h"
 #include "TVector3.h"
-#include "TUCNSpin.h";
-#include "TUCNState.h";
+#include "TUCNSpin.h"
+#include "TUCNState.h"
+#include <list>
+#include "TUCNObserver.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -68,6 +70,8 @@ protected:
    // Spin
    TUCNSpin         fSpin;
    
+   // Observers
+   std::list<TUCNObserver* > fObservers;
    
    // -- Methods
    const TUCNSpin&      GetSpin() const;
@@ -157,6 +161,12 @@ public:
    void                 Lost();
    void                 Absorbed();
    void                 Bad();
+   
+   // -- Observer management
+   Int_t                CountObservers() {return fObservers.size();}
+   void                 Attach(TUCNObserver& observer);
+   void                 Detach(TUCNObserver& observer);
+   void                 NotifyObservers(/*const TUCNInterest& interest*/);
    
    ClassDef(TUCNParticle,1)   // Ultra-Cold Neutron
 };
