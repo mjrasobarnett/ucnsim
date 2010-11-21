@@ -8,6 +8,7 @@
 #include "Units.h"
 
 #include "TUCNSpin.h"
+#include "TRandom.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -87,6 +88,23 @@ Double_t TUCNSpin::CalculateProbSpinUp(const TVector3& axis) const
 {
    // -- Calculate probability of being spin 'up' along provided axis
    return fSpinor.CalculateProbSpinUp(axis);
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNSpin::IsSpinUp(const TVector3& axis) const
+{
+   // -- Calculate whether particle is in the Spin-up state defined by measurement Axis
+   // -- This is a non-destructive calculation, that does not leave the the particle in this
+   // -- state after the calculation, as opposed to MeasureSpinUp()
+   Double_t probSpinUp = this->CalculateProbSpinUp(axis);
+   // Check for errorneous probability
+   if (probSpinUp < 0.0 || probSpinUp > 1.0) {
+      throw runtime_error("TUCNSpin::IsSpinUp - Found probability outside of 0 -> 1 range.");
+   }
+   // Roll dice to determine whether Spin Up or Spin Down
+   if (gRandom->Uniform(0.0,1.0) <= probSpinUp) {return kTRUE;}
+   // Spin down
+   return kFALSE;
 }
 
 
