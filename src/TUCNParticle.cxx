@@ -34,12 +34,10 @@ TUCNParticle::TUCNParticle()
              :TObject(),
               fX(0.), fY(0.), fZ(0.), fT(0.), fPx(0.), fPy(0.), fPz(0.), fE(0.),
               fDistance(0.), fId(0), fBounces(0), fSpecularBounces(0), fDiffuseBounces(0),
-              fRandomSeed(0)
+              fRandomSeed(0), fState(NULL), fSpin()
 {
    // -- Default constructor
 //   Info("TUCNParticle","Default Constructor");
-   fState = 0;
-   fSpin = 0;
 }
 
 
@@ -48,12 +46,11 @@ TUCNParticle::TUCNParticle(Int_t id, Double_t* pos, Double_t* mom, Double_t ener
              :TObject(),
               fX(pos[0]), fY(pos[1]), fZ(pos[2]), fT(t), fPx(mom[0]), fPy(mom[1]), fPz(mom[2]),
               fE(energy), fDistance(0.), fId(id), fBounces(0), fSpecularBounces(0),
-              fDiffuseBounces(0), fRandomSeed(0)
+              fDiffuseBounces(0), fRandomSeed(0), fSpin()
 {
    // -- Constructor
 //   Info("TUCNParticle","Constructor");
    fState = new TUCNPropagating();
-   fSpin = new TUCNSpin();
 }
 
 //_____________________________________________________________________________
@@ -92,7 +89,6 @@ TUCNParticle& TUCNParticle::operator=(const TUCNParticle& p)
       fRandomSeed = p.fRandomSeed;
       if (fState) delete fState; fState = NULL;
       fState = p.fState;
-      if (fSpin) delete fSpin; fSpin = NULL;
       fSpin = p.fSpin;
    }
    return *this;
@@ -104,7 +100,6 @@ TUCNParticle::~TUCNParticle()
    // -- Destructor
 //   Info("TUCNParticle","Destructor");
    if (fState) delete fState;
-   if (fSpin) delete fSpin;
 }
 
 //______________________________________________________________________________
@@ -165,9 +160,8 @@ Double_t TUCNParticle::Phi() const
 }
 
 //______________________________________________________________________________
-TUCNSpin* TUCNParticle::GetSpin()
+const TUCNSpin& TUCNParticle::GetSpin() const
 {
-   if (fSpin == NULL) {fSpin = new TUCNSpin();}
    return fSpin;
 }
 
@@ -250,14 +244,20 @@ void TUCNParticle::Bad()
 }
 
 //_____________________________________________________________________________
+void TUCNParticle::Polarise(const TVector3& axis, const Bool_t up)
+{
+   fSpin.Polarise(axis,up);
+}
+
+//_____________________________________________________________________________
 void TUCNParticle::PrecessSpin(const TVector3& field, const Double_t precessTime)
 {
-   this->GetSpin()->Precess(field,precessTime);
+   fSpin.Precess(field,precessTime);
    // Placeholder for notifying Observers of spin state change
 }
 
 //_____________________________________________________________________________
 Bool_t TUCNParticle::IsSpinUp(const TVector3& axis) const
 {
-   return fSpin->IsSpinUp(axis);
+   return this->GetSpin().IsSpinUp(axis);
 }

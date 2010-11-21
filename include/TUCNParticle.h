@@ -61,18 +61,19 @@ protected:
    
    Int_t       fRandomSeed;         // The seed of TRandom when the particle began to propagate
    
-   // -- State
+   // State
    friend class TUCNState;
    TUCNState      *fState;
    
-   // -- Spin
-   TUCNSpin       *fSpin;
+   // Spin
+   TUCNSpin         fSpin;
+   
    
    // -- Methods
-   //_____________________________________________________________________________
+   const TUCNSpin&      GetSpin() const;
    // State Change
-   void        ChangeState(TUCNState* state);
-  
+   void                 ChangeState(TUCNState* state);
+   
 public:
    // -- Constructors
    TUCNParticle();
@@ -142,7 +143,7 @@ public:
    Bool_t               SaveState(TUCNRun* run);
    
    // Spin
-   TUCNSpin*            GetSpin();
+   void                 Polarise(const TVector3& axis, const Bool_t up);
    void                 PrecessSpin(const TVector3& field, const Double_t precessTime);
    Bool_t               IsSpinUp(const TVector3& axis) const;
    
