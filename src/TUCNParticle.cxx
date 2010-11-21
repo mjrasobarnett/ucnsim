@@ -271,7 +271,6 @@ Bool_t TUCNParticle::IsSpinUp(const TVector3& axis) const
 void TUCNParticle::Attach(TUCNObserver& observer)
 {
    // -- Add an observer to the particle's list of observers
-   cout << "Attaching Observer" << endl;
    fObservers.push_back(&observer);
 }
 
@@ -279,7 +278,6 @@ void TUCNParticle::Attach(TUCNObserver& observer)
 void TUCNParticle::Detach(TUCNObserver& observer)
 {
    // -- Remove an observer from the particle's list of observers
-   cout << "Removing Observer" << endl;
    fObservers.remove(&observer);
 }
 
