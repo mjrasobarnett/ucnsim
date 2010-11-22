@@ -2,7 +2,11 @@
 // Author: Matthew Raso-Barnett  19/11/2010
 #include <iostream>
 #include <cassert>
+
 #include "TUCNObserver.h"
+#include "TUCNParticle.h"
+#include "TUCNRunConfig.h"
+#include "TCanvas.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -13,41 +17,6 @@
 using namespace std;
 
 ClassImp(TUCNObserver)
-
-//_____________________________________________________________________________
-TUCNObserver::TUCNObserver()
-             :TObject()
-{
-   // Constructor
-//   Info("TUCNObserver","Default Constructor");
-}
-
-//_____________________________________________________________________________
-TUCNObserver::TUCNObserver(const TUCNObserver& other)
-             :TObject(other)
-{
-   // Copy Constructor
-//   Info("TUCNObserver","Copy Constructor");
-}
-
-//_____________________________________________________________________________
-TUCNObserver& TUCNObserver::operator=(const TUCNObserver& other)
-{
-   // Assignment
-//   Info("TUCNObserver","Assignment");
-   if(this!=&other) {
-      TObject::operator=(other);
-   }
-   return *this;
-}
-
-//_____________________________________________________________________________
-TUCNObserver::~TUCNObserver()
-{
-   // Destructor
-//   Info("TUCNObserver","Destructor");
-}
-
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -69,8 +38,7 @@ TUCNSpinObserver::TUCNSpinObserver()
 
 //_____________________________________________________________________________
 TUCNSpinObserver::TUCNSpinObserver(const TUCNRunConfig& runConfig)
-                 :TUCNObserver(),
-                  fSpinUpHist(NULL),
+                 :fSpinUpHist(NULL),
                   fSpinDownHist(NULL)
 {
    // Constructor

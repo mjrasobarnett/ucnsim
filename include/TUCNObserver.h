@@ -14,28 +14,24 @@
 #define TUCNOBSERVER_H
 
 #include "TObject.h"
-#include "TUCNRunConfig.h"
-#include "TUCNParticle.h"
 #include "TH1F.h"
+#include "TVector3.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
 //    TUCNObserver -  Abstract Interface                                   //
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
+class TUCNParticle;
+class TUCNRunConfig;
+class TUCNInterest;
 
 class TUCNObserver : public TObject
 {
-private:
-   
 public:
-   // -- Constructors
-   TUCNObserver();
-   TUCNObserver(const TUCNObserver&);
-   TUCNObserver& operator=(const TUCNObserver&);
-   virtual ~TUCNObserver();
    
    virtual void RecordEvent(const TUCNParticle& particle) = 0;
+   virtual void Plot() = 0;
    
    ClassDef(TUCNObserver, 1)
 };
@@ -62,8 +58,9 @@ public:
    virtual ~TUCNSpinObserver();
    
    virtual void RecordEvent(const TUCNParticle& particle);
+   virtual void Plot();
    
-   ClassDef(TUCNObserver, 1)
+   ClassDef(TUCNSpinObserver, 1)
 };
 
 #endif /* TUCNOBSERVER_H */
