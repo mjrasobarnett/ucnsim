@@ -6,9 +6,11 @@
 
 #include "TNamed.h"
 #include <string>
+#include <list>
 #include "TUCNData.h"
 #include "TUCNExperiment.h"
 #include "TUCNRunConfig.h"
+#include "TUCNObserver.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -25,9 +27,11 @@ protected:
    TUCNData*            fData;
    TUCNExperiment*      fExperiment;
    TUCNRunConfig        fRunConfig;
+   std::list<TUCNObserver*>  fObservers;
    
    Bool_t               LoadParticles(const TUCNRunConfig& runConfig);
    void                 PrintProgress(Int_t entry, Float_t nEntriesF, Int_t mintime=2);
+   Bool_t               InitialiseObservers(const TUCNRunConfig& runConfig);
    
 public:
    // -- constructors

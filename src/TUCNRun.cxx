@@ -8,6 +8,7 @@
 #include <vector>
 #include <stdexcept>
 #include <sys/stat.h> // Required by Progress bar
+#include <list>
 
 #include "TUCNRun.h"
 #include "TUCNConfigFile.h"
@@ -46,6 +47,7 @@ using std::cerr;
 using std::string;
 using std::vector;
 using std::runtime_error;
+using std::list;
 
 //#define VERBOSE_MODE
 
@@ -78,7 +80,8 @@ TUCNRun::TUCNRun(const TUCNRun& other)
         :TNamed(other),
          fData(other.fData),
          fExperiment(other.fExperiment),
-         fRunConfig(other.fRunConfig)
+         fRunConfig(other.fRunConfig),
+         fObservers(other.fObservers)
 {
 // -- Copy Constructor
    Info("TUCNRunManager", "Copy Constructor");
@@ -97,6 +100,7 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& other)
       if (fExperiment != NULL) delete fExperiment; fExperiment = NULL;
       fExperiment = other.fExperiment;
       fRunConfig = other.fRunConfig;
+      fObservers = other.fObservers;
    }
    return *this;
 }
@@ -108,6 +112,13 @@ TUCNRun::~TUCNRun()
    Info("TUCNRun", "Destructor");
    if(fData) delete fData;
    if(fExperiment) delete fExperiment;
+   if(fObservers.empty() == kFALSE) {
+      list<TUCNObserver*>::iterator it;
+      for(it = fObservers.begin(); it != fObservers.end(); ++it) {
+         delete *it;
+         *it = 0;
+      }
+   }
 }
 
 //_____________________________________________________________________________
