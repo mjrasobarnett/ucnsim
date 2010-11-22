@@ -3,6 +3,9 @@
 
 #include "TNamed.h"
 #include "TTree.h"
+#include <vector>
+#include <string>
+#include "TUCNParticle.h"
 
 class TUCNParticle;
 
@@ -63,4 +66,33 @@ public:
    
    ClassDef(TUCNData, 1) // UCN Data Object
 };
+
+class TUCNDataBranch : public std::vector<TUCNParticle*>
+{
+   
+public:
+   TUCNDataBranch();
+   TUCNDataBranch(const std::string& name);
+   TUCNDataBranch(const TUCNDataBranch& );
+   TUCNDataBranch& operator=(const TUCNDataBranch& ); 
+   virtual ~TUCNDataBranch(void);
+   
+   
+   ClassDef(TUCNDataBranch, 1)
+};
+
+class TUCNDataTest : public TObject
+{
+
+public:
+   TUCNDataBranch fBranch;
+   
+   TUCNDataTest();
+   virtual ~TUCNDataTest(void);
+   
+   ClassDef(TUCNDataTest, 1)
+};
+
+
+
 #endif

@@ -410,3 +410,66 @@ TTree* TUCNData::FetchTree(TString treeName) {
       return 0;
    }
 }
+
+
+ClassImp(TUCNDataTest)
+
+//_____________________________________________________________________________
+TUCNDataTest::TUCNDataTest()
+             :TObject()
+{
+   // -- Default Constructor
+   Info("TUCNDataTest","Default Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNDataTest::~TUCNDataTest(void)
+{
+   // -- Destructor
+   Info("TUCNDataTest","Destructor");
+}
+
+
+ClassImp(TUCNDataBranch)
+
+//_____________________________________________________________________________
+TUCNDataBranch::TUCNDataBranch() 
+			      :std::vector<TUCNParticle*>()
+{
+   // -- Default Constructor
+   Info("TUCNDataBranch","Default Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNDataBranch::TUCNDataBranch(const string& name)
+               :std::vector<TUCNParticle*>()
+{
+   // -- Constructor
+   Info("TUCNDataBranch","Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNDataBranch::TUCNDataBranch(const TUCNDataBranch& other)
+               :std::vector<TUCNParticle*>(other)
+{
+   // Copy Constructor
+   Info("TUCNDataBranch","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNDataBranch& TUCNDataBranch::operator=(const TUCNDataBranch& other)
+{
+// --assignment operator
+   Info("TUCNDataBranch","Assignment");
+   if(this!=&other) {
+      std::vector<TUCNParticle*>::operator=(other);
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+TUCNDataBranch::~TUCNDataBranch(void)
+{
+   // -- Destructor
+   Info("TUCNDataBranch","Destructor");
+}

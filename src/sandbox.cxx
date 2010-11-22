@@ -18,6 +18,7 @@
 #include "TVector3.h"
 #include "TUCNUniformMagField.h"
 #include "TUCNMagFieldManager.h"
+#include "TUCNData.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -29,8 +30,65 @@ int TestFieldManager();
 // -------------------------------------------------------------------------------------- 
 Int_t main(Int_t /*argc*/,Char_t ** /*argv*/)
 {
-   TestFieldManager();
+   TUCNDataTest* mytest = new TUCNDataTest();
    
+   TUCNParticle* myparticle = new TUCNParticle();
+   myparticle->SetId(115);
+   (mytest->fBranch).push_back(myparticle);
+   
+   TFile *file = 0;
+   file = TFile::Open("test.root","recreate");
+   mytest->Write();
+   file->ls();
+   file->Close();
+   delete file;
+   delete mytest;
+   delete myparticle;
+   file = NULL;
+   mytest = NULL;
+   myparticle = NULL;
+   
+   
+   file = TFile::Open("test.root","update");
+   mytest = dynamic_cast<TUCNDataTest*>(file->Get("TUCNDataTest"));
+   cout << "---------------------" << endl;
+   cout << "---------------------" << endl;
+   mytest->Print();
+   myparticle = (mytest->fBranch)[0];
+   myparticle->Print();
+   
+   cout << "---------------------" << endl;
+   cout << "---------------------" << endl;
+   
+   myparticle->SetId(9999);
+   myparticle->Print();
+   
+   mytest->Write();
+   file->Close();
+   delete file;
+   delete mytest;
+   delete myparticle;
+   file = NULL;
+   mytest = NULL;
+   myparticle = NULL;
+   
+   file = TFile::Open("test.root","read");
+   file->ls();
+   mytest = dynamic_cast<TUCNDataTest*>(file->Get("TUCNDataTest"));
+   cout << "---------------------" << endl;
+   cout << "---------------------" << endl;
+   mytest->Print();
+   myparticle = (mytest->fBranch)[0];
+   myparticle->Print();
+
+   file->Close();
+   delete file;
+   delete mytest;
+   delete myparticle;
+   file = NULL;
+   mytest = NULL;
+   myparticle = NULL;
+  
    return EXIT_SUCCESS;
 }
 
