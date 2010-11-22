@@ -45,7 +45,7 @@ TUCNSpinObserver::TUCNSpinObserver(const TUCNRunConfig& runConfig)
    Info("TUCNSpinObserver","Constructor");
    Double_t runTime = runConfig.RunTime();
    Double_t binWidth = runConfig.MaxStepTime(); 
-   Int_t nbins = runTime/binWidth;
+   Int_t nbins = (10*runTime)/binWidth;
    fSpinUpHist = new TH1F("SpinUpHist","SpinUpHist",nbins,0.0,runTime);
    fSpinDownHist = new TH1F("SpinDownHist","SpinDownHist",nbins,0.0,runTime);
    fMeasAxis = runConfig.PolarisationAxis();
@@ -96,4 +96,12 @@ void TUCNSpinObserver::RecordEvent(const TUCNParticle& particle)
    } else {
       fSpinDownHist->Fill(particle.T());
    }
+}
+
+//_____________________________________________________________________________
+void TUCNSpinObserver::Plot()
+{
+   fSpinUpHist->Draw();
+   new TCanvas();
+   fSpinDownHist->Draw();  
 }
