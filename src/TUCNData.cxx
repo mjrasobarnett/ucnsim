@@ -68,12 +68,19 @@ TUCNData& TUCNData::operator=(const TUCNData& d)
    Info("TUCNData","Assignment");
    if(this!=&d) {
       TNamed::operator=(d);
+      if (fInitialParticles) delete fInitialParticles; fInitialParticles = NULL;
       fInitialParticles = d.fInitialParticles;
+      if (fPropagatingParticles) delete fPropagatingParticles; fPropagatingParticles = NULL;
       fPropagatingParticles = d.fPropagatingParticles;
+      if (fDetectedParticles) delete fDetectedParticles; fDetectedParticles = NULL;
       fDetectedParticles = d.fDetectedParticles;
+      if (fDecayedParticles) delete fDecayedParticles; fDecayedParticles = NULL;
       fDecayedParticles = d.fDecayedParticles;
+      if (fAbsorbedParticles) delete fAbsorbedParticles; fAbsorbedParticles = NULL;
       fAbsorbedParticles = d.fAbsorbedParticles;
+      if (fLostParticles) delete fLostParticles; fLostParticles = NULL;
       fLostParticles = d.fLostParticles;
+      if (fBadParticles) delete fBadParticles; fBadParticles = NULL;
       fBadParticles = d.fBadParticles;
    }
    return *this;
