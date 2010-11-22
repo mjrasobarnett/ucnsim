@@ -169,13 +169,21 @@ Bool_t TUCNRun::Initialise(const TUCNRunConfig& runConfig)
       Error("Initialise","Wall Losses Off has not been Implemented yet."); 
       return kFALSE; 
    }
+   
    ///////////////////////////////////////////////////////////////////////////////////////
+/*   // -- Initialise Observers
+   if (this->InitialiseObservers(this->GetRunConfig()) == kFALSE) {
+      Error("Initialise","Failed to Initialise Observers");
+      return kFALSE;
+   }
+*/   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   cout << "-------------------------------------------" << endl;
+   cout << "Run successfully initialised" << endl;
    cout << "Particles: " << this->GetData()->InitialParticles() << endl;
    cout << "RunTime(s): " << this->GetRunConfig().RunTime() << endl;
    cout << "MaxStepTime(s): " << this->GetRunConfig().MaxStepTime() << endl;
    cout << "WallLosses: " << this->GetRunConfig().WallLossesOn() << endl;
-   cout << "-------------------------------------------" << endl;
-   cout << "Run successfully initialised" << endl;
    cout << "-------------------------------------------" << endl;
    return kTRUE;
 }
@@ -195,11 +203,27 @@ Bool_t TUCNRun::Start()
    cout << "Number With Anomalous Behaviour: " << this->GetData()->BadParticles() << endl;
    cout << "-------------------------------------------" << endl;
    Int_t totalParticles = this->GetData()->InitialParticles();
+   
+   if (this->GetRunConfig().ObservePolarisation() == kTRUE) {
+      // Create an observer to track UCN Spin polarisation
+      TUCNObserver* obs = new TUCNSpinObserver(this->GetRunConfig());
+      // Add observer to the list
+      fObservers.push_back(obs);
+      obs = NULL;
+   }
+   
    ///////////////////////////////////////////////////////////////////////
    // Loop over all particles stored in InitialParticles Tree
    for (Int_t index = 0; index < totalParticles; index++) {
       // Get Particle from list
       TUCNParticle* particle = dynamic_cast<TUCNParticle*>(this->GetInitialParticle(index));
+      
+      // Attach Observers
+      list<TUCNObserver*>::iterator it;
+      for (it = fObservers.begin(); it != fObservers.end(); ++it) {
+         particle->Attach((**it));
+      }
+      
       // Determine whether we are restoring to the start of a previously propagated track.
       // If so we want to set the Random Generator's seed back to what it was at the start of this
       // particle's propagation. This seed is stored (currently) in the particle itself. Otherwise
@@ -419,6 +443,28 @@ Bool_t TUCNRun::LoadParticles(const TUCNRunConfig& runConfig)
    cout << fData->InitialParticles() << " particles have been loaded succesfully" << endl;
    cout << "-------------------------------------------" << endl;
    delete importedRun;
+   return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNRun::InitialiseObservers(const TUCNRunConfig& runConfig)
+{
+   // Check Run configuration for which properties are to be monitored with Observers 
+   cout << "-------------------------------------------" << endl;
+   cout << "Setting up Observers" << endl;
+   if (runConfig.ObservePolarisation() == kTRUE) {
+      // Create an observer to track UCN Spin polarisation
+      TUCNObserver* obs = new TUCNSpinObserver(runConfig);
+      // Attach observer to particles
+      for (Int_t index = 0; index < this->Neutrons(); index++) {
+         // Get Particle from list
+         TUCNParticle* particle = dynamic_cast<TUCNParticle*>(this->GetInitialParticle(index));
+         particle->Attach(*obs);
+      }
+      // Add observer to the list
+      fObservers.push_back(obs);
+      obs = NULL;
+   }
    return kTRUE;
 }
 

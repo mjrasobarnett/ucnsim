@@ -66,6 +66,8 @@ public:
    Bool_t               Start();
    Bool_t               Finish();
    
+   TUCNObserver*        GetObserver() {return fObservers.front();}
+   
    ClassDef(TUCNRun, 1)
 };
 
