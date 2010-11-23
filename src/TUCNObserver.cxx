@@ -4,6 +4,7 @@
 #include <cassert>
 
 #include "TUCNObserver.h"
+
 #include "TUCNParticle.h"
 #include "TUCNRunConfig.h"
 #include "TCanvas.h"
@@ -29,8 +30,7 @@ ClassImp(TUCNSpinObserver)
 //_____________________________________________________________________________
 TUCNSpinObserver::TUCNSpinObserver()
                  :TUCNObserver(),
-                  fSpinUpHist(NULL),
-                  fSpinDownHist(NULL)
+                  fParticleData()
 {
    // Constructor
    Info("TUCNSpinObserver","Default Constructor");
@@ -38,24 +38,17 @@ TUCNSpinObserver::TUCNSpinObserver()
 
 //_____________________________________________________________________________
 TUCNSpinObserver::TUCNSpinObserver(const TUCNRunConfig& runConfig)
-                 :fSpinUpHist(NULL),
-                  fSpinDownHist(NULL)
+                 :TUCNObserver()
 {
    // Constructor
    Info("TUCNSpinObserver","Constructor");
-   Double_t runTime = runConfig.RunTime();
-   Double_t binWidth = runConfig.MaxStepTime(); 
-   Int_t nbins = (10*runTime)/binWidth;
-   fSpinUpHist = new TH1F("SpinUpHist","SpinUpHist",nbins,0.0,runTime);
-   fSpinDownHist = new TH1F("SpinDownHist","SpinDownHist",nbins,0.0,runTime);
    fMeasAxis = runConfig.PolarisationAxis();
 }
 
 //_____________________________________________________________________________
 TUCNSpinObserver::TUCNSpinObserver(const TUCNSpinObserver& other)
                  :TUCNObserver(other),
-                  fSpinUpHist(other.fSpinUpHist),
-                  fSpinDownHist(other.fSpinDownHist),
+                  fParticleData(other.fParticleData),
                   fMeasAxis(other.fMeasAxis)
 {
    // Copy Constructor
@@ -69,10 +62,8 @@ TUCNSpinObserver& TUCNSpinObserver::operator=(const TUCNSpinObserver& other)
    Info("TUCNSpinObserver","Assignment");
    if(this!=&other) {
       TUCNObserver::operator=(other);
-      if (fSpinUpHist != NULL) delete fSpinUpHist; fSpinUpHist = NULL;
-      fSpinUpHist = other.fSpinUpHist;
-      if (fSpinDownHist != NULL) delete fSpinDownHist; fSpinDownHist = NULL;
-      fSpinDownHist = other.fSpinDownHist;
+      PurgeContainer();
+      fParticleData = other.fParticleData;
       fMeasAxis = other.fMeasAxis;
    }
    return *this;
@@ -83,25 +74,40 @@ TUCNSpinObserver::~TUCNSpinObserver()
 {
    // Destructor
    Info("TUCNSpinObserver","Destructor");
-   if (fSpinUpHist != NULL) delete fSpinUpHist; fSpinUpHist = NULL;
-   if (fSpinDownHist != NULL) delete fSpinDownHist; fSpinDownHist = NULL;
+   cout << "No. of Particles Stored: " << fParticleData.size() << endl;
+   PurgeContainer();
+   cout << "After Purge: " << fParticleData.size() << endl;
+   
+}
+
+//_____________________________________________________________________________
+void TUCNSpinObserver::RegisterInterest(TUCNParticle& particle)
+{
+   // Create storage for this particle's data
+   fParticleData.insert(pair<Int_t,TUCNSpinObservables*>(particle.Id(), new TUCNSpinObservables()));
+   // Register as an observer with the particle
+   particle.Attach(this);
 }
 
 //_____________________________________________________________________________
 void TUCNSpinObserver::RecordEvent(const TUCNParticle& particle)
 {
    // -- Record the current polarisation
-   if (particle.IsSpinUp(fMeasAxis) == kTRUE) {
-      fSpinUpHist->Fill(particle.T());
-   } else {
-      fSpinDownHist->Fill(particle.T());
-   }
+   map<Int_t, TUCNSpinObservables*>::iterator entry = fParticleData.find(particle.Id());
+   TUCNSpinObservables* spinobservable = (entry->second);
+   spinobservable->insert(pair<Double_t, Bool_t>(particle.T(), particle.IsSpinUp(fMeasAxis)));
 }
 
 //_____________________________________________________________________________
-void TUCNSpinObserver::Plot()
+void TUCNSpinObserver::PurgeContainer()
 {
-   fSpinUpHist->Draw();
-   new TCanvas();
-   fSpinDownHist->Draw();  
+   // -- Clean up all Observables in container
+   if (fParticleData.empty() == kFALSE) {
+      map<Int_t,TUCNSpinObservables*>::iterator it;
+      for(it = fParticleData.begin(); it != fParticleData.end(); ++it) {
+         if (it->second != NULL) delete (it->second);
+         it->second = NULL;
+         fParticleData.erase(it);
+      }
+   }
 }

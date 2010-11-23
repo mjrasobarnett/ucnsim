@@ -14,8 +14,9 @@
 #define TUCNOBSERVER_H
 
 #include "TObject.h"
-#include "TH1F.h"
+#include <map>
 #include "TVector3.h"
+#include "TUCNObservables.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -30,8 +31,8 @@ class TUCNObserver : public TObject
 {
 public:
    
+   virtual void RegisterInterest(TUCNParticle& particle) = 0;
    virtual void RecordEvent(const TUCNParticle& particle) = 0;
-   virtual void Plot() = 0;
    
    ClassDef(TUCNObserver, 1)
 };
@@ -45,9 +46,10 @@ public:
 class TUCNSpinObserver : public TUCNObserver
 {
 private:
-   TH1F* fSpinUpHist;
-   TH1F* fSpinDownHist;
+   std::map<Int_t, TUCNSpinObservables*> fParticleData;
    TVector3 fMeasAxis;
+   
+   void PurgeContainer();
    
 public:
    // -- Constructors
@@ -57,8 +59,8 @@ public:
    TUCNSpinObserver& operator=(const TUCNSpinObserver&);
    virtual ~TUCNSpinObserver();
    
+   virtual void RegisterInterest(TUCNParticle& particle);
    virtual void RecordEvent(const TUCNParticle& particle);
-   virtual void Plot();
    
    ClassDef(TUCNSpinObserver, 1)
 };
