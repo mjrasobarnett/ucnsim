@@ -27,7 +27,6 @@ protected:
    TUCNData*            fData;
    TUCNExperiment*      fExperiment;
    TUCNRunConfig        fRunConfig;
-   std::list<TUCNObserver*>  fObservers;
    
    Bool_t               LoadParticles(const TUCNRunConfig& runConfig);
    void                 PrintProgress(Int_t entry, Float_t nEntriesF, Int_t mintime=2);
@@ -65,9 +64,7 @@ public:
    Bool_t               Initialise(const TUCNRunConfig& runConfig);
    Bool_t               Start();
    Bool_t               Finish();
-   
-   TUCNObserver*        GetObserver() {return fObservers.front();}
-   
+      
    ClassDef(TUCNRun, 1)
 };
 

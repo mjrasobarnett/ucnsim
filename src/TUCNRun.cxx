@@ -80,8 +80,7 @@ TUCNRun::TUCNRun(const TUCNRun& other)
         :TNamed(other),
          fData(other.fData),
          fExperiment(other.fExperiment),
-         fRunConfig(other.fRunConfig),
-         fObservers(other.fObservers)
+         fRunConfig(other.fRunConfig)
 {
 // -- Copy Constructor
    Info("TUCNRunManager", "Copy Constructor");
@@ -100,7 +99,6 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& other)
       if (fExperiment != NULL) delete fExperiment; fExperiment = NULL;
       fExperiment = other.fExperiment;
       fRunConfig = other.fRunConfig;
-      fObservers = other.fObservers;
    }
    return *this;
 }
@@ -112,13 +110,6 @@ TUCNRun::~TUCNRun()
    Info("TUCNRun", "Destructor");
    if(fData) delete fData;
    if(fExperiment) delete fExperiment;
-   if(fObservers.empty() == kFALSE) {
-      list<TUCNObserver*>::iterator it;
-      for(it = fObservers.begin(); it != fObservers.end(); ++it) {
-         delete *it;
-         *it = 0;
-      }
-   }
 }
 
 //_____________________________________________________________________________
@@ -203,27 +194,11 @@ Bool_t TUCNRun::Start()
    cout << "Number With Anomalous Behaviour: " << this->GetData()->BadParticles() << endl;
    cout << "-------------------------------------------" << endl;
    Int_t totalParticles = this->GetData()->InitialParticles();
-   
-   if (this->GetRunConfig().ObservePolarisation() == kTRUE) {
-      // Create an observer to track UCN Spin polarisation
-      TUCNObserver* obs = new TUCNSpinObserver(this->GetRunConfig());
-      // Add observer to the list
-      fObservers.push_back(obs);
-      obs = NULL;
-   }
-   
    ///////////////////////////////////////////////////////////////////////
    // Loop over all particles stored in InitialParticles Tree
    for (Int_t index = 0; index < totalParticles; index++) {
       // Get Particle from list
       TUCNParticle* particle = dynamic_cast<TUCNParticle*>(this->GetInitialParticle(index));
-      
-      // Attach Observers
-      list<TUCNObserver*>::iterator it;
-      for (it = fObservers.begin(); it != fObservers.end(); ++it) {
-         particle->Attach((**it));
-      }
-      
       // Determine whether we are restoring to the start of a previously propagated track.
       // If so we want to set the Random Generator's seed back to what it was at the start of this
       // particle's propagation. This seed is stored (currently) in the particle itself. Otherwise
