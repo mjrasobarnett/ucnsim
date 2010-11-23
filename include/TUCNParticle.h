@@ -164,8 +164,8 @@ public:
    
    // -- Observer management
    Int_t                CountObservers() {return fObservers.size();}
-   void                 Attach(TUCNObserver& observer);
-   void                 Detach(TUCNObserver& observer);
+   void                 Attach(TUCNObserver* observer);
+   void                 Detach(TUCNObserver* observer);
    void                 NotifyObservers(/*const TUCNInterest& interest*/);
    
    ClassDef(TUCNParticle,1)   // Ultra-Cold Neutron

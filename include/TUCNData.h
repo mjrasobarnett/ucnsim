@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include "TUCNParticle.h"
+#include "TUCNObserver.h"
 
 class TUCNParticle;
 
@@ -18,6 +19,9 @@ protected:
    TTree          *fAbsorbedParticles;
    TTree          *fLostParticles;
    TTree          *fBadParticles;
+   
+   std::vector<TUCNObserver*> fObservers;
+   void           PurgeObservers();
    
 public:
    TUCNData();
@@ -63,6 +67,10 @@ public:
                                               this->BadParticles();}
    // Get a Particular Tree
    TTree*         FetchTree(TString treeName);
+   
+   // Observers
+   void           AddObserver(TUCNObserver* observer);
+   void           RegisterObservers(TUCNParticle* particle);
    
    ClassDef(TUCNData, 1) // UCN Data Object
 };

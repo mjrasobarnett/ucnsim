@@ -55,7 +55,8 @@ TUCNData::TUCNData(const TUCNData& d)
           fDecayedParticles(d.fDecayedParticles),
           fAbsorbedParticles(d.fAbsorbedParticles),
           fLostParticles(d.fLostParticles),
-          fBadParticles(d.fBadParticles)
+          fBadParticles(d.fBadParticles),
+          fObservers(d.fObservers)
 {
    // Copy Constructor
    Info("TUCNData","Copy Constructor");
@@ -82,6 +83,9 @@ TUCNData& TUCNData::operator=(const TUCNData& d)
       fLostParticles = d.fLostParticles;
       if (fBadParticles) delete fBadParticles; fBadParticles = NULL;
       fBadParticles = d.fBadParticles;
+      // Clear list of observers before copying
+      PurgeObservers();
+      fObservers = d.fObservers;
    }
    return *this;
 }
@@ -98,6 +102,20 @@ TUCNData::~TUCNData(void)
    if(fAbsorbedParticles) delete fAbsorbedParticles;
    if(fLostParticles) delete fLostParticles;
    if(fBadParticles) delete fBadParticles;
+   PurgeObservers();
+}
+
+//_____________________________________________________________________________
+void TUCNData::PurgeObservers()
+{
+   // -- Delete all observers held
+   if (fObservers.empty() == kFALSE) {
+      vector<TUCNObserver*>::iterator it;
+      for(it = fObservers.begin(); it != fObservers.end(); ++it) {
+         delete *it;
+         *it = 0;
+      }
+   }
 }
 
 //_____________________________________________________________________________
@@ -411,6 +429,24 @@ TTree* TUCNData::FetchTree(TString treeName) {
    }
 }
 
+//_____________________________________________________________________________
+void TUCNData::AddObserver(TUCNObserver* observer)
+{
+   // -- Add observer to internal list
+   fObservers.push_back(observer);
+}
+
+//_____________________________________________________________________________
+void TUCNData::RegisterObservers(TUCNParticle* particle)
+{
+   // -- Register all observers in list with the particle
+   vector<TUCNObserver*>::iterator obsIter;
+   for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
+      (*obsIter)->RegisterInterest(*particle);
+   }
+}
+
+
 
 ClassImp(TUCNDataTest)
 
@@ -441,7 +477,7 @@ TUCNDataBranch::TUCNDataBranch()
 }
 
 //_____________________________________________________________________________
-TUCNDataBranch::TUCNDataBranch(const string& name)
+TUCNDataBranch::TUCNDataBranch(const string& /*name*/)
                :std::vector<TUCNParticle*>()
 {
    // -- Constructor

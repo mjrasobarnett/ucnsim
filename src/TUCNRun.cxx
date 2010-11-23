@@ -160,14 +160,13 @@ Bool_t TUCNRun::Initialise(const TUCNRunConfig& runConfig)
       Error("Initialise","Wall Losses Off has not been Implemented yet."); 
       return kFALSE; 
    }
-   
    ///////////////////////////////////////////////////////////////////////////////////////
-/*   // -- Initialise Observers
+   // -- Initialise Observers
    if (this->InitialiseObservers(this->GetRunConfig()) == kFALSE) {
       Error("Initialise","Failed to Initialise Observers");
       return kFALSE;
    }
-*/   
+   
    ///////////////////////////////////////////////////////////////////////////////////////
    cout << "-------------------------------------------" << endl;
    cout << "Run successfully initialised" << endl;
@@ -199,6 +198,8 @@ Bool_t TUCNRun::Start()
    for (Int_t index = 0; index < totalParticles; index++) {
       // Get Particle from list
       TUCNParticle* particle = dynamic_cast<TUCNParticle*>(this->GetInitialParticle(index));
+      // Register Observers with particle
+      this->GetData()->RegisterObservers(particle);
       // Determine whether we are restoring to the start of a previously propagated track.
       // If so we want to set the Random Generator's seed back to what it was at the start of this
       // particle's propagation. This seed is stored (currently) in the particle itself. Otherwise
@@ -430,14 +431,8 @@ Bool_t TUCNRun::InitialiseObservers(const TUCNRunConfig& runConfig)
    if (runConfig.ObservePolarisation() == kTRUE) {
       // Create an observer to track UCN Spin polarisation
       TUCNObserver* obs = new TUCNSpinObserver(runConfig);
-      // Attach observer to particles
-      for (Int_t index = 0; index < this->Neutrons(); index++) {
-         // Get Particle from list
-         TUCNParticle* particle = dynamic_cast<TUCNParticle*>(this->GetInitialParticle(index));
-         particle->Attach(*obs);
-      }
       // Add observer to the list
-      fObservers.push_back(obs);
+      this->GetData()->AddObserver(obs);
       obs = NULL;
    }
    return kTRUE;
