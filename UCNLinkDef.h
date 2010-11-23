@@ -46,6 +46,6 @@
 #pragma link C++ class TUCNInitialConfig;
 #pragma link C++ class TUCNRunConfig;
 #pragma link C++ class TUCNObserver;
-#pragma link C++ class TUCNSpinObserver;
-
+#pragma link C++ class TUCNSpinObserver+;
+#pragma link C++ class TUCNSpinObservables+;
 #endif
