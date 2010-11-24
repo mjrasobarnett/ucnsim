@@ -71,6 +71,7 @@ public:
    // Observers
    void           AddObserver(TUCNObserver* observer);
    void           RegisterObservers(TUCNParticle* particle);
+   void           PlotObservers(TTree* tree);
    
    ClassDef(TUCNData, 1) // UCN Data Object
 };

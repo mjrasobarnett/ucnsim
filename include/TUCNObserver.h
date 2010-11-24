@@ -17,6 +17,7 @@
 #include <map>
 #include "TVector3.h"
 #include "TUCNObservables.h"
+#include "TTree.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -26,6 +27,7 @@
 class TUCNParticle;
 class TUCNRunConfig;
 class TUCNInterest;
+class TUCNData;
 
 class TUCNObserver : public TObject
 {
@@ -33,6 +35,8 @@ public:
    
    virtual void RegisterInterest(TUCNParticle& particle) = 0;
    virtual void RecordEvent(const TUCNParticle& particle) = 0;
+   
+   virtual void Plot(TUCNData* data, TTree* tree) = 0;
    
    ClassDef(TUCNObserver, 1)
 };
@@ -61,6 +65,8 @@ public:
    
    virtual void RegisterInterest(TUCNParticle& particle);
    virtual void RecordEvent(const TUCNParticle& particle);
+   
+   virtual void Plot(TUCNData* data, TTree* tree);
    
    ClassDef(TUCNSpinObserver, 1)
 };

@@ -12,6 +12,7 @@ Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeN
 Bool_t PlotAngularDistribution(TUCNRun* run, const TString& treeName);
 Bool_t PlotBounces(TUCNRun* run, const TString& treeName); 
 Bool_t PlotPhaseSpace(TUCNRun* run, const TString& treeName); 
+Bool_t PlotObservers(TUCNRun* run, const TString& treeName);
 Double_t ExponentialDecay(Double_t *x, Double_t *par);
 
 // -------------------------------------------------------------------------------------- 
@@ -32,9 +33,17 @@ Int_t plot_rundata(const char* configFileName, const char* treeName, const char*
       cout << "More than one Run specified. Plot_rundata needs updating to handle this." << endl;
 //      return EXIT_FAILURE;
    }
+   
+   Char_t name[20];
+   sprintf(name,"Run%d",1);
+   const string runConfigFile = configFile.GetString("Config",name);
+   cout << runConfigFile << endl;
+   TUCNRunConfig runConfig(runConfigFile);
+   
+   
    // Read the outputfile name
-   TString dataFileName = configFile.GetString("OutputDataFile",runName);
-   if (dataFileName == "") { 
+   TString dataFileName = runConfig.OutputFileName();
+   if (dataFileName == "") {
       cout << "No File holding the particle data has been specified" << endl;
       return kFALSE;
    }
@@ -57,9 +66,10 @@ Int_t plot_rundata(const char* configFileName, const char* treeName, const char*
    cout << "Successfully Loaded Run: " << runName << endl;
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Plot angles and momenta
-   PlotAngularDistribution(run, treeName);
-   PlotBounces(run,treeName);
-   PlotPhaseSpace(run, treeName);
+//   PlotAngularDistribution(run, treeName);
+//   PlotBounces(run,treeName);
+//   PlotPhaseSpace(run, treeName);
+   PlotObservers(run, treeName);
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Plot the positions
@@ -71,7 +81,7 @@ Int_t plot_rundata(const char* configFileName, const char* treeName, const char*
    TGeoManager* geoManager = TGeoManager::Import(geomFileName); 
    // Needs to be imported first because we draw the volumes in certain histograms
    // from it, so we do not want it deleted in each function.
-   PlotPositions(geoManager, run, treeName);
+//   PlotPositions(geoManager, run, treeName);
    return 0;
 }
 
@@ -305,6 +315,16 @@ Bool_t PlotPhaseSpace(TUCNRun* run, const TString& treeName)
    cout << "EmptyingTime: " << emptyingTime << "\t" << "Error: " << emptyingTimeError << endl;
    
    return kTRUE;
+}
+
+// -------------------------------------------------------------------------------------- 
+Bool_t PlotObservers(TUCNRun* run, const TString& treeName)
+{
+   // -- Get Observers to create their plots of what they have stored
+   // -- including data only from the particles in the specified tree
+   TTree* tree = run->GetData()->FetchTree(treeName);
+   if (tree == NULL) return kFALSE;
+   run->GetData()->PlotObservers(tree);
 }
 
 // -------------------------------------------------------------------------------------- 

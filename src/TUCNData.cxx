@@ -446,6 +446,16 @@ void TUCNData::RegisterObservers(TUCNParticle* particle)
    }
 }
 
+//_____________________________________________________________________________
+void TUCNData::PlotObservers(TTree* tree)
+{
+   // Pass Tree of particles to each observer so that they can make a plot of their results
+   vector<TUCNObserver*>::iterator obsIter;
+   for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
+      (*obsIter)->Plot(this, tree);
+   }
+}
+
 
 
 ClassImp(TUCNDataTest)
