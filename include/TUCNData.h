@@ -25,9 +25,9 @@ protected:
    
 public:
    TUCNData();
-   TUCNData(const char *name, const char *title);
-   TUCNData(const TUCNData& d);
-   TUCNData& operator=(const TUCNData& d); 
+   TUCNData(const std::string& name);
+   TUCNData(const TUCNData& other);
+   TUCNData& operator=(const TUCNData& other); 
    virtual ~TUCNData(void);
    
    Bool_t         ChecksOut();

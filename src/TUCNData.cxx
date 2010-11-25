@@ -31,8 +31,8 @@ TUCNData::TUCNData()
 }
 
 //_____________________________________________________________________________
-TUCNData::TUCNData(const char * name, const char * title)
-         :TNamed(name,title)
+TUCNData::TUCNData(const string& name)
+         :TNamed(name.c_str(), "")
 {
    // -- Constructor
    Info("TUCNData","Constructor");
@@ -47,51 +47,51 @@ TUCNData::TUCNData(const char * name, const char * title)
 }
 
 //_____________________________________________________________________________
-TUCNData::TUCNData(const TUCNData& d)
-         :TNamed(d), 
-          fInitialParticles(d.fInitialParticles),
-          fPropagatingParticles(d.fPropagatingParticles),
-          fDetectedParticles(d.fDetectedParticles),
-          fDecayedParticles(d.fDecayedParticles),
-          fAbsorbedParticles(d.fAbsorbedParticles),
-          fLostParticles(d.fLostParticles),
-          fBadParticles(d.fBadParticles),
-          fObservers(d.fObservers)
+TUCNData::TUCNData(const TUCNData& other)
+         :TNamed(other), 
+          fInitialParticles(other.fInitialParticles),
+          fPropagatingParticles(other.fPropagatingParticles),
+          fDetectedParticles(other.fDetectedParticles),
+          fDecayedParticles(other.fDecayedParticles),
+          fAbsorbedParticles(other.fAbsorbedParticles),
+          fLostParticles(other.fLostParticles),
+          fBadParticles(other.fBadParticles),
+          fObservers(other.fObservers)
 {
    // Copy Constructor
    Info("TUCNData","Copy Constructor");
 }
 
 //_____________________________________________________________________________
-TUCNData& TUCNData::operator=(const TUCNData& d)
+TUCNData& TUCNData::operator=(const TUCNData& other)
 {
 // --assignment operator
    Info("TUCNData","Assignment");
-   if(this!=&d) {
-      TNamed::operator=(d);
+   if(this!=&other) {
+      TNamed::operator=(other);
       if (fInitialParticles) delete fInitialParticles; fInitialParticles = NULL;
-      fInitialParticles = d.fInitialParticles;
+      fInitialParticles = other.fInitialParticles;
       if (fPropagatingParticles) delete fPropagatingParticles; fPropagatingParticles = NULL;
-      fPropagatingParticles = d.fPropagatingParticles;
+      fPropagatingParticles = other.fPropagatingParticles;
       if (fDetectedParticles) delete fDetectedParticles; fDetectedParticles = NULL;
-      fDetectedParticles = d.fDetectedParticles;
+      fDetectedParticles = other.fDetectedParticles;
       if (fDecayedParticles) delete fDecayedParticles; fDecayedParticles = NULL;
-      fDecayedParticles = d.fDecayedParticles;
+      fDecayedParticles = other.fDecayedParticles;
       if (fAbsorbedParticles) delete fAbsorbedParticles; fAbsorbedParticles = NULL;
-      fAbsorbedParticles = d.fAbsorbedParticles;
+      fAbsorbedParticles = other.fAbsorbedParticles;
       if (fLostParticles) delete fLostParticles; fLostParticles = NULL;
-      fLostParticles = d.fLostParticles;
+      fLostParticles = other.fLostParticles;
       if (fBadParticles) delete fBadParticles; fBadParticles = NULL;
-      fBadParticles = d.fBadParticles;
+      fBadParticles = other.fBadParticles;
       // Clear list of observers before copying
       PurgeObservers();
-      fObservers = d.fObservers;
+      fObservers = other.fObservers;
    }
    return *this;
 }
 
 //_____________________________________________________________________________
-TUCNData::~TUCNData(void)
+TUCNData::~TUCNData()
 {
    // -- Destructor
    Info("TUCNData","Destructor");
