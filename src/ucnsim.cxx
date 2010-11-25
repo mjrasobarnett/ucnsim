@@ -42,44 +42,43 @@ Int_t main(Int_t argc,Char_t **argv)
       cerr << "Cannot read valid number of runs from ConfigFile" << endl;
       return EXIT_FAILURE;
    }
-   cout << "Number of Runs: " << numberOfRuns << endl << endl; 
+   cout << "Number of Runs: " << numberOfRuns << endl; 
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Create the Runs
    ///////////////////////////////////////////////////////////////////////////////////////
    for (Int_t runNumber = 1; runNumber <= numberOfRuns; runNumber++) {
       // Read in the Run Configuration
-      Char_t name[20];
-      sprintf(name,"Run%d",runNumber);
-      const string runConfigFile = configFile.GetString("Config",name);
-      cout << runConfigFile << endl;
+      Char_t runID[20];
+      sprintf(runID,"Run%d",runNumber);
+      const string runConfigFile = configFile.GetString("Config",runID);
       TUCNRunConfig runConfig(runConfigFile);
       // Create the Run
       cout << "-------------------------------------------" << endl;
-      cout << "Creating: " << name << endl;
+      cout << "Creating RunID: " << runID << "\t" << "from: " << runConfigFile << endl;
       TUCNRun run;
       
       ///////////////////////////////////////////////////////////////////////////////////////
       // -- Initialise Run
       ///////////////////////////////////////////////////////////////////////////////////////
       if (!(run.Initialise(runConfig))) {
-         cerr << name << " failed to initialise successfully. Program aborting." << endl;
+         cerr << runID << " failed to initialise successfully. Program aborting." << endl;
          return EXIT_FAILURE;
       }
-      ///////////////////////////////////////////////////////////////////////////////////////
+/*      ///////////////////////////////////////////////////////////////////////////////////////
       // -- Run Simulation
       ///////////////////////////////////////////////////////////////////////////////////////
       if (!(run.Start())) {
-         cerr << name << " failed to proceed successfully. Program aborting." << endl;
+         cerr << runID << " failed to proceed successfully. Program aborting." << endl;
          return EXIT_FAILURE;
       }
       ///////////////////////////////////////////////////////////////////////////////////////
       // -- Export to File
       ///////////////////////////////////////////////////////////////////////////////////////
       if (!(run.Finish())) {
-         cerr << name << " failed to finish successfully. Program aborting." << endl;
+         cerr << runID << " failed to finish successfully. Program aborting." << endl;
          return EXIT_FAILURE;
       }
-      cout << name << " successfully completed." << endl;
+*/      cout << runID << " successfully completed." << endl;
       cout << "-------------------------------------------" << endl << endl;
    }
    ///////////////////////////////////////////////////////////////////////////////////////
