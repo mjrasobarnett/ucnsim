@@ -60,9 +60,9 @@ Int_t generate_particles(const char* configFileName)
 Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig)
 {   
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Generate the particles
+   // -- Create storage for the particles
    string runName = initialConfig.RunName();
-   TUCNRun* run = new TUCNRun(runName);
+   TUCNData* data = new TUCNData(runName.c_str());
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Find the initial volume
    TString geomFileName = initialConfig.GeomFileName();
@@ -78,7 +78,7 @@ Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig)
       return false;
    }
    
-   GenerateParticles(initialConfig, volume, matrix, run->GetData());
+   GenerateParticles(initialConfig, volume, matrix, data);
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Write out the particle tree
@@ -93,8 +93,8 @@ Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig)
       cerr << "Cannot open file: " << dataFileName << endl;
       return 0;
    }
-   run->Write(run->GetName());
-   cout << "Initial Particle Data for: " << run->GetName();
+   data->Write(data->GetName());
+   cout << "Initial Particle Data for: " << data->GetName();
    cout << " was successfully written to file" << endl;
    cout << "-------------------------------------------" << endl;
    file->ls(); // List the contents of the file
