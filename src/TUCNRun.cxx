@@ -55,32 +55,34 @@ ClassImp(TUCNRun)
 
 //_____________________________________________________________________________
 TUCNRun::TUCNRun()
-        :TNamed()
+        :TNamed(),
+         fRunConfig()
 {
 // -- Default constructor
    Info("TUCNRun", "Default Constructor");
    // Don't allocate memory here as per ROOT guidelines for reading objects from ROOT files
-   fData = 0;
-   fExperiment = 0;
+   fData = NULL;
+   fExperiment = NULL;
 } 
 
 //_____________________________________________________________________________
-TUCNRun::TUCNRun(const std::string name)
-        :TNamed(name.c_str(), name.c_str())
+TUCNRun::TUCNRun(const TUCNRunConfig& runConfig)
+        :TNamed(),
+         fRunConfig(runConfig)
 {
 // -- Default constructor
    Info("TUCNRun", "Constructor");
    // Don't allocate memory here as per ROOT guidelines for reading objects from ROOT files
-   fData = new TUCNData("UCNData", "Data for UCNSIM Run");
-   fExperiment = new TUCNExperiment();
+   fData = NULL;
+   fExperiment = NULL;
 }
 
 //_____________________________________________________________________________
 TUCNRun::TUCNRun(const TUCNRun& other)
         :TNamed(other),
+         fRunConfig(other.fRunConfig),
          fData(other.fData),
-         fExperiment(other.fExperiment),
-         fRunConfig(other.fRunConfig)
+         fExperiment(other.fExperiment)
 {
 // -- Copy Constructor
    Info("TUCNRunManager", "Copy Constructor");
@@ -92,13 +94,13 @@ TUCNRun& TUCNRun::operator=(const TUCNRun& other)
 // --assignment operator
    if(this!=&other) {
       TNamed::operator=(other);
+      fRunConfig = other.fRunConfig;
       // deallocate previous memory if necessary
       if (fData != NULL) delete fData; fData = NULL;
       fData = other.fData;
       // deallocate previous memory if necessary
       if (fExperiment != NULL) delete fExperiment; fExperiment = NULL;
       fExperiment = other.fExperiment;
-      fRunConfig = other.fRunConfig;
    }
    return *this;
 }
@@ -113,18 +115,19 @@ TUCNRun::~TUCNRun()
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNRun::Initialise(const TUCNRunConfig& runConfig)
+Bool_t TUCNRun::Initialise()
 {
-   // -- Initialise the Run
+   // -- Initialise the Run. Build the Experiment Object which loads the Geometry and fields
+   // -- into memory. Build the Data Object which loads the data files and initial particles.
+   // -- Finally check Run parameters in the RunConfig object for further instructions.
+   this->SetName(this->GetRunConfig().RunName().c_str());
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Allocate Memory
    ///////////////////////////////////////////////////////////////////////////////////////
    if (fData != NULL) delete fData; fData = NULL;
-   fData = new TUCNData("UCNData", "Data for UCNSIM Run");
+   fData = new TUCNData("UCNData");
    if (fExperiment != NULL) delete fExperiment; fExperiment = NULL;
    fExperiment = new TUCNExperiment();
-   fRunConfig = runConfig;
-   this->SetName(this->GetRunConfig().RunName().c_str());
    cout << "-------------------------------------------" << endl;
    cout << "Initialising: " << this->GetName() << endl;
    cout << "-------------------------------------------" << endl;

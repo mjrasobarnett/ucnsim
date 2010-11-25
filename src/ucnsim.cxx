@@ -55,12 +55,12 @@ Int_t main(Int_t argc,Char_t **argv)
       // Create the Run
       cout << "-------------------------------------------" << endl;
       cout << "Creating RunID: " << runID << "\t" << "from: " << runConfigFile << endl;
-      TUCNRun run;
+      TUCNRun run(runConfig);
       
       ///////////////////////////////////////////////////////////////////////////////////////
       // -- Initialise Run
       ///////////////////////////////////////////////////////////////////////////////////////
-      if (!(run.Initialise(runConfig))) {
+      if (!(run.Initialise())) {
          cerr << runID << " failed to initialise successfully. Program aborting." << endl;
          return EXIT_FAILURE;
       }

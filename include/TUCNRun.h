@@ -24,9 +24,9 @@ class TUCNParticle;
 class TUCNRun : public TNamed 
 {
 protected:
+   TUCNRunConfig        fRunConfig;
    TUCNData*            fData;
    TUCNExperiment*      fExperiment;
-   TUCNRunConfig        fRunConfig;
    
    Bool_t               LoadParticles(const TUCNRunConfig& runConfig);
    void                 PrintProgress(Int_t entry, Float_t nEntriesF, Int_t mintime=2);
@@ -35,7 +35,7 @@ protected:
 public:
    // -- constructors
    TUCNRun();
-   TUCNRun(const std::string name);
+   TUCNRun(const TUCNRunConfig& runConfig);
    TUCNRun(const TUCNRun&); 
    TUCNRun& operator=(const TUCNRun&);
    // -- destructor
@@ -61,7 +61,7 @@ public:
    TUCNParticle*        GetInitialParticle(Int_t particleID);
    
    // Run Procedures
-   Bool_t               Initialise(const TUCNRunConfig& runConfig);
+   Bool_t               Initialise();
    Bool_t               Start();
    Bool_t               Finish();
       
