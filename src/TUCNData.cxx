@@ -24,6 +24,8 @@ TUCNData::TUCNData()
    // -- Create the Trees
    fInputFile = NULL;
    fOutputFile = NULL;
+   fCurrentDir = NULL;
+   fNextKey = NULL;
 }
 
 //_____________________________________________________________________________
@@ -34,6 +36,9 @@ TUCNData::TUCNData(const TUCNInitialConfig& initialConfig)
    Info("TUCNData","Constructor");
    this->SetName(initialConfig.RunName().c_str());
    fInputFile = NULL;
+   fCurrentDir = NULL;
+   fNextKey = NULL;
+   
    // -- Fetch the OutputFile name
    const string outputFileName = initialConfig.OutputFileName();
    if (outputFileName == "") { 
@@ -54,6 +59,8 @@ TUCNData::TUCNData(const TUCNRunConfig& runConfig)
    // -- Constructor
    Info("TUCNData","Constructor");
    this->SetName(runConfig.RunName().c_str());
+   fCurrentDir = NULL;
+   fNextKey = NULL;
    // -- Fetch the Input and Output File name
    const string inputFileName = runConfig.InputFileName();
    if (inputFileName == "") { 
@@ -75,9 +82,6 @@ TUCNData::TUCNData(const TUCNRunConfig& runConfig)
    }
    fOutputFile = outputfile;
 }
-
-TUCNData::TUCNData(const string& name)
-         
 
 //_____________________________________________________________________________
 TUCNData::TUCNData(const TUCNData& other)

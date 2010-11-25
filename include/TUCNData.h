@@ -4,6 +4,9 @@
 #include "TNamed.h"
 #include <vector>
 #include <string>
+#include "TFile.h"
+#include "TDirectory.h"
+#include "TIter.h"
 #include "TUCNParticle.h"
 #include "TUCNObserver.h"
 #include "TUCNInitialConfig.h"
@@ -14,6 +17,9 @@ private:
    // -- Data Files
    TFile *fInputFile;
    TFile *fOutputFile;
+   
+   TDirectory *fCurrentDir;
+   TIter      *fNextKey;
    
    // -- Observers
    std::vector<TUCNObserver*> fObservers;
@@ -36,7 +42,7 @@ public:
    Bool_t               SaveParticle(const string& state, TUCNParticle* particle);
    
    // Get a Particle
-   TUCNParticle* const  RetrieveParticle(const string& state, const Int_t index);
+   TUCNParticle* const  RetrieveParticle();
    
    // Particle Counters
    Bool_t         ChecksOut() const;
