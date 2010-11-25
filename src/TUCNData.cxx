@@ -16,46 +16,74 @@ ClassImp(TUCNData)
 
 //_____________________________________________________________________________
 TUCNData::TUCNData() 
-			:TNamed()
+         :TNamed(),
+          fObservers()
 {
-	// -- Default Constructor
-	Info("TUCNData","Default Constructor");
-	// -- Create the Trees
-	fInitialParticles = 0;
-   fPropagatingParticles = 0;
-   fDetectedParticles = 0;
-   fDecayedParticles = 0;
-   fAbsorbedParticles = 0;
-   fLostParticles = 0;
-   fBadParticles = 0;
+   // -- Default Constructor
+   Info("TUCNData","Default Constructor");
+   // -- Create the Trees
+   fInputFile = NULL;
+   fOutputFile = NULL;
 }
 
 //_____________________________________________________________________________
-TUCNData::TUCNData(const string& name)
-         :TNamed(name.c_str(), "")
+TUCNData::TUCNData(const TUCNInitialConfig& initialConfig)
+         :TNamed("","")
 {
    // -- Constructor
    Info("TUCNData","Constructor");
-   // -- Create the Trees
-   fInitialParticles = new TTree("Initial","Tree of Initial Particle States");
-   fPropagatingParticles = new TTree("Propagating","Tree of Propagating Particles");
-   fDetectedParticles = new TTree("Detected","Tree of Detected Particles");
-   fDecayedParticles = new TTree("Decayed","Tree of Decayed Particles");
-   fAbsorbedParticles = new TTree("Absorbed","Tree of Absorbed Particles");
-   fLostParticles = new TTree("Lost","Tree of Lost Particles");
-   fBadParticles = new TTree("Bad","Tree of Bad Particles"); 
+   this->SetName(initialConfig.RunName().c_str());
+   fInputFile = NULL;
+   // -- Fetch the OutputFile name
+   const string outputFileName = initialConfig.OutputFileName();
+   if (outputFileName == "") { 
+      throw runtime_error("Error: No Output file path specified in: %s", outputFileName.c_str());
+   }
+   // -- Open and store pointer to File
+   TFile *file = TFile::Open(outputFileName, "recreate");
+   if (!file || file->IsZombie()) {
+      throw runtime_error("Error: Unable to open file: %s", outputFileName.c_str());
+   }
+   fOutputFile = file;
 }
+
+//_____________________________________________________________________________
+TUCNData::TUCNData(const TUCNRunConfig& runConfig)
+         :TNamed("","")
+{
+   // -- Constructor
+   Info("TUCNData","Constructor");
+   this->SetName(runConfig.RunName().c_str());
+   // -- Fetch the Input and Output File name
+   const string inputFileName = runConfig.InputFileName();
+   if (inputFileName == "") { 
+      throw runtime_error("Error: No Input file path specified in: %s", inputFileName.c_str());
+   }
+   const string outputFileName = runConfig.OutputFileName();
+   if (outputFileName == "") { 
+      throw runtime_error("Error: No Output file path specified in: %s", outputFileName.c_str());
+   }
+   // -- Open and store pointer to input and output File
+   TFile *inputfile = TFile::Open(inputFileName, "recreate");
+   if (!inputfile || inputfile->IsZombie()) {
+      throw runtime_error("Error: Unable to open file: %s", inputFileName.c_str());
+   }
+   fInputFile = inputfile;
+   TFile *outputfile = TFile::Open(outputFileName, "recreate");
+   if (!outputfile || outputfile->IsZombie()) {
+      throw runtime_error("Error: Unable to open file: %s", outputFileName.c_str());
+   }
+   fOutputFile = outputfile;
+}
+
+TUCNData::TUCNData(const string& name)
+         
 
 //_____________________________________________________________________________
 TUCNData::TUCNData(const TUCNData& other)
          :TNamed(other), 
-          fInitialParticles(other.fInitialParticles),
-          fPropagatingParticles(other.fPropagatingParticles),
-          fDetectedParticles(other.fDetectedParticles),
-          fDecayedParticles(other.fDecayedParticles),
-          fAbsorbedParticles(other.fAbsorbedParticles),
-          fLostParticles(other.fLostParticles),
-          fBadParticles(other.fBadParticles),
+          fInputFile(other.fInputFile),
+          fOutputFile(other.fOutputFile),
           fObservers(other.fObservers)
 {
    // Copy Constructor
@@ -69,21 +97,21 @@ TUCNData& TUCNData::operator=(const TUCNData& other)
    Info("TUCNData","Assignment");
    if(this!=&other) {
       TNamed::operator=(other);
-      if (fInitialParticles) delete fInitialParticles; fInitialParticles = NULL;
-      fInitialParticles = other.fInitialParticles;
-      if (fPropagatingParticles) delete fPropagatingParticles; fPropagatingParticles = NULL;
-      fPropagatingParticles = other.fPropagatingParticles;
-      if (fDetectedParticles) delete fDetectedParticles; fDetectedParticles = NULL;
-      fDetectedParticles = other.fDetectedParticles;
-      if (fDecayedParticles) delete fDecayedParticles; fDecayedParticles = NULL;
-      fDecayedParticles = other.fDecayedParticles;
-      if (fAbsorbedParticles) delete fAbsorbedParticles; fAbsorbedParticles = NULL;
-      fAbsorbedParticles = other.fAbsorbedParticles;
-      if (fLostParticles) delete fLostParticles; fLostParticles = NULL;
-      fLostParticles = other.fLostParticles;
-      if (fBadParticles) delete fBadParticles; fBadParticles = NULL;
-      fBadParticles = other.fBadParticles;
-      // Clear list of observers before copying
+      // Clean up File before assignment
+      if (fInputFile) {
+         fInputFile->Close();
+         delete fInputFile;
+         fInputFile = NULL;
+      }
+      fInputFile = other.fInputFile;
+      // Clean up File before assignment
+      if (fOutputFile) {
+         fOutputFile->Close();
+         delete fOutputFile;
+         fOutputFile = NULL;
+      }
+      fOutputFile = other.fOutputFile;
+      // Clear list of observers before assignment
       PurgeObservers();
       fObservers = other.fObservers;
    }
@@ -95,13 +123,8 @@ TUCNData::~TUCNData()
 {
    // -- Destructor
    Info("TUCNData","Destructor");
-   if(fInitialParticles) delete fInitialParticles;
-   if(fPropagatingParticles) delete fPropagatingParticles;
-   if(fDetectedParticles) delete fDetectedParticles;
-   if(fDecayedParticles) delete fDecayedParticles;
-   if(fAbsorbedParticles) delete fAbsorbedParticles;
-   if(fLostParticles) delete fLostParticles;
-   if(fBadParticles) delete fBadParticles;
+   if (fInputFile) fInputFile->Close(); delete fInputFile;
+   if (fOutputFile) fOutputFile->Close(); delete fOutputFile;
    PurgeObservers();
 }
 
@@ -119,9 +142,39 @@ void TUCNData::PurgeObservers()
 }
 
 //_____________________________________________________________________________
-Bool_t TUCNData::ChecksOut()
+void TUCNData::AddObserver(TUCNObserver* observer)
+{
+   // -- Add observer to internal list
+   fObservers.push_back(observer);
+}
+
+//_____________________________________________________________________________
+void TUCNData::RegisterObservers(TUCNParticle* particle)
+{
+   // -- Register all observers in list with the particle
+   vector<TUCNObserver*>::iterator obsIter;
+   for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
+      (*obsIter)->RegisterInterest(*particle);
+   }
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNData::SaveParticle(const string& state, TUCNParticle* particle)
+{
+   return kTRUE;
+}
+
+//_____________________________________________________________________________
+TUCNParticle* const TUCNData::RetrieveParticle(const string& state, const Int_t index)
+{
+   return 0;
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNData::ChecksOut() const
 {
 // -- Perform a check out routine, to ensure data is consistent
+/*
    // Sum initial and final states
    const Int_t initialParticles = this->InitialParticles();
    const Int_t finalParticles = this->FinalParticles();
@@ -131,8 +184,60 @@ Bool_t TUCNData::ChecksOut()
       return kFALSE;
    } 
    Info("ChecksOut","Initial particle states: %i. Number of Final States: %i.", initialParticles, finalParticles);
+*/
    return kTRUE;
 }
+
+
+//_____________________________________________________________________________
+Int_t TUCNData::InitialParticles() const
+{
+   return 0;
+}
+
+//_____________________________________________________________________________
+Int_t TUCNData::PropagatingParticles() const
+{
+   return 0;
+}
+
+//_____________________________________________________________________________
+Int_t TUCNData::DetectedParticles() const
+{
+   return 0;
+}
+
+//_____________________________________________________________________________
+Int_t TUCNData::DecayedParticles() const
+{
+   return 0;
+}
+
+//_____________________________________________________________________________
+Int_t TUCNData::AbsorbedParticles() const
+{
+   return 0;
+}
+
+//_____________________________________________________________________________
+Int_t TUCNData::LostParticles() const
+{
+   return 0;
+}
+
+//_____________________________________________________________________________
+Int_t TUCNData::BadParticles() const
+{
+   return 0;
+}
+
+//_____________________________________________________________________________
+Int_t TUCNData::FinalParticles() const
+{
+   return 0;
+}
+
+/*
 
 //_____________________________________________________________________________
 Bool_t TUCNData::AddParticleState(TString treeName, TUCNParticle* particle)
@@ -430,23 +535,6 @@ TTree* TUCNData::FetchTree(TString treeName) {
 }
 
 //_____________________________________________________________________________
-void TUCNData::AddObserver(TUCNObserver* observer)
-{
-   // -- Add observer to internal list
-   fObservers.push_back(observer);
-}
-
-//_____________________________________________________________________________
-void TUCNData::RegisterObservers(TUCNParticle* particle)
-{
-   // -- Register all observers in list with the particle
-   vector<TUCNObserver*>::iterator obsIter;
-   for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
-      (*obsIter)->RegisterInterest(*particle);
-   }
-}
-
-//_____________________________________________________________________________
 void TUCNData::PlotObservers(TTree* tree)
 {
    // Pass Tree of particles to each observer so that they can make a plot of their results
@@ -456,66 +544,4 @@ void TUCNData::PlotObservers(TTree* tree)
    }
 }
 
-
-
-ClassImp(TUCNDataTest)
-
-//_____________________________________________________________________________
-TUCNDataTest::TUCNDataTest()
-             :TObject()
-{
-   // -- Default Constructor
-   Info("TUCNDataTest","Default Constructor");
-}
-
-//_____________________________________________________________________________
-TUCNDataTest::~TUCNDataTest(void)
-{
-   // -- Destructor
-   Info("TUCNDataTest","Destructor");
-}
-
-
-ClassImp(TUCNDataBranch)
-
-//_____________________________________________________________________________
-TUCNDataBranch::TUCNDataBranch() 
-			      :std::vector<TUCNParticle*>()
-{
-   // -- Default Constructor
-   Info("TUCNDataBranch","Default Constructor");
-}
-
-//_____________________________________________________________________________
-TUCNDataBranch::TUCNDataBranch(const string& /*name*/)
-               :std::vector<TUCNParticle*>()
-{
-   // -- Constructor
-   Info("TUCNDataBranch","Constructor");
-}
-
-//_____________________________________________________________________________
-TUCNDataBranch::TUCNDataBranch(const TUCNDataBranch& other)
-               :std::vector<TUCNParticle*>(other)
-{
-   // Copy Constructor
-   Info("TUCNDataBranch","Copy Constructor");
-}
-
-//_____________________________________________________________________________
-TUCNDataBranch& TUCNDataBranch::operator=(const TUCNDataBranch& other)
-{
-// --assignment operator
-   Info("TUCNDataBranch","Assignment");
-   if(this!=&other) {
-      std::vector<TUCNParticle*>::operator=(other);
-   }
-   return *this;
-}
-
-//_____________________________________________________________________________
-TUCNDataBranch::~TUCNDataBranch(void)
-{
-   // -- Destructor
-   Info("TUCNDataBranch","Destructor");
-}
+*/
