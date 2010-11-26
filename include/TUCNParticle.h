@@ -5,12 +5,16 @@
 #ifndef TUCNPARTICLE_H
 #define TUCNPARTICLE_H
 
+#include <list>
+
 #include "TObject.h"
 #include "TVector3.h"
+#include "TDirectory.h"
+
 #include "TUCNSpin.h"
 #include "TUCNState.h"
-#include <list>
 #include "TUCNObserver.h"
+#include "Constants.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -40,9 +44,6 @@ class TUCNParticle : public TObject
 {
 protected:
    // -- Members
-   static const Double_t   fgMass = 939.56563e+6;  // Units of MeV
-   static const Double_t   fgLifetime = 885.7;     // Units s
-   
    Double_t    fX;         // x coord
    Double_t    fY;         // y coord
    Double_t    fZ;         // z coord
@@ -101,21 +102,16 @@ public:
    Double_t             Pz()     const {return fPz;}
    Double_t             P()      const;
    Double_t             Energy() const {return fE;}
-   Double_t             V()      const {return this->P()/this->Mass_eV_c();}
-   Double_t             Vx()     const {return this->Px()/this->Mass_eV_c();}
-   Double_t             Vy()     const {return this->Py()/this->Mass_eV_c();}
-   Double_t             Vz()     const {return this->Pz()/this->Mass_eV_c();}
+   Double_t             V()      const {return this->P()/Neutron::mass_eV_c;}
+   Double_t             Vx()     const {return this->Px()/Neutron::mass_eV_c;}
+   Double_t             Vy()     const {return this->Py()/Neutron::mass_eV_c;}
+   Double_t             Vz()     const {return this->Pz()/Neutron::mass_eV_c;}
    Double_t             Nx()     const {return (this->P() != 0. ? this->Px()/this->P() : 0.);}
    Double_t             Ny()     const {return (this->P() != 0. ? this->Py()/this->P() : 0.);}
    Double_t             Nz()     const {return (this->P() != 0. ? this->Pz()/this->P() : 0.);}
-   Double_t             Mass_Kg()      const;
-   Double_t             Mass_eV()      const {return fgMass;}
-   Double_t             Mass_eV_c()    const;
-   Double_t             Mass_eV_c2()   const;
    Double_t             Rho()    const;
    Double_t             Theta()  const;
    Double_t             Phi()    const;
-   Double_t             Lifetime()     const {return fgLifetime;} 
    
    void                 SetId(const Int_t id) {fId = id;}
    void                 SetVertex(const Double_t x, const Double_t y, const Double_t z, 

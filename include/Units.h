@@ -66,8 +66,6 @@ namespace Units
 	static const Double_t kilometer2 = kilometer*kilometer;
 	static const Double_t kilometer3 = kilometer*kilometer*kilometer;
 
-	static const Double_t parsec = 3.0856775807e+16*meter;
-
 	static const Double_t micrometer = 1.e-6 *meter;             
 	static const Double_t  nanometer = 1.e-9 *meter;
 	static const Double_t   angstrom = 1.e-10*meter;
@@ -101,8 +99,6 @@ namespace Units
 	static const Double_t km2 = kilometer2;
 	static const Double_t km3 = kilometer3;
 
-	static const Double_t pc = parsec;
-	
 	static const Double_t  l = litre;
    static const Double_t ml = millilitre;
 
@@ -112,13 +108,10 @@ namespace Units
 	static const Double_t radian      = 1.;                  
 	static const Double_t milliradian = 1.e-3*radian;
 	static const Double_t degree = (3.14159265358979323846/180.0)*radian;
-
-	static const Double_t   steradian = 1.;
 	
 	// symbols
 	static const Double_t rad  = radian;	
 	static const Double_t mrad = milliradian;
-	static const Double_t sr   = steradian;
 	static const Double_t deg  = degree;
 
 	//
@@ -181,55 +174,9 @@ namespace Units
 	static const Double_t  mg = milligram;
 
 	//
-	// Power [E][T^-1]
-	//
-	static const Double_t watt = joule/second;	// watt = 6.24150 e+3 * MeV/ns
-
-	//
 	// Force [E][L^-1]
 	//
 	static const Double_t newton = joule/meter;	// newton = 6.24150 e+9 * MeV/mm
-
-	//
-	// Pressure [E][L^-3]
-	//
-	static const Double_t pascal = newton/m2;	   	// pascal = 6.24150 e+3 * MeV/mm3
-	static const Double_t bar        = 100000*pascal; // bar    = 6.24150 e+8 * MeV/mm3
-	static const Double_t atmosphere = 101325*pascal; // atm    = 6.32420 e+8 * MeV/mm3
-
-	//
-	// Electric current [Q][T^-1]
-	//
-	static const Double_t      ampere = coulomb/second; // ampere = 6.24150 e+9 * eplus/ns
-	static const Double_t milliampere = 1.e-3*ampere;
-	static const Double_t microampere = 1.e-6*ampere;
-	static const Double_t  nanoampere = 1.e-9*ampere;
-
-	//
-	// Electric potential [E][Q^-1]
-	//
-	static const Double_t megavolt = megaelectronvolt/eplus;
-	static const Double_t kilovolt = 1.e-3*megavolt;
-	static const Double_t     volt = 1.e-6*megavolt;
-
-	//
-	// Electric resistance [E][T][Q^-2]
-	//
-	static const Double_t ohm = volt/ampere;	// ohm = 1.60217e-16*(MeV/eplus)/(eplus/ns)
-
-	//
-	// Electric capacitance [Q^2][E^-1]
-	//
-	static const Double_t farad = coulomb/volt;	// farad = 6.24150e+24 * eplus/Megavolt
-	static const Double_t millifarad = 1.e-3*farad;
-	static const Double_t microfarad = 1.e-6*farad;
-	static const Double_t  nanofarad = 1.e-9*farad;
-	static const Double_t  picofarad = 1.e-12*farad;
-
-	//
-	// Magnetic Flux [T][E][Q^-1]
-	//
-	static const Double_t weber = volt*second;	// weber = 1000*megavolt*ns
 	
 	//
 	// Magnetic Field [T]
@@ -239,11 +186,6 @@ namespace Units
    static const Double_t nT        = 1.E-9*tesla;
    
 	//
-	// Inductance [T^2][E][Q^-2]
-	//
-	static const Double_t henry = weber/ampere;	// henry = 1.60217e-7*MeV*(ns/eplus)**2
-
-	//
 	// Temperature
 	//
 	static const Double_t kelvin = 1.;
@@ -252,43 +194,11 @@ namespace Units
 	// Amount of substance
 	//
 	static const Double_t mole = 1.;
-
-	//
-	// Activity [T^-1]
-	//
-	static const Double_t becquerel = 1./second ;
-	static const Double_t curie = 3.7e+10 * becquerel;
-
-	//
-	// Absorbed dose [L^2][T^-2]
-	//
-	static const Double_t gray = joule/kilogram ;
-
-	//
-	// Luminous intensity [I]
-	//
-	static const Double_t candela = 1.;
-
-	//
-	// Luminous flux [I]
-	//
-	static const Double_t lumen = candela*steradian;
-
-	//
-	// Illuminance [I][L^-2]
-	//
-	static const Double_t lux = lumen/meter2;
-
-	//
-	// Miscellaneous
-	//
-	static const Double_t perCent     = 0.01 ;
-	static const Double_t perThousand = 0.001;
-	static const Double_t perMillion  = 0.000001;
+	// 
+	// Geometric Tolerance
 	//
 	static const Double_t tolerance = 1.E-10;
 	
-
 }
 
 #endif /* HEP_SYSTEM_OF_UNITS_H */

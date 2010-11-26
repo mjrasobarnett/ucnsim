@@ -45,7 +45,7 @@ TUCNMaterial::TUCNMaterial(const char *name, TUCNElement* elem, Double_t density
    Double_t numberDensity = 0;
    if (elem->A() > 0.0) numberDensity = density*Constants::avagadro_number/elem->A();
    // Calculate real part of the Fermi potential
-   fFermiPotential = ((2.*TMath::Pi()*TMath::Power(Constants::hbar,2.)) /Constants::neutron_mass_kg)
+   fFermiPotential = ((2.*TMath::Pi()*TMath::Power(Constants::hbar,2.)) /Neutron::mass_Kg)
                      * numberDensity * elem->ScatLength() / Units::e_SI; // Units of eV
    
    // Calculate imaginary part of Fermi Potential
@@ -103,7 +103,7 @@ Bool_t TUCNMaterial::AddElement(TUCNElement* elem, Double_t density)
    // Calculate the element's number density
    Double_t numberDensity = density*Constants::avagadro_number/elem->A();
    // Calculate real part of the Fermi potential and add to what is already there
-   fFermiPotential = fFermiPotential + (((2.*TMath::Pi()*TMath::Power(Constants::hbar,2.))/Constants::neutron_mass_kg) * numberDensity * elem->ScatLength() / Units::e_SI); // Units of eV
+   fFermiPotential = fFermiPotential + (((2.*TMath::Pi()*TMath::Power(Constants::hbar,2.))/Neutron::mass_Kg) * numberDensity * elem->ScatLength() / Units::e_SI); // Units of eV
    // Calculate imaginary part of Fermi Potential
    fWPotential = fWPotential + (0.5*Constants::hbar * numberDensity * elem->LossCrossSec()
                   * Materials::reference_velocity / Units::e_SI); // Units of eV

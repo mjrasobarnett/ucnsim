@@ -26,9 +26,6 @@ using namespace std;
 
 ClassImp(TUCNParticle)
 
-const Double_t    TUCNParticle::fgMass;      // Neutron Mass
-const Double_t    TUCNParticle::fgLifetime;   // Neutron Lifetime
-
 //______________________________________________________________________________
 TUCNParticle::TUCNParticle()
              :TObject(),
@@ -125,24 +122,6 @@ Double_t TUCNParticle::P() const
 }
 
 //______________________________________________________________________________
-Double_t TUCNParticle::Mass_Kg() const
-{
-   return this->Mass_eV_c2()*Units::e_SI;
-}
-
-//______________________________________________________________________________
-Double_t TUCNParticle::Mass_eV_c() const
-{
-   return this->Mass_eV()/Constants::c_light;
-}
-
-//______________________________________________________________________________
-Double_t TUCNParticle::Mass_eV_c2() const
-{
-   return this->Mass_eV()/Constants::c_squared;
-}
-
-//______________________________________________________________________________
 Double_t TUCNParticle::Rho() const
 {
    return TMath::Sqrt(fX*fX+fY*fY+fZ*fZ);
@@ -215,7 +194,7 @@ Bool_t TUCNParticle::LocateInGeometry(TUCNParticle* particle, TGeoNavigator* nav
 Bool_t TUCNParticle::WillDecay(const Double_t timeInterval)
 {
    // Calculate probability particle will decay within timeInterval, and then roll the dice!
-   Double_t probDecay = (timeInterval/this->Lifetime());
+   Double_t probDecay = (timeInterval/Neutron::lifetime);
    if (gRandom->Uniform(0.0, 1.0) < probDecay) { return kTRUE; }
    return kFALSE;
 }
@@ -280,7 +259,6 @@ void TUCNParticle::Detach(TUCNObserver* observer)
    // -- Remove an observer from the particle's list of observers
    fObservers.remove(observer);
 }
-
 
 //_____________________________________________________________________________
 void TUCNParticle::NotifyObservers(/*const TUCNInterest& interest*/)

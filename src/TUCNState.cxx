@@ -124,14 +124,14 @@ void TUCNState::UpdateParticle(TUCNParticle* particle, const TGeoNavigator* navi
       // This assumes a convention that 'height' is measured along an axis that INCREASES
       // in the opposite direction to the field direction vector (which is usually 'downwards')
       heightClimbed = -1.0*((pos[0] - particle->X())*gravField->Nx() + (pos[1] - particle->Y())*gravField->Ny() + (pos[2] - particle->Z())*gravField->Nz());
-      gravPotentialEnergy = particle->Mass_eV_c2()*gravField->GravAcceleration()*heightClimbed;
+      gravPotentialEnergy = Neutron::mass_eV_c2*gravField->GravAcceleration()*heightClimbed;
    }
    
    // Determine current Kinetic energy of particle given the height climbed in graviational field
    Double_t kineticEnergy = particle->Energy() - gravPotentialEnergy;
    
    // Detemine current momentum
-   Double_t momentum = TMath::Sqrt(2.0*particle->Mass_eV()*kineticEnergy);
+   Double_t momentum = TMath::Sqrt(2.0*Neutron::mass_eV*kineticEnergy);
    Double_t mom[3] = {momentum*dir[0], momentum*dir[1], momentum*dir[2]};
    
    // Update particle

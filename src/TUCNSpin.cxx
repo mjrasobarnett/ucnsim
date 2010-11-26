@@ -188,9 +188,9 @@ void TUCNSpinor::Print(Option_t* /*option*/) const
 Bool_t TUCNSpinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
 {
    // -- Take mag field (in the global coordinate system) and precess about it
-   Double_t omegaX = Constants::neutron_gyromag_ratio*avgMagField.X();
-   Double_t omegaY = Constants::neutron_gyromag_ratio*avgMagField.Y();
-   Double_t omegaZ = Constants::neutron_gyromag_ratio*avgMagField.Z();
+   Double_t omegaX = Neutron::gyromag_ratio*avgMagField.X();
+   Double_t omegaY = Neutron::gyromag_ratio*avgMagField.Y();
+   Double_t omegaZ = Neutron::gyromag_ratio*avgMagField.Z();
    // Precession frequency
    Double_t omega = TMath::Sqrt(omegaX*omegaX + omegaY*omegaY + omegaZ*omegaZ);
    Double_t precessAngle = (omega*precessTime)/2.0;

@@ -169,7 +169,7 @@ Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolum
    TH1F* initialVHist = new TH1F("InitialVHist","Initial V velocity, Units of (m/s)", nbins, 0.0, vmax);
    TH1F* initialTHist = new TH1F("InitialTHist","Initial T time, Units of s", nbins, 0.0, fillTime);
    
-   Double_t maxEnergy = 0.5*Constants::neutron_mass*TMath::Power(vmax,2.0);
+   Double_t maxEnergy = 0.5*Neutron::mass_eV_c2*TMath::Power(vmax,2.0);
    cout << "Max Energy (neV): " << maxEnergy/Units::neV << endl;
    
    // -- Loop over the total number of particles to be created. 
@@ -271,15 +271,15 @@ Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnerg
 
    // -- Determine Particle Kinetic Energy
    // Pick random velocity in range, distributed along curve alpha.v^2, alpha is normalisation
-   Double_t maxVelocity = TMath::Sqrt(2.*maxEnergy/Constants::neutron_mass);
+   Double_t maxVelocity = TMath::Sqrt(2.*maxEnergy/Neutron::mass_eV_c2);
    Double_t normalisation = (3.)/(TMath::Power(maxVelocity,3.0));
    Double_t prob = gRandom->Uniform(0.0,1.0);
    Double_t velocity = TMath::Power(((3.0*prob)/normalisation),(1.0/3.0));
    
-   Double_t kineticEnergy = 0.5*Constants::neutron_mass*TMath::Power(velocity,2.0);
+   Double_t kineticEnergy = 0.5*Neutron::mass_eV_c2*TMath::Power(velocity,2.0);
    // -- Determine Particle Momentum (eV)
    Double_t mom[3];
-   Double_t momentum = TMath::Sqrt(2.0*particle->Mass_eV()*kineticEnergy);
+   Double_t momentum = TMath::Sqrt(2.0*Neutron::mass_eV*kineticEnergy);
    mom[0] = momentum*dir[0];
    mom[1] = momentum*dir[1];
    mom[2] = momentum*dir[2];  
