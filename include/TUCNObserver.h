@@ -13,11 +13,14 @@
 #ifndef TUCNOBSERVER_H
 #define TUCNOBSERVER_H
 
-#include "TObject.h"
 #include <map>
+
+#include "TObject.h"
 #include "TVector3.h"
-#include "TUCNObservables.h"
 #include "TTree.h"
+#include "TDirectory.h"
+
+#include "TUCNObservables.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -36,8 +39,8 @@ public:
    virtual void RegisterInterest(TUCNParticle& particle) = 0;
    virtual void RecordEvent(const TUCNParticle& particle) = 0;
    
-   virtual void Plot(TUCNData* data, TTree* tree) = 0;
-   
+   virtual void WriteToFile(TDirectory* particleDir) = 0;
+      
    ClassDef(TUCNObserver, 1)
 };
 
@@ -50,10 +53,8 @@ public:
 class TUCNSpinObserver : public TUCNObserver
 {
 private:
-   std::map<Int_t, TUCNSpinObservables*> fParticleData;
+   TUCNSpinObservables *fSpinObservables;
    TVector3 fMeasAxis;
-   
-   void PurgeContainer();
    
 public:
    // -- Constructors
@@ -66,7 +67,7 @@ public:
    virtual void RegisterInterest(TUCNParticle& particle);
    virtual void RecordEvent(const TUCNParticle& particle);
    
-   virtual void Plot(TUCNData* data, TTree* tree);
+   virtual void WriteToFile(TDirectory* particleDir);
    
    ClassDef(TUCNSpinObserver, 1)
 };

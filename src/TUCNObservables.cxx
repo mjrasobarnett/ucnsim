@@ -27,7 +27,7 @@ TUCNSpinObservables::TUCNSpinObservables()
 //_____________________________________________________________________________
 TUCNSpinObservables::TUCNSpinObservables(const TUCNSpinObservables& other)
                     :std::map<Double_t, Bool_t>(other),
-                     TObject()
+                     TObject(other)
 {
    // Copy Constructor
    Info("TUCNSpinObservables","Copy Constructor");

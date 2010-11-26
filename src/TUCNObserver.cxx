@@ -36,7 +36,7 @@ ClassImp(TUCNSpinObserver)
 //_____________________________________________________________________________
 TUCNSpinObserver::TUCNSpinObserver()
                  :TUCNObserver(),
-                  fParticleData()
+                  fSpinObservables(NULL)
 {
    // Constructor
    Info("TUCNSpinObserver","Default Constructor");
@@ -44,7 +44,8 @@ TUCNSpinObserver::TUCNSpinObserver()
 
 //_____________________________________________________________________________
 TUCNSpinObserver::TUCNSpinObserver(const TUCNRunConfig& runConfig)
-                 :TUCNObserver()
+                 :TUCNObserver(),
+                  fSpinObservables(NULL)
 {
    // Constructor
    Info("TUCNSpinObserver","Constructor");
@@ -54,7 +55,7 @@ TUCNSpinObserver::TUCNSpinObserver(const TUCNRunConfig& runConfig)
 //_____________________________________________________________________________
 TUCNSpinObserver::TUCNSpinObserver(const TUCNSpinObserver& other)
                  :TUCNObserver(other),
-                  fParticleData(other.fParticleData),
+                  fSpinObservables(other.fSpinObservables),
                   fMeasAxis(other.fMeasAxis)
 {
    // Copy Constructor
@@ -68,8 +69,7 @@ TUCNSpinObserver& TUCNSpinObserver::operator=(const TUCNSpinObserver& other)
    Info("TUCNSpinObserver","Assignment");
    if(this!=&other) {
       TUCNObserver::operator=(other);
-      PurgeContainer();
-      fParticleData = other.fParticleData;
+      fSpinObservables = other.fSpinObservables;
       fMeasAxis = other.fMeasAxis;
    }
    return *this;
@@ -80,18 +80,14 @@ TUCNSpinObserver::~TUCNSpinObserver()
 {
    // Destructor
    Info("TUCNSpinObserver","Destructor");
-   cout << "No. of Particles Stored: " << fParticleData.size() << endl;
-   PurgeContainer();
-   cout << "After Purge: " << fParticleData.size() << endl;
-   
 }
 
 //_____________________________________________________________________________
 void TUCNSpinObserver::RegisterInterest(TUCNParticle& particle)
 {
-   // Create storage for this particle's data
-   fParticleData.insert(pair<Int_t,TUCNSpinObservables*>(particle.Id(), new TUCNSpinObservables()));
-   // Register as an observer with the particle
+   // -- Register as an observer with the particle
+   if (fSpinObservables != NULL) delete fSpinObservables; fSpinObservables = NULL;
+   fSpinObservables = new TUCNSpinObservables();
    particle.Attach(this);
 }
 
@@ -99,24 +95,19 @@ void TUCNSpinObserver::RegisterInterest(TUCNParticle& particle)
 void TUCNSpinObserver::RecordEvent(const TUCNParticle& particle)
 {
    // -- Record the current polarisation
-   map<Int_t, TUCNSpinObservables*>::iterator entry = fParticleData.find(particle.Id());
-   TUCNSpinObservables* spinobservable = (entry->second);
-   spinobservable->insert(pair<Double_t, Bool_t>(particle.T(), particle.IsSpinUp(fMeasAxis)));
+   fSpinObservables->insert(pair<Double_t, Bool_t>(particle.T(), particle.IsSpinUp(fMeasAxis)));
 }
 
 //_____________________________________________________________________________
-void TUCNSpinObserver::PurgeContainer()
+void TUCNSpinObserver::WriteToFile(TDirectory* particleDir)
 {
-   // -- Clean up all Observables in container
-   if (fParticleData.empty() == kFALSE) {
-      map<Int_t,TUCNSpinObservables*>::iterator it;
-      for(it = fParticleData.begin(); it != fParticleData.end(); ++it) {
-         if (it->second != NULL) delete (it->second);
-         it->second = NULL;
-         fParticleData.erase(it);
-      }
-   }
+   // -- Write out the current observable to the provided directory
+   particleDir->cd();
+   fSpinObservables->Write("TUCNSpinObservables",TObject::kOverwrite);
 }
+
+/*
+//_____________________________________________________________________________
 
 // -------------------------------------------------------------------------------------- 
 Double_t SpinPrecession(Double_t *x, Double_t *par)
@@ -126,10 +117,9 @@ Double_t SpinPrecession(Double_t *x, Double_t *par)
    return f;
 }
 
-//_____________________________________________________________________________
 void TUCNSpinObserver::Plot(TUCNData* data, TTree* tree)
 {
-/*   TH1F* spinUpHist = new TH1F("SpinUpHist","SpinUpHist", 500, 0.0, 20.0);      
+   TH1F* spinUpHist = new TH1F("SpinUpHist","SpinUpHist", 500, 0.0, 20.0);      
    spinUpHist->SetXTitle("Time (s)");
    spinUpHist->SetYTitle("Spin Up Neutrons");
    spinUpHist->SetTitle("Volume: HV-Ramsey-Cell. BField: 0.01uT along z-axis. UCN initially polarised Spin Up along X-Axis.");
@@ -212,7 +202,7 @@ void TUCNSpinObserver::Plot(TUCNData* data, TTree* tree)
    leg->AddEntry(spinUpHist,"Spin Up"); // l means line, p shows marker
    leg->AddEntry(spinDownHist,"Spin Down");
    leg->Draw();
-*/   
+   
 }
-
+*/
 
