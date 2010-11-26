@@ -5,6 +5,7 @@
 #include "TUCNData.h"
 
 #include <iostream>
+#include <sstream>
 #include <cassert>
 #include <stdexcept>
 
@@ -54,20 +55,19 @@ TUCNData::TUCNData(const TUCNInitialConfig& initialConfig)
    // -- ___.root:/particles/initialstates  ___.root:/particles/finalstates
    fOutputFile->cd();
    TDirectory* topDir = gDirectory;
-   if (topDir->cd(Folders::particles.c_str()) == kFALSE) {
-      // Need to create particles directory structure
-      TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str());
-      // Create the initial and final states folders
-      fInitialStatesFolder = particlesDir->mkdir(Folders::initialstates.c_str());
-      fFinalStatesFolder = particlesDir->mkdir(Folders::finalstates.c_str());
-      // Create the typical subfolders of final states
-      fFinalStatesFolder->mkdir(Folders::propagating.c_str());
-      fFinalStatesFolder->mkdir(Folders::absorbed.c_str());
-      fFinalStatesFolder->mkdir(Folders::detected.c_str());
-      fFinalStatesFolder->mkdir(Folders::decayed.c_str());
-      fFinalStatesFolder->mkdir(Folders::lost.c_str());
-      fFinalStatesFolder->mkdir(Folders::bad.c_str());
-   }
+   // Need to create particles directory structure
+   TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str());
+   // Create the initial and final states folders
+   fInitialStatesFolder = particlesDir->mkdir(Folders::initialstates.c_str());
+   fFinalStatesFolder = particlesDir->mkdir(Folders::finalstates.c_str());
+   // Create the typical subfolders of final states
+   fFinalStatesFolder->mkdir(Folders::propagating.c_str());
+   fFinalStatesFolder->mkdir(Folders::absorbed.c_str());
+   fFinalStatesFolder->mkdir(Folders::detected.c_str());
+   fFinalStatesFolder->mkdir(Folders::decayed.c_str());
+   fFinalStatesFolder->mkdir(Folders::lost.c_str());
+   fFinalStatesFolder->mkdir(Folders::bad.c_str());
+   topDir->ls();
 }
 
 //_____________________________________________________________________________
@@ -103,20 +103,18 @@ TUCNData::TUCNData(const TUCNRunConfig& runConfig)
    // -- ___.root:/particles/initialstates  ___.root:/particles/finalstates
    fOutputFile->cd();
    TDirectory* topDir = gDirectory;
-   if (topDir->cd(Folders::particles.c_str()) == kFALSE) {
-      // Need to create particles directory structure
-      TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str(),"");
-      // Create the initial and final states folders
-      fInitialStatesFolder = particlesDir->mkdir(Folders::initialstates.c_str());
-      fFinalStatesFolder = particlesDir->mkdir(Folders::finalstates.c_str());
-      // Create the typical subfolders of final states
-      fFinalStatesFolder->mkdir(Folders::propagating.c_str());
-      fFinalStatesFolder->mkdir(Folders::absorbed.c_str());
-      fFinalStatesFolder->mkdir(Folders::detected.c_str());
-      fFinalStatesFolder->mkdir(Folders::decayed.c_str());
-      fFinalStatesFolder->mkdir(Folders::lost.c_str());
-      fFinalStatesFolder->mkdir(Folders::bad.c_str());
-   }
+   // Need to create particles directory structure
+   TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str(),"");
+   // Create the initial and final states folders
+   fInitialStatesFolder = particlesDir->mkdir(Folders::initialstates.c_str());
+   fFinalStatesFolder = particlesDir->mkdir(Folders::finalstates.c_str());
+   // Create the typical subfolders of final states
+   fFinalStatesFolder->mkdir(Folders::propagating.c_str());
+   fFinalStatesFolder->mkdir(Folders::absorbed.c_str());
+   fFinalStatesFolder->mkdir(Folders::detected.c_str());
+   fFinalStatesFolder->mkdir(Folders::decayed.c_str());
+   fFinalStatesFolder->mkdir(Folders::lost.c_str());
+   fFinalStatesFolder->mkdir(Folders::bad.c_str());
 }
 
 //_____________________________________________________________________________
@@ -207,17 +205,30 @@ void TUCNData::RegisterObservers(TUCNParticle* particle)
 //_____________________________________________________________________________
 Bool_t TUCNData::SaveParticle(TUCNParticle* particle, const std::string& state)
 {
-   // Navigate to folder "state" in the particles/finalstates directory of the output data
-   // file. If folder "state" doesn't yet exist, then create it and set as the current directory
-//   TDirectory* stateDir = fFinalStatesFolder->cd(state);
+   // -- Navigate to folder "state" in the particles/finalstates directory of the output data
+   // -- file. If folder "state" doesn't yet exist, then create it and set as the current directory
+   if (state == Folders::initialstates) {
+      Bool_t foundFolder = fInitialStatesFolder->cd();
+      if (foundFolder == kFALSE) {
+         Error("SaveParticle","Unable to open folder: %s", state.c_str());
+         return kFALSE;
+      }
+   } else {
+      Bool_t foundFolder = fFinalStatesFolder->cd(state.c_str());
+      if (foundFolder == kFALSE) {
+         // If we failed to find a folder in the final states directory with name 'state'
+         // create a new folder for this type of particle
+         fFinalStatesFolder->mkdir(state.c_str());
+      }
+   }
+   // We should now be in the correct folder for our particle
+   TDirectory* stateDir = gDirectory;
    // Make a new folder for particle named by its ID.
-//   if (stateDir->cd(particle->Id()) == kFALSE) {
-//      stateDir->mkdir(particle->Id())
-//   }
-   // Write all observables to particle's folder. Detach all observers from particle.
-   
-   // Write particle in folder.
-   
+   ostringstream s_ID;
+   s_ID << particle->Id();
+   TDirectory* particleDir = stateDir->mkdir(s_ID.str().c_str());
+   // Write particle to folder
+   particle->WriteToFile(particleDir);
    return kTRUE;
 }
 
