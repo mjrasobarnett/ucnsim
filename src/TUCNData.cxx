@@ -147,6 +147,8 @@ Bool_t TUCNData::Initialise(const TUCNRunConfig& runConfig)
       Error("Initialise","Cannot Load Particles");
       return kFALSE;
    }
+   // Initialise any observers selected by user
+   this->InitialiseObservers(runConfig);
    return kTRUE;
 }
 
@@ -323,6 +325,21 @@ void TUCNData::PurgeObservers()
          *it = 0;
       }
    }
+}
+
+//_____________________________________________________________________________
+void TUCNData::InitialiseObservers(const TUCNRunConfig& runConfig)
+{
+   // -- Check Run configuration for which properties are to be monitored with Observers 
+   cout << "-------------------------------------------" << endl;
+   cout << "Setting up Observers" << endl;
+   if (runConfig.ObservePolarisation() == kTRUE) {
+      // Create an observer to track UCN Spin polarisation
+      TUCNObserver* obs = new TUCNSpinObserver(runConfig);
+      // Add observer to the list
+      this->AddObserver(obs);
+   }
+   cout << "ObservePolarisation: " << runConfig.ObservePolarisation() << endl;
 }
 
 //_____________________________________________________________________________

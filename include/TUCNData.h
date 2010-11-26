@@ -23,9 +23,9 @@ private:
    std::vector<TUCNObserver*> fObservers;
    void           PurgeObservers();
    
+   void           InitialiseObservers(const TUCNRunConfig& runConfig);
    void           AddObserver(TUCNObserver* observer);
    void           RegisterObservers(TUCNParticle* particle);
-   void           PlotObservers(TTree* tree);
    
    Bool_t         LoadParticles(const TUCNRunConfig& runConfig);
    void           CopyDirectory(TDirectory * const sourceDir, TDirectory * const outputDir);

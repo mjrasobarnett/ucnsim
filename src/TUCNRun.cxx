@@ -135,8 +135,7 @@ Bool_t TUCNRun::Initialise()
    if (this->GetData()->Initialise(this->GetRunConfig()) == kFALSE) {
       Error("Initialise","Failed to Load the Initial Particle Distribution from File");
       return kFALSE;
-   }  
-/*   
+   }     
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Check Run Parameters
    // Run Time
@@ -145,7 +144,7 @@ Bool_t TUCNRun::Initialise()
       return kFALSE; 
    }
    // Max Step Time
-   if (this->GetRunConfig().MaxStepTime() == 0.0) { 
+   if (this->GetRunConfig().MaxStepTime() <= 0.0) { 
       Error("Initialise","No maxsteptime set!"); 
       return kFALSE; 
    }
@@ -155,13 +154,6 @@ Bool_t TUCNRun::Initialise()
       return kFALSE; 
    }
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Initialise Observers
-   if (this->InitialiseObservers(this->GetRunConfig()) == kFALSE) {
-      Error("Initialise","Failed to Initialise Observers");
-      return kFALSE;
-   }
-   
-   ///////////////////////////////////////////////////////////////////////////////////////
    cout << "-------------------------------------------" << endl;
    cout << "Run successfully initialised" << endl;
    cout << "Particles: " << this->GetData()->InitialParticles() << endl;
@@ -169,22 +161,16 @@ Bool_t TUCNRun::Initialise()
    cout << "MaxStepTime(s): " << this->GetRunConfig().MaxStepTime() << endl;
    cout << "WallLosses: " << this->GetRunConfig().WallLossesOn() << endl;
    cout << "-------------------------------------------" << endl;
-*/   return kTRUE;
+   return kTRUE;
 }
 
 //_____________________________________________________________________________
 Bool_t TUCNRun::Start()
 {
 // -- Propagate the particles stored in the Run's Data, specified by configFile
-/*   cout << "-------------------------------------------" << endl;
+   cout << "-------------------------------------------" << endl;
    cout << "Starting Simulation of " << this->GetRunConfig().RunName() << endl;
    cout << "Total Particles: " << this->GetData()->InitialParticles() << endl;
-   cout << "Number Propagating: " << this->GetData()->PropagatingParticles() << endl;
-   cout << "Number Detected: " << this->GetData()->DetectedParticles() << endl;
-   cout << "Number Absorbed by Boundary: " << this->GetData()->AbsorbedParticles() << endl;
-   cout << "Number Decayed: " << this->GetData()->DecayedParticles() << endl;
-   cout << "Number Lost To Outer Geometry: " << this->GetData()->LostParticles() << endl;
-   cout << "Number With Anomalous Behaviour: " << this->GetData()->BadParticles() << endl;
    cout << "-------------------------------------------" << endl;
    Int_t totalParticles = this->GetData()->InitialParticles();
    ///////////////////////////////////////////////////////////////////////
@@ -400,22 +386,6 @@ Bool_t TUCNRun::LoadParticles(const TUCNRunConfig& runConfig)
    cout << fData->InitialParticles() << " particles have been loaded succesfully" << endl;
    cout << "-------------------------------------------" << endl;
    delete importedRun;
-*/   return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t TUCNRun::InitialiseObservers(const TUCNRunConfig& runConfig)
-{
-/*   // Check Run configuration for which properties are to be monitored with Observers 
-   cout << "-------------------------------------------" << endl;
-   cout << "Setting up Observers" << endl;
-   if (runConfig.ObservePolarisation() == kTRUE) {
-      // Create an observer to track UCN Spin polarisation
-      TUCNObserver* obs = new TUCNSpinObserver(runConfig);
-      // Add observer to the list
-      this->GetData()->AddObserver(obs);
-      obs = NULL;
-   }
 */   return kTRUE;
 }
 

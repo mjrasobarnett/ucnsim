@@ -30,7 +30,6 @@ protected:
    
    Bool_t               LoadParticles(const TUCNRunConfig& runConfig);
    void                 PrintProgress(Int_t entry, Float_t nEntriesF, Int_t mintime=2);
-   Bool_t               InitialiseObservers(const TUCNRunConfig& runConfig);
    
 public:
    // -- constructors
