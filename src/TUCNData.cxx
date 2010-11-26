@@ -6,8 +6,11 @@
 
 #include <iostream>
 #include <sstream>
+#include <locale>
 #include <cassert>
 #include <stdexcept>
+
+#include "TKey.h"
 
 #include "DataFileHierarchy.h"
 
@@ -23,104 +26,14 @@ TUCNData::TUCNData()
    // -- Default Constructor
    Info("TUCNData","Default Constructor");
    // -- Create the Trees
-   fInputFile = NULL;
    fOutputFile = NULL;
    fInitialStatesFolder = NULL;
    fFinalStatesFolder = NULL;
 }
 
 //_____________________________________________________________________________
-TUCNData::TUCNData(const TUCNInitialConfig& initialConfig)
-         :TNamed("","")
-{
-   // -- Constructor
-   Info("TUCNData","Constructor");
-   this->SetName(initialConfig.RunName().c_str());
-   fInputFile = NULL;
-   fInitialStatesFolder = NULL;
-   fFinalStatesFolder = NULL;
-   
-   // -- Fetch the OutputFile name
-   const string outputFileName = initialConfig.OutputFileName();
-   if (outputFileName == "") { 
-      throw runtime_error("Error: No Output file path specified in output file");
-   }
-   // -- Open and store pointer to File
-   TFile *file = TFile::Open(outputFileName.c_str(), "recreate");
-   if (!file || file->IsZombie()) {
-      throw runtime_error("Error: Unable to open output file");
-   }
-   fOutputFile = file;
-   // -- Set up basic folder structure
-   // -- ___.root:/particles/initialstates  ___.root:/particles/finalstates
-   fOutputFile->cd();
-   TDirectory* topDir = gDirectory;
-   // Need to create particles directory structure
-   TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str());
-   // Create the initial and final states folders
-   fInitialStatesFolder = particlesDir->mkdir(Folders::initialstates.c_str());
-   fFinalStatesFolder = particlesDir->mkdir(Folders::finalstates.c_str());
-   // Create the typical subfolders of final states
-   fFinalStatesFolder->mkdir(Folders::propagating.c_str());
-   fFinalStatesFolder->mkdir(Folders::absorbed.c_str());
-   fFinalStatesFolder->mkdir(Folders::detected.c_str());
-   fFinalStatesFolder->mkdir(Folders::decayed.c_str());
-   fFinalStatesFolder->mkdir(Folders::lost.c_str());
-   fFinalStatesFolder->mkdir(Folders::bad.c_str());
-   topDir->ls();
-}
-
-//_____________________________________________________________________________
-TUCNData::TUCNData(const TUCNRunConfig& runConfig)
-         :TNamed("","")
-{
-   // -- Constructor
-   Info("TUCNData","Constructor");
-   this->SetName(runConfig.RunName().c_str());
-   fInitialStatesFolder = NULL;
-   fFinalStatesFolder = NULL;
-   // -- Fetch the Input and Output File name
-   const string inputFileName = runConfig.InputFileName();
-   if (inputFileName == "") { 
-      throw runtime_error("Error: No Input file path specified in run configuration");
-   }
-   const string outputFileName = runConfig.OutputFileName();
-   if (outputFileName == "") { 
-      throw runtime_error("Error: No Output file path specified in run configuration");
-   }
-   // -- Open and store pointer to input and output File
-   TFile *inputfile = TFile::Open(inputFileName.c_str(), "read");
-   if (!inputfile || inputfile->IsZombie()) {
-      throw runtime_error("Error: Unable to open input file");
-   }
-   fInputFile = inputfile;
-   TFile *outputfile = TFile::Open(outputFileName.c_str(), "recreate");
-   if (!outputfile || outputfile->IsZombie()) {
-      throw runtime_error("Error: Unable to open output file");
-   }
-   fOutputFile = outputfile;
-   // -- Set up basic folder structure
-   // -- ___.root:/particles/initialstates  ___.root:/particles/finalstates
-   fOutputFile->cd();
-   TDirectory* topDir = gDirectory;
-   // Need to create particles directory structure
-   TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str(),"");
-   // Create the initial and final states folders
-   fInitialStatesFolder = particlesDir->mkdir(Folders::initialstates.c_str());
-   fFinalStatesFolder = particlesDir->mkdir(Folders::finalstates.c_str());
-   // Create the typical subfolders of final states
-   fFinalStatesFolder->mkdir(Folders::propagating.c_str());
-   fFinalStatesFolder->mkdir(Folders::absorbed.c_str());
-   fFinalStatesFolder->mkdir(Folders::detected.c_str());
-   fFinalStatesFolder->mkdir(Folders::decayed.c_str());
-   fFinalStatesFolder->mkdir(Folders::lost.c_str());
-   fFinalStatesFolder->mkdir(Folders::bad.c_str());
-}
-
-//_____________________________________________________________________________
 TUCNData::TUCNData(const TUCNData& other)
          :TNamed(other), 
-          fInputFile(other.fInputFile),
           fOutputFile(other.fOutputFile),
           fInitialStatesFolder(other.fInitialStatesFolder),
           fFinalStatesFolder(other.fFinalStatesFolder),
@@ -137,13 +50,6 @@ TUCNData& TUCNData::operator=(const TUCNData& other)
    Info("TUCNData","Assignment");
    if(this!=&other) {
       TNamed::operator=(other);
-      // Clean up File before assignment
-      if (fInputFile) {
-         fInputFile->Close();
-         delete fInputFile;
-         fInputFile = NULL;
-      }
-      fInputFile = other.fInputFile;
       // Clean up File before assignment
       if (fOutputFile) {
          fOutputFile->Close();
@@ -167,9 +73,194 @@ TUCNData::~TUCNData()
 {
    // -- Destructor
    Info("TUCNData","Destructor");
-   if (fInputFile) fInputFile->Close(); delete fInputFile;
    if (fOutputFile) fOutputFile->Close(); delete fOutputFile;
    PurgeObservers();
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNData::Initialise(const TUCNInitialConfig& initialConfig)
+{
+   // -- Take the initialConfig, open the output file and necessary directories to store
+   // -- particles that being generated.
+   // Fetch the OutputFile name
+   const string outputFileName = initialConfig.OutputFileName();
+   if (outputFileName == "") { 
+      Error("Initialise","No Output file path specified in run configuration");
+      return kFALSE;
+   }
+   // Open and store pointer to File
+   TFile *file = TFile::Open(outputFileName.c_str(), "recreate");
+   if (!file || file->IsZombie()) {
+      Error("Initialise","Unable to open output file");
+      return kFALSE;
+   }
+   fOutputFile = file;
+   // Set up basic folder structure
+   // ___.root:/particles/initialstates  ___.root:/particles/finalstates
+   fOutputFile->cd();
+   TDirectory* topDir = gDirectory;
+   // Need to create particles directory structure
+   TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str());
+   // Create the initial and final states folders
+   fInitialStatesFolder = particlesDir->mkdir(Folders::initialstates.c_str());
+   fFinalStatesFolder = particlesDir->mkdir(Folders::finalstates.c_str());
+   return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNData::Initialise(const TUCNRunConfig& runConfig)
+{
+   // -- Take the runConfig, open the output files and create directories to store
+   // -- both initial and final states of the particles. Finally, load all particles specified
+   // -- by the run config into the initial states folder, ready for propagation
+   // Fetch the Output File name
+   const string outputFileName = runConfig.OutputFileName();
+   if (outputFileName == "") { 
+      Error("Initialise","No Output file path specified in run configuration");
+      return kFALSE;
+   }
+   // Open and store pointer tooutput File
+   TFile *outputfile = TFile::Open(outputFileName.c_str(), "recreate");
+   if (!outputfile || outputfile->IsZombie()) {
+      Error("Initialise","Unable to open output file");
+      return kFALSE;
+   }
+   fOutputFile = outputfile;
+   // Set up basic folder structure
+   // ___.root:/particles/initialstates  ___.root:/particles/finalstates
+   fOutputFile->cd();
+   TDirectory* topDir = gDirectory;
+   // Need to create particles directory structure
+   TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str(),"");
+   // Create the initial and final states folders
+   fInitialStatesFolder = particlesDir->mkdir(Folders::initialstates.c_str());
+   fFinalStatesFolder = particlesDir->mkdir(Folders::finalstates.c_str());
+   // Create the typical subfolders of final states
+   fFinalStatesFolder->mkdir(Folders::propagating.c_str());
+   fFinalStatesFolder->mkdir(Folders::absorbed.c_str());
+   fFinalStatesFolder->mkdir(Folders::detected.c_str());
+   fFinalStatesFolder->mkdir(Folders::decayed.c_str());
+   fFinalStatesFolder->mkdir(Folders::lost.c_str());
+   fFinalStatesFolder->mkdir(Folders::bad.c_str());
+   
+   // Load 
+   if (this->LoadParticles(runConfig) == kFALSE) {
+      Error("Initialise","Cannot Load Particles");
+      return kFALSE;
+   }
+   return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t TUCNData::LoadParticles(const TUCNRunConfig& runConfig)
+{
+   // -- Locate particles designated as 'initial' in the run config. Copy all of these
+   // -- particles into the initialstates folder inside the output file.
+   cout << "-------------------------------------------" << endl;
+   cout << "Loading the Particles" << endl;
+   cout << "-------------------------------------------" << endl;
+   ///////////////////////////////////////////////////////////////////////
+   // -- Get name of file holding the data from runconfig 
+   const string inputFileName = runConfig.InputFileName();
+   if (inputFileName == "") { 
+      Error("LoadParticles","No Input file path specified in run configuration");
+      return kFALSE;
+   }
+   TFile *inputfile = TFile::Open(inputFileName.c_str(), "read");
+   if (!inputfile || inputfile->IsZombie()) {
+      Error("LoadParticles","Unable to open input file");
+      return kFALSE;
+   }
+   // Determine which particle states to take as the initial states for current run
+   cout << "Determining which particles to load..." << endl;
+   inputfile->cd();
+   TDirectory* topDir = gDirectory;
+   if (topDir->cd(Folders::particles.c_str()) == kFALSE) {
+      Error("LoadParticles","No folder named: %s, found in input file",Folders::particles.c_str());
+      return kFALSE;
+   }
+   TDirectory* partDir = gDirectory;
+   ///////////////////////////////////////////////////////////////////////
+   // -- Check Config for which particle Tree we wish to load as our initial particles here
+   // Check runconfig option.
+   string whichParticles = runConfig.ParticlesToLoad();
+   // Convert to lowercase.
+   locale loc;
+   for (size_t i=0; i < whichParticles.length(); ++i) {
+      whichParticles[i] = tolower(whichParticles[i],loc);
+   }
+   // Navigate to the folder containing the input particle states 
+   if (whichParticles != Folders::initialstates) {
+      partDir->cd(Folders::finalstates.c_str());
+      TDirectory* finalStatesDir = gDirectory;
+      Bool_t correctFolder = finalStatesDir->cd(whichParticles.c_str());
+      // check that we ended up in the correct folder
+      if (correctFolder == kFALSE) {
+         Error("LoadParticles","Cannot find folder: ", whichParticles.c_str());
+         return kFALSE;
+      }
+   } else {
+      Bool_t correctFolder = partDir->cd(Folders::initialstates.c_str());
+      // check that we ended up in the correct folder
+      if (correctFolder == kFALSE) {
+         Error("LoadParticles","Cannot find folder: ", Folders::initialstates.c_str());
+         return kFALSE;
+      }
+   }
+   TDirectory* sourceDir = gDirectory;
+   TDirectory* outputDir = fInitialStatesFolder; 
+   ///////////////////////////////////////////////////////////////////////
+   // - Check Config for whether we will re-start the particles specified above from their initial
+   // - states. This will only be done for particles that are not in their initial states already.
+   Bool_t fromBeginning = runConfig.RestartFromBeginning();
+   if (fromBeginning == kTRUE && sourceDir->GetName() != Folders::initialstates) {
+      cout << "Resetting particles in the state: " << sourceDir->GetName();
+      cout << ", to their initial state as the input to current Run " << endl;
+   
+   
+   } else {
+      // Otherwise we just propagate the particles from where they left off
+      cout << "Loading particles in the state: " << sourceDir->GetName();
+      cout << ", as the input to current Run, to continue their propagation" << endl;
+      // Copy particles from the source directory into the initialstates directory of the run
+      this->CopyDirectory(sourceDir, outputDir);
+   }
+   cout << "-------------------------------------------" << endl;
+   cout << this->InitialParticles() << " particles have been loaded succesfully" << endl;
+   cout << "-------------------------------------------" << endl;
+   return kTRUE;
+}
+
+//_____________________________________________________________________________
+void TUCNData::CopyDirectory(TDirectory * const sourceDir, TDirectory * const outputDir) {
+   // Copy all objects and subdirs of directory source into the supplied output directory  
+   outputDir->cd();
+   // Loop on all entries of this directory
+   TKey *key;
+   TIter nextkey(sourceDir->GetListOfKeys());
+   while ((key = (TKey*)nextkey())) {
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TDirectory")) {
+         // Copy subdirectory to a new subdirectoy in outputDir
+         sourceDir->cd(key->GetName());
+         TDirectory *subdir = gDirectory;
+         outputDir->cd();
+         TDirectory* outputSubDir = outputDir->mkdir(subdir->GetName());
+         CopyDirectory(subdir, outputSubDir);
+         outputDir->cd();
+      } else {
+         // Copy Object
+         sourceDir->cd();
+         TObject *obj = key->ReadObj();
+         outputDir->cd();
+         obj->Write();
+         delete obj;
+     }
+  }
+  outputDir->SaveSelf(kTRUE);
+  outputDir->cd();
 }
 
 //_____________________________________________________________________________

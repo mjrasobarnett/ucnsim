@@ -14,7 +14,6 @@
 class TUCNData : public TNamed {
 private:
    // -- Data Files
-   TFile *fInputFile;
    TFile *fOutputFile;
    
    TDirectory *fInitialStatesFolder;
@@ -28,14 +27,18 @@ private:
    void           RegisterObservers(TUCNParticle* particle);
    void           PlotObservers(TTree* tree);
    
+   Bool_t         LoadParticles(const TUCNRunConfig& runConfig);
+   void           CopyDirectory(TDirectory * const sourceDir, TDirectory * const outputDir);
+   
 public:
    // -- Constructors
    TUCNData();
-   TUCNData(const TUCNInitialConfig& initialConfig);
-   TUCNData(const TUCNRunConfig& runConfig);
    TUCNData(const TUCNData& other);
    TUCNData& operator=(const TUCNData& other); 
    virtual ~TUCNData(void);
+   
+   Bool_t         Initialise(const TUCNInitialConfig& initialConfig);
+   Bool_t         Initialise(const TUCNRunConfig& runConfig);
    
    // Add a Particle
    Bool_t               SaveParticle(TUCNParticle* particle, const std::string& state);
