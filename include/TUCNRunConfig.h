@@ -20,7 +20,7 @@ private:
    std::string fFieldsFile;
    
    std::string fInputRunName;
-   std::string fInitialParticleBranch;
+   std::string fParticlesToLoad;
    Bool_t fLoadAllParticles;
 //   std::vector<Int_t> fParticleIDs;
    Bool_t fRestartParticles;
@@ -50,7 +50,7 @@ public:
    std::string InputFileName() const {return fInputDataFile;}
    std::string OutputFileName() const {return fOutputDataFile;}
    std::string InputRunName() const {return fInputRunName;}
-   std::string ParticlesToLoad() const {return fInitialParticleBranch;}
+   std::string ParticlesToLoad() const {return fParticlesToLoad;}
    Bool_t LoadAllParticles() const {return fLoadAllParticles;}
    Bool_t RestartFromBeginning() const {return fRestartParticles;}
    Double_t RunTime() const {return fRunTime;}

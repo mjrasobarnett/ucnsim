@@ -35,7 +35,7 @@ TUCNRunConfig::TUCNRunConfig(const string& runConfigFileName)
    fFieldsFile = runConfigFile.GetString("FieldsFile","Files");
    
    fInputRunName = runConfigFile.GetString("InputRunName","Particles");
-   fInitialParticleBranch = runConfigFile.GetString("WhichParticles","Particles");
+   fParticlesToLoad = runConfigFile.GetString("WhichParticles","Particles");
    fLoadAllParticles = runConfigFile.GetBool("AllParticles","Particles");
    fRestartParticles = runConfigFile.GetBool("RunFromBeginning","Particles");
    
@@ -65,7 +65,7 @@ TUCNRunConfig::TUCNRunConfig(const TUCNRunConfig& other)
                fOutputDataFile(other.fOutputDataFile),
                fFieldsFile(other.fFieldsFile),
                fInputRunName(other.fInputRunName),
-               fInitialParticleBranch(other.fInitialParticleBranch),
+               fParticlesToLoad(other.fParticlesToLoad),
                fLoadAllParticles(other.fLoadAllParticles),
                fRestartParticles(other.fRestartParticles),
                fGravFieldOn(other.fGravFieldOn),
@@ -91,7 +91,7 @@ TUCNRunConfig& TUCNRunConfig::operator=(const TUCNRunConfig& other)
       fOutputDataFile=other.fOutputDataFile;
       fFieldsFile=other.fFieldsFile;
       fInputRunName=other.fInputRunName;
-      fInitialParticleBranch=other.fInitialParticleBranch;
+      fParticlesToLoad=other.fParticlesToLoad;
       fLoadAllParticles=other.fLoadAllParticles;
       fRestartParticles=other.fRestartParticles;
       fGravFieldOn=other.fGravFieldOn;
@@ -123,7 +123,7 @@ void TUCNRunConfig::Print(Option_t* /*option*/) const
    cout << "OutputDataFile: " << fOutputDataFile << endl;
    cout << "FieldsFile: " << fFieldsFile << endl;
    cout << "InputRunName: " << fInputRunName << endl;
-   cout << "InitialParticleBranch: " << fInitialParticleBranch << endl;
+   cout << "InitialParticleBranch: " << fParticlesToLoad << endl;
    cout << "LoadAllParticles: " << fLoadAllParticles << endl;
    cout << "RestartParticles: " << fRestartParticles << endl;
    cout << "GravFieldOn: " << fGravFieldOn << endl;
