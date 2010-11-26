@@ -60,7 +60,6 @@ TUCNRun::TUCNRun()
 {
 // -- Default constructor
    Info("TUCNRun", "Default Constructor");
-   // Don't allocate memory here as per ROOT guidelines for reading objects from ROOT files
    fData = NULL;
    fExperiment = NULL;
 } 
@@ -70,11 +69,11 @@ TUCNRun::TUCNRun(const TUCNRunConfig& runConfig)
         :TNamed(),
          fRunConfig(runConfig)
 {
-// -- Default constructor
+// -- constructor
    Info("TUCNRun", "Constructor");
-   // Don't allocate memory here as per ROOT guidelines for reading objects from ROOT files
-   fData = NULL;
-   fExperiment = NULL;
+   this->SetName(this->GetRunConfig().RunName().c_str());
+   fData = new TUCNData();
+   fExperiment = new TUCNExperiment();
 }
 
 //_____________________________________________________________________________
@@ -120,14 +119,6 @@ Bool_t TUCNRun::Initialise()
    // -- Initialise the Run. Build the Experiment Object which loads the Geometry and fields
    // -- into memory. Build the Data Object which loads the data files and initial particles.
    // -- Finally check Run parameters in the RunConfig object for further instructions.
-   this->SetName(this->GetRunConfig().RunName().c_str());
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Allocate Memory
-   ///////////////////////////////////////////////////////////////////////////////////////
-/*   if (fData != NULL) delete fData; fData = NULL;
-   fData = new TUCNData("UCNData");
-   if (fExperiment != NULL) delete fExperiment; fExperiment = NULL;
-   fExperiment = new TUCNExperiment();
    cout << "-------------------------------------------" << endl;
    cout << "Initialising: " << this->GetName() << endl;
    cout << "-------------------------------------------" << endl;
@@ -141,11 +132,11 @@ Bool_t TUCNRun::Initialise()
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Load Particles
    ///////////////////////////////////////////////////////////////////////////////////////
-   if (this->LoadParticles(this->GetRunConfig()) == kFALSE) {
+   if (this->GetData()->Initialise(this->GetRunConfig()) == kFALSE) {
       Error("Initialise","Failed to Load the Initial Particle Distribution from File");
       return kFALSE;
    }  
-   
+/*   
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Check Run Parameters
    // Run Time
