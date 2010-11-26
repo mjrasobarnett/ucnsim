@@ -270,4 +270,22 @@ void TUCNParticle::NotifyObservers(/*const TUCNInterest& interest*/)
    }
 }
 
+//_____________________________________________________________________________
+void TUCNParticle::WriteToFile(TDirectory* particleDir)
+{
+   // -- Write particle to given directory. Also tell the observers to write out the particle's
+   // -- observables to the same directory.
+   particleDir->cd();
+   // First write out the observers to file and detach them
+   list<TUCNObserver*>::iterator listIter;
+   for(listIter = fObservers.begin(); listIter != fObservers.end(); listIter++) {
+      // Write out
+      (*listIter)->WriteToFile(particleDir);
+      // Detach
+      fObservers.erase(listIter);
+   }
+   assert(this->CountObservers() == 0);
+   // Next write particle to file
+   this->Write("TUCNParticle",TObject::kOverwrite);
+}
 

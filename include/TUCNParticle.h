@@ -163,6 +163,9 @@ public:
    void                 Attach(TUCNObserver* observer);
    void                 Detach(TUCNObserver* observer);
    void                 NotifyObservers(/*const TUCNInterest& interest*/);
+
+   // -- Output to file
+   void                 WriteToFile(TDirectory* particleDir);
    
    ClassDef(TUCNParticle,1)   // Ultra-Cold Neutron
 };
