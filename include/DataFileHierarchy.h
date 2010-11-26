@@ -14,7 +14,7 @@ namespace Folders
    const std::string propagating = "propagating";
    const std::string absorbed = "absorbed";
    const std::string detected = "detected";
-   const std::string decayed = "detected";
+   const std::string decayed = "decayed";
    const std::string lost = "lost";
    const std::string bad = "bad";
    
