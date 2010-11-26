@@ -29,6 +29,7 @@ private:
    
    Bool_t         LoadParticles(const TUCNRunConfig& runConfig);
    void           CopyDirectory(TDirectory * const sourceDir, TDirectory * const outputDir);
+   void           CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * const outputDir);
    
 public:
    // -- Constructors
@@ -37,8 +38,8 @@ public:
    TUCNData& operator=(const TUCNData& other); 
    virtual ~TUCNData(void);
    
-   Bool_t         Initialise(const TUCNInitialConfig& initialConfig);
-   Bool_t         Initialise(const TUCNRunConfig& runConfig);
+   Bool_t               Initialise(const TUCNInitialConfig& initialConfig);
+   Bool_t               Initialise(const TUCNRunConfig& runConfig);
    
    // Add a Particle
    Bool_t               SaveParticle(TUCNParticle* particle, const std::string& state);
@@ -47,15 +48,15 @@ public:
    TUCNParticle* const  RetrieveParticle();
    
    // Particle Counters
-   Bool_t         ChecksOut() const;
-   Int_t          InitialParticles() const;
-   Int_t          PropagatingParticles() const;
-   Int_t          DetectedParticles() const;
-   Int_t          DecayedParticles() const;
-   Int_t          AbsorbedParticles() const;
-   Int_t          LostParticles() const;
-   Int_t          BadParticles() const;
-   Int_t          FinalParticles() const;
+   Bool_t               ChecksOut() const;
+   Int_t                InitialParticles() const;
+   Int_t                PropagatingParticles() const;
+   Int_t                DetectedParticles() const;
+   Int_t                DecayedParticles() const;
+   Int_t                AbsorbedParticles() const;
+   Int_t                LostParticles() const;
+   Int_t                BadParticles() const;
+   Int_t                FinalParticles() const;
    
    ClassDef(TUCNData, 1) // UCN Data Object
 };

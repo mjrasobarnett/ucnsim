@@ -142,8 +142,7 @@ Bool_t TUCNData::Initialise(const TUCNRunConfig& runConfig)
    fFinalStatesFolder->mkdir(Folders::decayed.c_str());
    fFinalStatesFolder->mkdir(Folders::lost.c_str());
    fFinalStatesFolder->mkdir(Folders::bad.c_str());
-   
-   // Load 
+   // Load initial particles into output file
    if (this->LoadParticles(runConfig) == kFALSE) {
       Error("Initialise","Cannot Load Particles");
       return kFALSE;
@@ -174,15 +173,14 @@ Bool_t TUCNData::LoadParticles(const TUCNRunConfig& runConfig)
    // Determine which particle states to take as the initial states for current run
    cout << "Determining which particles to load..." << endl;
    inputfile->cd();
-   TDirectory* topDir = gDirectory;
+   TDirectory* const topDir = gDirectory;
    if (topDir->cd(Folders::particles.c_str()) == kFALSE) {
       Error("LoadParticles","No folder named: %s, found in input file",Folders::particles.c_str());
       return kFALSE;
    }
-   TDirectory* partDir = gDirectory;
+   TDirectory * const partDir = gDirectory;
    ///////////////////////////////////////////////////////////////////////
-   // -- Check Config for which particle Tree we wish to load as our initial particles here
-   // Check runconfig option.
+   // -- Check Config for which particle states we wish to load as our input particles
    string whichParticles = runConfig.ParticlesToLoad();
    // Convert to lowercase.
    locale loc;
@@ -207,8 +205,8 @@ Bool_t TUCNData::LoadParticles(const TUCNRunConfig& runConfig)
          return kFALSE;
       }
    }
-   TDirectory* sourceDir = gDirectory;
-   TDirectory* outputDir = fInitialStatesFolder; 
+   TDirectory * const sourceDir = gDirectory;
+   TDirectory * const outputDir = fInitialStatesFolder; 
    ///////////////////////////////////////////////////////////////////////
    // - Check Config for whether we will re-start the particles specified above from their initial
    // - states. This will only be done for particles that are not in their initial states already.
@@ -216,15 +214,32 @@ Bool_t TUCNData::LoadParticles(const TUCNRunConfig& runConfig)
    if (fromBeginning == kTRUE && sourceDir->GetName() != Folders::initialstates) {
       cout << "Resetting particles in the state: " << sourceDir->GetName();
       cout << ", to their initial state as the input to current Run " << endl;
-   
-   
+      // Loop on all entries of source directory, which will be a set of folders containing
+      // the particles in this state
+      TKey *key;
+      TIter nextkey(sourceDir->GetListOfKeys());
+      while ((key = static_cast<TKey*>(nextkey.Next()))) {
+         const char *classname = key->GetClassName();
+         TClass *cl = gROOT->GetClass(classname);
+         if (!cl) continue;
+         if (cl->InheritsFrom("TDirectory")) {
+            // For each particle-folder in the current directory, find its corresponding
+            // initialstates folder in the input file, and make a copy of it in the output file
+            partDir->cd(Folders::initialstates.c_str());
+            TDirectory * const initialDir = gDirectory;
+            this->CopyDirectory(initialDir, outputDir);
+         }
+      }
    } else {
       // Otherwise we just propagate the particles from where they left off
       cout << "Loading particles in the state: " << sourceDir->GetName();
       cout << ", as the input to current Run, to continue their propagation" << endl;
       // Copy particles from the source directory into the initialstates directory of the run
-      this->CopyDirectory(sourceDir, outputDir);
+      this->CopyDirectoryContents(sourceDir, outputDir);
    }
+   // Clean up
+   inputfile->Close();
+   if (inputfile) delete inputfile; inputfile = NULL;
    cout << "-------------------------------------------" << endl;
    cout << this->InitialParticles() << " particles have been loaded succesfully" << endl;
    cout << "-------------------------------------------" << endl;
@@ -233,12 +248,46 @@ Bool_t TUCNData::LoadParticles(const TUCNRunConfig& runConfig)
 
 //_____________________________________________________________________________
 void TUCNData::CopyDirectory(TDirectory * const sourceDir, TDirectory * const outputDir) {
-   // Copy all objects and subdirs of directory source into the supplied output directory  
+   // Copy the source directory and all its subdirectories into the supplied output directory
+   // as a new subdirectory  
+   TDirectory* copiedDir = outputDir->mkdir(sourceDir->GetName());
+   copiedDir->cd();
+   // Loop on all entries of this directory
+   TKey *key;
+   TIter nextkey(sourceDir->GetListOfKeys());
+   while ((key = static_cast<TKey*>(nextkey.Next()))) {
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TDirectory")) {
+         // Copy subdirectory to a new subdirectoy in copiedDir
+         sourceDir->cd(key->GetName());
+         TDirectory *subdir = gDirectory;
+         copiedDir->cd();
+         CopyDirectory(subdir, copiedDir);
+         copiedDir->cd();
+      } else {
+         // Copy Object
+         sourceDir->cd();
+         TObject *obj = key->ReadObj();
+         copiedDir->cd();
+         obj->Write();
+         delete obj;
+     }
+  }
+  copiedDir->SaveSelf(kTRUE);
+  outputDir->cd();
+}
+
+//_____________________________________________________________________________
+void TUCNData::CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * const outputDir) {
+   // -- Similar to CopyDirectory but here we only copy all the objects and subdirs of the source
+   // -- directory into the supplied output directory, not the source directory itself
    outputDir->cd();
    // Loop on all entries of this directory
    TKey *key;
    TIter nextkey(sourceDir->GetListOfKeys());
-   while ((key = (TKey*)nextkey())) {
+   while ((key = static_cast<TKey*>(nextkey.Next()))) {
       const char *classname = key->GetClassName();
       TClass *cl = gROOT->GetClass(classname);
       if (!cl) continue;
@@ -248,7 +297,7 @@ void TUCNData::CopyDirectory(TDirectory * const sourceDir, TDirectory * const ou
          TDirectory *subdir = gDirectory;
          outputDir->cd();
          TDirectory* outputSubDir = outputDir->mkdir(subdir->GetName());
-         CopyDirectory(subdir, outputSubDir);
+         CopyDirectoryContents(subdir, outputSubDir);
          outputDir->cd();
       } else {
          // Copy Object
