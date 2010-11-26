@@ -79,7 +79,6 @@ Bool_t TUCNSpin::Polarise(const TVector3& axis, const Bool_t up)
    } else {
       fSpinor.PolariseDown(axis);
    }
-   fSpinor.Print();
    return kTRUE;
 }
 

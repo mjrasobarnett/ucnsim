@@ -4,6 +4,7 @@
 #include "include/Materials.h"
 #include "include/Constants.h"
 #include "include/Units.h"
+#include "include/DataFileHierarchy.h"
 #include "geom/model_parameters.h"
 
 using namespace std;
@@ -13,7 +14,7 @@ using namespace ModelParameters;
 Bool_t ReadInitialConfig(const string& configFileName);
 Bool_t FillSourceTube(const TUCNInitialConfig& initialConfig);
 Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig);
-Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree);
+Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData& data);
 Bool_t CreateRandomParticle(TUCNParticle* particle, const Double_t fillTime, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
 Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnergy);
 Bool_t DefinePolarisation(TUCNParticle* particle, const TVector3& spinAxis, const Bool_t spinUp);
@@ -61,8 +62,8 @@ Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig)
 {   
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Create storage for the particles
-   string runName = initialConfig.RunName();
-   TUCNData* data = new TUCNData(runName.c_str());
+   TUCNData data(initialConfig);
+   
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Find the initial volume
    TString geomFileName = initialConfig.GeomFileName();
@@ -79,27 +80,6 @@ Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig)
    }
    
    GenerateParticles(initialConfig, volume, matrix, data);
-   
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Write out the particle tree
-   TString dataFileName = initialConfig.OutputFileName();
-   if (dataFileName == "") { 
-      cout << "No File holding the particle data has been specified" << endl;
-      return kFALSE;
-   }
-   // -- Open and Write to File
-   TFile *file = TFile::Open(dataFileName, "recreate");
-   if (!file || file->IsZombie()) {
-      cerr << "Cannot open file: " << dataFileName << endl;
-      return 0;
-   }
-   data->Write(data->GetName());
-   cout << "Initial Particle Data for: " << data->GetName();
-   cout << " was successfully written to file" << endl;
-   cout << "-------------------------------------------" << endl;
-   file->ls(); // List the contents of the file
-   cout << "-------------------------------------------" << endl;
-   delete file;
    
    // -- Enter Root interactive session
    return 0;
@@ -158,7 +138,7 @@ Int_t FillSourceTube(const TUCNInitialConfig& initialConfig)
 }
 
 //__________________________________________________________________________
-Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData* dataTree)
+Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData& data)
 {
    // Generates a uniform distribution of particles with random directions all with 
    // the same total energy (kinetic plus potential) defined at z = 0.   
@@ -193,7 +173,7 @@ Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolum
    cout << "Max Energy (neV): " << maxEnergy/Units::neV << endl;
    
    // -- Loop over the total number of particles to be created. 
-   for (Int_t i = 0; i < particles; i++) {
+   for (Int_t i = 1; i <= particles; i++) {
       // -- Create particle at a random position inside beam volume
       TUCNParticle* particle = new TUCNParticle();
       particle->SetId(i);
@@ -211,8 +191,8 @@ Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolum
       initialVZHist->Fill(particle->Vz());
       initialVHist->Fill(particle->V());
       initialTHist->Fill(particle->T());
-      // -- Add particle to data tree
-      dataTree->AddInitialParticleState(particle);
+      // -- Add particle to data file
+      data.SaveParticle(particle, Folders::initialstates);
    }
    
    TCanvas *canvas1 = new TCanvas("InitialPhaseSpace","Initial Phase Space",60,0,1000,800);
