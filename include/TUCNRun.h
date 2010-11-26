@@ -57,8 +57,6 @@ public:
    const TUCNRunConfig& GetRunConfig()       {return fRunConfig;}
    
    // Data storage
-   Bool_t               SaveInitialParticle(TUCNParticle* particle);
-   TUCNParticle*        GetInitialParticle(Int_t particleID);
    
    // Run Procedures
    Bool_t               Initialise();

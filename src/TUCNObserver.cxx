@@ -129,7 +129,7 @@ Double_t SpinPrecession(Double_t *x, Double_t *par)
 //_____________________________________________________________________________
 void TUCNSpinObserver::Plot(TUCNData* data, TTree* tree)
 {
-   TH1F* spinUpHist = new TH1F("SpinUpHist","SpinUpHist", 500, 0.0, 20.0);      
+/*   TH1F* spinUpHist = new TH1F("SpinUpHist","SpinUpHist", 500, 0.0, 20.0);      
    spinUpHist->SetXTitle("Time (s)");
    spinUpHist->SetYTitle("Spin Up Neutrons");
    spinUpHist->SetTitle("Volume: HV-Ramsey-Cell. BField: 0.01uT along z-axis. UCN initially polarised Spin Up along X-Axis.");
@@ -212,7 +212,7 @@ void TUCNSpinObserver::Plot(TUCNData* data, TTree* tree)
    leg->AddEntry(spinUpHist,"Spin Up"); // l means line, p shows marker
    leg->AddEntry(spinDownHist,"Spin Down");
    leg->Draw();
-   
+*/   
 }
 
 

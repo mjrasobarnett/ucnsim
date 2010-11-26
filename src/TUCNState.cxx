@@ -230,7 +230,7 @@ TUCNPropagating::~TUCNPropagating()
 Bool_t TUCNPropagating::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-   run->GetData()->AddPropagatingParticleState(particle);
+//   run->GetData()->AddPropagatingParticleState(particle);
    return kTRUE;
 }
 
@@ -1322,7 +1322,7 @@ TUCNDecayed::~TUCNDecayed()
 Bool_t TUCNDecayed::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-   run->GetData()->AddDecayedParticleState(particle);
+//   run->GetData()->AddDecayedParticleState(particle);
    return kTRUE;
 }
 
@@ -1373,7 +1373,7 @@ TUCNAbsorbed::~TUCNAbsorbed()
 Bool_t TUCNAbsorbed::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-   run->GetData()->AddAbsorbedParticleState(particle);
+//   run->GetData()->AddAbsorbedParticleState(particle);
    return kTRUE;
 }
 
@@ -1423,7 +1423,7 @@ TUCNDetected::~TUCNDetected()
 Bool_t TUCNDetected::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-   run->GetData()->AddDetectedParticleState(particle);
+//   run->GetData()->AddDetectedParticleState(particle);
    return kTRUE;
 }
 
@@ -1473,7 +1473,7 @@ TUCNLost::~TUCNLost()
 Bool_t TUCNLost::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-   run->GetData()->AddLostParticleState(particle);
+//   run->GetData()->AddLostParticleState(particle);
    return kTRUE;
 }
 
@@ -1523,7 +1523,7 @@ TUCNBad::~TUCNBad()
 Bool_t TUCNBad::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-   run->GetData()->AddBadParticleState(particle);
+//   run->GetData()->AddBadParticleState(particle);
    return kTRUE;
 }
 

@@ -124,7 +124,7 @@ Bool_t TUCNRun::Initialise()
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Allocate Memory
    ///////////////////////////////////////////////////////////////////////////////////////
-   if (fData != NULL) delete fData; fData = NULL;
+/*   if (fData != NULL) delete fData; fData = NULL;
    fData = new TUCNData("UCNData");
    if (fExperiment != NULL) delete fExperiment; fExperiment = NULL;
    fExperiment = new TUCNExperiment();
@@ -178,14 +178,14 @@ Bool_t TUCNRun::Initialise()
    cout << "MaxStepTime(s): " << this->GetRunConfig().MaxStepTime() << endl;
    cout << "WallLosses: " << this->GetRunConfig().WallLossesOn() << endl;
    cout << "-------------------------------------------" << endl;
-   return kTRUE;
+*/   return kTRUE;
 }
 
 //_____________________________________________________________________________
 Bool_t TUCNRun::Start()
 {
 // -- Propagate the particles stored in the Run's Data, specified by configFile
-   cout << "-------------------------------------------" << endl;
+/*   cout << "-------------------------------------------" << endl;
    cout << "Starting Simulation of " << this->GetRunConfig().RunName() << endl;
    cout << "Total Particles: " << this->GetData()->InitialParticles() << endl;
    cout << "Number Propagating: " << this->GetData()->PropagatingParticles() << endl;
@@ -258,14 +258,14 @@ Bool_t TUCNRun::Start()
    cout << "Number Lost To Outer Geometry: " << this->GetData()->LostParticles() << endl;
    cout << "Number With Anomalous Behaviour: " << this->GetData()->BadParticles() << endl;
    cout << "-------------------------------------------" << endl;
-   return kTRUE;
+*/   return kTRUE;
 }
 
 //_____________________________________________________________________________
 Bool_t TUCNRun::Finish()
 {
 // -- Export this run to file
-   TString outputFile = this->GetRunConfig().OutputFileName();
+/*   TString outputFile = this->GetRunConfig().OutputFileName();
    if (outputFile.IsNull() || outputFile.IsWhitespace()) {
       Warning("Finish","No output file has been specified. Using default filename");
       outputFile = "outputdata.root";
@@ -298,27 +298,14 @@ Bool_t TUCNRun::Finish()
    cout << "-------------------------------------------" << endl;
    // -- Clean up
    delete f;
-   return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t TUCNRun::SaveInitialParticle(TUCNParticle* particle) 
-{
-   return this->GetData()->AddInitialParticleState(particle);
-}
-
-//_____________________________________________________________________________
-TUCNParticle* TUCNRun::GetInitialParticle(Int_t index)
-{
-   // -- Retrieve the requested initial particle state from the Data
-   return this->GetData()->GetInitialParticleState(index);
+*/   return kTRUE;
 }
 
 //_____________________________________________________________________________
 Bool_t TUCNRun::LoadParticles(const TUCNRunConfig& runConfig)
 {
 // Fetch initial particles tree from file specified in Config File
-   ///////////////////////////////////////////////////////////////////////
+/*   ///////////////////////////////////////////////////////////////////////
    // Get name of file holding the data from ConfigFile 
    TString particlesFile = runConfig.InputFileName();
    if (particlesFile == "") { 
@@ -422,13 +409,13 @@ Bool_t TUCNRun::LoadParticles(const TUCNRunConfig& runConfig)
    cout << fData->InitialParticles() << " particles have been loaded succesfully" << endl;
    cout << "-------------------------------------------" << endl;
    delete importedRun;
-   return kTRUE;
+*/   return kTRUE;
 }
 
 //_____________________________________________________________________________
 Bool_t TUCNRun::InitialiseObservers(const TUCNRunConfig& runConfig)
 {
-   // Check Run configuration for which properties are to be monitored with Observers 
+/*   // Check Run configuration for which properties are to be monitored with Observers 
    cout << "-------------------------------------------" << endl;
    cout << "Setting up Observers" << endl;
    if (runConfig.ObservePolarisation() == kTRUE) {
@@ -438,7 +425,7 @@ Bool_t TUCNRun::InitialiseObservers(const TUCNRunConfig& runConfig)
       this->GetData()->AddObserver(obs);
       obs = NULL;
    }
-   return kTRUE;
+*/   return kTRUE;
 }
 
 //_____________________________________________________________________________

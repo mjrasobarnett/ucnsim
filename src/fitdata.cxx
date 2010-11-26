@@ -29,7 +29,7 @@ Double_t ExponentialDecay(Double_t *x, Double_t *par);
 
 Int_t main(Int_t argc,Char_t **argv)
 {
-   ///////////////////////////////////////////////////////////////////////////////////////
+/*   ///////////////////////////////////////////////////////////////////////////////////////
    TString configFileName, treeName;
    if (argc == 3) {
       configFileName = argv[1];
@@ -107,9 +107,9 @@ Int_t main(Int_t argc,Char_t **argv)
    
    cout << "Finished" << endl;
    theApp->Run();
-   return 0;
+*/   return 0;
 }
-
+/*
 // -------------------------------------------------------------------------------------- 
 Bool_t PlotPositions(TGeoManager* geoManager, TUCNRun* run, const TString& treeName) 
 {
@@ -294,5 +294,5 @@ Double_t ExponentialDecay(Double_t *x, Double_t *par)
    Double_t f = par[0]*TMath::Exp(-t/par[1]);
    return f;
 }
-
+*/
 
