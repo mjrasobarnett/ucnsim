@@ -10,6 +10,8 @@
 #include <iostream>
 #include <cassert>
 
+#include "DataFileHierarchy.h"
+
 using namespace std;
 
 ClassImp(TUCNData)
@@ -50,6 +52,23 @@ TUCNData::TUCNData(const TUCNInitialConfig& initialConfig)
       throw runtime_error("Error: Unable to open file: %s", outputFileName.c_str());
    }
    fOutputFile = file;
+   // -- Set up basic folder structure
+   // -- ___.root:/particles/initialstates  ___.root:/particles/finalstates
+   TDirectory* topDir = fOutputFile->cd();
+   if (topDir->cd(Folders::particles.c_str()) == kFALSE) {
+      // Need to create particles directory structure
+      TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str());
+      // Create the initial and final states folders
+      fInitialStatesFolder = particlesDir->mkdir(Folders::initialstates.c_str());
+      fFinalStatesFolder = particlesDir->mkdir(Folders::finalstates.c_str());
+      // Create the typical subfolders of final states
+      fFinalStatesFolder->mkdir(Folders::propagating);
+      fFinalStatesFolder->mkdir(Folders::absorbed);
+      fFinalStatesFolder->mkdir(Folders::detected);
+      fFinalStatesFolder->mkdir(Folders::decayed);
+      fFinalStatesFolder->mkdir(Folders::lost);
+      fFinalStatesFolder->mkdir(Folders::bad);
+   }
 }
 
 //_____________________________________________________________________________
@@ -71,7 +90,7 @@ TUCNData::TUCNData(const TUCNRunConfig& runConfig)
       throw runtime_error("Error: No Output file path specified in: %s", outputFileName.c_str());
    }
    // -- Open and store pointer to input and output File
-   TFile *inputfile = TFile::Open(inputFileName, "recreate");
+   TFile *inputfile = TFile::Open(inputFileName, "read");
    if (!inputfile || inputfile->IsZombie()) {
       throw runtime_error("Error: Unable to open file: %s", inputFileName.c_str());
    }
@@ -81,6 +100,23 @@ TUCNData::TUCNData(const TUCNRunConfig& runConfig)
       throw runtime_error("Error: Unable to open file: %s", outputFileName.c_str());
    }
    fOutputFile = outputfile;
+   // -- Set up basic folder structure
+   // -- ___.root:/particles/initialstates  ___.root:/particles/finalstates
+   TDirectory* topDir = fOutputFile->cd();
+   if (topDir->cd(Folders::particles.c_str()) == kFALSE) {
+      // Need to create particles directory structure
+      TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str());
+      // Create the initial and final states folders
+      fInitialStatesFolder = particlesDir->mkdir(Folders::initialstates.c_str());
+      fFinalStatesFolder = particlesDir->mkdir(Folders::finalstates.c_str());
+      // Create the typical subfolders of final states
+      fFinalStatesFolder->mkdir(Folders::propagating);
+      fFinalStatesFolder->mkdir(Folders::absorbed);
+      fFinalStatesFolder->mkdir(Folders::detected);
+      fFinalStatesFolder->mkdir(Folders::decayed);
+      fFinalStatesFolder->mkdir(Folders::lost);
+      fFinalStatesFolder->mkdir(Folders::bad);
+   }
 }
 
 //_____________________________________________________________________________

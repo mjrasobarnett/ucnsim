@@ -18,7 +18,8 @@ private:
    TFile *fInputFile;
    TFile *fOutputFile;
    
-   TDirectory *fCurrentDir;
+   TDirectory *fInitialStatesFolder;
+   TDirectory *fFinalStatesFolder;
    TIter      *fNextKey;
    
    // -- Observers
