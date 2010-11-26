@@ -6,7 +6,6 @@
 #include <string>
 #include "TFile.h"
 #include "TDirectory.h"
-#include "TIter.h"
 #include "TUCNParticle.h"
 #include "TUCNObserver.h"
 #include "TUCNInitialConfig.h"
@@ -20,7 +19,6 @@ private:
    
    TDirectory *fInitialStatesFolder;
    TDirectory *fFinalStatesFolder;
-   TIter      *fNextKey;
    
    // -- Observers
    std::vector<TUCNObserver*> fObservers;
@@ -40,7 +38,7 @@ public:
    virtual ~TUCNData(void);
    
    // Add a Particle
-   Bool_t               SaveParticle(const string& state, TUCNParticle* particle);
+   Bool_t               SaveParticle(TUCNParticle* particle, const std::string& state);
    
    // Get a Particle
    TUCNParticle* const  RetrieveParticle();
