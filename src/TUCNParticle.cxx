@@ -108,11 +108,10 @@ void TUCNParticle::ChangeState(TUCNState* state)
 }
 
 //______________________________________________________________________________
-Bool_t TUCNParticle::SaveState(TUCNRun* run)
+void TUCNParticle::SaveState(TUCNRun* run)
 {
    // Ask States to register themselves in the run to keep track of numbers
-   if (fState) return fState->SaveState(run, this);
-   return kFALSE;
+   fState->SaveState(run, this);
 }
 
 //______________________________________________________________________________

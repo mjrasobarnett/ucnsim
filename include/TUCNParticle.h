@@ -140,7 +140,6 @@ public:
    
    // State
    TUCNState*           GetState()     {return fState;}
-   Bool_t               SaveState(TUCNRun* run);
    
    // Spin
    void                 Polarise(const TVector3& axis, const Bool_t up);
@@ -165,6 +164,7 @@ public:
    void                 NotifyObservers(/*const TUCNInterest& interest*/);
 
    // -- Output to file
+   void                 SaveState(TUCNRun* run);
    void                 WriteToFile(TDirectory* particleDir);
    
    ClassDef(TUCNParticle,1)   // Ultra-Cold Neutron

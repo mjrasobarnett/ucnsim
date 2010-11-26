@@ -4,9 +4,6 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "Constants.h"
-#include "Units.h"
-
 #include "TUCNState.h"
 
 #include "TMath.h"
@@ -28,6 +25,10 @@
 #include "TGeoShape.h"
 #include "TGeoMatrix.h"
 #include "TGeoVoxelFinder.h"
+
+#include "Constants.h"
+#include "Units.h"
+#include "DataFileHierarchy.h"
 
 using namespace std;
 
@@ -230,7 +231,7 @@ TUCNPropagating::~TUCNPropagating()
 Bool_t TUCNPropagating::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-//   run->GetData()->AddPropagatingParticleState(particle);
+   run->GetData()->SaveParticle(particle, Folders::propagating);
    return kTRUE;
 }
 
@@ -1322,7 +1323,7 @@ TUCNDecayed::~TUCNDecayed()
 Bool_t TUCNDecayed::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-//   run->GetData()->AddDecayedParticleState(particle);
+   run->GetData()->SaveParticle(particle, Folders::decayed);
    return kTRUE;
 }
 
@@ -1373,7 +1374,7 @@ TUCNAbsorbed::~TUCNAbsorbed()
 Bool_t TUCNAbsorbed::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-//   run->GetData()->AddAbsorbedParticleState(particle);
+   run->GetData()->SaveParticle(particle, Folders::absorbed);
    return kTRUE;
 }
 
@@ -1423,7 +1424,7 @@ TUCNDetected::~TUCNDetected()
 Bool_t TUCNDetected::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-//   run->GetData()->AddDetectedParticleState(particle);
+   run->GetData()->SaveParticle(particle, Folders::detected);
    return kTRUE;
 }
 
@@ -1473,7 +1474,7 @@ TUCNLost::~TUCNLost()
 Bool_t TUCNLost::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-//   run->GetData()->AddLostParticleState(particle);
+   run->GetData()->SaveParticle(particle, Folders::lost);
    return kTRUE;
 }
 
@@ -1523,7 +1524,7 @@ TUCNBad::~TUCNBad()
 Bool_t TUCNBad::SaveState(TUCNRun* run, TUCNParticle* particle)
 {
    // Register in Run what final state we are
-//   run->GetData()->AddBadParticleState(particle);
+   run->GetData()->SaveParticle(particle, Folders::bad);
    return kTRUE;
 }
 
