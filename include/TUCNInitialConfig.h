@@ -45,6 +45,7 @@ public:
    
    TVector3 SpinAxis() const {return fSpinAxis;}
    Bool_t SpinUp() const {return fSpinUp;}
+   Double_t PercentPolarised() const {return fPercentagePolarised;}
    
    virtual void Print(Option_t* option = "") const;
    

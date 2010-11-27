@@ -7,6 +7,8 @@
 #include "TUCNData.h"
 #include "TUCNParticle.h"
 #include "TUCNGeoBBox.h"
+#include "TUCNGeoTube.h"
+#include "TUCNVolume.h"
 
 #include "TMath.h"
 #include "TGeoVolume.h"
@@ -36,7 +38,7 @@ Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig);
 Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix);
 Bool_t CreateRandomParticle(TUCNParticle* particle, const Double_t fillTime, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
 Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnergy);
-void DefinePolarisation(TUCNParticle* particle, const TVector3& spinAxis, const Bool_t spinUp);
+void DefinePolarisation(TUCNParticle* particle, const Double_t percentPolarised, const TVector3& spinAxis, const Bool_t spinUp);
 
 //__________________________________________________________________________
 Int_t main(Int_t argc,Char_t **argv)
@@ -113,7 +115,8 @@ Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig)
       cout << "Unable to find requested volume or matrix" << endl;
       return false;
    }
-   // -- Fill the initial volume with particles
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Generate the particles
    GenerateParticles(initialConfig, volume, matrix);
    
    return 0;
@@ -122,10 +125,9 @@ Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig)
 //__________________________________________________________________________
 Bool_t FillSourceTube(const TUCNInitialConfig& initialConfig)
 {
-/*   ///////////////////////////////////////////////////////////////////////////////////////
+   ///////////////////////////////////////////////////////////////////////////////////////
    // -- Make the particle beam volume
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
-   
    Materials::BuildMaterials(geoManager);
    TGeoMedium* liquidHelium = geoManager->GetMedium("HeliumII");
    
@@ -140,34 +142,8 @@ Bool_t FillSourceTube(const TUCNInitialConfig& initialConfig)
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Generate the particles
-   // Create the run to store particles
-   string runName = initialConfig.RunName();
-   TUCNRun* run = new TUCNRun(runName);
+   GenerateParticles(initialConfig, neutronBeamArea, neutronBeamAreaMatrix);
    
-   GenerateParticles(initialConfig, neutronBeamArea, neutronBeamAreaMatrix, run->GetData());
-   
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Write out the particle tree
-   TString dataFileName = initialConfig.OutputFileName();
-   if (dataFileName == "") { 
-      cout << "No File holding the particle data has been specified" << endl;
-      return kFALSE;
-   }
-   // -- Open and Write to File
-   TFile *file = TFile::Open(dataFileName, "recreate");
-   if (!file || file->IsZombie()) {
-      cerr << "Cannot open file: " << dataFileName << endl;
-      return 0;
-   }
-   run->Write(run->GetName());
-   cout << "Initial Particle Data for: " << run->GetName();
-   cout << " was successfully written to file" << endl;
-   cout << "-------------------------------------------" << endl;
-   file->ls(); // List the contents of the file
-   cout << "-------------------------------------------" << endl;
-   delete file;
-   
-*/   // -- Enter Root interactive session
    return 0;
 }
 
@@ -179,11 +155,13 @@ Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolum
    Int_t particles = TMath::Abs(initialConfig.InitialParticles());
    Double_t vmax = TMath::Abs(initialConfig.InitialMaxVelocity())*Units::m/Units::s;
    Double_t fillTime = TMath::Abs(initialConfig.FillingTime())*Units::s;
+   
+   Double_t percentPolarised = initialConfig.PercentPolarised();
    TVector3 spinAxis = initialConfig.SpinAxis();
    Bool_t spinUp = initialConfig.SpinUp();
+   
    cout << "-------------------------------------------" << endl;
    cout << "Generating " << particles << " Particles." << endl;
-   
    // Create Histograms to view the initial particle distributions
    Int_t nbins = 100;
    Double_t boundary[3];
@@ -220,7 +198,7 @@ Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolum
       // -- Initialise particle's momentum
       DetermineParticleMomentum(particle, maxEnergy);
       // -- Setup polarisation
-      DefinePolarisation(particle, spinAxis, spinUp); 
+      DefinePolarisation(particle, percentPolarised, spinAxis, spinUp); 
       // -- Fill histograms
       initialXHist->Fill(particle->X());
       initialYHist->Fill(particle->Y());
@@ -332,7 +310,36 @@ Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnerg
 }
 
 //__________________________________________________________________________
-void DefinePolarisation(TUCNParticle* particle, const TVector3& spinAxis, const Bool_t spinUp)
+void DefinePolarisation(TUCNParticle* particle, const Double_t percentPolarised, const TVector3& spinAxis, const Bool_t spinUp)
 {
-   particle->Polarise(spinAxis, spinUp);
+   Double_t percentage;
+   // Check if percent polarised falls outside allowed bounds
+   if (percentPolarised < 0.0 || percentPolarised > 100.0) {
+      percentage = 100.0;
+   } else {
+      percentage = percentPolarised;
+   }
+   // For the polarised ones define along provided axis
+   if (gRandom->Uniform(0.0, 100.0) <= percentage) {
+      particle->Polarise(spinAxis, spinUp);
+   } else {
+      // For the unpolarised ones, define a random vector on the 3D sphere, and polarise
+      // at random either spin up or down along that.
+      Double_t phi = gRandom->Uniform(0.0, 1.0)*2.0*TMath::Pi();
+      Double_t u   = gRandom->Uniform(-1.0, 1.0);
+      Double_t theta = TMath::ACos(-u);
+      // Convert spherical polars into cartesian nx,ny,nz
+      Double_t dir[3];
+      dir[0] = TMath::Cos(phi)*TMath::Sin(theta);
+      dir[1] = TMath::Sin(phi)*TMath::Sin(theta);
+      dir[2] = TMath::Cos(theta);   
+      TVector3 randomvec(dir[0],dir[1],dir[2]);
+      TVector3 unitvec = randomvec.Unit();
+      // Polarise particle along random unit vector
+      if (gRandom->Uniform(0.0,2.0) <= 1.0) {
+         particle->Polarise(unitvec, kTRUE);
+      } else {
+         particle->Polarise(unitvec, kFALSE);         
+      }
+   }
 }
