@@ -236,15 +236,15 @@ Bool_t TUCNRun::Start()
 //_____________________________________________________________________________
 Bool_t TUCNRun::Finish()
 {
-// -- Export this run to file
-/*   TString outputFile = this->GetRunConfig().OutputFileName();
+// -- Clean up the Run before exporting it to file
+   TString outputFile = this->GetRunConfig().OutputFileName();
    if (outputFile.IsNull() || outputFile.IsWhitespace()) {
       Warning("Finish","No output file has been specified. Using default filename");
       outputFile = "outputdata.root";
    }
    // -- Check that Data 'checks out'
    if (this->GetData()->ChecksOut() == kFALSE) {
-      Error("Export", "TUCNData doesn't check out. Cannot Export Run to file.");
+      Error("Finish", "Number of initial states doesn't match final states.");
       return kFALSE;
    }
    // -- Check we have a .root file
@@ -254,134 +254,24 @@ Bool_t TUCNRun::Finish()
    }
    cout << "-------------------------------------------" << endl;
    cout << "Writing " << this->GetName() << " out to File: " << outputFile << endl;
-   // -- Clear the experiment
-   this->GetExperiment()->ClearManager();
-   // -- Write out
-   TFile *f = TFile::Open(outputFile,"recreate");
-   if (!f || f->IsZombie()) {
+   // -- Delete the experiment
+   if (fExperiment) delete fExperiment; fExperiment = NULL;
+   // -- Delete the Data
+   if (fData) delete fData; fData = NULL;
+   // -- Write out run to the top level directory
+   TFile *file = TFile::Open(outputFile,"UPDATE");
+   if (!file || file->IsZombie()) {
       Error("Export","Cannot open file %s",outputFile.Data());
       return kFALSE;
    }
-   char keyname[256];
-   strcpy(keyname,this->GetName());
-   this->Write(keyname);
-   cout << keyname << " was successfully written to file" << endl;
-   f->ls();
+   this->Write(this->GetName());
+   cout << this->GetName() << " was successfully written to file" << endl;
+   file->ls();
    cout << "-------------------------------------------" << endl;
    // -- Clean up
-   delete f;
-*/   return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t TUCNRun::LoadParticles(const TUCNRunConfig& runConfig)
-{
-// Fetch initial particles tree from file specified in Config File
-/*   ///////////////////////////////////////////////////////////////////////
-   // Get name of file holding the data from ConfigFile 
-   TString particlesFile = runConfig.InputFileName();
-   if (particlesFile == "") { 
-      Error("LoadParticles","No File holding the initial particle data has been specified");
-      return kFALSE;
-   }
-   ///////////////////////////////////////////////////////////////////////
-   // Fetch Data object holding Initial Particles
-   TString inputDataName = runConfig.InputRunName();
-   if (inputDataName == "") {
-      Error("LoadParticles","No Run holding initial particle data has been specified");
-      return kFALSE;
-   }
-   cout << "-------------------------------------------" << endl;
-   cout << "Loading Particles from File: " << particlesFile << endl;
-   TFile *f = TFile::Open(particlesFile,"read");
-   if (!f || f->IsZombie()) {
-      Error("Initialise","Cannot open file");
-      return kFALSE;
-   }
-   TUCNRun* importedRun = 0;
-   f->ls();
-   f->GetObject(inputDataName,importedRun);
-   delete f;
-   if (!importedRun) {
-      Error("LoadParticles","Could not find Run object named: %s in %s", inputDataName.Data(), particlesFile.Data());
-      return kFALSE;
-   }
-   TUCNData* importedData = importedRun->GetData();
-   cout << "Located Data: " << importedData->GetName();
-   cout << " inside " << importedRun->GetName() << endl;
-   cout << "Determining which particles to load..." << endl;
-   
-   ///////////////////////////////////////////////////////////////////////
-   // Check Config for which particle Tree we wish to load as our initial particles here
-   TString whichParticles = runConfig.ParticlesToLoad();
-   if (particlesFile == "") { 
-      Warning("LoadParticles","No Particle Tree specified in ConfigFile, 'WhichParticles'. Taking 'Initial' Tree by default.");
-      whichParticles = "Initial";
-   }
-   // Fetch the specified Tree
-   TTree* inputTree = importedData->FetchTree(whichParticles);
-   if (inputTree == NULL) {
-      Error("LoadParticles","Could not find Tree by searching for %s", whichParticles.Data());
-      return kFALSE;
-   }
-   cout << "Loading particles stored in Tree: " << inputTree->GetName() << endl;
-   // Define where we will store the particleID's from this Tree
-   vector<Int_t> particleIDs;
-   ///////////////////////////////////////////////////////////////////////
-   // - Check Config for whether we will take all of the particles in the Tree specified
-   Bool_t allParticles = runConfig.LoadAllParticles();
-   if (allParticles == kFALSE) {
-      // Not using all particles -> We need to read in the particleIDs stated
-      Error("LoadParticles","Not using All Particles. Not Implemented Yet");
-      return kFALSE;
-   } else {
-      // Using all particles in Tree.
-      for (Int_t i=0;i<inputTree->GetEntriesFast();i++) {
-         // Fetch all particles
-         TUCNParticle* particle = importedData->GetParticleState(inputTree, i);
-         // Add Particle ID to the list
-         particleIDs.push_back(particle->Id());
-      }
-   }
-   
-   ///////////////////////////////////////////////////////////////////////
-   // - Check Config for whether we will re-start the particles specified above from their initial
-   // - state or not. This will always be done, except for those particles in the Propagating Tree,
-   // - where we can either re-start, or continue to propagate from their final state
-   Bool_t fromBeginning = runConfig.RestartFromBeginning();
-   if (fromBeginning == kFALSE && TString(inputTree->GetName()) == "Propagating") {
-      // - In this case, we are continuing to propagate the particles from their states in the
-      // - 'propagating' tree, so we will store this tree. 
-      // Loop over all entries in the Propagating Tree
-      cout << "Loading still Propagating particles into this Run to continue their motion" << endl;
-      cout << "Initial particles will be initialised to that of the previous final states" << endl;
-      for (Int_t i = 0; i < inputTree->GetEntriesFast(); i++) {
-         // Get the particle for each entry in Tree
-         TUCNParticle* particle = importedData->GetPropagatingParticleState(i);
-         // Check whether this particle's ID matches any in our particleID vector
-         for (UInt_t j = 0; j < particleIDs.size(); j++) {
-            if (particle->Id() == particleIDs[j]) {
-               // If so, save that particle
-               this->SaveInitialParticle(particle);
-            }
-         }
-      }
-   } else {
-      // - Otherwise, we want to fetch the initialStates of the particles specified in particleIDs
-      // For all entries specified in our particleID vector, fetch and save
-      // the particle corresponding to that
-      cout << "Storing Loaded particles as the Initial Particles for this Run..." << endl;
-      for (UInt_t i = 0; i < particleIDs.size(); i++) {
-         TUCNParticle* particle = importedData->GetInitialParticleState(particleIDs[i]);
-         this->SaveInitialParticle(particle);
-      }
-   }
-   // - We should now have a Tree stored in Run, that has its InitialParticles Tree filled
-   // - with whatever particles were specified in the configuration file.
-   cout << fData->InitialParticles() << " particles have been loaded succesfully" << endl;
-   cout << "-------------------------------------------" << endl;
-   delete importedRun;
-*/   return kTRUE;
+   file->Close();
+   delete file;
+   return kTRUE;
 }
 
 //_____________________________________________________________________________

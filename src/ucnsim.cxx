@@ -71,15 +71,15 @@ Int_t main(Int_t argc,Char_t **argv)
          cerr << runID << " failed to proceed successfully. Program aborting." << endl;
          return EXIT_FAILURE;
       }
-/*      ///////////////////////////////////////////////////////////////////////////////////////
+      ///////////////////////////////////////////////////////////////////////////////////////
       // -- Export to File
       ///////////////////////////////////////////////////////////////////////////////////////
       if (!(run.Finish())) {
          cerr << runID << " failed to finish successfully. Program aborting." << endl;
          return EXIT_FAILURE;
       }
-*/      cout << runID << " successfully completed." << endl;
-      cout << "-------------------------------------------" << endl << endl;
+      cout << runID << " successfully completed." << endl;
+      cout << "-------------------------------------------" << endl;
    }
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Output up benchmark

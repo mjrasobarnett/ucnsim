@@ -55,8 +55,6 @@ public:
    TUCNExperiment*      GetExperiment()      {return fExperiment;}
    const TUCNRunConfig& GetRunConfig()       {return fRunConfig;}
    
-   // Data storage
-   
    // Run Procedures
    Bool_t               Initialise();
    Bool_t               Start();
