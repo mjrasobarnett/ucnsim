@@ -13,6 +13,7 @@
 #include "TKey.h"
 
 #include "DataFileHierarchy.h"
+#include "ProgressBar.h"
 
 using namespace std;
 
@@ -297,6 +298,7 @@ void TUCNData::CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * 
    // Loop on all entries of this directory
    TKey *key;
    TIter nextkey(sourceDir->GetListOfKeys());
+   Int_t counter = 0;
    while ((key = static_cast<TKey*>(nextkey.Next()))) {
       const char *classname = key->GetClassName();
       TClass *cl = gROOT->GetClass(classname);
@@ -317,6 +319,8 @@ void TUCNData::CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * 
          obj->Write();
          delete obj;
      }
+     ++counter;
+     ProgressBar::PrintProgress(counter,sourceDir->GetNkeys(),1);
   }
   outputDir->SaveSelf(kTRUE);
   outputDir->cd();
