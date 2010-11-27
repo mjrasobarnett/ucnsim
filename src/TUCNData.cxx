@@ -239,6 +239,7 @@ Bool_t TUCNData::LoadParticles(const TUCNRunConfig& runConfig)
             partDir->cd(Folders::initialstates.c_str());
             TDirectory * const initialDir = gDirectory;
             this->CopyDirectory(initialDir, outputDir);
+            delete initialDir;
          }
       }
    } else {
@@ -277,6 +278,7 @@ void TUCNData::CopyDirectory(TDirectory * const sourceDir, TDirectory * const ou
          copiedDir->cd();
          CopyDirectory(subdir, copiedDir);
          copiedDir->cd();
+         delete subdir;
       } else {
          // Copy Object
          sourceDir->cd();
@@ -287,6 +289,7 @@ void TUCNData::CopyDirectory(TDirectory * const sourceDir, TDirectory * const ou
      }
   }
   copiedDir->SaveSelf(kTRUE);
+  delete copiedDir;
   outputDir->cd();
 }
 
@@ -311,6 +314,8 @@ void TUCNData::CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * 
          TDirectory* outputSubDir = outputDir->mkdir(subdir->GetName());
          CopyDirectoryContents(subdir, outputSubDir);
          outputDir->cd();
+         delete subdir;
+         delete outputSubDir;
       } else {
          // Copy Object
          sourceDir->cd();
