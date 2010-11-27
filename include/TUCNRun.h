@@ -29,7 +29,6 @@ protected:
    TUCNExperiment*      fExperiment;
    
    Bool_t               LoadParticles(const TUCNRunConfig& runConfig);
-   void                 PrintProgress(Int_t entry, Float_t nEntriesF, Int_t mintime=2);
    
 public:
    // -- constructors
