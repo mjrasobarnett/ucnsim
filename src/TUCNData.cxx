@@ -459,7 +459,6 @@ Bool_t TUCNData::ChecksOut() const
       return kFALSE;
    } 
    Info("ChecksOut","Initial particle states: %i. Number of Final States: %i.", initialParticles, finalParticles);
-*/
    return kTRUE;
 }
 
@@ -467,49 +466,75 @@ Bool_t TUCNData::ChecksOut() const
 //_____________________________________________________________________________
 Int_t TUCNData::InitialParticles() const
 {
-   return 0;
+   // -- Count the number of particle states in the Initial Particles folder
+   return fInitialStatesFolder->GetNkeys();
 }
 
 //_____________________________________________________________________________
 Int_t TUCNData::PropagatingParticles() const
 {
-   return 0;
+   if (fFinalStatesFolder->cd(Folders::propagating.c_str()) == kFALSE) {
+      return 0;
+   } else {
+      return gDirectory->GetNkeys();
+   }
 }
 
 //_____________________________________________________________________________
 Int_t TUCNData::DetectedParticles() const
 {
-   return 0;
+   if (fFinalStatesFolder->cd(Folders::detected.c_str()) == kFALSE) {
+      return 0;
+   } else {
+      return gDirectory->GetNkeys();
+   }
 }
 
 //_____________________________________________________________________________
 Int_t TUCNData::DecayedParticles() const
 {
-   return 0;
+   if (fFinalStatesFolder->cd(Folders::decayed.c_str()) == kFALSE) {
+      return 0;
+   } else {
+      return gDirectory->GetNkeys();
+   }
 }
 
 //_____________________________________________________________________________
 Int_t TUCNData::AbsorbedParticles() const
 {
-   return 0;
+   if (fFinalStatesFolder->cd(Folders::absorbed.c_str()) == kFALSE) {
+      return 0;
+   } else {
+      return gDirectory->GetNkeys();
+   }
 }
 
 //_____________________________________________________________________________
 Int_t TUCNData::LostParticles() const
 {
-   return 0;
+   if (fFinalStatesFolder->cd(Folders::lost.c_str()) == kFALSE) {
+      return 0;
+   } else {
+      return gDirectory->GetNkeys();
+   }
 }
 
 //_____________________________________________________________________________
 Int_t TUCNData::BadParticles() const
 {
-   return 0;
+   if (fFinalStatesFolder->cd(Folders::bad.c_str()) == kFALSE) {
+      return 0;
+   } else {
+      return gDirectory->GetNkeys();
+   }
 }
 
 //_____________________________________________________________________________
 Int_t TUCNData::FinalParticles() const
 {
-   return 0;
+   Int_t final = PropagatingParticles() + DetectedParticles() + AbsorbedParticles() + DecayedParticles() + LostParticles() + BadParticles();
+   return final;
 }
 
 /*
