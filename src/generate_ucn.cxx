@@ -17,12 +17,14 @@
 #include "TCanvas.h"
 #include "TRandom.h"
 #include "TRint.h"
+#include "TBenchmark.h"
 
 #include "Materials.h"
 #include "Constants.h"
 #include "Units.h"
 #include "DataFileHierarchy.h"
 #include "GeomParameters.h"
+#include "ProgressBar.h"
 
 using std::cin;
 using std::cout;
@@ -44,6 +46,11 @@ void DefinePolarisation(TUCNParticle* particle, const Double_t percentPolarised,
 Int_t main(Int_t argc,Char_t **argv)
 {
    ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Set up benchmark
+   TBenchmark benchmark;
+   benchmark.SetName("UCNSIM");
+   benchmark.Start("UCNSIM");
+   ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////
    string configFileName;
@@ -57,7 +64,6 @@ Int_t main(Int_t argc,Char_t **argv)
    // Start 'the app' -- this is so we are able to enter into a ROOT session
    // after the program has run, instead of just quitting.
    TRint *theApp = new TRint("FittingApp", &argc, argv);
-   
    // Read in Batch Configuration file to find the Initial Configuration File
    TUCNConfigFile configFile(configFileName);
    const string initialConfigFileName = configFile.GetString("Config","Initialisation");
@@ -65,7 +71,7 @@ Int_t main(Int_t argc,Char_t **argv)
       cout << "Unable to read in Initialisation Configuration file name" << endl;
       return -1;
    }
-   
+   ///////////////////////////////////////////////////////////////////////////////////////
    // Read in Initial Configuration from file.
    TUCNInitialConfig initialConfig(initialConfigFileName);   
    // Ask User to choose which Volume to fill
@@ -91,7 +97,12 @@ Int_t main(Int_t argc,Char_t **argv)
          cout << "Sorry I didn't understand that. Please try again." << endl;
       }
    }
-   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Output up benchmark
+   benchmark.Stop("UCNSIM");
+   cout << "-------------------------------------------" << endl;
+   benchmark.Print("UCNSIM");
+   cout << "-------------------------------------------" << endl;
    // Enter ROOT interactive session
    theApp->Run();
    return EXIT_SUCCESS;
@@ -210,6 +221,8 @@ Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolum
       initialTHist->Fill(particle->T());
       // -- Add particle to data file
       data->SaveParticle(particle, Folders::initialstates);
+      // -- Update progress bar
+      ProgressBar::PrintProgress(i,particles,1);
    }
    // -- Close the data
    delete data;
