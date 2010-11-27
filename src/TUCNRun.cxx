@@ -177,9 +177,7 @@ Bool_t TUCNRun::Start()
    // Loop over all particles stored in InitialParticles Tree
    for (Int_t index = 0; index < totalParticles; index++) {
       // Get Particle from list
-      TUCNParticle* particle = dynamic_cast<TUCNParticle*>(this->GetInitialParticle(index));
-      // Register Observers with particle
-      this->GetData()->RegisterObservers(particle);
+      TUCNParticle* particle = this->GetData()->RetrieveParticle();
       // Determine whether we are restoring to the start of a previously propagated track.
       // If so we want to set the Random Generator's seed back to what it was at the start of this
       // particle's propagation. This seed is stored (currently) in the particle itself. Otherwise
@@ -207,16 +205,13 @@ Bool_t TUCNRun::Start()
             cout << "-------------------------------------------" << endl << endl;
          #endif
          // Add this particle to special tree for errorneous particles
-         this->GetData()->AddBadParticleState(particle);
+         particle->SaveState(this);
          delete particle;
          continue;
       }
       ///////////////////////////////////////////////////////////////////////
       // Add Final Particle State to data tree
-      if (!(particle->SaveState(this))) {
-         Error("Start","Particle has failed to save its final state correctly");
-         return kFALSE;
-      }
+      particle->SaveState(this);
       // Print Progress Bar to Screen
       #ifndef VERBOSE_MODE
          PrintProgress(index, totalParticles);
@@ -235,7 +230,7 @@ Bool_t TUCNRun::Start()
    cout << "Number Lost To Outer Geometry: " << this->GetData()->LostParticles() << endl;
    cout << "Number With Anomalous Behaviour: " << this->GetData()->BadParticles() << endl;
    cout << "-------------------------------------------" << endl;
-*/   return kTRUE;
+   return kTRUE;
 }
 
 //_____________________________________________________________________________
