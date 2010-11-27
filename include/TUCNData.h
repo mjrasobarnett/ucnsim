@@ -19,6 +19,8 @@ private:
    TDirectory *fInitialStatesFolder;
    TDirectory *fFinalStatesFolder;
    
+   TIter *fCurrentParticleDir;
+   
    // -- Observers
    std::vector<TUCNObserver*> fObservers;
    void           PurgeObservers();
@@ -28,6 +30,8 @@ private:
    void           RegisterObservers(TUCNParticle* particle);
    
    Bool_t         LoadParticles(const TUCNRunConfig& runConfig);
+   TUCNParticle*  LocateParticle(TDirectory * const particleDir);
+   
    void           CopyDirectory(TDirectory * const sourceDir, TDirectory * const outputDir);
    void           CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * const outputDir);
    

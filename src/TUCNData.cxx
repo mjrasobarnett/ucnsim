@@ -29,6 +29,7 @@ TUCNData::TUCNData()
    fOutputFile = NULL;
    fInitialStatesFolder = NULL;
    fFinalStatesFolder = NULL;
+   fCurrentParticleDir = NULL;
 }
 
 //_____________________________________________________________________________
@@ -37,6 +38,7 @@ TUCNData::TUCNData(const TUCNData& other)
           fOutputFile(other.fOutputFile),
           fInitialStatesFolder(other.fInitialStatesFolder),
           fFinalStatesFolder(other.fFinalStatesFolder),
+          fCurrentParticleDir(other.fCurrentParticleDir),
           fObservers(other.fObservers)
 {
    // Copy Constructor
@@ -55,12 +57,14 @@ TUCNData& TUCNData::operator=(const TUCNData& other)
          fOutputFile->Close();
          delete fOutputFile;
          fOutputFile = NULL;
+         fInitialStatesFolder = NULL;
+         fFinalStatesFolder = NULL;
+         fCurrentParticleDir = NULL;
       }
       fOutputFile = other.fOutputFile;
-      
       fInitialStatesFolder = other.fInitialStatesFolder;
       fFinalStatesFolder = other.fFinalStatesFolder;
-      
+      fCurrentParticleDir = other.fCurrentParticleDir;
       // Clear list of observers before assignment
       PurgeObservers();
       fObservers = other.fObservers;
@@ -74,6 +78,10 @@ TUCNData::~TUCNData()
    // -- Destructor
    Info("TUCNData","Destructor");
    if (fOutputFile) fOutputFile->Close(); delete fOutputFile;
+   fOutputFile = NULL;
+   fInitialStatesFolder = NULL;
+   fFinalStatesFolder = NULL;
+   fCurrentParticleDir = NULL;
    PurgeObservers();
 }
 
@@ -392,14 +400,56 @@ Bool_t TUCNData::SaveParticle(TUCNParticle* particle, const std::string& state)
 //_____________________________________________________________________________
 TUCNParticle* const TUCNData::RetrieveParticle()
 {
-   return 0;
+   // -- Retrieve the next particle from fInitialStatesFolder. The current particle
+   // -- is referenced by the the TIter fCurrentParticleDir.
+   // Cd into the folder of initial particle states
+   fInitialStatesFolder->cd();
+   // If there is no iterator set on the particles already, do so.
+   if (fCurrentParticleDir == NULL) {
+      fCurrentParticleDir = new TIter(fInitialStatesFolder->GetListOfKeys());
+   }
+   // Get the next particle folder
+   TKey* nextDir = static_cast<TKey*>(fCurrentParticleDir->Next());
+   if (nextDir == NULL) {
+      // Reached end of the directory. No more particles to load
+      return NULL;
+   }
+   const char *dir_classname = nextDir->GetClassName();
+   TClass *dir_cl = gROOT->GetClass(dir_classname);
+   assert(dir_cl->InheritsFrom("TDirectory"));
+   // Cd into the next particle's folder
+   fInitialStatesFolder->cd(nextDir->GetName());
+   TDirectory *nextParticleDir = gDirectory;
+   // Search Directory for any observables previously recorded to be continued
+   
+   // Search Directory for the particle
+   TUCNParticle* nextParticle = this->LocateParticle(nextParticleDir);
+   return nextParticle;
+}
+
+//_____________________________________________________________________________
+TUCNParticle* TUCNData::LocateParticle(TDirectory * const particleDir)
+{
+   // -- Loop on all entries of this directory looking for a particle
+   TUCNParticle* particle = NULL;
+   TKey *key;
+   TIter nextkey(particleDir->GetListOfKeys());
+   while ((key = static_cast<TKey*>(nextkey.Next()))) {
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TUCNParticle")) {
+         particle = dynamic_cast<TUCNParticle*>(key->ReadObj());
+         break;
+      }
+   }
+   return particle;
 }
 
 //_____________________________________________________________________________
 Bool_t TUCNData::ChecksOut() const
 {
 // -- Perform a check out routine, to ensure data is consistent
-/*
    // Sum initial and final states
    const Int_t initialParticles = this->InitialParticles();
    const Int_t finalParticles = this->FinalParticles();
