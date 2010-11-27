@@ -4,7 +4,7 @@
 #include "../include/Units.h"
 #include "../include/Constants.h"
 
-namespace ModelParameters {
+namespace GeomParameters {
    // -- Top
    const Double_t topX = 100.;
    const Double_t topY = 100.;
@@ -39,7 +39,7 @@ namespace ModelParameters {
    // -- Valve Volume Front
    const Double_t valveVolFrontRMin = 0.;
    const Double_t valveVolFrontRMax = 31.5*Units::mm;
-   const Double_t valveVolFrontHalfLength = 12.75.*Units::mm;
+   const Double_t valveVolFrontHalfLength = 12.75*Units::mm;
    const Double_t valveVolFrontAngle = 90.0; 
    const Double_t valveVolFrontYDisplacement = valveVolEntranceYDisplacement + valveVolEntranceHalfLength + valveVolFrontHalfLength;
    

@@ -10,12 +10,12 @@
 #include "../include/Units.h"
 #include "../include/Constants.h"
 #include "../include/Materials.h"
-#include "model_parameters.h"
+#include "../include/GeomParameters.h"
 
 Bool_t Build_Geom(const TGeoManager* geoManager);
 Bool_t Draw_Geom(const TGeoManager* geoManager);
 
-using namespace ModelParameters;
+using namespace GeomParameters;
 
 //__________________________________________________________________________
 Int_t prevolume_geom()
