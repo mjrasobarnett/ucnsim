@@ -31,7 +31,9 @@ TUCNVolume::TUCNVolume()
            :TGeoVolume()
 {
 // Default constructor
-   Info("TUCNVolume", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNVolume", "Default Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -39,7 +41,9 @@ TUCNVolume::TUCNVolume(const char *name, const TGeoShape* shape, const TGeoMediu
            :TGeoVolume(name,shape,med)
 {
 // constructor
-   Info("TUCNVolume", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNVolume", "Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -47,14 +51,18 @@ TUCNVolume::TUCNVolume(const TUCNVolume& other)
            :TGeoVolume(other)
 {
    //copy constructor
-   Info("TUCNVolume", "Copy Constructor");  
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNVolume", "Copy Constructor");  
+   #endif
 }
 
 //_____________________________________________________________________________
 TUCNVolume& TUCNVolume::operator=(const TUCNVolume& other) 
 {
    //assignment operator
-   Info("TUCNVolume", "Assignment");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNVolume", "Assignment");
+   #endif
    if(this!=&other) {
       TGeoVolume::operator=(other);
    }
@@ -65,7 +73,9 @@ TUCNVolume& TUCNVolume::operator=(const TUCNVolume& other)
 TUCNVolume::~TUCNVolume()
 {
 // Destructor
-   Info("TUCNVolume", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNVolume", "Destructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -104,7 +114,9 @@ TUCNTrackingVolume::TUCNTrackingVolume()
                    :TUCNVolume()
 {
 // Default constructor
-   Info("TUCNTrackingVolume", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNTrackingVolume", "Default Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -112,7 +124,9 @@ TUCNTrackingVolume::TUCNTrackingVolume(const char *name, const TGeoShape* shape,
                    :TUCNVolume(name, shape, med)
 {
 // constructor
-   Info("TUCNTrackingVolume", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNTrackingVolume", "Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -120,14 +134,18 @@ TUCNTrackingVolume::TUCNTrackingVolume(const TUCNTrackingVolume& m)
                    :TUCNVolume(m)
 { 
    //copy constructor
-   Info("TUCNTrackingVolume", "Copy Constructor");  
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNTrackingVolume", "Copy Constructor");  
+   #endif
 }
 
 //_____________________________________________________________________________
 TUCNTrackingVolume& TUCNTrackingVolume::operator=(const TUCNTrackingVolume& m) 
 {
    //assignment operator
-   Info("TUCNTrackingVolume", "Assignment");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNTrackingVolume", "Assignment");
+   #endif
    if(this!=&m) {
       TUCNVolume::operator=(m);
    } 
@@ -138,7 +156,9 @@ TUCNTrackingVolume& TUCNTrackingVolume::operator=(const TUCNTrackingVolume& m)
 TUCNTrackingVolume::~TUCNTrackingVolume()
 {
 // Destructor
-   Info("TUCNTrackingVolume", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNTrackingVolume", "Destructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -159,7 +179,9 @@ TUCNBoundary::TUCNBoundary()
              :TUCNVolume()
 {
 // Default constructor
-   Info("TUCNBoundary", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBoundary", "Default Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -167,7 +189,9 @@ TUCNBoundary::TUCNBoundary(const char *name, const TGeoShape* shape, const TGeoM
              :TUCNVolume(name, shape, med)
 {
 // constructor
-   Info("TUCNBoundary", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBoundary", "Constructor");
+   #endif
    fRoughness = surfaceRoughness;
 }
 
@@ -178,14 +202,18 @@ TUCNBoundary::TUCNBoundary(const TUCNBoundary& m)
              
 { 
    //copy constructor
-   Info("TUCNBoundary", "Copy Constructor");  
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBoundary", "Copy Constructor");  
+   #endif
 }
 
 //_____________________________________________________________________________
 TUCNBoundary& TUCNBoundary::operator=(const TUCNBoundary& m) 
 {
    //assignment operator
-   Info("TUCNBoundary", "Assignment");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBoundary", "Assignment");
+   #endif
    if(this!=&m) {
       TUCNVolume::operator=(m);
       fRoughness = m.fRoughness;
@@ -197,7 +225,9 @@ TUCNBoundary& TUCNBoundary::operator=(const TUCNBoundary& m)
 TUCNBoundary::~TUCNBoundary()
 {
 // Destructor
-   Info("TUCNBoundary", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBoundary", "Destructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -476,7 +506,9 @@ TUCNDetector::TUCNDetector()
              :TUCNBoundary()
 {
 // Default constructor
-   Info("TUCNDetector", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNDetector", "Default Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -484,7 +516,9 @@ TUCNDetector::TUCNDetector(const char *name, const TGeoShape* shape, const TGeoM
              :TUCNBoundary(name, shape, med, 0.)
 {
 // constructor
-   Info("TUCNDetector", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNDetector", "Constructor");
+   #endif
    fDetectionEfficiency = detEff;
 }
 
@@ -494,14 +528,18 @@ TUCNDetector::TUCNDetector(const TUCNDetector& m)
               fDetectionEfficiency(m.fDetectionEfficiency)
 { 
    //copy constructor
-   Info("TUCNDetector", "Copy Constructor");  
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNDetector", "Copy Constructor");  
+   #endif
 }
 
 //_____________________________________________________________________________
 TUCNDetector& TUCNDetector::operator=(const TUCNDetector& m) 
 {
    //assignment operator
-   Info("TUCNDetector", "Assignment");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNDetector", "Assignment");
+   #endif
    if(this!=&m) {
       TUCNBoundary::operator=(m);
       fDetectionEfficiency = m.fDetectionEfficiency;
@@ -513,7 +551,9 @@ TUCNDetector& TUCNDetector::operator=(const TUCNDetector& m)
 TUCNDetector::~TUCNDetector()
 {
 // Destructor
-   Info("TUCNDetector", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNDetector", "Destructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -545,7 +585,9 @@ TUCNBlackHole::TUCNBlackHole()
               :TUCNVolume()
 {
 // Default constructor
-   Info("TUCNBlackHole", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBlackHole", "Default Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -553,7 +595,9 @@ TUCNBlackHole::TUCNBlackHole(const char *name, const TGeoShape* shape, const TGe
               :TUCNVolume(name,shape,med)
 {
 // constructor
-   Info("TUCNBlackHole", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBlackHole", "Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -561,14 +605,18 @@ TUCNBlackHole::TUCNBlackHole(const TUCNBlackHole& m)
               :TUCNVolume(m)
 { 
    //copy constructor
-   Info("TUCNBlackHole", "Copy Constructor");  
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBlackHole", "Copy Constructor");  
+   #endif
 }
 
 //_____________________________________________________________________________
 TUCNBlackHole& TUCNBlackHole::operator=(const TUCNBlackHole& m) 
 {
    //assignment operator
-   Info("TUCNBlackHole", "Assignment");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBlackHole", "Assignment");
+   #endif
    if(this!=&m) {
       TUCNVolume::operator=(m);
    } 
@@ -579,7 +627,9 @@ TUCNBlackHole& TUCNBlackHole::operator=(const TUCNBlackHole& m)
 TUCNBlackHole::~TUCNBlackHole()
 {
 // Destructor
-   Info("TUCNBlackHole", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBlackHole", "Destructor");
+   #endif
 }
 
 //_____________________________________________________________________________

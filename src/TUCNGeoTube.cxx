@@ -30,7 +30,9 @@ ClassImp(TUCNGeoTube)
 TUCNGeoTube::TUCNGeoTube()
 {
 // Default constructor
-   Info("TUCNGeoTube", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNGeoTube", "Default Constructor");
+	#endif
 	SetShapeBit(TGeoShape::kGeoTube);
    fRmin = 0.0;
    fRmax = 0.0;
@@ -43,7 +45,9 @@ TUCNGeoTube::TUCNGeoTube(Double_t rmin, Double_t rmax, Double_t dz)
          	:TUCNGeoBBox(0, 0, 0)
 {
 // Default constructor specifying minimum and maximum radius
-   Info("TUCNGeoTube", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNGeoTube", "Constructor");
+   #endif
    SetShapeBit(TGeoShape::kGeoTube);
    SetTubeDimensions(rmin, rmax, dz);
    if ((fDz<0) || (fRmin<0) || (fRmax<0)) {
@@ -58,7 +62,9 @@ TUCNGeoTube::TUCNGeoTube(const char *name, Double_t rmin, Double_t rmax, Double_
             :TUCNGeoBBox(name, 0, 0, 0)
 {
 // Default constructor specifying minimum and maximum radius
-   Info("TUCNGeoTube", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNGeoTube", "Constructor");
+   #endif
    SetShapeBit(TGeoShape::kGeoTube);
    SetTubeDimensions(rmin, rmax, dz);
    if ((fDz<0) || (fRmin<0) || (fRmax<0)) {
@@ -77,7 +83,9 @@ TUCNGeoTube::TUCNGeoTube(Double_t *param)
 // param[0] = Rmin
 // param[1] = Rmax
 // param[2] = dz
-   Info("TUCNGeoTube", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNGeoTube", "Constructor");
+   #endif
    SetShapeBit(TGeoShape::kGeoTube);
    SetDimensions(param);
    if ((fDz<0) || (fRmin<0) || (fRmax<0)) SetShapeBit(kGeoRunTimeShape);
@@ -88,7 +96,9 @@ TUCNGeoTube::TUCNGeoTube(Double_t *param)
 TUCNGeoTube::~TUCNGeoTube()
 {
 // destructor
-   Info("TUCNGeoTube", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNGeoTube", "Destructor");
+   #endif
 }
 
 //_____________________________________________________________________________

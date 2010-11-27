@@ -23,7 +23,9 @@ TUCNMaterial::TUCNMaterial()
              :TGeoMaterial()
 {
 // Default constructor
-   Info("TUCNMaterial", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNMaterial", "Default Constructor");
+   #endif
    fElements = 0; // List of Elements
    fFermiPotential = 0.; // Units of eV
    fWPotential = 0.; // Units of eV
@@ -34,7 +36,9 @@ TUCNMaterial::TUCNMaterial(const char *name, TUCNElement* elem, Double_t density
              :TGeoMaterial(name)
 {
 // constructor
-   Info("TUCNMaterial", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNMaterial", "Constructor");
+   #endif
    // Create a new TObjArray to store Elements
    fElements = new TObjArray(1);
    // Tell ObjArray to 'own' the elements. Ensures that they are destructed by array
@@ -65,14 +69,18 @@ TUCNMaterial::TUCNMaterial(const TUCNMaterial& m)
               fWPotential(m.fWPotential)
 {
    //copy constructor
-   Info("TUCNMaterial", "Copy Constructor");  
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNMaterial", "Copy Constructor");  
+   #endif
 }
 
 //_____________________________________________________________________________
 TUCNMaterial& TUCNMaterial::operator=(const TUCNMaterial& m) 
 {
    //assignment operator
-   Info("TUCNMaterial", "Assignment");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNMaterial", "Assignment");
+   #endif
    if(this!=&m) {
       TGeoMaterial::operator=(m);
       fElements = m.fElements;
@@ -86,7 +94,9 @@ TUCNMaterial& TUCNMaterial::operator=(const TUCNMaterial& m)
 TUCNMaterial::~TUCNMaterial()
 {
 // Destructor
-   Info("TUCNMaterial", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNMaterial", "Destructor");
+   #endif
    if (fElements) delete fElements;
 }
 

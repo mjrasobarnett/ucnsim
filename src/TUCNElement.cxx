@@ -19,7 +19,9 @@ TUCNElement::TUCNElement()
             :TGeoElement()
 {
 // Default constructor
-   Info("TUCNElement", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNElement", "Default Constructor");
+   #endif
    fScatLength = 0.; // Bound Coherent Scattering Length
    fCohCrossSec = 0.; // Coherent Scattering Cross-sec
    fIncohCrossSec = 0.; // Incoherent Scattering Cross-sec
@@ -32,7 +34,9 @@ TUCNElement::TUCNElement(const char *name, const char *title, Int_t z, Double_t 
             :TGeoElement(name,title,z,a)
 {
 // constructor
-   Info("TUCNElement", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNElement", "Constructor");
+   #endif
    fScatLength = scatLength; // Bound Coherent Scattering Length
    fCohCrossSec = cohCrossSec;
    fIncohCrossSec = incoCrossSec; // Incoherent Scattering Cross-sec
@@ -50,14 +54,18 @@ TUCNElement::TUCNElement(const TUCNElement& m)
              fLossCrossSec(m.fLossCrossSec)
 {
    //copy constructor
-   Info("TUCNElement", "Copy Constructor");  
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNElement", "Copy Constructor");  
+   #endif
 }
 
 //_____________________________________________________________________________
 TUCNElement& TUCNElement::operator=(const TUCNElement& m) 
 {
    //assignment operator
-   Info("TUCNElement", "Assignment");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNElement", "Assignment");
+   #endif
    if(this!=&m) {
       TGeoElement::operator=(m);
       fScatLength = m.fScatLength;
@@ -73,5 +81,7 @@ TUCNElement& TUCNElement::operator=(const TUCNElement& m)
 TUCNElement::~TUCNElement()
 {
 // Destructor
-   Info("TUCNElement", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNElement", "Destructor");
+   #endif
 }

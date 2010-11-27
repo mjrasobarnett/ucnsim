@@ -27,7 +27,9 @@ ClassImp(TUCNGeoBBox)
 TUCNGeoBBox::TUCNGeoBBox()
 {
 // Default constructor
-	Info("TUCNGeoBBox", "Default Constructor");
+	#ifdef PRINT_CONSTRUCTORS
+      Info("TUCNGeoBBox", "Default Constructor");
+   #endif
 }   
 
 //_____________________________________________________________________________
@@ -35,7 +37,9 @@ TUCNGeoBBox::TUCNGeoBBox(Double_t dx, Double_t dy, Double_t dz, Double_t *origin
          	:TGeoBBox(dx, dy, dz, origin)
 {
 // Constructor where half-lengths are provided.
-	Info("TUCNGeoBBox", "Constructor");
+	#ifdef PRINT_CONSTRUCTORS
+      Info("TUCNGeoBBox", "Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -43,7 +47,9 @@ TUCNGeoBBox::TUCNGeoBBox(const char *name, Double_t dx, Double_t dy, Double_t dz
          	:TGeoBBox(name, dx, dy, dz, origin)
 {
 // Constructor with shape name.
-   Info("TUCNGeoBBox", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNGeoBBox", "Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -51,15 +57,18 @@ TUCNGeoBBox::TUCNGeoBBox(Double_t *param)
          	:TGeoBBox(param)
 {
 // Constructor based on the array of parameters
-   Info("TUCNGeoBBox", "Constructor");
-
-}   
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNGeoBBox", "Constructor");
+   #endif
+}
 
 //_____________________________________________________________________________
 TUCNGeoBBox::~TUCNGeoBBox()
 {
 // Destructor
-	Info("TUCNGeoBBox", "Destructor");
+	#ifdef PRINT_CONSTRUCTORS
+      Info("TUCNGeoBBox", "Destructor");
+   #endif
 }
 
 //_____________________________________________________________________________

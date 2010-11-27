@@ -7,6 +7,7 @@
 
 using namespace std;
 
+//#define PRINT_CONSTRUCTORS
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -21,7 +22,9 @@ TUCNSpinObservables::TUCNSpinObservables()
                      TObject()
 {
    // Constructor
-   Info("TUCNSpinObservables","Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNSpinObservables","Default Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -30,14 +33,18 @@ TUCNSpinObservables::TUCNSpinObservables(const TUCNSpinObservables& other)
                      TObject(other)
 {
    // Copy Constructor
-   Info("TUCNSpinObservables","Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNSpinObservables","Copy Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
 TUCNSpinObservables& TUCNSpinObservables::operator=(const TUCNSpinObservables& other)
 {
    // Assignment
-   Info("TUCNSpinObservables","Assignment");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNSpinObservables","Assignment");
+   #endif
    if(this!=&other) {
       std::map<Double_t,Bool_t>::operator=(other);
       TObject::operator=(other);
@@ -49,5 +56,7 @@ TUCNSpinObservables& TUCNSpinObservables::operator=(const TUCNSpinObservables& o
 TUCNSpinObservables::~TUCNSpinObservables()
 {
    // Destructor
-   Info("TUCNSpinObservables","Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNSpinObservables","Destructor");
+   #endif
 }

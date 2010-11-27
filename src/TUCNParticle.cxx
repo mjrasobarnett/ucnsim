@@ -23,6 +23,7 @@
 using namespace std;
 
 //#define VERBOSE_MODE
+//#define PRINT_CONSTRUCTORS
 
 ClassImp(TUCNParticle)
 
@@ -34,7 +35,9 @@ TUCNParticle::TUCNParticle()
               fRandomSeed(0), fState(NULL), fSpin()
 {
    // -- Default constructor
-   Info("TUCNParticle","Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNParticle","Default Constructor");
+   #endif
 }
 
 
@@ -46,7 +49,9 @@ TUCNParticle::TUCNParticle(Int_t id, Double_t* pos, Double_t* mom, Double_t ener
               fDiffuseBounces(0), fRandomSeed(0), fSpin()
 {
    // -- Constructor
-   Info("TUCNParticle","Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNParticle","Constructor");
+   #endif
    fState = new TUCNPropagating();
 }
 
@@ -60,14 +65,18 @@ TUCNParticle::TUCNParticle(const TUCNParticle& p)
               fState(p.fState), fSpin(p.fSpin), fObservers(p.fObservers)
 {
    // -- Copy Constructor
-   Info("TUCNParticle","Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNParticle","Copy Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
 TUCNParticle& TUCNParticle::operator=(const TUCNParticle& p)
 {
    // -- assignment operator
-   Info("TUCNParticle","Assignment");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNParticle","Assignment");
+   #endif
    if(this!=&p) {
       TObject::operator=(p);
       fX = p.fX;
@@ -96,7 +105,9 @@ TUCNParticle& TUCNParticle::operator=(const TUCNParticle& p)
 TUCNParticle::~TUCNParticle()
 { 
    // -- Destructor
-   Info("TUCNParticle","Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNParticle","Destructor");
+   #endif
    if (fState) delete fState;
 }
 
