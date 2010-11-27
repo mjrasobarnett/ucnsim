@@ -1,34 +1,69 @@
 #include <iostream>
 #include <string>
+#include <cassert>
 
-#include "include/Materials.h"
-#include "include/Constants.h"
-#include "include/Units.h"
-#include "include/DataFileHierarchy.h"
-#include "geom/model_parameters.h"
+#include "TUCNConfigFile.h"
+#include "TUCNInitialConfig.h"
+#include "TUCNData.h"
+#include "TUCNParticle.h"
+#include "TUCNGeoBBox.h"
 
-using namespace std;
-using namespace ModelParameters;
+#include "TMath.h"
+#include "TGeoVolume.h"
+#include "TGeoMatrix.h"
+#include "TH1.h"
+#include "TCanvas.h"
+#include "TRandom.h"
+#include "TRint.h"
+
+#include "Materials.h"
+#include "Constants.h"
+#include "Units.h"
+#include "DataFileHierarchy.h"
+#include "GeomParameters.h"
+
+using std::cin;
+using std::cout;
+using std::endl;
+using std::cerr;
+using std::string;
+
+using namespace GeomParameters;
 
 // Function Declarations
-Bool_t ReadInitialConfig(const string& configFileName);
 Bool_t FillSourceTube(const TUCNInitialConfig& initialConfig);
 Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig);
-Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData& data);
+Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix);
 Bool_t CreateRandomParticle(TUCNParticle* particle, const Double_t fillTime, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
 Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnergy);
-Bool_t DefinePolarisation(TUCNParticle* particle, const TVector3& spinAxis, const Bool_t spinUp);
+void DefinePolarisation(TUCNParticle* particle, const TVector3& spinAxis, const Bool_t spinUp);
 
 //__________________________________________________________________________
-Int_t generate_particles(const char* configFileName)
+Int_t main(Int_t argc,Char_t **argv)
 {
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // Build the ConfigFile
+   ///////////////////////////////////////////////////////////////////////////////////////
+   string configFileName;
+   if (argc == 2) {
+      configFileName= argv[1];
+   } else {
+      cerr << "Error: No configuration file has been specified." << endl;
+      cerr << "Usage, ucnsim <configFile.cfg>" << endl;
+      return EXIT_FAILURE;
+   }
+   // Start 'the app' -- this is so we are able to enter into a ROOT session
+   // after the program has run, instead of just quitting.
+   TRint *theApp = new TRint("FittingApp", &argc, argv);
+   
    // Read in Batch Configuration file to find the Initial Configuration File
    TUCNConfigFile configFile(configFileName);
    const string initialConfigFileName = configFile.GetString("Config","Initialisation");
    if (initialConfigFileName.empty() == kTRUE) {
-      cout << "Unable to read in Initialisation Configuration file name" <, endl;
+      cout << "Unable to read in Initialisation Configuration file name" << endl;
       return -1;
    }
+   
    // Read in Initial Configuration from file.
    TUCNInitialConfig initialConfig(initialConfigFileName);   
    // Ask User to choose which Volume to fill
@@ -54,16 +89,16 @@ Int_t generate_particles(const char* configFileName)
          cout << "Sorry I didn't understand that. Please try again." << endl;
       }
    }
-   return 0;
+   
+   // Enter ROOT interactive session
+   theApp->Run();
+   return EXIT_SUCCESS;
 }
+
 
 //__________________________________________________________________________
 Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig)
-{   
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Create storage for the particles
-   TUCNData data(initialConfig);
-   
+{
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Find the initial volume
    TString geomFileName = initialConfig.GeomFileName();
@@ -78,17 +113,16 @@ Bool_t FillRamseyCell(const TUCNInitialConfig& initialConfig)
       cout << "Unable to find requested volume or matrix" << endl;
       return false;
    }
+   // -- Fill the initial volume with particles
+   GenerateParticles(initialConfig, volume, matrix);
    
-   GenerateParticles(initialConfig, volume, matrix, data);
-   
-   // -- Enter Root interactive session
    return 0;
 }
 
 //__________________________________________________________________________
-Int_t FillSourceTube(const TUCNInitialConfig& initialConfig)
+Bool_t FillSourceTube(const TUCNInitialConfig& initialConfig)
 {
-   ///////////////////////////////////////////////////////////////////////////////////////
+/*   ///////////////////////////////////////////////////////////////////////////////////////
    // -- Make the particle beam volume
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
    
@@ -133,12 +167,12 @@ Int_t FillSourceTube(const TUCNInitialConfig& initialConfig)
    cout << "-------------------------------------------" << endl;
    delete file;
    
-   // -- Enter Root interactive session
+*/   // -- Enter Root interactive session
    return 0;
 }
 
 //__________________________________________________________________________
-Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix, TUCNData& data)
+Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix)
 {
    // Generates a uniform distribution of particles with random directions all with 
    // the same total energy (kinetic plus potential) defined at z = 0.   
@@ -172,6 +206,11 @@ Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolum
    Double_t maxEnergy = 0.5*Neutron::mass_eV_c2*TMath::Power(vmax,2.0);
    cout << "Max Energy (neV): " << maxEnergy/Units::neV << endl;
    
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Create storage for the particles
+   TUCNData * data = new TUCNData();
+   data->Initialise(initialConfig);
+   
    // -- Loop over the total number of particles to be created. 
    for (Int_t i = 1; i <= particles; i++) {
       // -- Create particle at a random position inside beam volume
@@ -192,8 +231,11 @@ Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolum
       initialVHist->Fill(particle->V());
       initialTHist->Fill(particle->T());
       // -- Add particle to data file
-      data.SaveParticle(particle, Folders::initialstates);
+      data->SaveParticle(particle, Folders::initialstates);
    }
+   // -- Close the data
+   delete data;
+   data = NULL;
    
    TCanvas *canvas1 = new TCanvas("InitialPhaseSpace","Initial Phase Space",60,0,1000,800);
    canvas1->Divide(4,2);
@@ -290,7 +332,7 @@ Bool_t DetermineParticleMomentum(TUCNParticle* particle, const Double_t maxEnerg
 }
 
 //__________________________________________________________________________
-Bool_t DefinePolarisation(TUCNParticle* particle, const TVector3& spinAxis, const Bool_t spinUp)
+void DefinePolarisation(TUCNParticle* particle, const TVector3& spinAxis, const Bool_t spinUp)
 {
    particle->Polarise(spinAxis, spinUp);
 }

@@ -10,9 +10,12 @@ include ./Makefile.arch
 #------------------------------------------------------------------------------
 # standalone programs
 #------------------------------------------------------------------------------
-UCNSIMS			= src/ucnsim.$(SrcSuf)
-UCNSIMO			= src/ucnsim.$(ObjSuf)
-UCNSIM			= bin/ucnsim$(ExeSuf)
+SIMULATE_UCNS	= src/simulate_ucn.$(SrcSuf)
+SIMULATE_UCNO	= src/simulate_ucn.$(ObjSuf)
+SIMULATE_UCN	= bin/simulate_ucn$(ExeSuf)
+GENERATE_UCNS	= src/generate_ucn.$(SrcSuf)
+GENERATE_UCNO	= src/generate_ucn.$(ObjSuf)
+GENERATE_UCN	= bin/generate_ucn$(ExeSuf)
 SANDBOXS			= src/sandbox.$(SrcSuf)
 SANDBOXO			= src/sandbox.$(ObjSuf)
 SANDBOX			= bin/sandbox$(ExeSuf)
@@ -91,7 +94,8 @@ LINKDEF			= UCNLinkDef.h
 UCNSO				= lib/libUCN.$(DllSuf)
 UCNLIB			= -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter -lMathMore
 #------------------------------------------------------------------------------
-OBJS				=	$(UCNSIMO) $(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(TUCNRUNO) $(TUCNGEOBUILDERO) \
+OBJS				=	$(SIMULATE_UCNO) $(GENERATE_UCNO) $(SANDBOXO) $(BUILDTESTO) $(FITDATAO) \
+						$(TUCNRUNO) $(TUCNGEOBUILDERO) \
  						$(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) $(TUCNGRAVFIELDO) \
  						$(TUCNPARTICLEO) $(TUCNSTATEO) $(TUCNSPINO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
  						$(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) $(TUCNMAGFIELDO) \
@@ -99,7 +103,7 @@ OBJS				=	$(UCNSIMO) $(SANDBOXO) $(BUILDTESTO) $(FITDATAO) $(TUCNRUNO) $(TUCNGEO
 						$(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) \
 						$(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) $(TUCNELEMENTO) $(TUCNMAGFIELDMANAGERO) \
 						$(TUCNINITIALCONFIGO) $(TUCNRUNCONFIGO) $(TUCNOBSERVERO) $(TUCNOBSERVABLESO)
-PROGRAMS			=	$(UCNSO) $(UCNSIM) $(BUILDTEST) $(FITDATA) $(SANDBOX) 
+PROGRAMS			=	$(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(BUILDTEST) $(FITDATA) $(SANDBOX) 
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 .PHONY:     UCN ucnsim sandbox buildtest fitdata genpart
@@ -109,12 +113,20 @@ all:         $(PROGRAMS)
 clean:
 		@rm -f $(OBJS) $(PROGRAMS) ./lib/* UCNDict.* core *Dict* ./*.txt
 
-ucnsim:			$(UCNSIM)
-$(UCNSIM):		$(UCNSIMO) $(UCNSO)
-					$(LD) $(LDFLAGS) $(UCNSIMO) $(UCNLIB) $(LIBS)  \
-					$(OutPutOpt)$@
-					$(MT_EXE)
-					@echo "$@ done"
+simulate_ucn:			$(SIMULATE_UCN)
+$(SIMULATE_UCN):		$(SIMULATE_UCNO) $(UCNSO)
+							$(LD) $(LDFLAGS) $(SIMULATE_UCNO) $(UCNLIB) $(LIBS)  \
+							$(OutPutOpt)$@
+							$(MT_EXE)
+							@echo "$@ done"
+
+generate_ucn:			$(GENERATE_UCN)
+$(GENERATE_UCN):		$(GENERATE_UCNO) $(UCNSO)
+							$(LD) $(LDFLAGS) $(GENERATE_UCNO) $(UCNLIB) $(LIBS)  \
+							$(OutPutOpt)$@
+							$(MT_EXE)
+							@echo "$@ done"
+
 
 sandbox:			$(SANDBOX)
 $(SANDBOX):		$(SANDBOXO) $(UCNSO)
