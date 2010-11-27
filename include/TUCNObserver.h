@@ -38,7 +38,7 @@ public:
    
    virtual void RegisterInterest(TUCNParticle& particle) = 0;
    virtual void RecordEvent(const TUCNParticle& particle) = 0;
-   
+   virtual void LoadExistingObservables(TDirectory* const particleDir) = 0;
    virtual void WriteToFile(TDirectory* particleDir) = 0;
       
    ClassDef(TUCNObserver, 1)
@@ -66,8 +66,8 @@ public:
    
    virtual void RegisterInterest(TUCNParticle& particle);
    virtual void RecordEvent(const TUCNParticle& particle);
-   
-   virtual void WriteToFile(TDirectory* particleDir);
+   virtual void LoadExistingObservables(TDirectory* const particleDir);
+   virtual void WriteToFile(TDirectory* const particleDir);
    
    ClassDef(TUCNSpinObserver, 1)
 };

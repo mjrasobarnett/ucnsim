@@ -420,10 +420,14 @@ TUCNParticle* const TUCNData::RetrieveParticle()
    // Cd into the next particle's folder
    fInitialStatesFolder->cd(nextDir->GetName());
    TDirectory *nextParticleDir = gDirectory;
-   // Search Directory for any observables previously recorded to be continued
-   
    // Search Directory for the particle
    TUCNParticle* nextParticle = this->LocateParticle(nextParticleDir);
+   // Search Directory for any observables previously recorded to be continued
+   vector<TUCNObserver*>::iterator obsIter;
+   for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
+      (*obsIter)->RegisterInterest(*nextParticle);
+      (*obsIter)->LoadExistingObservables(nextParticleDir);      
+   }
    return nextParticle;
 }
 

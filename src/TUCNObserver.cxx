@@ -8,12 +8,9 @@
 
 #include "TUCNParticle.h"
 #include "TUCNRunConfig.h"
-#include "TCanvas.h"
-#include "TH1F.h"
-#include "TF1.h"
-#include "TLegend.h"
-#include "TPaveText.h"
 #include "TUCNData.h"
+
+#include "TKey.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -99,7 +96,27 @@ void TUCNSpinObserver::RecordEvent(const TUCNParticle& particle)
 }
 
 //_____________________________________________________________________________
-void TUCNSpinObserver::WriteToFile(TDirectory* particleDir)
+void TUCNSpinObserver::LoadExistingObservables(TDirectory* const particleDir)
+{
+   // -- Look for a TUCNSpinObservables object and if so load into memory
+   particleDir->cd();
+   // -- Loop on all entries of this directory
+   TKey *key;
+   TIter nextkey(particleDir->GetListOfKeys());
+   while ((key = static_cast<TKey*>(nextkey.Next()))) {
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TUCNSpinObservables")) {
+         if (fSpinObservables != NULL) delete fSpinObservables; fSpinObservables = NULL;
+         fSpinObservables = dynamic_cast<TUCNSpinObservables*>(key->ReadObj());
+         break;
+      }
+   }
+}
+
+//_____________________________________________________________________________
+void TUCNSpinObserver::WriteToFile(TDirectory* const particleDir)
 {
    // -- Write out the current observable to the provided directory
    particleDir->cd();

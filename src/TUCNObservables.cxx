@@ -49,6 +49,5 @@ TUCNSpinObservables& TUCNSpinObservables::operator=(const TUCNSpinObservables& o
 TUCNSpinObservables::~TUCNSpinObservables()
 {
    // Destructor
-   cout << "Data points: " << this->size() << endl;
    Info("TUCNSpinObservables","Destructor");
 }
