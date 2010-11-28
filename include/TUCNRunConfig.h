@@ -35,6 +35,8 @@ private:
    Bool_t fObsPolarisation;
    TVector3 fObsMeasAxis;
    
+   Bool_t fObsBounces;
+   
 public:
    // Constructors
    TUCNRunConfig();
@@ -61,6 +63,7 @@ public:
    Bool_t WallLossesOn() const {return fWallLossesOn;}
    Bool_t ObservePolarisation() const {return fObsPolarisation;}
    TVector3 PolarisationAxis() const {return fObsMeasAxis;}
+   Bool_t ObserveBounces() const {return fObsBounces;}
    
    virtual void Print(Option_t* option = "") const;
    
