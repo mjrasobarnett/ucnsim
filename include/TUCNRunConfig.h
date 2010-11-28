@@ -46,6 +46,7 @@ public:
    // Methods
    std::string RunName() const {return fRunName;}
    std::string GeomFileName() const {return fGeomFile;}
+   std::string GeomVisFileName() const {return fGeomVisFile;}
    std::string FieldsFileName() const {return fFieldsFile;}
    std::string InputFileName() const {return fInputDataFile;}
    std::string OutputFileName() const {return fOutputDataFile;}

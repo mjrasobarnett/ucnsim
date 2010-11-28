@@ -22,9 +22,9 @@ SANDBOX			= bin/sandbox$(ExeSuf)
 BUILDTESTS		= src/buildtest.$(SrcSuf)
 BUILDTESTO		= src/buildtest.$(ObjSuf)
 BUILDTEST		= bin/buildtest$(ExeSuf)
-FITDATAS			= src/fitdata.$(SrcSuf)
-FITDATAO			= src/fitdata.$(ObjSuf)
-FITDATA			= bin/fitdata$(ExeSuf)
+PLOT_DATAS			= src/plot_data.$(SrcSuf)
+PLOT_DATAO			= src/plot_data.$(ObjSuf)
+PLOT_DATA			= bin/plot_data$(ExeSuf)
 
 #------------------------------------------------------------------------------
 # my classes
@@ -92,9 +92,10 @@ TUCNOBSERVABLESS = src/TUCNObservables.$(SrcSuf) UCNDict.$(SrcSuf)
 #------------------------------------------------------------------------------
 LINKDEF			= UCNLinkDef.h
 UCNSO				= lib/libUCN.$(DllSuf)
-UCNLIB			= -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter -lMathMore
+UCNLIB			= -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter -lMathMore \
+					  -lGui -lRGL -lGed
 #------------------------------------------------------------------------------
-OBJS				=	$(SIMULATE_UCNO) $(GENERATE_UCNO) $(SANDBOXO) $(BUILDTESTO) $(FITDATAO) \
+OBJS				=	$(SIMULATE_UCNO) $(GENERATE_UCNO) $(SANDBOXO) $(BUILDTESTO) $(PLOT_DATAO) \
 						$(TUCNRUNO) $(TUCNGEOBUILDERO) \
  						$(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) $(TUCNGRAVFIELDO) \
  						$(TUCNPARTICLEO) $(TUCNSTATEO) $(TUCNSPINO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
@@ -103,7 +104,7 @@ OBJS				=	$(SIMULATE_UCNO) $(GENERATE_UCNO) $(SANDBOXO) $(BUILDTESTO) $(FITDATAO
 						$(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) \
 						$(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) $(TUCNELEMENTO) $(TUCNMAGFIELDMANAGERO) \
 						$(TUCNINITIALCONFIGO) $(TUCNRUNCONFIGO) $(TUCNOBSERVERO) $(TUCNOBSERVABLESO)
-PROGRAMS			=	$(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(BUILDTEST) $(FITDATA) $(SANDBOX) 
+PROGRAMS			=	$(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(BUILDTEST) $(PLOT_DATA) $(SANDBOX) 
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 .PHONY:     UCN ucnsim sandbox buildtest fitdata genpart
@@ -142,9 +143,9 @@ $(BUILDTEST):	$(BUILDTESTO) $(UCNSO)
 					$(MT_EXE)
 					@echo "$@ done"		
 
-fitdata:			$(FITDATA)
-$(FITDATA):		$(FITDATAO) $(TUCNDATAPARSERO)
-					$(LD) $(LDFLAGS) $(FITDATAO) $(UCNLIB) $(LIBS)  \
+plot_data:		$(PLOT_DATA)
+$(PLOT_DATA):	$(PLOT_DATAO) $(UCNSO)
+					$(LD) $(LDFLAGS) $(PLOT_DATAO) $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
 					@echo "$@ done"
