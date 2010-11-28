@@ -146,11 +146,11 @@ Int_t main(Int_t argc,Char_t **argv)
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounces
    sprintf(histname,"%s:Bounces",statename.Data());
-   Plot::bounceHist = new TH1F(histname,"Bounces", nbins, 0.0, 50000);
+   Plot::bounceHist = new TH1F(histname,"Bounces", 200, 0.0, 20000);
    sprintf(histname,"%s:Specular",statename.Data());
-   Plot::specHist = new TH1F(histname,"Specular", nbins, 0.0, 50000);
+   Plot::specHist = new TH1F(histname,"Specular", 200, 0.0, 20000);
    sprintf(histname,"%s:Diffuse",statename.Data());
-   Plot::diffHist = new TH1F(histname,"Diffuse", nbins, 0.0, 50000);
+   Plot::diffHist = new TH1F(histname,"Diffuse", 200, 0.0, 20000);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Spin Polarisation
    if (runConfig.ObservePolarisation() == kTRUE) {
@@ -286,7 +286,7 @@ Int_t main(Int_t argc,Char_t **argv)
    TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
    glViewer->SetCurrentCamera(camera);
    glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   Double_t cameraCentre[3] = {0,0,0};
+   Double_t cameraCentre[3] = {0,4,0};
    glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
    // -- Draw Reference Point, Axes
    Double_t refPoint[3] = {0.,0.,0.};

@@ -25,9 +25,9 @@ namespace GeomParameters {
    // -- Neutron Beam Area
    const Double_t neutronBeamAreaRMin = 0.;
    const Double_t neutronBeamAreaRMax = 15.*Units::mm;
-   const Double_t neutronBeamAreaHalfLength = (13.*sourceSegHalfLength)/2.0;
+   const Double_t neutronBeamAreaHalfLength = 10.*sourceSegHalfLength;
    const Double_t neutronBeamAreaAngle = 90.0;
-   const Double_t neutronBeamAreaYDisplacement = neutronBeamAreaHalfLength;
+   const Double_t neutronBeamAreaYDisplacement = neutronBeamAreaHalfLength + 10.*Units::mm;
    
    // -- Valve Volume Entrance
    const Double_t valveVolEntranceRMin = 0.;
