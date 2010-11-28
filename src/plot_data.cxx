@@ -33,6 +33,7 @@ Double_t SpinPrecession(Double_t *x, Double_t *par);
 
 namespace Plot {
    TPolyMarker3D* points = NULL;
+   
    TH1F* thetaHist = NULL;
    TH1F* phiHist = NULL;
    
@@ -145,12 +146,14 @@ Int_t main(Int_t argc,Char_t **argv)
    Plot::distHist->SetYTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounces
-   sprintf(histname,"%s:Bounces",statename.Data());
-   Plot::bounceHist = new TH1F(histname,"Bounces", 200, 0.0, 20000);
-   sprintf(histname,"%s:Specular",statename.Data());
-   Plot::specHist = new TH1F(histname,"Specular", 200, 0.0, 20000);
-   sprintf(histname,"%s:Diffuse",statename.Data());
-   Plot::diffHist = new TH1F(histname,"Diffuse", 200, 0.0, 20000);
+   if (runConfig.ObserveBounces() == kTRUE) {
+      sprintf(histname,"%s:Bounces",statename.Data());
+      Plot::bounceHist = new TH1F(histname,"Bounces", 200, 0.0, 20000);
+      sprintf(histname,"%s:Specular",statename.Data());
+      Plot::specHist = new TH1F(histname,"Specular", 200, 0.0, 20000);
+      sprintf(histname,"%s:Diffuse",statename.Data());
+      Plot::diffHist = new TH1F(histname,"Diffuse", 200, 0.0, 20000);
+   }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Spin Polarisation
    if (runConfig.ObservePolarisation() == kTRUE) {
@@ -205,7 +208,7 @@ Int_t main(Int_t argc,Char_t **argv)
    TDirectory* const stateDir = gDirectory;
    //////////////////////////////////////////////////////////////////////////////////////
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over particles in state folder
+   // -- Loop over all particle folders in the current state's folder
    //////////////////////////////////////////////////////////////////////////////////////
    //////////////////////////////////////////////////////////////////////////////////////
    TKey *folderKey;
@@ -221,11 +224,13 @@ Int_t main(Int_t argc,Char_t **argv)
          TKey *objKey;
          TIter objIter(particleDir->GetListOfKeys());
          while ((objKey = static_cast<TKey*>(objIter.Next()))) {
+            // For Each object in the particle's directory, check its class name and what it
+            // inherits from to determine what to do.
             classname = objKey->GetClassName();
             cl = gROOT->GetClass(classname);
             if (!cl) continue;
-            // -- Extract Final Particle State Data
             if (cl->InheritsFrom("TUCNParticle")) {
+               // -- Extract Final Particle State Data
                TUCNParticle* particle = dynamic_cast<TUCNParticle*>(objKey->ReadObj());
                // -- Fill Histograms
                Plot::points->SetPoint(particle->Id(), particle->X(), particle->Y(), particle->Z());
@@ -237,17 +242,13 @@ Int_t main(Int_t argc,Char_t **argv)
                Plot::pzHist->Fill(particle->Pz()/Units::eV);
                Plot::timeHist->Fill(particle->T()/Units::s);
                Plot::distHist->Fill(particle->Distance()/Units::m);
-               Plot::bounceHist->Fill(particle->Bounces());
-               Plot::specHist->Fill(particle->SpecularBounces());
-               Plot::diffHist->Fill(particle->DiffuseBounces());
                delete particle;
-            }
-            // -- Extract Spin Observer Data if recorded
-            if (cl->InheritsFrom("TUCNSpinObservables")) {
-               TUCNSpinObservables* spin = dynamic_cast<TUCNSpinObservables*>(objKey->ReadObj());
+            } else if (cl->InheritsFrom("TUCNSpinObservables")) {
+               // -- Extract Spin Observer Data if recorded
+               TUCNSpinObservables* data = dynamic_cast<TUCNSpinObservables*>(objKey->ReadObj());
                // Loop over spin data recorded for particle
                TUCNSpinObservables::iterator dataIter;
-               for (dataIter = spin->begin(); dataIter != spin->end(); dataIter++) {
+               for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
                   if (dataIter->second == kTRUE) {
                      // If spin up, bin the time
                      if (Plot::spinUpHist) Plot::spinUpHist->Fill(dataIter->first);
@@ -256,8 +257,14 @@ Int_t main(Int_t argc,Char_t **argv)
                      if (Plot::spinUpHist) Plot::spinDownHist->Fill(dataIter->first);
                   }
                }
-               
-               delete spin;
+               delete data;
+            } else if (cl->InheritsFrom("TUCNBounceObservables")) {
+               // -- Extract Bounce Observer Data if recorded
+               TUCNBounceObservables* data =dynamic_cast<TUCNBounceObservables*>(objKey->ReadObj());
+               Plot::bounceHist->Fill(data->CountTotal());
+               Plot::specHist->Fill(data->CountSpecular());
+               Plot::diffHist->Fill(data->CountDiffuse());
+               delete data;
             }
          }
       }
@@ -286,7 +293,7 @@ Int_t main(Int_t argc,Char_t **argv)
    TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
    glViewer->SetCurrentCamera(camera);
    glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   Double_t cameraCentre[3] = {0,4,0};
+   Double_t cameraCentre[3] = {0,0,0};
    glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
    // -- Draw Reference Point, Axes
    Double_t refPoint[3] = {0.,0.,0.};
@@ -303,18 +310,6 @@ Int_t main(Int_t argc,Char_t **argv)
    Plot::thetaHist->Draw();
    anglecanvas->cd(2);
    Plot::phiHist->Draw();
-   
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Bounce Counters
-   TCanvas *bouncecanvas = new TCanvas("Bounces","Bounce counters",60,0,1200,800);
-   bouncecanvas->Divide(3,1);
-   bouncecanvas->cd(1);
-   Plot::bounceHist->Draw();
-   bouncecanvas->cd(2);
-   Plot::specHist->Draw();
-   bouncecanvas->cd(3);
-   Plot::diffHist->Draw();
-   
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Momentum Distribution
    TCanvas *momcanvas = new TCanvas("PhaseSpace","Phase Space",60,0,1200,800);
@@ -346,7 +341,18 @@ Int_t main(Int_t argc,Char_t **argv)
    Double_t emptyingTimeError = decayConstantError/(decayConstant*decayConstant);
    cout << "EmptyingTime: " << emptyingTime << "\t" << "Error: " << emptyingTimeError << endl;
 */   
-   
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Bounce Counters
+   if (Plot::bounceHist) {
+      TCanvas *bouncecanvas = new TCanvas("Bounces","Bounce counters",60,0,1200,800);
+      bouncecanvas->Divide(3,1);
+      bouncecanvas->cd(1);
+      Plot::bounceHist->Draw();
+      bouncecanvas->cd(2);
+      Plot::specHist->Draw();
+      bouncecanvas->cd(3);
+      Plot::diffHist->Draw();
+   }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Spin Precession Plots
    // -- Down

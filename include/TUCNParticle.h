@@ -6,6 +6,7 @@
 #define TUCNPARTICLE_H
 
 #include <list>
+#include <string>
 
 #include "TObject.h"
 #include "TVector3.h"
@@ -14,6 +15,7 @@
 #include "TUCNSpin.h"
 #include "TUCNState.h"
 #include "TUCNObserver.h"
+
 #include "Constants.h"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -49,12 +51,7 @@ protected:
    TVector3    fMom;
    Double_t    fT;         // Time travelled
    Double_t    fE;         // kinetic energy
-   
    Double_t    fDistance;  // Distance travelled
-   
-   Int_t       fBounces;            // Number of Bounces made from Wall
-   Int_t       fSpecularBounces;    // Number of such bounces that are specular
-   Int_t       fDiffuseBounces;     // Number of such bounces that are diffuse
    
    Int_t       fRandomSeed;         // The seed of TRandom when the particle began to propagate
    
@@ -124,14 +121,6 @@ public:
    Double_t             Distance() const                       {return fDistance;}
    inline void          IncreaseDistance(Double_t stepsize)    {fDistance += stepsize;}
    
-   // Bounce Counters
-   void                 MadeBounce()                           {fBounces++;}
-   void                 MadeSpecularBounce()                   {fSpecularBounces++;}
-   void                 MadeDiffuseBounce()                    {fDiffuseBounces++;}
-   Int_t                Bounces()                              {return fBounces;}
-   Int_t                SpecularBounces()                      {return fSpecularBounces;}
-   Int_t                DiffuseBounces()                       {return fDiffuseBounces;}
-   
    // State
    TUCNState*           GetState()     {return fState;}
    
@@ -155,7 +144,7 @@ public:
    Int_t                CountObservers() {return fObservers.size();}
    void                 Attach(TUCNObserver* observer);
    void                 Detach(TUCNObserver* observer);
-   void                 NotifyObservers(/*const TUCNInterest& interest*/);
+   void                 NotifyObservers(const std::string& context);
 
    // -- Output to file
    void                 SaveState(TUCNRun* run);

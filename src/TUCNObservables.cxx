@@ -60,3 +60,54 @@ TUCNSpinObservables::~TUCNSpinObservables()
       Info("TUCNSpinObservables","Destructor");
    #endif
 }
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNBounceObservables                                                //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+ClassImp(TUCNBounceObservables)
+
+//_____________________________________________________________________________
+TUCNBounceObservables::TUCNBounceObservables()
+                      :TObject(), fSpecular(0), fDiffuse(0)
+{
+   // Constructor
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBounceObservables","Default Constructor");
+   #endif
+}
+
+//_____________________________________________________________________________
+TUCNBounceObservables::TUCNBounceObservables(const TUCNBounceObservables& other)
+                      :TObject(other), fSpecular(other.fSpecular), fDiffuse(other.fDiffuse)
+{
+   // Copy Constructor
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBounceObservables","Copy Constructor");
+   #endif
+}
+
+//_____________________________________________________________________________
+TUCNBounceObservables& TUCNBounceObservables::operator=(const TUCNBounceObservables& other)
+{
+   // Assignment
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBounceObservables","Assignment");
+   #endif
+   if(this!=&other) {
+      TObject::operator=(other);
+      fSpecular=other.fSpecular;
+      fDiffuse=other.fDiffuse;
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+TUCNBounceObservables::~TUCNBounceObservables()
+{
+   // Destructor
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNBounceObservables","Destructor");
+   #endif
+}

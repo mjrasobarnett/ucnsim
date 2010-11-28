@@ -31,8 +31,7 @@ ClassImp(TUCNParticle)
 TUCNParticle::TUCNParticle()
              :TObject(),
               fId(0), fPos(), fMom(), fT(0.), fE(0.),
-              fDistance(0.), fBounces(0), fSpecularBounces(0), fDiffuseBounces(0),
-              fRandomSeed(0), fState(NULL), fSpin(), fObservers()
+              fDistance(0.), fRandomSeed(0), fState(NULL), fSpin(), fObservers()
 {
    // -- Default constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -45,8 +44,7 @@ TUCNParticle::TUCNParticle()
 TUCNParticle::TUCNParticle(Int_t id, TVector3& pos, TVector3& mom, Double_t energy, Double_t t)
              :TObject(),
               fId(id), fPos(pos), fMom(mom), fT(t), fE(energy),
-              fDistance(0.), fBounces(0), fSpecularBounces(0),
-              fDiffuseBounces(0), fRandomSeed(0), fSpin(), fObservers()
+              fDistance(0.), fRandomSeed(0), fSpin(), fObservers()
 {
    // -- Constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -59,9 +57,7 @@ TUCNParticle::TUCNParticle(Int_t id, TVector3& pos, TVector3& mom, Double_t ener
 TUCNParticle::TUCNParticle(const TUCNParticle& p)
              :TObject(p),
               fId(p.fId), fPos(p.fPos), fMom(p.fMom), fT(p.fT), fE(p.fE), fDistance(p.fDistance),
-              fBounces(p.fBounces), fSpecularBounces(p.fSpecularBounces),
-              fDiffuseBounces(p.fDiffuseBounces), fRandomSeed(p.fRandomSeed),
-              fState(p.fState), fSpin(p.fSpin), fObservers(p.fObservers)
+              fRandomSeed(p.fRandomSeed), fState(p.fState), fSpin(p.fSpin), fObservers(p.fObservers)
 {
    // -- Copy Constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -84,9 +80,6 @@ TUCNParticle& TUCNParticle::operator=(const TUCNParticle& p)
       fT = p.fT;
       fE = p.fE;
       fDistance = p.fDistance;
-      fBounces = p.fBounces;
-      fSpecularBounces = p.fSpecularBounces;
-      fDiffuseBounces = p.fDiffuseBounces;
       fRandomSeed = p.fRandomSeed;
       if (fState) delete fState; fState = NULL;
       fState = p.fState;
@@ -217,7 +210,7 @@ void TUCNParticle::PrecessSpin(const TVector3& field, const Double_t precessTime
    // -- Precess spin about field for time defined by precessTime 
    fSpin.Precess(field,precessTime);
    // Notify Observers of spin state change
-   this->NotifyObservers();
+   this->NotifyObservers(Context::Spin);
 }
 
 //_____________________________________________________________________________
@@ -242,12 +235,12 @@ void TUCNParticle::Detach(TUCNObserver* observer)
 }
 
 //_____________________________________________________________________________
-void TUCNParticle::NotifyObservers(/*const TUCNInterest& interest*/)
+void TUCNParticle::NotifyObservers(const std::string& context)
 {
    // -- Notify Observers of change
    list<TUCNObserver*>::iterator listIter;
    for(listIter = fObservers.begin(); listIter != fObservers.end(); listIter++) {
-      (*listIter)->RecordEvent(*this);
+      (*listIter)->RecordEvent(*this, context);
    }
 }
 

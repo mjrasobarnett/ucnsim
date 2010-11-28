@@ -345,13 +345,20 @@ void TUCNData::InitialiseObservers(const TUCNRunConfig& runConfig)
    // -- Check Run configuration for which properties are to be monitored with Observers 
    cout << "-------------------------------------------" << endl;
    cout << "Setting up Observers" << endl;
+   cout << "ObservePolarisation: " << runConfig.ObservePolarisation() << endl;
+   cout << "ObserveBounces: " << runConfig.ObserveBounces() << endl;
    if (runConfig.ObservePolarisation() == kTRUE) {
       // Create an observer to track UCN Spin polarisation
       TUCNObserver* obs = new TUCNSpinObserver(runConfig);
       // Add observer to the list
       this->AddObserver(obs);
    }
-   cout << "ObservePolarisation: " << runConfig.ObservePolarisation() << endl;
+   if (runConfig.ObserveBounces() == kTRUE) {
+      // Create an observer to track UCN Bounces
+      TUCNObserver* obs = new TUCNBounceObserver(runConfig);
+      // Add observer to the list
+      this->AddObserver(obs);
+   }
 }
 
 //_____________________________________________________________________________

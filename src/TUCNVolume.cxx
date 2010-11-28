@@ -16,6 +16,7 @@
 
 #include "TUCNParticle.h"
 #include "TUCNMaterial.h"
+#include "TUCNObserver.h"
 
 #include "Units.h"
 #include "Constants.h"
@@ -339,14 +340,13 @@ Bool_t TUCNBoundary::ReflectParticle(TUCNParticle* particle, TGeoNavigator* navi
    if (gRandom->Uniform(0.0,1.0) <= diffuseProbability) {
       // -- Diffuse Bounce
       if (this->DiffuseBounce(particle, navigator, norm) == kFALSE) {return kFALSE;}
-      particle->MadeDiffuseBounce(); // Update counter
+      particle->NotifyObservers(Context::DiffBounce);
    } else {
       // -- Specular Bounce
       if (this->SpecularBounce(particle, navigator, norm) == kFALSE) {return kFALSE;}
-      particle->MadeSpecularBounce(); // Update counter
+      particle->NotifyObservers(Context::SpecBounce);
+   
    }
-   // -- Update Bounce Counter
-   particle->MadeBounce();
    return kTRUE;
 }
 

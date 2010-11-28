@@ -46,4 +46,6 @@
 #pragma link C++ class TUCNObserver;
 #pragma link C++ class TUCNSpinObserver+;
 #pragma link C++ class TUCNSpinObservables+;
+#pragma link C++ class TUCNBounceObserver+;
+#pragma link C++ class TUCNBounceObservables+;
 #endif

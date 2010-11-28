@@ -34,4 +34,32 @@ public:
    ClassDef(TUCNSpinObservables, 1)
 };
 
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNBounceObservables -                                              //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+class TUCNBounceObservables : public TObject
+{
+private:
+   Int_t fSpecular;
+   Int_t fDiffuse;
+   
+public:
+   TUCNBounceObservables();
+   TUCNBounceObservables(const TUCNBounceObservables&);
+   TUCNBounceObservables& operator=(const TUCNBounceObservables&);
+   virtual ~TUCNBounceObservables();
+   
+   void RecordSpecular() {fSpecular++;}
+   void RecordDiffuse() {fDiffuse++;}
+   
+   Int_t CountSpecular() const {return fSpecular;}
+   Int_t CountDiffuse() const {return fDiffuse;}
+   Int_t CountTotal() const {return (fDiffuse+fSpecular);}
+   
+   ClassDef(TUCNBounceObservables, 1)
+};
+
 #endif /*TUCNOBSERVABLES*/
