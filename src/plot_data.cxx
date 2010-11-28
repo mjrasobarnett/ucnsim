@@ -31,6 +31,29 @@ using namespace std;
 Double_t ExponentialDecay(Double_t *x, Double_t *par);
 Double_t SpinPrecession(Double_t *x, Double_t *par);
 
+namespace Plot {
+   TPolyMarker3D* points = NULL;
+   TH1F* thetaHist = NULL;
+   TH1F* phiHist = NULL;
+   
+   TH1F* energyHist = NULL;
+   TH1F* pxHist = NULL;
+   TH1F* pyHist = NULL;
+   TH1F* pzHist = NULL;
+   
+   TH1F* timeHist = NULL;
+   TH1F* distHist = NULL;
+   
+   TH1F* bounceHist = NULL;
+   TH1F* specHist = NULL;
+   TH1F* diffHist = NULL;
+   
+   TH1F* spinUpHist = NULL;
+   TH1F* spinDownHist = NULL;
+   
+   
+}
+
 Int_t main(Int_t argc,Char_t **argv)
 {
    ///////////////////////////////////////////////////////////////////////////////////////
@@ -70,17 +93,17 @@ Int_t main(Int_t argc,Char_t **argv)
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Final Positions
    const Int_t neutrons = initialConfig.InitialParticles();
-   TPolyMarker3D* points = new TPolyMarker3D(neutrons, 1); // 1 is marker style
+   Plot::points = new TPolyMarker3D(neutrons, 1); // 1 is marker style
    sprintf(histname,"%s:NeutronPositions",statename.Data());
-   points->SetName(histname);
-   points->SetMarkerColor(2);
-   points->SetMarkerStyle(6);
+   Plot::points->SetName(histname);
+   Plot::points->SetMarkerColor(2);
+   Plot::points->SetMarkerStyle(6);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Angular Distribution
    sprintf(histname,"%s:Theta",statename.Data());
-   TH1F* thetaHist = new TH1F(histname,"Direction: Theta, Units of Pi", 50, 0.0, 1.0);
+   Plot::thetaHist = new TH1F(histname,"Direction: Theta, Units of Pi", 50, 0.0, 1.0);
    sprintf(histname,"%s:Phi",statename.Data());
-   TH1F* phiHist = new TH1F(histname,"Direction: Phi, Units of Pi", 50, 0.0, 2.0);
+   Plot::phiHist = new TH1F(histname,"Direction: Phi, Units of Pi", 50, 0.0, 2.0);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Energy/Momentum
    const Double_t maximumVelocity = initialConfig.InitialMaxVelocity();
@@ -88,64 +111,65 @@ Int_t main(Int_t argc,Char_t **argv)
    const Int_t nbins = 50;   
    
    sprintf(histname,"%s:Velocity",statename.Data());
-   TH1F* energyHist = new TH1F(histname,"Velocity: Units of m/s", nbins, 0.0, maximumVelocity);      
-   energyHist->SetXTitle("Velocity (m/s)");
-   energyHist->SetYTitle("Neutrons");
+   Plot::energyHist = new TH1F(histname,"Velocity: Units of m/s", nbins, 0.0, maximumVelocity);      
+   Plot::energyHist->SetXTitle("Velocity (m/s)");
+   Plot::energyHist->SetYTitle("Neutrons");
    
    sprintf(histname,"%s:Px",statename.Data());
-   TH1F* pxHist = new TH1F(histname,"Px: Units of eV", nbins, -maximumMomentum, maximumMomentum);
-   pxHist->SetXTitle("Px (eV)");
-   pxHist->SetYTitle("Neutrons");
+   Plot::pxHist = new TH1F(histname,"Px: Units of eV", nbins, -maximumMomentum, maximumMomentum);
+   Plot::pxHist->SetXTitle("Px (eV)");
+   Plot::pxHist->SetYTitle("Neutrons");
    
    sprintf(histname,"%s:Py",statename.Data());
-   TH1F* pyHist = new TH1F(histname,"Py: Units of eV", nbins, -maximumMomentum, maximumMomentum);
-   pyHist->SetXTitle("Py (eV)");
-   pyHist->SetYTitle("Neutrons");
+   Plot::pyHist = new TH1F(histname,"Py: Units of eV", nbins, -maximumMomentum, maximumMomentum);
+   Plot::pyHist->SetXTitle("Py (eV)");
+   Plot::pyHist->SetYTitle("Neutrons");
    
    sprintf(histname,"%s:Pz",statename.Data());
-   TH1F* pzHist = new TH1F(histname,"Pz: Units of eV", nbins, -maximumMomentum, maximumMomentum);
-   pzHist->SetXTitle("Pz (eV)");
-   pzHist->SetYTitle("Neutrons");
+   Plot::pzHist = new TH1F(histname,"Pz: Units of eV", nbins, -maximumMomentum, maximumMomentum);
+   Plot::pzHist->SetXTitle("Pz (eV)");
+   Plot::pzHist->SetYTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Run Time
    const Double_t runTime = runConfig.RunTime();
    const Double_t maximumDistance = 10000*Units::m;
    
    sprintf(histname,"%s:Time",statename.Data());
-   TH1F* timeHist = new TH1F(histname,"Time: Units of s", nbins, 0.0, runTime+10);
-   timeHist->SetXTitle("Time (s)");
-   timeHist->SetYTitle("Neutrons");
+   Plot::timeHist = new TH1F(histname,"Time: Units of s", nbins, 0.0, runTime+10);
+   Plot::timeHist->SetXTitle("Time (s)");
+   Plot::timeHist->SetYTitle("Neutrons");
    
    sprintf(histname,"%s:Dist",statename.Data());
-   TH1F* distHist = new TH1F(histname,"Distance: Units of m", nbins, 0.0, maximumDistance);
-   distHist->SetXTitle("Distance (m)");
-   distHist->SetYTitle("Neutrons");
+   Plot::distHist = new TH1F(histname,"Distance: Units of m", nbins, 0.0, maximumDistance);
+   Plot::distHist->SetXTitle("Distance (m)");
+   Plot::distHist->SetYTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounces
    sprintf(histname,"%s:Bounces",statename.Data());
-   TH1F* bounceHist = new TH1F(histname,"Bounces", nbins, 0.0, 50000);
+   Plot::bounceHist = new TH1F(histname,"Bounces", nbins, 0.0, 50000);
    sprintf(histname,"%s:Specular",statename.Data());
-   TH1F* specHist = new TH1F(histname,"Specular", nbins, 0.0, 50000);
+   Plot::specHist = new TH1F(histname,"Specular", nbins, 0.0, 50000);
    sprintf(histname,"%s:Diffuse",statename.Data());
-   TH1F* diffHist = new TH1F(histname,"Diffuse", nbins, 0.0, 50000);
+   Plot::diffHist = new TH1F(histname,"Diffuse", nbins, 0.0, 50000);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Spin Polarisation
-   sprintf(histname,"%s:SpinUp",statename.Data());
-   TH1F* spinUpHist = new TH1F(histname,"SpinUp", 500, 0.0, runTime);      
-   spinUpHist->SetXTitle("Time (s)");
-   spinUpHist->SetYTitle("Spin Up Neutrons");
-   //spinUpHist->SetLineColor(kBlue);
-   spinUpHist->SetFillStyle(1001);
-   spinUpHist->SetFillColor(kBlue-7);
+   if (runConfig.ObservePolarisation() == kTRUE) {
+      sprintf(histname,"%s:SpinUp",statename.Data());
+      Plot::spinUpHist = new TH1F(histname,"SpinUp", 500, 0.0, runTime);      
+      Plot::spinUpHist->SetXTitle("Time (s)");
+      Plot::spinUpHist->SetYTitle("Spin Up Neutrons");
+      //spinUpHist->SetLineColor(kBlue);
+      Plot::spinUpHist->SetFillStyle(1001);
+      Plot::spinUpHist->SetFillColor(kBlue-7);
    
-   sprintf(histname,"%s:SpinDown",statename.Data());
-   TH1F* spinDownHist = new TH1F(histname,"SpinDown", 500, 0.0, runTime);      
-   spinDownHist->SetXTitle("Time (s)");
-   spinDownHist->SetYTitle("Spin Down Neutrons");
-   //spinDownHist->SetLineColor(kRed);
-   spinDownHist->SetFillStyle(3001);
-   spinDownHist->SetFillColor(kRed-7);
-   
+      sprintf(histname,"%s:SpinDown",statename.Data());
+      Plot::spinDownHist = new TH1F(histname,"SpinDown", 500, 0.0, runTime);      
+      Plot::spinDownHist->SetXTitle("Time (s)");
+      Plot::spinDownHist->SetYTitle("Spin Down Neutrons");
+      //spinDownHist->SetLineColor(kRed);
+      Plot::spinDownHist->SetFillStyle(3001);
+      Plot::spinDownHist->SetFillColor(kRed-7);
+   }
    //////////////////////////////////////////////////////////////////////////////////////
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Open Data File
@@ -204,18 +228,18 @@ Int_t main(Int_t argc,Char_t **argv)
             if (cl->InheritsFrom("TUCNParticle")) {
                TUCNParticle* particle = dynamic_cast<TUCNParticle*>(objKey->ReadObj());
                // -- Fill Histograms
-               points->SetPoint(particle->Id(), particle->X(), particle->Y(), particle->Z());
-               thetaHist->Fill(particle->Theta()/TMath::Pi());
-               phiHist->Fill(particle->Phi()/TMath::Pi());
-               energyHist->Fill(particle->V());
-               pxHist->Fill(particle->Px()/Units::eV);
-               pyHist->Fill(particle->Py()/Units::eV);
-               pzHist->Fill(particle->Pz()/Units::eV);
-               timeHist->Fill(particle->T()/Units::s);
-               distHist->Fill(particle->Distance()/Units::m);
-               bounceHist->Fill(particle->Bounces());
-               specHist->Fill(particle->SpecularBounces());
-               diffHist->Fill(particle->DiffuseBounces());
+               Plot::points->SetPoint(particle->Id(), particle->X(), particle->Y(), particle->Z());
+               Plot::thetaHist->Fill(particle->Theta()/TMath::Pi());
+               Plot::phiHist->Fill(particle->Phi()/TMath::Pi());
+               Plot::energyHist->Fill(particle->V());
+               Plot::pxHist->Fill(particle->Px()/Units::eV);
+               Plot::pyHist->Fill(particle->Py()/Units::eV);
+               Plot::pzHist->Fill(particle->Pz()/Units::eV);
+               Plot::timeHist->Fill(particle->T()/Units::s);
+               Plot::distHist->Fill(particle->Distance()/Units::m);
+               Plot::bounceHist->Fill(particle->Bounces());
+               Plot::specHist->Fill(particle->SpecularBounces());
+               Plot::diffHist->Fill(particle->DiffuseBounces());
                delete particle;
             }
             // -- Extract Spin Observer Data if recorded
@@ -226,10 +250,10 @@ Int_t main(Int_t argc,Char_t **argv)
                for (dataIter = spin->begin(); dataIter != spin->end(); dataIter++) {
                   if (dataIter->second == kTRUE) {
                      // If spin up, bin the time
-                     spinUpHist->Fill(dataIter->first);
+                     if (Plot::spinUpHist) Plot::spinUpHist->Fill(dataIter->first);
                   } else {
                      // If spin down, bin the time
-                     spinDownHist->Fill(dataIter->first);
+                     if (Plot::spinUpHist) Plot::spinDownHist->Fill(dataIter->first);
                   }
                }
                
@@ -238,7 +262,6 @@ Int_t main(Int_t argc,Char_t **argv)
          }
       }
    }
-   file->ls();
    file->Close();
    //////////////////////////////////////////////////////////////////////////////////////
    //////////////////////////////////////////////////////////////////////////////////////
@@ -252,7 +275,7 @@ Int_t main(Int_t argc,Char_t **argv)
    geoManager->GetTopVolume()->Draw("ogl");
    geoManager->SetVisLevel(4);
    geoManager->SetVisOption(0);
-   points->Draw();
+   Plot::points->Draw();
    // -- Get the GLViewer so we can manipulate the camera
    TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
    // -- Select Draw style 
@@ -277,38 +300,38 @@ Int_t main(Int_t argc,Char_t **argv)
    TCanvas *anglecanvas = new TCanvas("Directions","Neutron Directions",60,0,1200,800);
    anglecanvas->Divide(2,1);
    anglecanvas->cd(1);
-   thetaHist->Draw();
+   Plot::thetaHist->Draw();
    anglecanvas->cd(2);
-   phiHist->Draw();
+   Plot::phiHist->Draw();
    
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounce Counters
    TCanvas *bouncecanvas = new TCanvas("Bounces","Bounce counters",60,0,1200,800);
    bouncecanvas->Divide(3,1);
    bouncecanvas->cd(1);
-   bounceHist->Draw();
+   Plot::bounceHist->Draw();
    bouncecanvas->cd(2);
-   specHist->Draw();
+   Plot::specHist->Draw();
    bouncecanvas->cd(3);
-   diffHist->Draw();
+   Plot::diffHist->Draw();
    
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Momentum Distribution
    TCanvas *momcanvas = new TCanvas("PhaseSpace","Phase Space",60,0,1200,800);
    momcanvas->Divide(3,2);
    momcanvas->cd(1);
-   energyHist->Draw();
+   Plot::energyHist->Draw();
    momcanvas->Update();   
    momcanvas->cd(2);
-   pxHist->Draw();
+   Plot::pxHist->Draw();
    momcanvas->cd(3);
-   pyHist->Draw();
+   Plot::pyHist->Draw();
    momcanvas->cd(4);
-   pzHist->Draw();
+   Plot::pzHist->Draw();
    momcanvas->cd(5);
-   distHist->Draw();
+   Plot::distHist->Draw();
    momcanvas->cd(6);
-   timeHist->Draw();
+   Plot::timeHist->Draw();
    // Fit Final Time to Exponential - determine emptying time
 /*   Char_t linename[40];
    sprintf(linename,"%s:Expo",statename.Data());
@@ -327,50 +350,53 @@ Int_t main(Int_t argc,Char_t **argv)
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Spin Precession Plots
    // -- Down
-   TCanvas *spincanvas = new TCanvas("Spin","Spin Polarisation",60,0,1200,800);
-   spincanvas->Divide(2,1);
-   spincanvas->cd(1);
-   spinDownHist->Draw();
-//   spinDownHist->GetYaxis()->SetRangeUser(0.0,200.0);
-/*   TF1 *downprecession = new TF1("DownSpinPrecessionFunc", SpinPrecession, 0.0, 20., 3);
-   downprecession->SetParameters(150.0,1.0,0.0);
-   downprecession->SetParNames("Amplitude","Omega (rad/s)","Phase (Pi/2)");
-   spinDownHist->Fit(downprecession, "RQ");
-   Double_t downamplitude = downprecession->GetParameter(0);
-   Double_t downomega = downprecession->GetParameter(1);
-   Double_t downphase = downprecession->GetParameter(2);
-   cout << "------------------------------------" << endl;
-   cout << "Spin Down:" << endl;
-   cout << "Amplitude: " << downamplitude << "\t" << "Omega: " << downomega;
-   cout << "\t" << "Phase: " << downphase << endl;   
-   cout << "------------------------------------" << endl;
-*/   // -- Up
-   spincanvas->cd(2);
-//   spinUpHist->GetYaxis()->SetRangeUser(0.0,200.0);
-   spinUpHist->Draw();
-/*   TF1 *upprecession = new TF1("UpSpinPrecessionFunc", SpinPrecession, 0.0, 20., 3);
-   upprecession->SetParameters(150.0,1.0,0.0);
-   upprecession->SetParNames("Amplitude","Omega (rad/s)","Phase (Pi/2)");
-   spinUpHist->Fit(upprecession, "RQ");
-   Double_t upamplitude = upprecession->GetParameter(0);
-   Double_t upomega = upprecession->GetParameter(1);
-   Double_t upphase = upprecession->GetParameter(2);
-   cout << "------------------------------------" << endl;
-   cout << "Spin Up:" << endl;
-   cout << "Amplitude: " << upamplitude << "\t" << "Omega: " << upomega;
-   cout << "\t" << "Phase: " << upphase << endl;
-   cout << "------------------------------------" << endl;
-   // -- Combined
-   spincanvas->cd(3);
-   spinUpHist->Draw();
-   spinDownHist->Draw("SAME");
-   TLegend* leg = new TLegend(0.7,0.91,0.9,0.99); //coordinates are fractions of pad dimensions
-   leg->SetFillColor(0);
-   leg->AddEntry(spinUpHist,"Spin Up"); // l means line, p shows marker
-   leg->AddEntry(spinDownHist,"Spin Down");
-   leg->Draw();
-*/   
-
+   if (Plot::spinUpHist) {
+      TCanvas *spincanvas = new TCanvas("Spin","Spin Polarisation",60,0,1200,800);
+      spincanvas->Divide(2,1);
+      spincanvas->cd(1);
+      Plot::spinDownHist->Draw();
+   //   spinDownHist->GetYaxis()->SetRangeUser(0.0,200.0);
+   /*   TF1 *downprecession = new TF1("DownSpinPrecessionFunc", SpinPrecession, 0.0, 20., 3);
+      downprecession->SetParameters(150.0,1.0,0.0);
+      downprecession->SetParNames("Amplitude","Omega (rad/s)","Phase (Pi/2)");
+      spinDownHist->Fit(downprecession, "RQ");
+      Double_t downamplitude = downprecession->GetParameter(0);
+      Double_t downomega = downprecession->GetParameter(1);
+      Double_t downphase = downprecession->GetParameter(2);
+      cout << "------------------------------------" << endl;
+      cout << "Spin Down:" << endl;
+      cout << "Amplitude: " << downamplitude << "\t" << "Omega: " << downomega;
+      cout << "\t" << "Phase: " << downphase << endl;   
+      cout << "------------------------------------" << endl;
+   */   // -- Up
+      spincanvas->cd(2);
+   //   spinUpHist->GetYaxis()->SetRangeUser(0.0,200.0);
+      Plot::spinUpHist->Draw();
+   /*   TF1 *upprecession = new TF1("UpSpinPrecessionFunc", SpinPrecession, 0.0, 20., 3);
+      upprecession->SetParameters(150.0,1.0,0.0);
+      upprecession->SetParNames("Amplitude","Omega (rad/s)","Phase (Pi/2)");
+      spinUpHist->Fit(upprecession, "RQ");
+      Double_t upamplitude = upprecession->GetParameter(0);
+      Double_t upomega = upprecession->GetParameter(1);
+      Double_t upphase = upprecession->GetParameter(2);
+      cout << "------------------------------------" << endl;
+      cout << "Spin Up:" << endl;
+      cout << "Amplitude: " << upamplitude << "\t" << "Omega: " << upomega;
+      cout << "\t" << "Phase: " << upphase << endl;
+      cout << "------------------------------------" << endl;
+      // -- Combined
+      spincanvas->cd(3);
+      spinUpHist->Draw();
+      spinDownHist->Draw("SAME");
+      TLegend* leg = new TLegend(0.7,0.91,0.9,0.99); //coordinates are fractions of pad dimensions
+      leg->SetFillColor(0);
+      leg->AddEntry(spinUpHist,"Spin Up"); // l means line, p shows marker
+      leg->AddEntry(spinDownHist,"Spin Down");
+      leg->Draw();
+   */   
+   }
+   
+   
    cout << "Finished" << endl;
    theApp->Run();
    return 0;
