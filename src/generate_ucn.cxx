@@ -221,6 +221,7 @@ Bool_t GenerateParticles(const TUCNInitialConfig& initialConfig, const TGeoVolum
       initialTHist->Fill(particle->T());
       // -- Add particle to data file
       data->SaveParticle(particle, Folders::initialstates);
+      if (particle) delete particle;
       // -- Update progress bar
       ProgressBar::PrintProgress(i,particles,1);
    }
