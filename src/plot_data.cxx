@@ -103,7 +103,7 @@ Int_t main(Int_t argc,Char_t **argv)
    sprintf(histname,"%s:Theta",statename.Data());
    Plot::thetaHist = new TH1F(histname,"Direction: Theta, Units of Pi", 50, 0.0, 1.0);
    sprintf(histname,"%s:Phi",statename.Data());
-   Plot::phiHist = new TH1F(histname,"Direction: Phi, Units of Pi", 50, 0.0, 2.0);
+   Plot::phiHist = new TH1F(histname,"Direction: Phi, Units of Pi", 50, -1.0, 1.0);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Energy/Momentum
    const Double_t maximumVelocity = initialConfig.InitialMaxVelocity();

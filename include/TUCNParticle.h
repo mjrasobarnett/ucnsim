@@ -44,19 +44,13 @@ class TUCNParticle : public TObject
 {
 protected:
    // -- Members
-   Double_t    fX;         // x coord
-   Double_t    fY;         // y coord
-   Double_t    fZ;         // z coord
+   Int_t       fId;        // Particle's number (assigned when its created to help keep track of it)
+   TVector3    fPos;
+   TVector3    fMom;
    Double_t    fT;         // Time travelled
-   
-   Double_t    fPx;        // x component of momentum
-   Double_t    fPy;        // y component of momentum
-   Double_t    fPz;        // z component of momentum
    Double_t    fE;         // kinetic energy
    
    Double_t    fDistance;  // Distance travelled
-   
-   Int_t       fId;        // Particle's number (assigned when its created to help keep track of it)
    
    Int_t       fBounces;            // Number of Bounces made from Wall
    Int_t       fSpecularBounces;    // Number of such bounces that are specular
@@ -82,7 +76,7 @@ protected:
 public:
    // -- Constructors
    TUCNParticle();
-   TUCNParticle(Int_t id, Double_t* pos, Double_t* mom, Double_t energy, Double_t t=0);
+   TUCNParticle(Int_t id, TVector3& pos, TVector3& mom, Double_t energy, Double_t t=0);
    TUCNParticle(const TUCNParticle &part);
    TUCNParticle& operator=(const TUCNParticle&);
 
@@ -93,14 +87,14 @@ public:
    //_____________________________________________________________________________
    // Get/Setters
    Int_t                Id()     const {return fId;}
-   Double_t             X()      const {return fX;}
-   Double_t             Y()      const {return fY;}
-   Double_t             Z()      const {return fZ;}
+   Double_t             X()      const {return fPos.X();}
+   Double_t             Y()      const {return fPos.Y();}
+   Double_t             Z()      const {return fPos.Z();}
    Double_t             T()      const {return fT;}
-   Double_t             Px()     const {return fPx;}
-   Double_t             Py()     const {return fPy;}
-   Double_t             Pz()     const {return fPz;}
-   Double_t             P()      const;
+   Double_t             Px()     const {return fMom.X();}
+   Double_t             Py()     const {return fMom.Y();}
+   Double_t             Pz()     const {return fMom.Z();}
+   Double_t             P()      const {return fMom.Mag();}
    Double_t             Energy() const {return fE;}
    Double_t             V()      const {return this->P()/Neutron::mass_eV_c;}
    Double_t             Vx()     const {return this->Px()/Neutron::mass_eV_c;}
@@ -109,9 +103,9 @@ public:
    Double_t             Nx()     const {return (this->P() != 0. ? this->Px()/this->P() : 0.);}
    Double_t             Ny()     const {return (this->P() != 0. ? this->Py()/this->P() : 0.);}
    Double_t             Nz()     const {return (this->P() != 0. ? this->Pz()/this->P() : 0.);}
-   Double_t             Rho()    const;
-   Double_t             Theta()  const;
-   Double_t             Phi()    const;
+   Double_t             Rho()    const {return fPos.Mag();}
+   Double_t             Theta()  const {return fMom.Theta();}
+   Double_t             Phi()    const {return fMom.Phi();}
    
    void                 SetId(const Int_t id) {fId = id;}
    void                 SetVertex(const Double_t x, const Double_t y, const Double_t z, 

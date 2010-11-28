@@ -30,9 +30,9 @@ ClassImp(TUCNParticle)
 //______________________________________________________________________________
 TUCNParticle::TUCNParticle()
              :TObject(),
-              fX(0.), fY(0.), fZ(0.), fT(0.), fPx(0.), fPy(0.), fPz(0.), fE(0.),
-              fDistance(0.), fId(0), fBounces(0), fSpecularBounces(0), fDiffuseBounces(0),
-              fRandomSeed(0), fState(NULL), fSpin()
+              fId(0), fPos(), fMom(), fT(0.), fE(0.),
+              fDistance(0.), fBounces(0), fSpecularBounces(0), fDiffuseBounces(0),
+              fRandomSeed(0), fState(NULL), fSpin(), fObservers()
 {
    // -- Default constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -42,11 +42,11 @@ TUCNParticle::TUCNParticle()
 
 
 //______________________________________________________________________________
-TUCNParticle::TUCNParticle(Int_t id, Double_t* pos, Double_t* mom, Double_t energy, Double_t t)
+TUCNParticle::TUCNParticle(Int_t id, TVector3& pos, TVector3& mom, Double_t energy, Double_t t)
              :TObject(),
-              fX(pos[0]), fY(pos[1]), fZ(pos[2]), fT(t), fPx(mom[0]), fPy(mom[1]), fPz(mom[2]),
-              fE(energy), fDistance(0.), fId(id), fBounces(0), fSpecularBounces(0),
-              fDiffuseBounces(0), fRandomSeed(0), fSpin()
+              fId(id), fPos(pos), fMom(mom), fT(t), fE(energy),
+              fDistance(0.), fBounces(0), fSpecularBounces(0),
+              fDiffuseBounces(0), fRandomSeed(0), fSpin(), fObservers()
 {
    // -- Constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -58,8 +58,7 @@ TUCNParticle::TUCNParticle(Int_t id, Double_t* pos, Double_t* mom, Double_t ener
 //_____________________________________________________________________________
 TUCNParticle::TUCNParticle(const TUCNParticle& p)
              :TObject(p),
-              fX(p.fX), fY(p.fY), fZ(p.fZ), fT(p.fT), fPx(p.fPx), fPy(p.fPy),
-              fPz(p.fPz), fE(p.fE), fDistance(p.fDistance), fId(p.fId),
+              fId(p.fId), fPos(p.fPos), fMom(p.fMom), fT(p.fT), fE(p.fE), fDistance(p.fDistance),
               fBounces(p.fBounces), fSpecularBounces(p.fSpecularBounces),
               fDiffuseBounces(p.fDiffuseBounces), fRandomSeed(p.fRandomSeed),
               fState(p.fState), fSpin(p.fSpin), fObservers(p.fObservers)
@@ -79,16 +78,12 @@ TUCNParticle& TUCNParticle::operator=(const TUCNParticle& p)
    #endif
    if(this!=&p) {
       TObject::operator=(p);
-      fX = p.fX;
-      fY = p.fY;
-      fZ = p.fZ;
+      fId = p.fId;
+      fPos = p.fPos;
+      fMom = p.fMom;
       fT = p.fT;
-      fPx = p.fPx;
-      fPy = p.fPy;
-      fPz = p.fPz;
       fE = p.fE;
       fDistance = p.fDistance;
-      fId = p.fId;
       fBounces = p.fBounces;
       fSpecularBounces = p.fSpecularBounces;
       fDiffuseBounces = p.fDiffuseBounces;
@@ -126,30 +121,6 @@ void TUCNParticle::SaveState(TUCNRun* run)
 }
 
 //______________________________________________________________________________
-Double_t TUCNParticle::P() const
-{
-   return TMath::Sqrt(fPx*fPx+fPy*fPy+fPz*fPz);
-}
-
-//______________________________________________________________________________
-Double_t TUCNParticle::Rho() const
-{
-   return TMath::Sqrt(fX*fX+fY*fY+fZ*fZ);
-}
-
-//______________________________________________________________________________
-Double_t TUCNParticle::Theta() const
-{
-   return (fPz==0)?TMath::PiOver2():TMath::ACos(fPz/P());
-}
-
-//______________________________________________________________________________
-Double_t TUCNParticle::Phi() const
-{
-   return TMath::Pi()+TMath::ATan2(-fPy,-fPx);
-}
-
-//______________________________________________________________________________
 const TUCNSpin& TUCNParticle::GetSpin() const
 {
    return fSpin;
@@ -160,7 +131,7 @@ void TUCNParticle::SetVertex(const Double_t x, const Double_t y, const Double_t 
                                     const Double_t t)
 {
    // Set current vertex to given coords
-   fX = x; fY = y; fZ = z; fT = t;
+   fPos.SetXYZ(x,y,z); fT = t;
 }
 
 //______________________________________________________________________________
@@ -168,7 +139,7 @@ void TUCNParticle::SetMomentum(const Double_t px, const Double_t py, const Doubl
                                     const Double_t energy)
 {
    // Set current momentum to given coords
-   fPx = px; fPy = py; fPz = pz; fE = energy;
+   fMom.SetXYZ(px,py,pz); fE = energy;
 }
 
 //_____________________________________________________________________________
