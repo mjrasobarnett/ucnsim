@@ -36,6 +36,7 @@ private:
    TVector3 fObsMeasAxis;
    
    Bool_t fObsBounces;
+   Bool_t fObsTracks;
    
 public:
    // Constructors
@@ -64,6 +65,7 @@ public:
    Bool_t ObservePolarisation() const {return fObsPolarisation;}
    TVector3 PolarisationAxis() const {return fObsMeasAxis;}
    Bool_t ObserveBounces() const {return fObsBounces;}
+   Bool_t ObserveTracks() const {return fObsTracks;}
    
    virtual void Print(Option_t* option = "") const;
    

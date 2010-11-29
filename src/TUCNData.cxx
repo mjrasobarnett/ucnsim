@@ -347,6 +347,7 @@ void TUCNData::InitialiseObservers(const TUCNRunConfig& runConfig)
    cout << "Setting up Observers" << endl;
    cout << "ObservePolarisation: " << runConfig.ObservePolarisation() << endl;
    cout << "ObserveBounces: " << runConfig.ObserveBounces() << endl;
+   cout << "ObserveTracks: " << runConfig.ObserveTracks() << endl;
    if (runConfig.ObservePolarisation() == kTRUE) {
       // Create an observer to track UCN Spin polarisation
       TUCNObserver* obs = new TUCNSpinObserver(runConfig);
@@ -356,6 +357,12 @@ void TUCNData::InitialiseObservers(const TUCNRunConfig& runConfig)
    if (runConfig.ObserveBounces() == kTRUE) {
       // Create an observer to track UCN Bounces
       TUCNObserver* obs = new TUCNBounceObserver(runConfig);
+      // Add observer to the list
+      this->AddObserver(obs);
+   }
+   if (runConfig.ObserveTracks() == kTRUE) {
+      // Create an observer to track UCN path
+      TUCNObserver* obs = new TUCNTrackObserver(runConfig);
       // Add observer to the list
       this->AddObserver(obs);
    }

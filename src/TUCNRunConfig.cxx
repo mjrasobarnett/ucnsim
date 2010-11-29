@@ -52,6 +52,8 @@ TUCNRunConfig::TUCNRunConfig(const string& runConfigFileName)
    Double_t obsMeasAxisZ = runConfigFile.GetFloat("MeasureAxisZ","Observables");
    fObsMeasAxis.SetXYZ(obsMeasAxisX, obsMeasAxisY, obsMeasAxisZ);
    fObsBounces = runConfigFile.GetBool("Bounces","Observables");
+   fObsTracks = runConfigFile.GetBool("RecordTracks","Observables");
+   
    this->Print();
 }
 
@@ -75,7 +77,8 @@ TUCNRunConfig::TUCNRunConfig(const TUCNRunConfig& other)
                fMaxStepTime(other.fMaxStepTime),
                fObsPolarisation(other.fObsPolarisation),
                fObsMeasAxis(other.fObsMeasAxis),
-               fObsBounces(other.fObsBounces)
+               fObsBounces(other.fObsBounces),
+               fObsTracks(other.fObsTracks)
 {
    Info("TUCNRunConfig","Copy Constructor");
 }
@@ -103,6 +106,7 @@ TUCNRunConfig& TUCNRunConfig::operator=(const TUCNRunConfig& other)
       fObsPolarisation=other.fObsPolarisation;
       fObsMeasAxis=other.fObsMeasAxis;
       fObsBounces=other.fObsBounces;
+      fObsTracks=other.fObsTracks;
    }
    return *this;
 }
@@ -137,5 +141,6 @@ void TUCNRunConfig::Print(Option_t* /*option*/) const
    cout << "Polrisation Axis: " << fObsMeasAxis.X() << "\t" << fObsMeasAxis.Y();
    cout << "\t" << fObsMeasAxis.Z() << endl;
    cout << "Observe Bounces: " << fObsBounces << endl;
+   cout << "Observe Tracks: " << fObsTracks << endl;
    cout << "-------------------------------------------" << endl;
 }

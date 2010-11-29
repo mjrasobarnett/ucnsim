@@ -226,3 +226,104 @@ void TUCNBounceObserver::WriteToFile(TDirectory* const particleDir)
    particleDir->cd();
    fBounceObservables->Write("TUCNBounceObservables",TObject::kOverwrite);
 }
+
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNTrackObserver                                                   //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+ClassImp(TUCNTrackObserver)
+
+//_____________________________________________________________________________
+TUCNTrackObserver::TUCNTrackObserver()
+                   :TUCNObserver(),
+                    fTrackObservables(NULL)
+{
+   // Constructor
+   Info("TUCNTrackObserver","Default Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNTrackObserver::TUCNTrackObserver(const TUCNRunConfig& /*runConfig*/)
+                 :TUCNObserver(),
+                  fTrackObservables(NULL)
+{
+   // Constructor
+   Info("TUCNTrackObserver","Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNTrackObserver::TUCNTrackObserver(const TUCNTrackObserver& other)
+                 :TUCNObserver(other),
+                  fTrackObservables(other.fTrackObservables)
+{
+   // Copy Constructor
+   Info("TUCNTrackObserver","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+TUCNTrackObserver& TUCNTrackObserver::operator=(const TUCNTrackObserver& other)
+{
+   // Assignment
+   Info("TUCNTrackObserver","Assignment");
+   if(this!=&other) {
+      TUCNObserver::operator=(other);
+      fTrackObservables = other.fTrackObservables;
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+TUCNTrackObserver::~TUCNTrackObserver()
+{
+   // Destructor
+   Info("TUCNTrackObserver","Destructor");
+}
+
+//_____________________________________________________________________________
+void TUCNTrackObserver::RegisterInterest(TUCNParticle& particle)
+{
+   // -- Register as an observer with the particle
+   if (fTrackObservables != NULL) delete fTrackObservables; fTrackObservables = NULL;
+   fTrackObservables = new TUCNTrackObservables();
+   particle.Attach(this);
+}
+
+//_____________________________________________________________________________
+void TUCNTrackObserver::RecordEvent(const TUCNParticle& particle, const string& context)
+{
+   // -- Record the current polarisation
+   if (context == Context::Step) {
+      fTrackObservables->SetNextPoint(particle.X(), particle.Y(), particle.Z());
+   }
+}
+
+//_____________________________________________________________________________
+void TUCNTrackObserver::LoadExistingObservables(TDirectory* const particleDir)
+{
+   // -- Look for a TUCNSpinObservables object and if so load into memory
+   particleDir->cd();
+   // -- Loop on all entries of this directory
+   TKey *key;
+   TIter nextkey(particleDir->GetListOfKeys());
+   while ((key = static_cast<TKey*>(nextkey.Next()))) {
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TUCNTrackObservables")) {
+         if (fTrackObservables != NULL) delete fTrackObservables; fTrackObservables = NULL;
+         fTrackObservables = dynamic_cast<TUCNTrackObservables*>(key->ReadObj());
+         break;
+      }
+   }
+}
+
+//_____________________________________________________________________________
+void TUCNTrackObserver::WriteToFile(TDirectory* const particleDir)
+{
+   // -- Write out the current observable to the provided directory
+   particleDir->cd();
+   fTrackObservables->Write("TUCNTrackObservables",TObject::kOverwrite);
+}

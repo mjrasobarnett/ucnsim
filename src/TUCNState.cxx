@@ -17,6 +17,7 @@
 #include "TUCNGeoBBox.h"
 #include "TUCNParabola.h"
 #include "TUCNMagField.h"
+#include "TUCNObserver.h"
 
 #include "TGeoManager.h"
 #include "TGeoNavigator.h"
@@ -436,6 +437,9 @@ Bool_t TUCNPropagating::MakeStep(Double_t stepTime, TUCNParticle* particle, TGeo
       return kFALSE;
    }
    
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Notify Observers of Step Completion
+   particle->NotifyObservers(Context::Step);
    // End of MakeStep.
    return kTRUE;
 }

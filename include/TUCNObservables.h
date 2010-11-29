@@ -12,8 +12,9 @@
 #ifndef TUCNOBSERVABLES_H
 #define TUCNOBSERVABLES_H
 
-#include "TObject.h"
 #include <map>
+#include "TObject.h"
+#include "TPolyLine3D.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -60,6 +61,25 @@ public:
    Int_t CountTotal() const {return (fDiffuse+fSpecular);}
    
    ClassDef(TUCNBounceObservables, 1)
+};
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNTrackObservables -                                               //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+class TUCNTrackObservables : public TPolyLine3D
+{
+private:
+   
+public:
+   TUCNTrackObservables();
+   TUCNTrackObservables(const TUCNTrackObservables&);
+   TUCNTrackObservables& operator=(const TUCNTrackObservables&);
+   virtual ~TUCNTrackObservables();
+   
+   ClassDef(TUCNTrackObservables, 1)
 };
 
 #endif /*TUCNOBSERVABLES*/

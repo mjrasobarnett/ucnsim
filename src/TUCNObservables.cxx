@@ -111,3 +111,52 @@ TUCNBounceObservables::~TUCNBounceObservables()
       Info("TUCNBounceObservables","Destructor");
    #endif
 }
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNTrackObservables                                                //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+ClassImp(TUCNTrackObservables)
+
+//_____________________________________________________________________________
+TUCNTrackObservables::TUCNTrackObservables()
+                     :TPolyLine3D()
+{
+   // Constructor
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNTrackObservables","Default Constructor");
+   #endif
+}
+
+//_____________________________________________________________________________
+TUCNTrackObservables::TUCNTrackObservables(const TUCNTrackObservables& other)
+                     :TPolyLine3D(other)
+{
+   // Copy Constructor
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNTrackObservables","Copy Constructor");
+   #endif
+}
+
+//_____________________________________________________________________________
+TUCNTrackObservables& TUCNTrackObservables::operator=(const TUCNTrackObservables& other)
+{
+   // Assignment
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNTrackObservables","Assignment");
+   #endif
+   if(this!=&other) {
+      TPolyLine3D::operator=(other);
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+TUCNTrackObservables::~TUCNTrackObservables()
+{
+   // Destructor
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TUCNTrackObservables","Destructor");
+   #endif
+}

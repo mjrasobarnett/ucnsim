@@ -30,6 +30,7 @@ namespace Context {
    const std::string Spin = "spin";
    const std::string SpecBounce = "specbounce";
    const std::string DiffBounce = "diffbounce";
+   const std::string Step = "step";
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -107,6 +108,33 @@ public:
    virtual void WriteToFile(TDirectory* const particleDir);
    
    ClassDef(TUCNBounceObserver, 1)
+};
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    TUCNTrackObserver -                                                  //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+class TUCNTrackObserver : public TUCNObserver
+{
+private:
+   TUCNTrackObservables *fTrackObservables;
+   
+public:
+   // -- Constructors
+   TUCNTrackObserver();
+   TUCNTrackObserver(const TUCNRunConfig& runConfig);
+   TUCNTrackObserver(const TUCNTrackObserver&);
+   TUCNTrackObserver& operator=(const TUCNTrackObserver&);
+   virtual ~TUCNTrackObserver();
+   
+   virtual void RegisterInterest(TUCNParticle& particle);
+   virtual void RecordEvent(const TUCNParticle& particle, const std::string& context);
+   virtual void LoadExistingObservables(TDirectory* const particleDir);
+   virtual void WriteToFile(TDirectory* const particleDir);
+   
+   ClassDef(TUCNTrackObserver, 1)
 };
 
 #endif /* TUCNOBSERVER_H */
