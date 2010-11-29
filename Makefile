@@ -22,9 +22,12 @@ SANDBOX			= bin/sandbox$(ExeSuf)
 BUILDTESTS		= src/buildtest.$(SrcSuf)
 BUILDTESTO		= src/buildtest.$(ObjSuf)
 BUILDTEST		= bin/buildtest$(ExeSuf)
-PLOT_DATAS			= src/plot_data.$(SrcSuf)
-PLOT_DATAO			= src/plot_data.$(ObjSuf)
-PLOT_DATA			= bin/plot_data$(ExeSuf)
+PLOT_DATAS		= src/plot_data.$(SrcSuf)
+PLOT_DATAO		= src/plot_data.$(ObjSuf)
+PLOT_DATA		= bin/plot_data$(ExeSuf)
+DRAW_TRACKSS	= src/draw_tracks.$(SrcSuf)
+DRAW_TRACKSO	= src/draw_tracks.$(ObjSuf)
+DRAW_TRACKS		= bin/draw_tracks$(ExeSuf)
 
 #------------------------------------------------------------------------------
 # my classes
@@ -96,7 +99,7 @@ UCNLIB			= -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter -l
 					  -lGui -lRGL -lGed
 #------------------------------------------------------------------------------
 OBJS				=	$(SIMULATE_UCNO) $(GENERATE_UCNO) $(SANDBOXO) $(BUILDTESTO) $(PLOT_DATAO) \
-						$(TUCNRUNO) $(TUCNGEOBUILDERO) \
+						$(DRAW_TRACKSO) $(TUCNRUNO) $(TUCNGEOBUILDERO) \
  						$(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) $(TUCNGRAVFIELDO) \
  						$(TUCNPARTICLEO) $(TUCNSTATEO) $(TUCNSPINO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
  						$(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) $(TUCNMAGFIELDO) \
@@ -104,7 +107,8 @@ OBJS				=	$(SIMULATE_UCNO) $(GENERATE_UCNO) $(SANDBOXO) $(BUILDTESTO) $(PLOT_DAT
 						$(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) \
 						$(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) $(TUCNELEMENTO) $(TUCNMAGFIELDMANAGERO) \
 						$(TUCNINITIALCONFIGO) $(TUCNRUNCONFIGO) $(TUCNOBSERVERO) $(TUCNOBSERVABLESO)
-PROGRAMS			=	$(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(BUILDTEST) $(PLOT_DATA) $(SANDBOX) 
+PROGRAMS			=	$(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(BUILDTEST) $(PLOT_DATA) $(SANDBOX) \
+ 						$(DRAW_TRACKS) 
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 .PHONY:     UCN ucnsim sandbox buildtest fitdata genpart
@@ -149,7 +153,14 @@ $(PLOT_DATA):	$(PLOT_DATAO) $(UCNSO)
 					$(OutPutOpt)$@
 					$(MT_EXE)
 					@echo "$@ done"
-					
+
+draw_tracks:	 $(DRAW_TRACKS)
+$(DRAW_TRACKS): $(DRAW_TRACKSO) $(UCNSO)
+					 $(LD) $(LDFLAGS) $(DRAW_TRACKSO) $(UCNLIB) $(LIBS)  \
+					 $(OutPutOpt)$@
+					 $(MT_EXE)
+					 @echo "$@ done"
+
 UCN:				$(UCNSO)
 $(UCNSO):		$(TUCNRUNO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) \
                $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNSTATEO) $(TUCNSPINO) $(TUCNDATAPARSERO) \
