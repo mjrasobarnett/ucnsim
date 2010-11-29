@@ -52,7 +52,7 @@ namespace Plot {
    TH1F* spinUpHist = NULL;
    TH1F* spinDownHist = NULL;
    
-   
+   TH1F* spinUpDownHist = NULL;
 }
 
 Int_t main(Int_t argc,Char_t **argv)
@@ -172,6 +172,14 @@ Int_t main(Int_t argc,Char_t **argv)
       //spinDownHist->SetLineColor(kRed);
       Plot::spinDownHist->SetFillStyle(3001);
       Plot::spinDownHist->SetFillColor(kRed-7);
+      
+      sprintf(histname,"%s:SpinUp+Down",statename.Data());
+      Plot::spinUpDownHist  = new TH1F(histname,"SpinUp+Down", 500, 0.0, runTime);   
+      Plot::spinUpDownHist->SetXTitle("Time (s)");
+      Plot::spinUpDownHist->SetYTitle("Spin Up+Down Neutrons");
+      //spinDownHist->SetLineColor(kRed);
+      Plot::spinUpDownHist->SetFillStyle(3001);
+      Plot::spinUpDownHist->SetFillColor(kBlack);
    }
    //////////////////////////////////////////////////////////////////////////////////////
    ///////////////////////////////////////////////////////////////////////////////////////
@@ -256,6 +264,7 @@ Int_t main(Int_t argc,Char_t **argv)
                      // If spin down, bin the time
                      if (Plot::spinUpHist) Plot::spinDownHist->Fill(dataIter->first);
                   }
+                  Plot::spinUpDownHist->Fill(dataIter->first);
                }
                delete data;
             } else if (cl->InheritsFrom("TUCNBounceObservables")) {
@@ -358,7 +367,7 @@ Int_t main(Int_t argc,Char_t **argv)
    // -- Down
    if (Plot::spinUpHist) {
       TCanvas *spincanvas = new TCanvas("Spin","Spin Polarisation",60,0,1200,800);
-      spincanvas->Divide(2,1);
+      spincanvas->Divide(3,1);
       spincanvas->cd(1);
       Plot::spinDownHist->Draw();
    //   spinDownHist->GetYaxis()->SetRangeUser(0.0,200.0);
@@ -390,16 +399,18 @@ Int_t main(Int_t argc,Char_t **argv)
       cout << "Amplitude: " << upamplitude << "\t" << "Omega: " << upomega;
       cout << "\t" << "Phase: " << upphase << endl;
       cout << "------------------------------------" << endl;
-      // -- Combined
+   */   // -- Combined
       spincanvas->cd(3);
-      spinUpHist->Draw();
-      spinDownHist->Draw("SAME");
+      Plot::spinUpDownHist->Draw();
+   /*
+      
       TLegend* leg = new TLegend(0.7,0.91,0.9,0.99); //coordinates are fractions of pad dimensions
       leg->SetFillColor(0);
       leg->AddEntry(spinUpHist,"Spin Up"); // l means line, p shows marker
       leg->AddEntry(spinDownHist,"Spin Down");
       leg->Draw();
-   */   
+   */ 
+      
    }
    
    
