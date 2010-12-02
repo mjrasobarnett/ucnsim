@@ -5,7 +5,6 @@
 #include <sstream>
 #include <cassert>
 #include <stdexcept>
-#include <list>
 
 #include "Run.h"
 #include "ConfigFile.h"
@@ -23,7 +22,6 @@
 using std::cout;
 using std::endl;
 using std::runtime_error;
-using std::list;
 
 //#define VERBOSE_MODE
 
