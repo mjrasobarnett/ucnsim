@@ -25,8 +25,6 @@ protected:
    Data*            fData;
    Experiment*      fExperiment;
    
-   Bool_t               LoadParticles(const RunConfig& runConfig);
-   
 public:
    // -- constructors
    Run();
