@@ -16,11 +16,11 @@
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
 
-#include "TUCNParticle.h"
-#include "TUCNConfigFile.h"
-#include "TUCNInitialConfig.h"
-#include "TUCNRunConfig.h"
-#include "TUCNObservables.h"
+#include "Particle.h"
+#include "ConfigFile.h"
+#include "InitialConfig.h"
+#include "RunConfig.h"
+#include "Observables.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -76,13 +76,13 @@ Int_t main(Int_t argc,Char_t **argv)
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////
-   TUCNConfigFile configFile(configFileName.Data());
+   ConfigFile configFile(configFileName.Data());
    const string initialConfigFileName = configFile.GetString("Config","Initialisation");
    const string runConfigFile = configFile.GetString("Config",runName);
    ///////////////////////////////////////////////////////////////////////////////////////
    // Read in Initial Configuration from file.
-   TUCNInitialConfig initialConfig(initialConfigFileName);
-   TUCNRunConfig runConfig(runConfigFile);
+   InitialConfig initialConfig(initialConfigFileName);
+   RunConfig runConfig(runConfigFile);
    // Read the outputfile name
    TString dataFileName = runConfig.OutputFileName();
    //////////////////////////////////////////////////////////////////////////////////////
@@ -237,9 +237,9 @@ Int_t main(Int_t argc,Char_t **argv)
             classname = objKey->GetClassName();
             cl = gROOT->GetClass(classname);
             if (!cl) continue;
-            if (cl->InheritsFrom("TUCNParticle")) {
+            if (cl->InheritsFrom("Particle")) {
                // -- Extract Final Particle State Data
-               TUCNParticle* particle = dynamic_cast<TUCNParticle*>(objKey->ReadObj());
+               Particle* particle = dynamic_cast<Particle*>(objKey->ReadObj());
                // -- Fill Histograms
                Plot::points->SetPoint(particle->Id(), particle->X(), particle->Y(), particle->Z());
                Plot::thetaHist->Fill(particle->Theta()/TMath::Pi());
@@ -251,11 +251,11 @@ Int_t main(Int_t argc,Char_t **argv)
                Plot::timeHist->Fill(particle->T()/Units::s);
                Plot::distHist->Fill(particle->Distance()/Units::m);
                delete particle;
-            } else if (cl->InheritsFrom("TUCNSpinObservables")) {
+            } else if (cl->InheritsFrom("SpinObservables")) {
                // -- Extract Spin Observer Data if recorded
-               TUCNSpinObservables* data = dynamic_cast<TUCNSpinObservables*>(objKey->ReadObj());
+               SpinObservables* data = dynamic_cast<SpinObservables*>(objKey->ReadObj());
                // Loop over spin data recorded for particle
-               TUCNSpinObservables::iterator dataIter;
+               SpinObservables::iterator dataIter;
                for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
                   if (dataIter->second == kTRUE) {
                      // If spin up, bin the time
@@ -267,9 +267,9 @@ Int_t main(Int_t argc,Char_t **argv)
                   Plot::spinUpDownHist->Fill(dataIter->first);
                }
                delete data;
-            } else if (cl->InheritsFrom("TUCNBounceObservables")) {
+            } else if (cl->InheritsFrom("BounceObservables")) {
                // -- Extract Bounce Observer Data if recorded
-               TUCNBounceObservables* data =dynamic_cast<TUCNBounceObservables*>(objKey->ReadObj());
+               BounceObservables* data =dynamic_cast<BounceObservables*>(objKey->ReadObj());
                Plot::bounceHist->Fill(data->CountTotal());
                Plot::specHist->Fill(data->CountSpecular());
                Plot::diffHist->Fill(data->CountDiffuse());

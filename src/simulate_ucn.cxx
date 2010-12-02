@@ -2,10 +2,10 @@
 #include <string>
 #include "TBenchmark.h"
 
-#include "TUCNConfigFile.h"
-#include "TUCNRunConfig.h"
-#include "TUCNInitialConfig.h"
-#include "TUCNRun.h"
+#include "ConfigFile.h"
+#include "RunConfig.h"
+#include "InitialConfig.h"
+#include "Run.h"
 
 using std::cout;
 using std::endl;
@@ -30,7 +30,7 @@ Int_t main(Int_t argc,Char_t **argv)
       cerr << "Usage, ucnsim <configFile.cfg>" << endl;
       return EXIT_FAILURE;
    }
-   TUCNConfigFile configFile(configFileName);
+   ConfigFile configFile(configFileName);
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Fetch the Number of Runs
    ///////////////////////////////////////////////////////////////////////////////////////
@@ -51,11 +51,11 @@ Int_t main(Int_t argc,Char_t **argv)
       Char_t runID[20];
       sprintf(runID,"Run%d",runNumber);
       const string runConfigFile = configFile.GetString("Config",runID);
-      TUCNRunConfig runConfig(runConfigFile);
+      RunConfig runConfig(runConfigFile);
       // Create the Run
       cout << "-------------------------------------------" << endl;
       cout << "Creating RunID: " << runID << "\t" << "from: " << runConfigFile << endl;
-      TUCNRun run(runConfig);
+      Run run(runConfig);
       
       ///////////////////////////////////////////////////////////////////////////////////////
       // -- Initialise Run

@@ -46,16 +46,16 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Making Top Volume
-   TUCNGeoBBox* topShape = new TUCNGeoBBox("Top",topX,topY,topZ);
-   TUCNBlackHole* top = new TUCNBlackHole("Top", topShape, blackhole);
+   Box* topShape = new Box("Top",topX,topY,topZ);
+   BlackHole* top = new BlackHole("Top", topShape, blackhole);
    geoManager->SetTopVolume(top);
    top->SetVisibility(kFALSE);
    
    // -- Make the boundary volume in which all the others sit
    // -- This is what we will be reflecting off all the time
    Double_t surfaceRoughness = 0.05;
-   TUCNGeoBBox* chamberShape = new TUCNGeoBBox("Chamber",chamberX,chamberY,chamberZ);
-   TUCNBoundary* chamber = new TUCNBoundary("Chamber", chamberShape, beryllium, surfaceRoughness);
+   Box* chamberShape = new Box("Chamber",chamberX,chamberY,chamberZ);
+   Boundary* chamber = new Boundary("Chamber", chamberShape, beryllium, surfaceRoughness);
    chamber->SetLineColor(kOrange-7);
    chamber->SetLineWidth(1);
    chamber->SetVisibility(kFALSE);
@@ -64,8 +64,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    top->AddNode(chamber,1);
    
    // HV Cell
-   TUCNGeoTube *hvCellShape = new TUCNGeoTube("HVShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
-   TUCNTrackingVolume* hvCell = new TUCNTrackingVolume("HVCell", hvCellShape, heliumII);
+   Tube *hvCellShape = new Tube("HVShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
+   TrackingVolume* hvCell = new TrackingVolume("HVCell", hvCellShape, heliumII);
    hvCell->SetLineColor(kYellow-8);
    hvCell->SetLineWidth(1);
    hvCell->SetVisibility(kTRUE);
@@ -93,17 +93,17 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    cout << "--------------------------------" << endl;
    cout << "Initialising Magnetic fields" << endl;
    cout << "--------------------------------" << endl;
-   TUCNMagFieldManager* magFieldManager = new TUCNMagFieldManager();
+   MagFieldManager* magFieldManager = new MagFieldManager();
    
    // -- Define solenoid field - uniform magnetic field
    // Define shape of field
-   TGeoShape* fieldShape = new TUCNGeoTube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
+   TGeoShape* fieldShape = new Tube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
    // Define transformation that locates field in geometry
    TGeoMatrix* fieldPosition = new TGeoHMatrix(hvCellMat);
    // Define field vector
    TVector3 fieldStrength(solenoidBx, solenoidBy, solenoidBz);
    // Define field object
-   TUCNMagField* uniformField = new TUCNUniformMagField("SolenoidField", fieldStrength, fieldShape, fieldPosition);
+   MagField* uniformField = new UniformMagField("SolenoidField", fieldStrength, fieldShape, fieldPosition);
    
    // Add field to magfield manager
    magFieldManager->AddField(uniformField);

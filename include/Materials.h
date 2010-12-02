@@ -12,8 +12,8 @@
 #include "TMath.h"
 #include "TGeoManager.h"
 
-#include "TUCNMaterial.h"
-#include "TUCNElement.h"
+#include "Material.h"
+#include "Element.h"
 
 using std::cout;
 using std::endl;
@@ -192,8 +192,8 @@ namespace Materials
       //________________________________________
       // BOUNDARY MATERIALS      
       // - Hydrogen
-      TUCNElement* elemHydrogen = new TUCNElement("H", "Hydrogen", Hydrogen::z, Hydrogen::a, Hydrogen::scatLength, Hydrogen::cohCrossSec, Hydrogen::incohCrossSec, Hydrogen::absCrossSec);
-      TUCNMaterial* matHydrogen = new TUCNMaterial("Hydrogen", elemHydrogen, Densities::hydrogen);
+      Element* elemHydrogen = new Element("H", "Hydrogen", Hydrogen::z, Hydrogen::a, Hydrogen::scatLength, Hydrogen::cohCrossSec, Hydrogen::incohCrossSec, Hydrogen::absCrossSec);
+      Material* matHydrogen = new Material("Hydrogen", elemHydrogen, Densities::hydrogen);
       TGeoMedium* hydrogen = new TGeoMedium("Hydrogen", 1, matHydrogen);
       cout << "Added Material: " << hydrogen->GetName() << endl;
       /*
@@ -210,8 +210,8 @@ namespace Materials
       cout << "---------------------------------" << endl;
       */
       // - Beryllium
-      TUCNElement* elemBeryllium = new TUCNElement("Be", "Beryllium", Beryllium::z, Beryllium::a, Beryllium::scatLength, Beryllium::cohCrossSec, Beryllium::incohCrossSec, Beryllium::absCrossSec);
-      TUCNMaterial* matBeryllium = new TUCNMaterial("Beryllium", elemBeryllium, Densities::beryllium);
+      Element* elemBeryllium = new Element("Be", "Beryllium", Beryllium::z, Beryllium::a, Beryllium::scatLength, Beryllium::cohCrossSec, Beryllium::incohCrossSec, Beryllium::absCrossSec);
+      Material* matBeryllium = new Material("Beryllium", elemBeryllium, Densities::beryllium);
       TGeoMedium* beryllium = new TGeoMedium("Beryllium", 1, matBeryllium);
       // Set Beryllium Loss factor to the experimentally determined value
       matBeryllium->LossFactor(LossFactor::beryllium);
@@ -230,8 +230,8 @@ namespace Materials
       cout << "---------------------------------" << endl;
       */
       // - Copper
-      TUCNElement* elemCopper = new TUCNElement("Cu", "Copper", Copper::z, Copper::a, Copper::scatLength, Copper::cohCrossSec, Copper::incohCrossSec, Copper::absCrossSec);
-      TUCNMaterial* matCopper = new TUCNMaterial("Copper", elemCopper, Densities::copper);
+      Element* elemCopper = new Element("Cu", "Copper", Copper::z, Copper::a, Copper::scatLength, Copper::cohCrossSec, Copper::incohCrossSec, Copper::absCrossSec);
+      Material* matCopper = new Material("Copper", elemCopper, Densities::copper);
       TGeoMedium* copper = new TGeoMedium("Copper", 1, matCopper);
       cout << "Added Material: " << copper->GetName() << endl;
       /*
@@ -248,8 +248,8 @@ namespace Materials
       cout << "---------------------------------" << endl;
       */
       // - Aluminium
-      TUCNElement* elemAluminium = new TUCNElement("Al", "Aluminium", Aluminium::z, Aluminium::a, Aluminium::scatLength, Aluminium::cohCrossSec, Aluminium::incohCrossSec, Aluminium::absCrossSec);
-      TUCNMaterial* matAluminium = new TUCNMaterial("Aluminium", elemAluminium, Densities::aluminium);
+      Element* elemAluminium = new Element("Al", "Aluminium", Aluminium::z, Aluminium::a, Aluminium::scatLength, Aluminium::cohCrossSec, Aluminium::incohCrossSec, Aluminium::absCrossSec);
+      Material* matAluminium = new Material("Aluminium", elemAluminium, Densities::aluminium);
       TGeoMedium* aluminium = new TGeoMedium("Aluminium", 1, matAluminium);
       cout << "Added Material: " << aluminium->GetName() << endl;
       /*
@@ -268,8 +268,8 @@ namespace Materials
       //________________________________________
       // TRACKING MATERIALS
       // - HeliumII
-      TUCNElement* elemHeliumII = new TUCNElement("He", "HeliumII", HeliumII::z, HeliumII::a, HeliumII::scatLength, HeliumII::cohCrossSec, HeliumII::incohCrossSec, HeliumII::absCrossSec);
-      TUCNMaterial* matHeliumII = new TUCNMaterial("HeliumII", elemHeliumII, Densities::heliumII);
+      Element* elemHeliumII = new Element("He", "HeliumII", HeliumII::z, HeliumII::a, HeliumII::scatLength, HeliumII::cohCrossSec, HeliumII::incohCrossSec, HeliumII::absCrossSec);
+      Material* matHeliumII = new Material("HeliumII", elemHeliumII, Densities::heliumII);
       TGeoMedium* heliumII = new TGeoMedium("HeliumII", 1, matHeliumII);
       cout << "Added Material: " << heliumII->GetName() << endl;
       /*
@@ -288,8 +288,8 @@ namespace Materials
       //________________________________________
       // BLACKHOLE MATERIALS
       // - Vacuum
-      TUCNElement* elemVacuum = new TUCNElement("H", "Vacuum", Vacuum::z, Vacuum::a, Vacuum::scatLength, Vacuum::cohCrossSec, Vacuum::incohCrossSec, Vacuum::absCrossSec);
-      TUCNMaterial* matVacuum = new TUCNMaterial("Vacuum", elemVacuum, Densities::vacuum);
+      Element* elemVacuum = new Element("H", "Vacuum", Vacuum::z, Vacuum::a, Vacuum::scatLength, Vacuum::cohCrossSec, Vacuum::incohCrossSec, Vacuum::absCrossSec);
+      Material* matVacuum = new Material("Vacuum", elemVacuum, Densities::vacuum);
       TGeoMedium* vacuum = new TGeoMedium("Vacuum", 1, matVacuum);
       cout << "Added Material: " << vacuum->GetName() << endl;
       /*
@@ -308,8 +308,8 @@ namespace Materials
       //________________________________________
       // DETECTOR MATERIALS
       // - Lithium6
-      TUCNElement* elemLithium6 = new TUCNElement("H", "Lithium6", Lithium6::z, Lithium6::a, Lithium6::scatLength, Lithium6::cohCrossSec, Lithium6::incohCrossSec, Lithium6::absCrossSec);
-      TUCNMaterial* matLithium6 = new TUCNMaterial("Lithium6", elemLithium6, Densities::lithium6);
+      Element* elemLithium6 = new Element("H", "Lithium6", Lithium6::z, Lithium6::a, Lithium6::scatLength, Lithium6::cohCrossSec, Lithium6::incohCrossSec, Lithium6::absCrossSec);
+      Material* matLithium6 = new Material("Lithium6", elemLithium6, Densities::lithium6);
       TGeoMedium* lithium6 = new TGeoMedium("Lithium6", 1, matLithium6);
       cout << "Added Material: " << lithium6->GetName() << endl;
       /*

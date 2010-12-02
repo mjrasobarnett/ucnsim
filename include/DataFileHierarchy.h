@@ -16,7 +16,7 @@ namespace Folders
    const std::string detected = "detected";
    const std::string decayed = "decayed";
    const std::string lost = "lost";
-   const std::string bad = "bad";
+   const std::string anomalous = "anomalous";
    
 }
 

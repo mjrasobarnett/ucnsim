@@ -10,108 +10,101 @@ include ./Makefile.arch
 #------------------------------------------------------------------------------
 # standalone programs
 #------------------------------------------------------------------------------
-SIMULATE_UCNS	= src/simulate_ucn.$(SrcSuf)
-SIMULATE_UCNO	= src/simulate_ucn.$(ObjSuf)
-SIMULATE_UCN	= bin/simulate_ucn$(ExeSuf)
-GENERATE_UCNS	= src/generate_ucn.$(SrcSuf)
-GENERATE_UCNO	= src/generate_ucn.$(ObjSuf)
-GENERATE_UCN	= bin/generate_ucn$(ExeSuf)
-SANDBOXS			= src/sandbox.$(SrcSuf)
-SANDBOXO			= src/sandbox.$(ObjSuf)
-SANDBOX			= bin/sandbox$(ExeSuf)
-BUILDTESTS		= src/buildtest.$(SrcSuf)
-BUILDTESTO		= src/buildtest.$(ObjSuf)
-BUILDTEST		= bin/buildtest$(ExeSuf)
-PLOT_DATAS		= src/plot_data.$(SrcSuf)
-PLOT_DATAO		= src/plot_data.$(ObjSuf)
-PLOT_DATA		= bin/plot_data$(ExeSuf)
-DRAW_TRACKSS	= src/draw_tracks.$(SrcSuf)
-DRAW_TRACKSO	= src/draw_tracks.$(ObjSuf)
-DRAW_TRACKS		= bin/draw_tracks$(ExeSuf)
+SIMULATE_UCNS = src/simulate_ucn.$(SrcSuf)
+SIMULATE_UCNO = src/simulate_ucn.$(ObjSuf)
+SIMULATE_UCN = bin/simulate_ucn$(ExeSuf)
+GENERATE_UCNS = src/generate_ucn.$(SrcSuf)
+GENERATE_UCNO = src/generate_ucn.$(ObjSuf)
+GENERATE_UCN = bin/generate_ucn$(ExeSuf)
+SANDBOXS = src/sandbox.$(SrcSuf)
+SANDBOXO = src/sandbox.$(ObjSuf)
+SANDBOX = bin/sandbox$(ExeSuf)
+PLOT_DATAS = src/plot_data.$(SrcSuf)
+PLOT_DATAO = src/plot_data.$(ObjSuf)
+PLOT_DATA = bin/plot_data$(ExeSuf)
+DRAW_TRACKSS = src/draw_tracks.$(SrcSuf)
+DRAW_TRACKSO = src/draw_tracks.$(ObjSuf)
+DRAW_TRACKS = bin/draw_tracks$(ExeSuf)
 
 #------------------------------------------------------------------------------
 # my classes
 #------------------------------------------------------------------------------
-TUCNCONFIGFILEO 		= src/TUCNConfigFile.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNCONFIGFILES 		= src/TUCNConfigFile.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNRUNO					= src/TUCNRun.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNRUNS					= src/TUCNRun.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNEXPERIMENTO		= src/TUCNExperiment.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNEXPERIMENTS		= src/TUCNExperiment.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNFIELDMANAGERO 	= src/TUCNFieldManager.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNFIELDMANAGERS 	= src/TUCNFieldManager.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNGEOBBOXO			= src/TUCNGeoBBox.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNGEOBBOXS			= src/TUCNGeoBBox.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNGEOTUBEO			= src/TUCNGeoTube.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNGEOTUBES			= src/TUCNGeoTube.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNMATERIALO			= src/TUCNMaterial.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNMATERIALS			= src/TUCNMaterial.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNGRAVFIELDO			= src/TUCNGravField.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNGRAVFIELDS			= src/TUCNGravField.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNPARTICLEO			= src/TUCNParticle.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNPARTICLES			= src/TUCNParticle.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNSTATEO				= src/TUCNState.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNSTATES				= src/TUCNState.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNSPINO				= src/TUCNSpin.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNSPINS				= src/TUCNSpin.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNDATAPARSERO		= src/TUCNDataParser.$(ObjSuf)   UCNDict.$(ObjSuf)
-TUCNDATAPARSERS		= src/TUCNDatParser.$(SrcSuf)  	 UCNDict.$(SrcSuf)
-TUCNPARABOLAO			= src/TUCNParabola.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNPARABOLAS			= src/TUCNParabola.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNPOLYNOMIALO		= src/TUCNPolynomial.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNPOLYNOMIALS		= src/TUCNPolynomial.$(SrcSuf)  UCNDict.$(SrcSuf)
-TUCNDATAO				= src/TUCNData.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNDATAS				= src/TUCNData.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNMAGFIELDO			= src/TUCNMagField.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNMAGFIELDS			= src/TUCNMagField.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNUNIFORMMAGFIELDO	= src/TUCNUniformMagField.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNUNIFORMMAGFIELDS	= src/TUCNUniformMagField.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNPARABOLICMAGFIELDO	= src/TUCNParabolicMagField.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNPARABOLICMAGFIELDS	= src/TUCNParabolicMagField.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNGEOCOMPOSITESHAPEO		= src/TUCNGeoCompositeShape.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNGEOCOMPOSITESHAPES		= src/TUCNGeoCompositeShape.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNGEOBOOLNODEO		= src/TUCNGeoBoolNode.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNGEOBOOLNODES		= src/TUCNGeoBoolNode.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNELEMENTO         = src/TUCNElement.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNELEMENTS         = src/TUCNElement.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNVOLUMEO          = src/TUCNVolume.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNVOLUMES          = src/TUCNVolume.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNMAGFIELDMANAGERO = src/TUCNMagFieldManager.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNMAGFIELDMANAGERS = src/TUCNMagFieldManager.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNINITIALCONFIGO = src/TUCNInitialConfig.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNINITIALCONFIGS = src/TUCNInitialConfig.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNRUNCONFIGO = src/TUCNRunConfig.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNRUNCONFIGS = src/TUCNRunConfig.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNOBSERVERO = src/TUCNObserver.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNOBSERVERS = src/TUCNObserver.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNOBSERVABLESO = src/TUCNObservables.$(ObjSuf) UCNDict.$(ObjSuf)
-TUCNOBSERVABLESS = src/TUCNObservables.$(SrcSuf) UCNDict.$(SrcSuf)
-
+CONFIGFILEO = src/ConfigFile.$(ObjSuf) UCNDict.$(ObjSuf)
+CONFIGFILES = src/ConfigFile.$(SrcSuf) UCNDict.$(SrcSuf)
+RUNO = src/Run.$(ObjSuf)  UCNDict.$(ObjSuf)
+RUNS = src/Run.$(SrcSuf)  UCNDict.$(SrcSuf)
+EXPERIMENTO = src/Experiment.$(ObjSuf)  UCNDict.$(ObjSuf)
+EXPERIMENTS = src/Experiment.$(SrcSuf)  UCNDict.$(SrcSuf)
+FIELDMANAGERO = src/FieldManager.$(ObjSuf) UCNDict.$(ObjSuf)
+FIELDMANAGERS = src/FieldManager.$(SrcSuf) UCNDict.$(SrcSuf)
+BOXO = src/Box.$(ObjSuf) UCNDict.$(ObjSuf)
+BOXS = src/Box.$(SrcSuf) UCNDict.$(SrcSuf)
+TUBEO = src/Tube.$(ObjSuf) UCNDict.$(ObjSuf)
+TUBES = src/Tube.$(SrcSuf) UCNDict.$(SrcSuf)
+MATERIALO = src/Material.$(ObjSuf) UCNDict.$(ObjSuf)
+MATERIALS = src/Material.$(SrcSuf) UCNDict.$(SrcSuf)
+GRAVFIELDO = src/GravField.$(ObjSuf) UCNDict.$(ObjSuf)
+GRAVFIELDS = src/GravField.$(SrcSuf) UCNDict.$(SrcSuf)
+PARTICLEO = src/Particle.$(ObjSuf) UCNDict.$(ObjSuf)
+PARTICLES = src/Particle.$(SrcSuf) UCNDict.$(SrcSuf)
+STATEO = src/State.$(ObjSuf) UCNDict.$(ObjSuf)
+STATES = src/State.$(SrcSuf) UCNDict.$(SrcSuf)
+SPINO = src/Spin.$(ObjSuf) UCNDict.$(ObjSuf)
+SPINS = src/Spin.$(SrcSuf) UCNDict.$(SrcSuf)
+DATAPARSERO = src/DataParser.$(ObjSuf) UCNDict.$(ObjSuf)
+DATAPARSERS = src/DatParser.$(SrcSuf) UCNDict.$(SrcSuf)
+PARABOLAO = src/Parabola.$(ObjSuf) UCNDict.$(ObjSuf)
+PARABOLAS = src/Parabola.$(SrcSuf) UCNDict.$(SrcSuf)
+POLYNOMIALO = src/Polynomial.$(ObjSuf) UCNDict.$(ObjSuf)
+POLYNOMIALS = src/Polynomial.$(SrcSuf) UCNDict.$(SrcSuf)
+DATAO = src/Data.$(ObjSuf) UCNDict.$(ObjSuf)
+DATAS = src/Data.$(SrcSuf) UCNDict.$(SrcSuf)
+MAGFIELDO = src/MagField.$(ObjSuf) UCNDict.$(ObjSuf)
+MAGFIELDS = src/MagField.$(SrcSuf) UCNDict.$(SrcSuf)
+UNIFORMMAGFIELDO = src/UniformMagField.$(ObjSuf) UCNDict.$(ObjSuf)
+UNIFORMMAGFIELDS = src/UniformMagField.$(SrcSuf) UCNDict.$(SrcSuf)
+PARABOLICMAGFIELDO = src/ParabolicMagField.$(ObjSuf) UCNDict.$(ObjSuf)
+PARABOLICMAGFIELDS = src/ParabolicMagField.$(SrcSuf) UCNDict.$(SrcSuf)
+COMPOSITESHAPEO = src/CompositeShape.$(ObjSuf) UCNDict.$(ObjSuf)
+COMPOSITESHAPES = src/CompositeShape.$(SrcSuf) UCNDict.$(SrcSuf)
+BOOLNODEO = src/BoolNode.$(ObjSuf) UCNDict.$(ObjSuf)
+BOOLNODES = src/BoolNode.$(SrcSuf) UCNDict.$(SrcSuf)
+ELEMENTO = src/Element.$(ObjSuf) UCNDict.$(ObjSuf)
+ELEMENTS = src/Element.$(SrcSuf) UCNDict.$(SrcSuf)
+VOLUMEO = src/Volume.$(ObjSuf) UCNDict.$(ObjSuf)
+VOLUMES = src/Volume.$(SrcSuf) UCNDict.$(SrcSuf)
+MAGFIELDMANAGERO = src/MagFieldManager.$(ObjSuf) UCNDict.$(ObjSuf)
+MAGFIELDMANAGERS = src/MagFieldManager.$(SrcSuf) UCNDict.$(SrcSuf)
+INITIALCONFIGO = src/InitialConfig.$(ObjSuf) UCNDict.$(ObjSuf)
+INITIALCONFIGS = src/InitialConfig.$(SrcSuf) UCNDict.$(SrcSuf)
+RUNCONFIGO = src/RunConfig.$(ObjSuf) UCNDict.$(ObjSuf)
+RUNCONFIGS = src/RunConfig.$(SrcSuf) UCNDict.$(SrcSuf)
+OBSERVERO = src/Observer.$(ObjSuf) UCNDict.$(ObjSuf)
+OBSERVERS = src/Observer.$(SrcSuf) UCNDict.$(SrcSuf)
+OBSERVABLESO = src/Observables.$(ObjSuf) UCNDict.$(ObjSuf)
+OBSERVABLESS = src/Observables.$(SrcSuf) UCNDict.$(SrcSuf)
 
 #------------------------------------------------------------------------------
 # my library with my classes
 #------------------------------------------------------------------------------
-LINKDEF			= UCNLinkDef.h
-UCNSO				= lib/libUCN.$(DllSuf)
-UCNLIB			= -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter -lMathMore \
-					  -lGui -lRGL -lGed
+LINKDEF = UCNLinkDef.h
+UCNSO = lib/libUCN.$(DllSuf)
+UCNLIB = -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lGeom -lEG -lm -lMathMore -lGui -lRGL -lGed
 #------------------------------------------------------------------------------
-OBJS				=	$(SIMULATE_UCNO) $(GENERATE_UCNO) $(SANDBOXO) $(BUILDTESTO) $(PLOT_DATAO) \
-						$(DRAW_TRACKSO) $(TUCNRUNO) \
- 						$(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) $(TUCNGRAVFIELDO) \
- 						$(TUCNPARTICLEO) $(TUCNSTATEO) $(TUCNSPINO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
- 						$(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) $(TUCNMAGFIELDO) \
- 						$(TUCNUNIFORMMAGFIELDO)  $(TUCNPARABOLICMAGFIELDO) \
-						$(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) \
-						$(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) $(TUCNELEMENTO) $(TUCNMAGFIELDMANAGERO) \
-						$(TUCNINITIALCONFIGO) $(TUCNRUNCONFIGO) $(TUCNOBSERVERO) $(TUCNOBSERVABLESO)
-PROGRAMS			=	$(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(BUILDTEST) $(PLOT_DATA) $(SANDBOX) \
- 						$(DRAW_TRACKS) 
+OBJS = $(SIMULATE_UCNO) $(GENERATE_UCNO) $(SANDBOXO) $(PLOT_DATAO) \
+$(DRAW_TRACKSO) $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
+$(STATEO) $(SPINO) $(DATAPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
+$(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
+$(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) $(INITIALCONFIGO) \
+$(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO)
+
+PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(PLOT_DATA) $(SANDBOX) \
+$(DRAW_TRACKS) 
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
-.PHONY:     UCN simulate_ucn sandbox buildtest fitdata generate_ucn plot_data draw_tracks
+.PHONY: simulate_ucn sandbox buildtest fitdata generate_ucn plot_data draw_tracks
 
-all:         $(PROGRAMS)
+all: $(PROGRAMS)
 
 clean:
 		@rm -f $(OBJS) $(PROGRAMS) ./lib/* UCNDict.* core *Dict* ./*.txt
@@ -138,13 +131,6 @@ $(SANDBOX):		$(SANDBOXO) $(UCNSO)
 					$(MT_EXE)
 					@echo "$@ done"
 
-buildtest:		$(BUILDTEST)
-$(BUILDTEST):	$(BUILDTESTO) $(UCNSO)
-					$(LD) $(LDFLAGS) $(BUILDTESTO) $(UCNLIB) $(LIBS)  \
-					$(OutPutOpt)$@
-					$(MT_EXE)
-					@echo "$@ done"		
-
 plot_data:		$(PLOT_DATA)
 $(PLOT_DATA):	$(PLOT_DATAO) $(UCNSO)
 					$(LD) $(LDFLAGS) $(PLOT_DATAO) $(UCNLIB) $(LIBS)  \
@@ -159,14 +145,13 @@ $(DRAW_TRACKS): $(DRAW_TRACKSO) $(UCNSO)
 					 $(MT_EXE)
 					 @echo "$@ done"
 
-UCN:				$(UCNSO)
-$(UCNSO):		$(TUCNRUNO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) \
-               $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNSTATEO) $(TUCNSPINO) $(TUCNDATAPARSERO) \
-					$(TUCNPARABOLAO) $(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) \
-					$(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO)  $(TUCNPARABOLICMAGFIELDO) \
-					$(TUCNFIELDMANAGERO) $(TUCNCONFIGFILEO) $(TUCNGEOCOMPOSITESHAPEO) \
-					$(TUCNGEOBOOLNODEO) $(TUCNVOLUMEO) $(TUCNELEMENTO) $(TUCNMAGFIELDMANAGERO) \
-					$(TUCNINITIALCONFIGO) $(TUCNRUNCONFIGO) $(TUCNOBSERVERO) $(TUCNOBSERVABLESO)
+$(UCNSO):		$(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) \
+               $(GRAVFIELDO) $(PARTICLEO) $(STATEO) $(SPINO) $(DATAPARSERO) \
+					$(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
+					$(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) \
+					$(FIELDMANAGERO) $(CONFIGFILEO) $(COMPOSITESHAPEO) \
+					$(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) \
+					$(INITIALCONFIGO) $(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO)
 
 ifeq ($(ARCH),aix)
 		/usr/ibmcxx/bin/makeC++SharedLib $(OutPutOpt) $@ $(LIBS) -p 0 $^
@@ -192,45 +177,45 @@ endif
 endif
 endif
 
-TUCNGEOBBOXO:					include/TUCNGeoBBox.h
-TUCNGEOTUBEO:					include/TUCNGeoTube.h
-TUCNMATERIALO:					include/TUCNMaterial.h
-TUCNGRAVFIELDO:				include/TUCNGravField.h
-TUCNPARTICLEO:					include/TUCNParticle.h
-TUCNSTATEO:						include/TUCNState.h
-TUCNSPINO:						include/TUCNSpin.h
-TUCNDATAPARSERO:				include/TUCNDataParser.h
-TUCNPARABOLAO:					include/TUCNParabola.h
-TUCNPOLYNOMIALO:				include/TUCNPolynomial.h
-TUCNEXPERIMENTO:				include/TUCNExperiment.h
-TUCNDATAO:						include/TUCNData.h
-TUCNMAGFIELDO:					include/TUCNMagField.h
-TUCNUNIFORMMAGFIELDO:		include/TUCNUniformMagField.h
-TUCNRUNO:						include/TUCNRun.h
-TUCNPARABOLICMAGFIELDO:		include/TUCNParabolicMagField.h
-TUCNFIELDMANAGERO:			include/TUCNFieldManager.h
-TUCNCONFIGFILEO:				include/TUCNConfigFile.h
-TUCNGEOCOMPOSITESHAPEO:		include/TUCNGeoCompositeShape.h
-TUCNGEOBOOLNODEO:				include/TUCNGeoBoolNode.h
-TUCNVOLUMEO:               include/TUCNVolume.h
-TUCNELEMENTO:              include/TUCNElement.h
-TUCNMAGFIELDMANAGERO:		include/TUCNMagFieldManager.h
-TUCNINITIALCONFIGO:			include/TUCNInitialConfig.h
-TUCNRUNCONFIGO:				include/TUCNRunConfig.h
-TUCNOBSERVERO:					include/TUCNObserver.h
-TUCNOBSERVABLESO:				include/TUCNObservables.h
+BOXO: 						include/Box.h
+TUBEO: 						include/Tube.h
+MATERIALO: 					include/Material.h
+GRAVFIELDO: 				include/GravField.h
+PARTICLEO: 					include/Particle.h
+STATEO: 						include/State.h
+SPINO: 						include/Spin.h
+DATAPARSERO: 				include/DataParser.h
+PARABOLAO: 					include/Parabola.h
+POLYNOMIALO: 				include/Polynomial.h
+EXPERIMENTO: 				include/Experiment.h
+DATAO: 						include/Data.h
+MAGFIELDO: 					include/MagField.h
+UNIFORMMAGFIELDO: 		include/UniformMagField.h
+RUNO: 						include/Run.h
+PARABOLICMAGFIELDO: 		include/ParabolicMagField.h
+FIELDMANAGERO: 			include/FieldManager.h
+CONFIGFILEO: 				include/ConfigFile.h
+COMPOSITESHAPEO: 			include/CompositeShape.h
+BOOLNODEO: 					include/BoolNode.h
+VOLUMEO: 					include/Volume.h
+ELEMENTO: 					include/Element.h
+MAGFIELDMANAGERO: 		include/MagFieldManager.h
+INITIALCONFIGO: 			include/InitialConfig.h
+RUNCONFIGO: 				include/RunConfig.h
+OBSERVERO: 					include/Observer.h
+OBSERVABLESO: 				include/Observables.h
 
-UCNDict.$(SrcSuf):      include/TUCNGeoBuilder.h include/TUCNGeoBBox.h include/TUCNGeoTube.h \
-								include/TUCNMaterial.h include/TUCNGravField.h include/TUCNParticle.h \
-								include/TUCNState.h include/TUCNSpin.h include/TUCNDataParser.h \
-								include/TUCNPolynomial.h include/TUCNParabola.h \
-								include/TUCNExperiment.h include/TUCNData.h include/TUCNMagField.h \
-								include/TUCNUniformMagField.h include/TUCNParabolicMagField.h \
-								include/TUCNRun.h include/TUCNFieldManager.h include/TUCNConfigFile.h \
-								include/TUCNGeoCompositeShape.h include/TUCNGeoBoolNode.h \
-								include/TUCNVolume.h include/TUCNElement.h include/TUCNMagFieldManager.h \
-								include/TUCNInitialConfig.h include/TUCNRunConfig.h include/TUCNObserver.h \
-								include/TUCNObservables.h $(LINKDEF)
+UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
+								include/Material.h include/GravField.h include/Particle.h \
+								include/State.h include/Spin.h include/DataParser.h \
+								include/Polynomial.h include/Parabola.h \
+								include/Experiment.h include/Data.h include/MagField.h \
+								include/UniformMagField.h include/ParabolicMagField.h \
+								include/Run.h include/FieldManager.h include/ConfigFile.h \
+								include/CompositeShape.h include/BoolNode.h \
+								include/Volume.h include/Element.h include/MagFieldManager.h \
+								include/InitialConfig.h include/RunConfig.h include/Observer.h \
+								include/Observables.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 

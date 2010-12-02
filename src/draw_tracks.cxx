@@ -18,11 +18,11 @@
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
 
-#include "TUCNParticle.h"
-#include "TUCNConfigFile.h"
-#include "TUCNInitialConfig.h"
-#include "TUCNRunConfig.h"
-#include "TUCNObservables.h"
+#include "Particle.h"
+#include "ConfigFile.h"
+#include "InitialConfig.h"
+#include "RunConfig.h"
+#include "Observables.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -31,7 +31,7 @@
 using namespace std;
 
 namespace Plot {
-   TUCNTrackObservables* track = NULL;
+   TrackObservables* track = NULL;
 }
 
 Int_t main(Int_t argc,Char_t **argv)
@@ -55,13 +55,13 @@ Int_t main(Int_t argc,Char_t **argv)
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////
-   TUCNConfigFile configFile(configFileName.Data());
+   ConfigFile configFile(configFileName.Data());
    const string initialConfigFileName = configFile.GetString("Config","Initialisation");
    const string runConfigFile = configFile.GetString("Config",runName);
    ///////////////////////////////////////////////////////////////////////////////////////
    // Read in Initial Configuration from file.
-   TUCNInitialConfig initialConfig(initialConfigFileName);
-   TUCNRunConfig runConfig(runConfigFile);
+   InitialConfig initialConfig(initialConfigFileName);
+   RunConfig runConfig(runConfigFile);
    // Read the outputfile name
    TString dataFileName = runConfig.OutputFileName();
    ///////////////////////////////////////////////////////////////////////////////////////
@@ -131,8 +131,8 @@ Int_t main(Int_t argc,Char_t **argv)
                const char *classname = objKey->GetClassName();
                TClass *cl = gROOT->GetClass(classname);
                if (!cl) continue;
-               if (cl->InheritsFrom("TUCNTrackObservables")) {
-                  Plot::track = dynamic_cast<TUCNTrackObservables*>(objKey->ReadObj());
+               if (cl->InheritsFrom("TrackObservables")) {
+                  Plot::track = dynamic_cast<TrackObservables*>(objKey->ReadObj());
                   break;
                }
             }

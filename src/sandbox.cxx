@@ -4,9 +4,9 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "TUCNConfigFile.h"
-#include "TUCNRun.h"
-#include "TUCNParticle.h"
+#include "ConfigFile.h"
+#include "Run.h"
+#include "Particle.h"
 #include "TTree.h"
 #include "TFile.h"
 #include "TH1F.h"
@@ -16,9 +16,9 @@
 #include "TMath.h"
 #include "TRint.h"
 #include "TVector3.h"
-#include "TUCNUniformMagField.h"
-#include "TUCNMagFieldManager.h"
-#include "TUCNData.h"
+#include "UniformMagField.h"
+#include "MagFieldManager.h"
+#include "Data.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -42,10 +42,10 @@ int TestFieldManager()
    // the manager out to file and succesfully reading it back in. We should find that root makes a
    // new copy of the fields stored by the manager when this is read back in from file.
    TVector3 vec(0.,0.,0.);
-   TUCNMagField* magfield1 = new TUCNUniformMagField("1", vec,0, 0);
-   TUCNMagField* magfield2 = new TUCNUniformMagField("2", vec,0, 0);
+   MagField* magfield1 = new UniformMagField("1", vec,0, 0);
+   MagField* magfield2 = new UniformMagField("2", vec,0, 0);
    
-   TUCNMagFieldManager* manager1(new TUCNMagFieldManager());
+   MagFieldManager* manager1(new MagFieldManager());
    manager1->AddField(magfield1);
    manager1->AddField(magfield2);
    
@@ -71,7 +71,7 @@ int TestFieldManager()
    
    // -- Extract Object
    cout << "Fetching manaer" << endl;
-   TUCNMagFieldManager* manager2(new TUCNMagFieldManager());
+   MagFieldManager* manager2(new MagFieldManager());
    f->GetObject("MagFieldManager", manager2);
    if (manager2 == NULL) {
       Error("Export","Cannot extract manager from file");
@@ -120,7 +120,7 @@ Double_t ExponentialDecay(Double_t *x, Double_t *par)
       cerr << "Usage, ucnsim <configFile.cfg> <treename>" << endl;
       return EXIT_FAILURE;
    }
-   TUCNConfigFile configFile(configFileName);
+   ConfigFile configFile(configFileName);
    
    TRint *theApp = new TRint("FittingApp", &argc, argv);
    
@@ -162,7 +162,7 @@ Double_t ExponentialDecay(Double_t *x, Double_t *par)
       }
       // -- Extract Run Object
       cout << "Fetching run: " << runName << endl;
-      TUCNRun* run = new TUCNRun();
+      Run* run = new Run();
       file->GetObject(static_cast<const char*>(runName), run);
       if (run == NULL) {
          cerr << "Could not find run: " << runName << endl;
@@ -187,7 +187,7 @@ Double_t ExponentialDecay(Double_t *x, Double_t *par)
       
       // Fill Histograms
       for (Int_t i = 0; i < tree->GetEntriesFast(); i++) {
-         TUCNParticle* particle = run->GetData()->GetParticleState(tree, i);
+         Particle* particle = run->GetData()->GetParticleState(tree, i);
          if (particle == NULL) continue;
          timeHist->Fill(particle->T()/Units::s);
          particle = 0;
