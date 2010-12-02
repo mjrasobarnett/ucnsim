@@ -40,8 +40,6 @@ TUCNEXPERIMENTO		= src/TUCNExperiment.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNEXPERIMENTS		= src/TUCNExperiment.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNFIELDMANAGERO 	= src/TUCNFieldManager.$(ObjSuf) UCNDict.$(ObjSuf)
 TUCNFIELDMANAGERS 	= src/TUCNFieldManager.$(SrcSuf) UCNDict.$(SrcSuf)
-TUCNGEOBUILDERO		= src/TUCNGeoBuilder.$(ObjSuf)  UCNDict.$(ObjSuf)
-TUCNGEOBUILDERS		= src/TUCNGeoBuilder.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNGEOBBOXO			= src/TUCNGeoBBox.$(ObjSuf)  UCNDict.$(ObjSuf)
 TUCNGEOBBOXS			= src/TUCNGeoBBox.$(SrcSuf)  UCNDict.$(SrcSuf)
 TUCNGEOTUBEO			= src/TUCNGeoTube.$(ObjSuf)  UCNDict.$(ObjSuf)
@@ -99,7 +97,7 @@ UCNLIB			= -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lEG -lGeom -lGeomPainter -l
 					  -lGui -lRGL -lGed
 #------------------------------------------------------------------------------
 OBJS				=	$(SIMULATE_UCNO) $(GENERATE_UCNO) $(SANDBOXO) $(BUILDTESTO) $(PLOT_DATAO) \
-						$(DRAW_TRACKSO) $(TUCNRUNO) $(TUCNGEOBUILDERO) \
+						$(DRAW_TRACKSO) $(TUCNRUNO) \
  						$(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) $(TUCNGRAVFIELDO) \
  						$(TUCNPARTICLEO) $(TUCNSTATEO) $(TUCNSPINO) $(TUCNDATAPARSERO) $(TUCNPARABOLAO) \
  						$(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) $(TUCNMAGFIELDO) \
@@ -162,7 +160,7 @@ $(DRAW_TRACKS): $(DRAW_TRACKSO) $(UCNSO)
 					 @echo "$@ done"
 
 UCN:				$(UCNSO)
-$(UCNSO):		$(TUCNRUNO) $(TUCNGEOBUILDERO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) \
+$(UCNSO):		$(TUCNRUNO) $(TUCNGEOBBOXO) $(TUCNGEOTUBEO) $(TUCNMATERIALO) \
                $(TUCNGRAVFIELDO) $(TUCNPARTICLEO) $(TUCNSTATEO) $(TUCNSPINO) $(TUCNDATAPARSERO) \
 					$(TUCNPARABOLAO) $(TUCNPOLYNOMIALO) $(TUCNEXPERIMENTO) $(TUCNDATAO) \
 					$(TUCNMAGFIELDO) $(TUCNUNIFORMMAGFIELDO)  $(TUCNPARABOLICMAGFIELDO) \
@@ -194,7 +192,6 @@ endif
 endif
 endif
 
-TUCNGEOBUILDERO:				include/TUCNGeoBuilder.h
 TUCNGEOBBOXO:					include/TUCNGeoBBox.h
 TUCNGEOTUBEO:					include/TUCNGeoTube.h
 TUCNMATERIALO:					include/TUCNMaterial.h
