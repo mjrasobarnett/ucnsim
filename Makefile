@@ -111,7 +111,7 @@ PROGRAMS			=	$(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(BUILDTEST) $(PLOT_DATA) 
  						$(DRAW_TRACKS) 
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
-.PHONY:     UCN ucnsim sandbox buildtest fitdata genpart
+.PHONY:     UCN simulate_ucn sandbox buildtest fitdata generate_ucn plot_data draw_tracks
 
 all:         $(PROGRAMS)
 
