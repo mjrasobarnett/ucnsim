@@ -4,6 +4,7 @@
 #ifndef ROOT_Track
 #define ROOT_Track
 
+#include <vector>
 #include "TObject.h"
 
 ////////////////////////////////////////////////////////////////////////////
@@ -11,10 +12,11 @@
 //       Track                                                            //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+class Vertex;
 
-class Track : public TObject
+class Track : public std::vector<Vertex>, public TObject
 {
-protected:
+private:
    
 public:
    // -- constructors
@@ -29,5 +31,31 @@ public:
    
    ClassDef(Track, 1)
 };
+
+
+////////////////////////////////////////////////////////////////////////////
+//                                                                        //
+//       Vertex                                                           //
+//                                                                        //
+////////////////////////////////////////////////////////////////////////////
+
+class Vertex : public TObject
+{
+private:
+   
+public:
+   // -- constructors
+   Vertex();
+   Vertex(const Vertex&); 
+   Vertex& operator=(const Vertex&);
+   // -- destructor
+   virtual ~Vertex();
+   
+   // -- methods
+   
+   
+   ClassDef(Vertex, 1)
+};
+
 
 #endif

@@ -10,11 +10,14 @@
 
 //#define VERBOSE_MODE
 
+using namespace std;
+
 ClassImp(Track)
 
 //_____________________________________________________________________________
 Track::Track()
-      :TObject()
+      :vector<Vertex>(),
+       TObject()
 {
 // -- Default constructor
    Info("Track", "Default Constructor");
@@ -22,7 +25,8 @@ Track::Track()
 
 //_____________________________________________________________________________
 Track::Track(const Track& other)
-      :TObject(other)
+      :vector<Vertex>(other),
+       TObject(other)
 {
 // -- Copy Constructor
    Info("Track", "Copy Constructor");
@@ -33,6 +37,7 @@ Track& Track::operator=(const Track& other)
 {
 // --assignment operator
    if(this!=&other) {
+      vector<Vertex>::operator=(other);
       TObject::operator=(other);
    }
    return *this;
@@ -43,4 +48,45 @@ Track::~Track()
 {
 // -- Destructor
    Info("Track", "Destructor");
+}
+
+
+//_____________________________________________________________________________
+//_____________________________________________________________________________
+//_____________________________________________________________________________
+
+
+ClassImp(Vertex)
+
+//_____________________________________________________________________________
+Vertex::Vertex()
+      :TObject()
+{
+// -- Default constructor
+   Info("Vertex", "Default Constructor");
+} 
+
+//_____________________________________________________________________________
+Vertex::Vertex(const Vertex& other)
+      :TObject(other)
+{
+// -- Copy Constructor
+   Info("Vertex", "Copy Constructor");
+}
+
+//_____________________________________________________________________________
+Vertex& Vertex::operator=(const Vertex& other)
+{
+// --assignment operator
+   if(this!=&other) {
+      TObject::operator=(other);
+   }
+   return *this;
+}
+
+//______________________________________________________________________________
+Vertex::~Vertex()
+{
+// -- Destructor
+   Info("Vertex", "Destructor");
 }
