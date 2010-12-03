@@ -60,15 +60,26 @@ ClassImp(Vertex)
 
 //_____________________________________________________________________________
 Vertex::Vertex()
-      :TObject()
+       :TObject(),
+        fX(0.), fY(0.), fZ(0.), fT(0.)
 {
 // -- Default constructor
    Info("Vertex", "Default Constructor");
 } 
 
 //_____________________________________________________________________________
+Vertex::Vertex(const Double_t x, const Double_t y, const Double_t z, const Double_t t)
+       :TObject(),
+        fX(x), fY(y), fZ(z), fT(t)
+{
+// -- constructor
+   Info("Vertex", "Constructor");
+}
+
+//_____________________________________________________________________________
 Vertex::Vertex(const Vertex& other)
-      :TObject(other)
+      :TObject(other),
+       fX(other.fX), fY(other.fY), fZ(other.fZ), fT(other.fT)
 {
 // -- Copy Constructor
    Info("Vertex", "Copy Constructor");
@@ -80,6 +91,10 @@ Vertex& Vertex::operator=(const Vertex& other)
 // --assignment operator
    if(this!=&other) {
       TObject::operator=(other);
+      fX = other.fX;
+      fY = other.fY;
+      fZ = other.fZ;
+      fT = other.fT;
    }
    return *this;
 }

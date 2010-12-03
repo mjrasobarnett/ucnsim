@@ -42,17 +42,22 @@ public:
 class Vertex : public TObject
 {
 private:
+   Double_t fX, fY, fZ, fT;
    
 public:
    // -- constructors
    Vertex();
+   Vertex(const Double_t x, const Double_t y, const Double_t z, const Double_t t);
    Vertex(const Vertex&); 
    Vertex& operator=(const Vertex&);
    // -- destructor
    virtual ~Vertex();
    
    // -- methods
-   
+   Double_t X() {return fX;}
+   Double_t Y() {return fY;}
+   Double_t Z() {return fZ;}
+   Double_t T() {return fT;}
    
    ClassDef(Vertex, 1)
 };
