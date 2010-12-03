@@ -63,23 +63,4 @@ public:
    ClassDef(BounceObservables, 1)
 };
 
-/////////////////////////////////////////////////////////////////////////////
-//                                                                         //
-//    TrackObservables -                                               //
-//                                                                         //
-/////////////////////////////////////////////////////////////////////////////
-
-class TrackObservables : public TPolyLine3D
-{
-private:
-   
-public:
-   TrackObservables();
-   TrackObservables(const TrackObservables&);
-   TrackObservables& operator=(const TrackObservables&);
-   virtual ~TrackObservables();
-   
-   ClassDef(TrackObservables, 1)
-};
-
 #endif /*OBSERVABLES*/

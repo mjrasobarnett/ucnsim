@@ -48,7 +48,6 @@
 #pragma link C++ class BounceObserver+;
 #pragma link C++ class BounceObservables+;
 #pragma link C++ class TrackObserver+;
-#pragma link C++ class TrackObservables+;
 #pragma link C++ class Track+;
 #pragma link C++ class Vertex+;
 
