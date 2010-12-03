@@ -14,9 +14,12 @@
 ////////////////////////////////////////////////////////////////////////////
 class Vertex;
 
-class Track : public std::vector<Vertex>, public TObject
+class Track : public TObject
 {
 private:
+   std::vector<Vertex*> fVertices;
+   
+   void PurgeContainer();
    
 public:
    // -- constructors
@@ -27,7 +30,11 @@ public:
    virtual ~Track();
    
    // -- methods
+   void           AddVertex(const Double_t x, const Double_t y, const Double_t z, const Double_t t);
+   const Vertex&  GetVertex(unsigned int i);
+   unsigned int   TotalVertices() {return fVertices.size();}
    
+   std::vector<Double_t> OutputPointsArray();
    
    ClassDef(Track, 1)
 };
@@ -54,10 +61,10 @@ public:
    virtual ~Vertex();
    
    // -- methods
-   Double_t X() {return fX;}
-   Double_t Y() {return fY;}
-   Double_t Z() {return fZ;}
-   Double_t T() {return fT;}
+   Double_t X() const {return fX;}
+   Double_t Y() const {return fY;}
+   Double_t Z() const {return fZ;}
+   Double_t T() const {return fT;}
    
    ClassDef(Vertex, 1)
 };

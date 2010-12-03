@@ -9,6 +9,7 @@
 #include "Track.h"
 
 //#define VERBOSE_MODE
+//#define PRINT_CONSTRUCTORS
 
 using namespace std;
 
@@ -16,20 +17,22 @@ ClassImp(Track)
 
 //_____________________________________________________________________________
 Track::Track()
-      :vector<Vertex>(),
-       TObject()
+      :TObject()
 {
 // -- Default constructor
-   Info("Track", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Track", "Default Constructor");
+   #endif
 } 
 
 //_____________________________________________________________________________
 Track::Track(const Track& other)
-      :vector<Vertex>(other),
-       TObject(other)
+      :TObject(other)
 {
 // -- Copy Constructor
-   Info("Track", "Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Track", "Copy Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -37,8 +40,9 @@ Track& Track::operator=(const Track& other)
 {
 // --assignment operator
    if(this!=&other) {
-      vector<Vertex>::operator=(other);
       TObject::operator=(other);
+      this->PurgeContainer();
+      fVertices = other.fVertices;
    }
    return *this;
 }
@@ -47,9 +51,57 @@ Track& Track::operator=(const Track& other)
 Track::~Track()
 {
 // -- Destructor
-   Info("Track", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Track", "Destructor");
+   #endif
+   this->PurgeContainer();
 }
 
+//______________________________________________________________________________
+void Track::PurgeContainer()
+{
+   // -- Delete all elements in container
+   if (fVertices.empty() == kFALSE) {
+      vector<Vertex*>::iterator it;
+      for(it = fVertices.begin(); it != fVertices.end(); ++it) {
+         delete *it;
+         *it = 0;
+      }
+   }
+}
+
+//______________________________________________________________________________
+void Track::AddVertex(const Double_t x, const Double_t y, const Double_t z, const Double_t t)
+{
+   // -- Add point to track
+   fVertices.push_back(new Vertex(x,y,z,t));
+}
+
+//______________________________________________________________________________
+const Vertex& Track::GetVertex(unsigned int i)
+{
+   // -- Retrieve point from track
+   // Check for requests past bounds of storage
+   if (i >= fVertices.size()) {return *(fVertices.back());}
+   return *(fVertices[i]);
+}
+
+//______________________________________________________________________________
+vector<Double_t> Track::OutputPointsArray()
+{
+   // -- Return an array of size 3*number-of-vertices, which contains just the positions
+   // -- of each vertex, to be used for creating a TPolyLine3D for drawing purposes
+   vector<Double_t> points;
+   // Loop over all vertices
+   vector<Vertex*>::const_iterator vertexIter;
+   for (vertexIter = fVertices.begin(); vertexIter != fVertices.end(); vertexIter++) {
+      // Fill array of points with X, Y, Z of each vertex
+      points.push_back((*vertexIter)->X());
+      points.push_back((*vertexIter)->Y());
+      points.push_back((*vertexIter)->Z());
+   }
+   return points;
+}
 
 //_____________________________________________________________________________
 //_____________________________________________________________________________
@@ -64,7 +116,9 @@ Vertex::Vertex()
         fX(0.), fY(0.), fZ(0.), fT(0.)
 {
 // -- Default constructor
-   Info("Vertex", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Vertex", "Default Constructor");
+   #endif
 } 
 
 //_____________________________________________________________________________
@@ -73,7 +127,9 @@ Vertex::Vertex(const Double_t x, const Double_t y, const Double_t z, const Doubl
         fX(x), fY(y), fZ(z), fT(t)
 {
 // -- constructor
-   Info("Vertex", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Vertex", "Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -82,7 +138,9 @@ Vertex::Vertex(const Vertex& other)
        fX(other.fX), fY(other.fY), fZ(other.fZ), fT(other.fT)
 {
 // -- Copy Constructor
-   Info("Vertex", "Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Vertex", "Copy Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -103,5 +161,7 @@ Vertex& Vertex::operator=(const Vertex& other)
 Vertex::~Vertex()
 {
 // -- Destructor
-   Info("Vertex", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Vertex", "Destructor");
+   #endif
 }

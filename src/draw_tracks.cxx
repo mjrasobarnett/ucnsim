@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "TGeoManager.h"
 #include "TH1F.h"
@@ -22,7 +23,7 @@
 #include "ConfigFile.h"
 #include "InitialConfig.h"
 #include "RunConfig.h"
-#include "Observables.h"
+#include "Track.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -31,7 +32,8 @@
 using namespace std;
 
 namespace Plot {
-   TrackObservables* track = NULL;
+   Track* track = NULL;
+   Double_t* trackpoints = NULL;
 }
 
 Int_t main(Int_t argc,Char_t **argv)
@@ -111,8 +113,6 @@ Int_t main(Int_t argc,Char_t **argv)
       TKey *folderKey;
       TIter folderIter(stateDir->GetListOfKeys());
       while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         cout << folderKey->GetName() << endl;
-         cout << userInput.c_str() << endl;
          istringstream s_ID(folderKey->GetName());
          istringstream s_User(userInput);
          int p_ID = 0;
@@ -131,8 +131,8 @@ Int_t main(Int_t argc,Char_t **argv)
                const char *classname = objKey->GetClassName();
                TClass *cl = gROOT->GetClass(classname);
                if (!cl) continue;
-               if (cl->InheritsFrom("TrackObservables")) {
-                  Plot::track = dynamic_cast<TrackObservables*>(objKey->ReadObj());
+               if (cl->InheritsFrom("Track")) {
+                  Plot::track = dynamic_cast<Track*>(objKey->ReadObj());
                   break;
                }
             }
@@ -160,25 +160,28 @@ Int_t main(Int_t argc,Char_t **argv)
       geoManager->SetVisLevel(4);
       geoManager->SetVisOption(0);
       
-      Plot::track->SetLineColor(kRed);
-      Plot::track->Draw();
+      vector<Double_t> trackpoints = Plot::track->OutputPointsArray();
+      cout << "Number of Points: " << Plot::track->TotalVertices() << endl;
+      TPolyLine3D* line = new TPolyLine3D(Plot::track->TotalVertices(),&trackpoints[0]);
+      line->SetLineColor(kRed);
+      line->Draw();
       
+      // -- Draw Start and Finish points of track
       TPointSet3D* endMarker = new TPointSet3D(1,24);
       TPointSet3D* startMarker = new TPointSet3D(1,24);      
+      // Start is BLUE
       startMarker->SetMarkerColor(kBlue);
+      // End is GREEN
       endMarker->SetMarkerColor(kGreen-3);
-      
-      Int_t end = Plot::track->GetN();
-      Float_t* points = Plot::track->GetP();
-      startMarker->SetPoint(0, points[0], points[1], points[2]);
-      endMarker->SetPoint(0, points[end+0], points[end+1], points[end+2]);
-      
+      const Vertex& startVertex = Plot::track->GetVertex(0);
+      const Vertex& endVertex = Plot::track->GetVertex(Plot::track->TotalVertices());
+      startMarker->SetPoint(0, startVertex.X(), startVertex.Y(), startVertex.Z());
+      endMarker->SetPoint(0, endVertex.X(), endVertex.Y(), endVertex.Z());
       startMarker->Draw();
       endMarker->Draw();
-      
-      cout << "Start: " << points[0] << "\t" << points[1] << "\t" << points[2] << endl; 
-      cout << "End: " << points[end+0] << "\t" << points[end+1] << "\t" << points[end+2] << endl;       
-      
+      cout << "Start: " << startVertex.X() << "\t" << startVertex.Y() << "\t";
+      cout << startVertex.Z() << endl; 
+      cout << "End: " << endVertex.X() << "\t" << endVertex.Y() << "\t" << endVertex.Z() << endl;       
       
       // -- Get the GLViewer so we can manipulate the camera
       TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
@@ -198,6 +201,7 @@ Int_t main(Int_t argc,Char_t **argv)
       glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
       glViewer->UpdateScene();
       glViewer = 0;
+      
    }
    cout << "Finished" << endl;
    theApp->Run();

@@ -239,7 +239,7 @@ ClassImp(TrackObserver)
 //_____________________________________________________________________________
 TrackObserver::TrackObserver()
                    :Observer(),
-                    fTrackObservables(NULL)
+                    fTrack(NULL)
 {
    // Constructor
    Info("TrackObserver","Default Constructor");
@@ -248,7 +248,7 @@ TrackObserver::TrackObserver()
 //_____________________________________________________________________________
 TrackObserver::TrackObserver(const RunConfig& /*runConfig*/)
                  :Observer(),
-                  fTrackObservables(NULL)
+                  fTrack(NULL)
 {
    // Constructor
    Info("TrackObserver","Constructor");
@@ -257,7 +257,7 @@ TrackObserver::TrackObserver(const RunConfig& /*runConfig*/)
 //_____________________________________________________________________________
 TrackObserver::TrackObserver(const TrackObserver& other)
                  :Observer(other),
-                  fTrackObservables(other.fTrackObservables)
+                  fTrack(other.fTrack)
 {
    // Copy Constructor
    Info("TrackObserver","Copy Constructor");
@@ -270,7 +270,7 @@ TrackObserver& TrackObserver::operator=(const TrackObserver& other)
    Info("TrackObserver","Assignment");
    if(this!=&other) {
       Observer::operator=(other);
-      fTrackObservables = other.fTrackObservables;
+      fTrack = other.fTrack;
    }
    return *this;
 }
@@ -286,8 +286,8 @@ TrackObserver::~TrackObserver()
 void TrackObserver::RegisterInterest(Particle& particle)
 {
    // -- Register as an observer with the particle
-   if (fTrackObservables != NULL) delete fTrackObservables; fTrackObservables = NULL;
-   fTrackObservables = new TrackObservables();
+   if (fTrack != NULL) delete fTrack; fTrack = NULL;
+   fTrack = new Track();
    particle.Attach(this);
 }
 
@@ -296,7 +296,7 @@ void TrackObserver::RecordEvent(const Particle& particle, const string& context)
 {
    // -- Record the current polarisation
    if (context == Context::Step) {
-      fTrackObservables->SetNextPoint(particle.X(), particle.Y(), particle.Z());
+      fTrack->AddVertex(particle.X(), particle.Y(), particle.Z(), particle.T());
    }
 }
 
@@ -312,9 +312,9 @@ void TrackObserver::LoadExistingObservables(TDirectory* const particleDir)
       const char *classname = key->GetClassName();
       TClass *cl = gROOT->GetClass(classname);
       if (!cl) continue;
-      if (cl->InheritsFrom("TrackObservables")) {
-         if (fTrackObservables != NULL) delete fTrackObservables; fTrackObservables = NULL;
-         fTrackObservables = dynamic_cast<TrackObservables*>(key->ReadObj());
+      if (cl->InheritsFrom("Track")) {
+         if (fTrack != NULL) delete fTrack; fTrack = NULL;
+         fTrack = dynamic_cast<Track*>(key->ReadObj());
          break;
       }
    }
@@ -325,5 +325,5 @@ void TrackObserver::WriteToFile(TDirectory* const particleDir)
 {
    // -- Write out the current observable to the provided directory
    particleDir->cd();
-   fTrackObservables->Write("TrackObservables",TObject::kOverwrite);
+   fTrack->Write("Track",TObject::kOverwrite);
 }

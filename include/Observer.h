@@ -22,7 +22,7 @@
 #include "TDirectory.h"
 
 #include "Observables.h"
-
+#include "Track.h"
 
 namespace Context {
    // Define List of contexts passed to observers to help them distinguish
@@ -119,7 +119,7 @@ public:
 class TrackObserver : public Observer
 {
 private:
-   TrackObservables *fTrackObservables;
+   Track *fTrack;
    
 public:
    // -- Constructors
