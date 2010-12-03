@@ -20,7 +20,7 @@ class Particle;
 
 class Run : public TNamed 
 {
-protected:
+private:
    RunConfig        fRunConfig;
    Data*            fData;
    Experiment*      fExperiment;
