@@ -31,8 +31,8 @@ public:
    
    // -- methods
    void           AddVertex(const Double_t x, const Double_t y, const Double_t z, const Double_t t);
-   const Vertex&  GetVertex(unsigned int i);
-   unsigned int   TotalVertices() {return fVertices.size();}
+   const Vertex&  GetVertex(unsigned int i) const;
+   unsigned int   TotalVertices() const {return fVertices.size();}
    
    std::vector<Double_t> OutputPointsArray();
    

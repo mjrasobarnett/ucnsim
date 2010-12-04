@@ -78,7 +78,7 @@ void Track::AddVertex(const Double_t x, const Double_t y, const Double_t z, cons
 }
 
 //______________________________________________________________________________
-const Vertex& Track::GetVertex(unsigned int i)
+const Vertex& Track::GetVertex(unsigned int i) const
 {
    // -- Retrieve point from track
    // Check for requests past bounds of storage
