@@ -40,16 +40,16 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Making Top Volume
-   TUCNGeoBBox* topShape = new TUCNGeoBBox("Top",100,100,100);
-   TUCNBlackHole* top = new TUCNBlackHole("Top", topShape, blackhole);
+   Box* topShape = new Box("Top",100,100,100);
+   BlackHole* top = new BlackHole("Top", topShape, blackhole);
    geoManager->SetTopVolume(top);
    top->SetVisibility(kFALSE);
    
    // -- Make the boundary volume in which all the others sit
    // -- This is what we will be reflecting off all the time
    Double_t surfaceRoughness = 0.05;
-   TUCNGeoBBox* chamberShape = new TUCNGeoBBox("Chamber",10,10,10);
-   TUCNBoundary* chamber = new TUCNBoundary("Chamber", chamberShape, beryllium, surfaceRoughness);
+   Box* chamberShape = new Box("Chamber",10,10,10);
+   Boundary* chamber = new Boundary("Chamber", chamberShape, beryllium, surfaceRoughness);
    chamber->SetLineColor(kOrange-7);
    chamber->SetLineWidth(1);
    chamber->SetVisibility(kFALSE);
@@ -62,8 +62,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -- Source tube has 13 segments, all of which are identical (except one which has a hole in the top)
    
    // -- Make a SourceTube Segment
-   TUCNGeoTube *sourceSegShape = new TUCNGeoTube("SourceSeg", sourceSegRMin, sourceSegRMax, sourceSegHalfLength);
-   TUCNTrackingVolume* sourceSeg = new TUCNTrackingVolume("SourceSeg", sourceSegShape, heliumII);
+   Tube *sourceSegShape = new Tube("SourceSeg", sourceSegRMin, sourceSegRMax, sourceSegHalfLength);
+   TrackingVolume* sourceSeg = new TrackingVolume("SourceSeg", sourceSegShape, heliumII);
    sourceSeg->SetLineColor(kAzure-4);
    sourceSeg->SetLineWidth(1);
    sourceSeg->SetVisibility(kTRUE);
@@ -89,8 +89,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -- SOURCE VALVE
    // Valve entrance volume is a shorter source-tube segment-like that connects
    // the valve volume to the source
-   TUCNGeoTube *valveVolEntranceShape = new TUCNGeoTube("ValveVolEntrance", valveVolEntranceRMin, valveVolEntranceRMax, valveVolEntranceHalfLength);
-   TUCNTrackingVolume* valveVolEntrance = new TUCNTrackingVolume("ValveVolEntrance", valveVolEntranceShape, heliumII);
+   Tube *valveVolEntranceShape = new Tube("ValveVolEntrance", valveVolEntranceRMin, valveVolEntranceRMax, valveVolEntranceHalfLength);
+   TrackingVolume* valveVolEntrance = new TrackingVolume("ValveVolEntrance", valveVolEntranceShape, heliumII);
    valveVolEntrance->SetLineColor(kTeal-3);
    valveVolEntrance->SetLineWidth(1);
    valveVolEntrance->SetVisibility(kTRUE);

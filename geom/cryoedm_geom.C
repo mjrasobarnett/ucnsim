@@ -44,16 +44,16 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Making Top Volume
-   TUCNGeoBBox* topShape = new TUCNGeoBBox("Top",100,100,100);
-   TUCNBlackHole* top = new TUCNBlackHole("Top", topShape, blackhole);
+   Box* topShape = new Box("Top",100,100,100);
+   BlackHole* top = new BlackHole("Top", topShape, blackhole);
    geoManager->SetTopVolume(top);
    top->SetVisibility(kFALSE);
    
    // -- Make the boundary volume in which all the others sit
    // -- This is what we will be reflecting off all the time
    Double_t surfaceRoughness = 0.1;
-   TUCNGeoBBox* chamberShape = new TUCNGeoBBox("Chamber",10,10,10);
-   TUCNBoundary* chamber = new TUCNBoundary("Chamber", chamberShape, beryllium, surfaceRoughness);
+   Box* chamberShape = new Box("Chamber",10,10,10);
+   Boundary* chamber = new Boundary("Chamber", chamberShape, beryllium, surfaceRoughness);
    chamber->SetLineColor(kOrange-7);
    chamber->SetLineWidth(1);
    chamber->SetVisibility(kFALSE);
@@ -67,8 +67,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // (except one which has a hole in the top)
    
    // -- Make a SourceTube Segment
-   TUCNGeoTube *sourceSegShape = new TUCNGeoTube("SourceSeg", sourceSegRMin, sourceSegRMax, sourceSegHalfLength);
-   TUCNTrackingVolume* sourceSeg = new TUCNTrackingVolume("SourceSeg", sourceSegShape, heliumII);
+   Tube *sourceSegShape = new Tube("SourceSeg", sourceSegRMin, sourceSegRMax, sourceSegHalfLength);
+   TrackingVolume* sourceSeg = new TrackingVolume("SourceSeg", sourceSegShape, heliumII);
    sourceSeg->SetLineColor(kAzure-4);
    sourceSeg->SetLineWidth(1);
    sourceSeg->SetVisibility(kTRUE);
@@ -94,8 +94,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -- SOURCE VALVE
    // Valve entrance volume is a shorter source-tube segment-like that connects
    // the valve volume to the source
-   TUCNGeoTube *valveVolEntranceShape = new TUCNGeoTube("ValveVolEntrance", valveVolEntranceRMin, valveVolEntranceRMax, valveVolEntranceHalfLength);
-   TUCNTrackingVolume* valveVolEntrance = new TUCNTrackingVolume("ValveVolEntrance", valveVolEntranceShape, heliumII);
+   Tube *valveVolEntranceShape = new Tube("ValveVolEntrance", valveVolEntranceRMin, valveVolEntranceRMax, valveVolEntranceHalfLength);
+   TrackingVolume* valveVolEntrance = new TrackingVolume("ValveVolEntrance", valveVolEntranceShape, heliumII);
    valveVolEntrance->SetLineColor(kTeal-3);
    valveVolEntrance->SetLineWidth(1);
    valveVolEntrance->SetVisibility(kTRUE);
@@ -109,8 +109,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Valve volume front - this is what the valve press against
-   TUCNGeoTube *valveVolFrontShape = new TUCNGeoTube("ValveVolFront", valveVolFrontRMin, valveVolFrontRMax, valveVolFrontHalfLength);
-   TUCNTrackingVolume* valveVolFront = new TUCNTrackingVolume("ValveVolFront", valveVolFrontShape, heliumII);
+   Tube *valveVolFrontShape = new Tube("ValveVolFront", valveVolFrontRMin, valveVolFrontRMax, valveVolFrontHalfLength);
+   TrackingVolume* valveVolFront = new TrackingVolume("ValveVolFront", valveVolFrontShape, heliumII);
    valveVolFront->SetLineColor(kTeal-4);
    valveVolFront->SetLineWidth(1);
    valveVolFront->SetVisibility(kTRUE);
@@ -125,8 +125,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // -- Valve volume - this is what the valve sits in
    // -- This is joined together with the start of the bend volume to make a composite volume
-   TUCNGeoTube *valveVolBackShape = new TUCNGeoTube("ValveVolBack", valveVolBackRMin, valveVolBackRMax, valveVolBackHalfLength);
-   TUCNTrackingVolume* valveVolBack = new TUCNTrackingVolume("ValveVolBack", valveVolBackShape, heliumII);
+   Tube *valveVolBackShape = new Tube("ValveVolBack", valveVolBackRMin, valveVolBackRMax, valveVolBackHalfLength);
+   TrackingVolume* valveVolBack = new TrackingVolume("ValveVolBack", valveVolBackShape, heliumII);
    // -- Define the Valve volume back
    TGeoRotation valveVolBackRot("ValveVolBackRot",0,valveVolBackAngle,0); // phi, theta, psi
    TGeoTranslation valveVolBackTra("ValveVolBackTra",0.,0.,0.); // x, y, z
@@ -137,8 +137,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    valveVolBackMatrix->RegisterYourself();
    
    // -- BendEntrance - this is joined to the valve volume back  
-   TUCNGeoBBox *bendEntranceShape = new TUCNGeoBBox("BendEntrance", bendEntranceHalfX, bendEntranceHalfY, bendEntranceHalfZ);
-   TUCNTrackingVolume* bendEntrance = new TUCNTrackingVolume("BendEntrance", bendEntranceShape, heliumII);
+   Box *bendEntranceShape = new Box("BendEntrance", bendEntranceHalfX, bendEntranceHalfY, bendEntranceHalfZ);
+   TrackingVolume* bendEntrance = new TrackingVolume("BendEntrance", bendEntranceShape, heliumII);
    // -- Define the Bend Entrance segment
    TGeoRotation bendEntranceRot("BendEntranceRot",0,bendEntranceAngle,0); // phi, theta, psi
    TGeoTranslation bendEntranceTra("BendEntranceTra",0.,0.,-bendEntranceZDisplacement); // x, y, z
@@ -149,8 +149,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    bendEntranceMatrix->RegisterYourself();
    
    // -- Create the composite Valve volume
-   TUCNGeoCompositeShape *valveVolShape = new TUCNGeoCompositeShape("ValveVol", "(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
-   TUCNTrackingVolume* valveVol = new TUCNTrackingVolume("ValveVol",valveVolShape,heliumII);
+   CompositeShape *valveVolShape = new CompositeShape("ValveVol", "(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
+   TrackingVolume* valveVol = new TrackingVolume("ValveVol",valveVolShape,heliumII);
    valveVol->SetLineColor(kTeal-5);
    valveVol->SetLineWidth(1);
    valveVol->SetVisibility(kTRUE);
@@ -163,7 +163,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
 /* // -- Define the valve in its open state 
    Double_t openValveRMin = 0., openValveRMax = 36.0*Units::mm, openValveHalfLength = 1.375*Units::mm;
-   TGeoVolume *openValve = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("OpenValve", boundary, openValveRMin, openValveRMax, openValveHalfLength);
+   TGeoVolume *openValve = Builder::UCNInstance(geoManager)->MakeUCNTube("OpenValve", boundary, openValveRMin, openValveRMax, openValveHalfLength);
    Double_t openValveAngle = 90.0;
    Double_t openValveYDisplacement = valveVolBackHalfLength - openValveHalfLength;
    TGeoRotation openValveRot("ValveVolBackRot",0,openValveAngle,0); // phi, theta, psi
@@ -177,7 +177,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -- Define the valve in its closed state 
    Double_t closedValveRMin = 0., closedValveRMax = 36.0*Units::mm, closedValveHalfLength = 1.375*Units::mm;
-   TGeoVolume *closedValve = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNTube("OpenValve", vacuum, closedValveRMin, closedValveRMax, closedValveHalfLength);
+   TGeoVolume *closedValve = Builder::UCNInstance(geoManager)->MakeUCNTube("OpenValve", vacuum, closedValveRMin, closedValveRMax, closedValveHalfLength);
    Double_t closedValveAngle = 90.0;
    Double_t closedValveYDisplacement = closedValveHalfLength - valveVolBackHalfLength;
    TGeoRotation closedValveRot("ValveVolBackRot",0,closedValveAngle,0); // phi, theta, psi
@@ -194,11 +194,11 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- BEND
-   TUCNGeoTube *circleBendShape = new TUCNGeoTube("CircleBend", bendRMin, bendRMax, bendHalfLength);
-   TUCNTrackingVolume* circleBend = new TUCNTrackingVolume("CircleBend", circleBendShape, heliumII);
+   Tube *circleBendShape = new Tube("CircleBend", bendRMin, bendRMax, bendHalfLength);
+   TrackingVolume* circleBend = new TrackingVolume("CircleBend", circleBendShape, heliumII);
       
-   TUCNGeoBBox *bendBoxShape = new TUCNGeoBBox("BendBox", 2.0*bendHalfLength, bendRMax, bendRMax);
-   TUCNTrackingVolume* bendBox = new TUCNTrackingVolume("BendBox", bendBoxShape, beryllium);
+   Box *bendBoxShape = new Box("BendBox", 2.0*bendHalfLength, bendRMax, bendRMax);
+   TrackingVolume* bendBox = new TrackingVolume("BendBox", bendBoxShape, beryllium);
    
    // -- Define the transformation of bendbox
    TGeoRotation bendBoxRot("BendBoxRot",0,90,90); // phi, theta, psi
@@ -209,8 +209,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    bendBoxMatrix->SetName("BendBoxMatrix");
    bendBoxMatrix->RegisterYourself();
    // -- Create a composite bend
-   TUCNGeoCompositeShape* bendShape = new TUCNGeoCompositeShape("BendShape","(CircleBend * BendBox:BendBoxMatrix)");
-   TUCNTrackingVolume* bendVol = new TUCNTrackingVolume("BendVol",bendShape,heliumII);
+   CompositeShape* bendShape = new CompositeShape("BendShape","(CircleBend * BendBox:BendBoxMatrix)");
+   TrackingVolume* bendVol = new TrackingVolume("BendVol",bendShape,heliumII);
    bendVol->SetLineColor(kYellow-3);
    bendVol->SetLineWidth(1);
    bendVol->SetVisibility(kTRUE);
@@ -225,8 +225,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // -- DETECTOR VALVE
    // DetectorValveVol
-   TUCNGeoBBox *detectorValveVolShape = new TUCNGeoBBox("DetectorValveVol", detectorValveVolHalfX, detectorValveVolHalfY, detectorValveVolHalfZ);
-   TUCNTrackingVolume* detectorValveVol = new TUCNTrackingVolume("DetectorValveVol", detectorValveVolShape, heliumII);
+   Box *detectorValveVolShape = new Box("DetectorValveVol", detectorValveVolHalfX, detectorValveVolHalfY, detectorValveVolHalfZ);
+   TrackingVolume* detectorValveVol = new TrackingVolume("DetectorValveVol", detectorValveVolShape, heliumII);
    detectorValveVol->SetLineColor(kRed+3);
    detectorValveVol->SetLineWidth(1);
    detectorValveVol->SetVisibility(kTRUE);
@@ -241,7 +241,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
 /* // -------------------------------------
    // -- DetectorValve
    Double_t detectorValveHalfX = 2.0*Units::mm, detectorValveHalfY = 30.0*Units::mm, detectorValveHalfZ = 30.0*Units::mm;
-   TGeoVolume *detectorValve = TUCNGeoBuilder::UCNInstance(geoManager)->MakeUCNBox("DetectorValve", vacuum, detectorValveHalfX, detectorValveHalfY, detectorValveHalfZ);
+   TGeoVolume *detectorValve = Builder::UCNInstance(geoManager)->MakeUCNBox("DetectorValve", vacuum, detectorValveHalfX, detectorValveHalfY, detectorValveHalfZ);
    detectorValve->SetLineColor(kBlue+3);
    detectorValve->SetLineWidth(1);
    detectorValve->SetVisibility(kTRUE);
@@ -260,8 +260,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // -- DETECTOR TUBE
    // DetectorTubeTop - Entrance into the detector tube
-   TUCNGeoTube *detectorTubeTopShape = new TUCNGeoTube("DetectorTubeTop", detectorTubeTopRMin, detectorTubeTopRMax, detectorTubeTopHalfLength);
-   TUCNTrackingVolume* detectorTubeTop = new TUCNTrackingVolume("DetectorTubeTop", detectorTubeTopShape, heliumII);
+   Tube *detectorTubeTopShape = new Tube("DetectorTubeTop", detectorTubeTopRMin, detectorTubeTopRMax, detectorTubeTopHalfLength);
+   TrackingVolume* detectorTubeTop = new TrackingVolume("DetectorTubeTop", detectorTubeTopShape, heliumII);
    detectorTubeTop->SetLineColor(kOrange+1);
    detectorTubeTop->SetLineWidth(1);
    detectorTubeTop->SetVisibility(kTRUE);
@@ -275,8 +275,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- DetectorTube
-   TUCNGeoTube *detectorTubeShape = new TUCNGeoTube("DetectorTube", detectorTubeRMin, detectorTubeRMax, detectorTubeHalfLength);
-   TUCNTrackingVolume* detectorTube = new TUCNTrackingVolume("DetectorTube", detectorTubeShape, heliumII);
+   Tube *detectorTubeShape = new Tube("DetectorTube", detectorTubeRMin, detectorTubeRMax, detectorTubeHalfLength);
+   TrackingVolume* detectorTube = new TrackingVolume("DetectorTube", detectorTubeShape, heliumII);
    detectorTube->SetLineColor(kOrange+1);
    detectorTube->SetLineWidth(1);
    detectorTube->SetVisibility(kTRUE);
@@ -291,8 +291,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // -- Detector
    Double_t detectorEfficiency = 1.0;
-   TUCNGeoTube *detectorShape = new TUCNGeoTube("Detector", detectorRMin, detectorRMax, detectorHalfLength);
-   TUCNDetector* detector = new TUCNDetector("Detector",detectorShape,lithium6,detectorEfficiency);
+   Tube *detectorShape = new Tube("Detector", detectorRMin, detectorRMax, detectorHalfLength);
+   Detector* detector = new Detector("Detector",detectorShape,lithium6,detectorEfficiency);
    detector->SetLineColor(kGray+3);
    detector->SetLineWidth(1);
    detector->SetVisibility(kTRUE);
@@ -307,8 +307,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // -- GUIDE SECTION
    // Guide section has *probably* 4 segments. 
-   TUCNGeoBBox *guideSegShape = new TUCNGeoBBox("GuideSeg", guideSegHalfX, guideSegHalfY, guideSegHalfZ);
-   TUCNTrackingVolume* guideSeg = new TUCNTrackingVolume("GuideSeg", guideSegShape, heliumII);
+   Box *guideSegShape = new Box("GuideSeg", guideSegHalfX, guideSegHalfY, guideSegHalfZ);
+   TrackingVolume* guideSeg = new TrackingVolume("GuideSeg", guideSegShape, heliumII);
    guideSeg->SetLineColor(kCyan-8);
    guideSeg->SetLineWidth(1);
    guideSeg->SetVisibility(kTRUE);
@@ -331,8 +331,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // -- RAMSEY CELL PRE-VOLUME SECTION
    // -- Define General Box shape dimensions
-   TUCNGeoBBox *preVolumeBoxShape = new TUCNGeoBBox("PreVolumeBoxShape", preVolumeBoxHalfX, preVolumeBoxHalfY, preVolumeBoxHalfZ);
-   TUCNTrackingVolume* preVolumeBox = new TUCNTrackingVolume("PreVolumeBox", preVolumeBoxShape, heliumII);
+   Box *preVolumeBoxShape = new Box("PreVolumeBoxShape", preVolumeBoxHalfX, preVolumeBoxHalfY, preVolumeBoxHalfZ);
+   TrackingVolume* preVolumeBox = new TrackingVolume("PreVolumeBox", preVolumeBoxShape, heliumII);
    preVolumeBox->SetLineColor(kMagenta-8);
    preVolumeBox->SetLineWidth(1);
    preVolumeBox->SetVisibility(kTRUE);
@@ -347,8 +347,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // -- RAMSEY CELL
    // Define Pre-volume-end electrode 
-   TUCNGeoTube *neutralElectrodeShape = new TUCNGeoTube("NeutralElectrodeShape", neutralElectrodeRMin, neutralElectrodeRMax, neutralElectrodeHalfZ);
-   TUCNTrackingVolume* neutralElectrode = new TUCNTrackingVolume("NeutralElectrode", neutralElectrodeShape, beryllium);
+   Tube *neutralElectrodeShape = new Tube("NeutralElectrodeShape", neutralElectrodeRMin, neutralElectrodeRMax, neutralElectrodeHalfZ);
+   TrackingVolume* neutralElectrode = new TrackingVolume("NeutralElectrode", neutralElectrodeShape, beryllium);
    neutralElectrode->SetLineColor(kRed-7);
    neutralElectrode->SetLineWidth(1);
    neutralElectrode->SetVisibility(kTRUE);
@@ -360,9 +360,9 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
 //   chamber->AddNode(neutralElectrode, 1, new TGeoHMatrix(neutralElectrodeMat));
    
    // Define valve holes in neutral electrode 
-   TUCNGeoTube *neutralElectrodeHoleShape = new TUCNGeoTube("NeutralElectrodeHoleShape", neutralElectrodeHoleRMin, neutralElectrodeHoleRMax, neutralElectrodeHoleHalfZ);
+   Tube *neutralElectrodeHoleShape = new Tube("NeutralElectrodeHoleShape", neutralElectrodeHoleRMin, neutralElectrodeHoleRMax, neutralElectrodeHoleHalfZ);
    // 1
-   TUCNTrackingVolume* neutralElectrodeHole1 = new TUCNTrackingVolume("NeutralElectrodeHole1", neutralElectrodeHoleShape, heliumII);
+   TrackingVolume* neutralElectrodeHole1 = new TrackingVolume("NeutralElectrodeHole1", neutralElectrodeHoleShape, heliumII);
    neutralElectrodeHole1->SetLineColor(kMagenta-8);
    neutralElectrodeHole1->SetLineWidth(1);
    neutralElectrodeHole1->SetVisibility(kTRUE);
@@ -373,7 +373,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix neutralElectrodeHole1Mat = neutralElectrodeHole1Com;
    chamber->AddNode(neutralElectrodeHole1, 1, new TGeoHMatrix(neutralElectrodeHole1Mat));
    // 2
-   TUCNTrackingVolume* neutralElectrodeHole2 = new TUCNTrackingVolume("NeutralElectrodeHole2", neutralElectrodeHoleShape, beryllium);
+   TrackingVolume* neutralElectrodeHole2 = new TrackingVolume("NeutralElectrodeHole2", neutralElectrodeHoleShape, beryllium);
    neutralElectrodeHole2->SetLineColor(kGray+3);
    neutralElectrodeHole2->SetLineWidth(1);
    neutralElectrodeHole2->SetVisibility(kTRUE);
@@ -383,7 +383,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix neutralElectrodeHole2Mat = neutralElectrodeHole2Com;
    chamber->AddNode(neutralElectrodeHole2, 1, new TGeoHMatrix(neutralElectrodeHole2Mat));
    // 3
-   TUCNTrackingVolume* neutralElectrodeHole3 = new TUCNTrackingVolume("NeutralElectrodeHole3", neutralElectrodeHoleShape, heliumII);
+   TrackingVolume* neutralElectrodeHole3 = new TrackingVolume("NeutralElectrodeHole3", neutralElectrodeHoleShape, heliumII);
    neutralElectrodeHole3->SetLineColor(kMagenta-8);
    neutralElectrodeHole3->SetLineWidth(1);
    neutralElectrodeHole3->SetVisibility(kTRUE);
@@ -393,7 +393,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix neutralElectrodeHole3Mat = neutralElectrodeHole3Com;
    chamber->AddNode(neutralElectrodeHole3, 1, new TGeoHMatrix(neutralElectrodeHole3Mat));
    // 4
-   TUCNTrackingVolume* neutralElectrodeHole4 = new TUCNTrackingVolume("NeutralElectrodeHole4", neutralElectrodeHoleShape, beryllium);
+   TrackingVolume* neutralElectrodeHole4 = new TrackingVolume("NeutralElectrodeHole4", neutralElectrodeHoleShape, beryllium);
    neutralElectrodeHole4->SetLineColor(kGray+3);
    neutralElectrodeHole4->SetLineWidth(1);
    neutralElectrodeHole4->SetVisibility(kTRUE);
@@ -404,8 +404,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    chamber->AddNode(neutralElectrodeHole4, 1, new TGeoHMatrix(neutralElectrodeHole4Mat));
    
    // Neutral Cell
-   TUCNGeoTube *neutralCellShape = new TUCNGeoTube("NeutralCellShape", neutralCellRMin, neutralCellRMax, neutralCellHalfZ);
-   TUCNTrackingVolume* neutralCell = new TUCNTrackingVolume("NeutralCell", neutralCellShape, heliumII);
+   Tube *neutralCellShape = new Tube("NeutralCellShape", neutralCellRMin, neutralCellRMax, neutralCellHalfZ);
+   TrackingVolume* neutralCell = new TrackingVolume("NeutralCell", neutralCellShape, heliumII);
    neutralCell->SetLineColor(kYellow-8);
    neutralCell->SetLineWidth(1);
    neutralCell->SetVisibility(kTRUE);
@@ -417,8 +417,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    chamber->AddNode(neutralCell, 1, new TGeoHMatrix(neutralCellMat));
    
    // Cell Connector Tube
-   TUCNGeoTube *cellConnectorShape = new TUCNGeoTube("CellConnectorShape", cellConnectorRMin, cellConnectorRMax, cellConnectorHalfZ);
-   TUCNTrackingVolume* cellConnector = new TUCNTrackingVolume("CellConnector", cellConnectorShape, heliumII);
+   Tube *cellConnectorShape = new Tube("CellConnectorShape", cellConnectorRMin, cellConnectorRMax, cellConnectorHalfZ);
+   TrackingVolume* cellConnector = new TrackingVolume("CellConnector", cellConnectorShape, heliumII);
    cellConnector->SetLineColor(kGreen+2);
    cellConnector->SetLineWidth(1);
    cellConnector->SetVisibility(kTRUE);
@@ -430,8 +430,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    chamber->AddNode(cellConnector, 1, new TGeoHMatrix(cellConnectorMat));
    
    // Define Central electrode 
-   TUCNGeoTube *centralElectrodeShape = new TUCNGeoTube("CentralElectrodeShape", centralElectrodeRMin, centralElectrodeRMax, centralElectrodeHalfZ);
-   TUCNTrackingVolume* centralElectrode = new TUCNTrackingVolume("CentralElectrode", centralElectrodeShape, beryllium);
+   Tube *centralElectrodeShape = new Tube("CentralElectrodeShape", centralElectrodeRMin, centralElectrodeRMax, centralElectrodeHalfZ);
+   TrackingVolume* centralElectrode = new TrackingVolume("CentralElectrode", centralElectrodeShape, beryllium);
    centralElectrode->SetLineColor(kRed-7);
    centralElectrode->SetLineWidth(1);
    centralElectrode->SetVisibility(kTRUE);
@@ -443,8 +443,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
 //   chamber->AddNode(centralElectrode, 1, new TGeoHMatrix(centralElectrodeMat));
 
    // Define hole through the Central electrode 
-   TUCNGeoTube *centralElectrodeHoleShape = new TUCNGeoTube("CentralElectrodeHoleShape", centralElectrodeHoleRMin, centralElectrodeHoleRMax, centralElectrodeHoleHalfZ);
-   TUCNTrackingVolume* centralElectrodeHole = new TUCNTrackingVolume("CentralElectrodeHole", centralElectrodeHoleShape, heliumII);
+   Tube *centralElectrodeHoleShape = new Tube("CentralElectrodeHoleShape", centralElectrodeHoleRMin, centralElectrodeHoleRMax, centralElectrodeHoleHalfZ);
+   TrackingVolume* centralElectrodeHole = new TrackingVolume("CentralElectrodeHole", centralElectrodeHoleShape, heliumII);
    centralElectrodeHole->SetLineColor(kMagenta-8);
    centralElectrodeHole->SetLineWidth(1);
    centralElectrodeHole->SetVisibility(kTRUE);
@@ -456,8 +456,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    chamber->AddNode(centralElectrodeHole, 1, new TGeoHMatrix(centralElectrodeHoleMat));
    
    // HV Cell
-   TUCNGeoTube *hvCellShape = new TUCNGeoTube("HVShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
-   TUCNTrackingVolume* hvCell = new TUCNTrackingVolume("HVCell", hvCellShape, heliumII);
+   Tube *hvCellShape = new Tube("HVShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
+   TrackingVolume* hvCell = new TrackingVolume("HVCell", hvCellShape, heliumII);
    hvCell->SetLineColor(kYellow-8);
    hvCell->SetLineWidth(1);
    hvCell->SetVisibility(kTRUE);
@@ -469,8 +469,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    chamber->AddNode(hvCell, 1, new TGeoHMatrix(hvCellMat));
    
    // Define HV electrode 
-   TUCNGeoTube *hvElectrodeShape = new TUCNGeoTube("HVElectrodeShape", hvElectrodeRMin, hvElectrodeRMax, hvElectrodeHalfZ);
-   TUCNTrackingVolume* hvElectrode = new TUCNTrackingVolume("HVElectrode", hvElectrodeShape, beryllium);
+   Tube *hvElectrodeShape = new Tube("HVElectrodeShape", hvElectrodeRMin, hvElectrodeRMax, hvElectrodeHalfZ);
+   TrackingVolume* hvElectrode = new TrackingVolume("HVElectrode", hvElectrodeShape, beryllium);
    hvElectrode->SetLineColor(kRed-8);
    hvElectrode->SetLineWidth(1);
    hvElectrode->SetVisibility(kTRUE);
@@ -494,7 +494,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- VISUALISATION GEOM
-   // -- Here we swap out TUCNCompositeShape for TGeoCompositeShape due to explicit
+   // -- Here we swap out CompositeShape for TGeoCompositeShape due to explicit
    // -- TGeoShape downcasting problems in TGeoPainter. The geometry that is left becomes
    // --  the visualisation geometry used for drawing
    // First replace the composite shapes in the geometry
