@@ -198,7 +198,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TrackingVolume* circleBend = new TrackingVolume("CircleBend", circleBendShape, heliumII);
       
    Box *bendBoxShape = new Box("BendBox", 2.0*bendHalfLength, bendRMax, bendRMax);
-   TrackingVolume* bendBox = new TrackingVolume("BendBox", bendBoxShape, beryllium);
+   Boundary* bendBox = new Boundary("BendBox", bendBoxShape, beryllium, surfaceRoughness);
    
    // -- Define the transformation of bendbox
    TGeoRotation bendBoxRot("BendBoxRot",0,90,90); // phi, theta, psi
@@ -348,7 +348,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -- RAMSEY CELL
    // Define Pre-volume-end electrode 
    Tube *neutralElectrodeShape = new Tube("NeutralElectrodeShape", neutralElectrodeRMin, neutralElectrodeRMax, neutralElectrodeHalfZ);
-   TrackingVolume* neutralElectrode = new TrackingVolume("NeutralElectrode", neutralElectrodeShape, beryllium);
+   Boundary* neutralElectrode = new Boundary("NeutralElectrode", neutralElectrodeShape, beryllium, surfaceRoughness);
    neutralElectrode->SetLineColor(kRed-7);
    neutralElectrode->SetLineWidth(1);
    neutralElectrode->SetVisibility(kTRUE);
@@ -373,7 +373,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix neutralElectrodeHole1Mat = neutralElectrodeHole1Com;
    chamber->AddNode(neutralElectrodeHole1, 1, new TGeoHMatrix(neutralElectrodeHole1Mat));
    // 2
-   TrackingVolume* neutralElectrodeHole2 = new TrackingVolume("NeutralElectrodeHole2", neutralElectrodeHoleShape, beryllium);
+   Boundary* neutralElectrodeHole2 = new Boundary("NeutralElectrodeHole2", neutralElectrodeHoleShape, beryllium, surfaceRoughness);
    neutralElectrodeHole2->SetLineColor(kGray+3);
    neutralElectrodeHole2->SetLineWidth(1);
    neutralElectrodeHole2->SetVisibility(kTRUE);
@@ -381,7 +381,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoTranslation neutralElectrodeHole2Tra("NeutralElectrodeHole2Tra", neutralElectrodeHole2XDisplacement, neutralElectrodeHole2YDisplacement, neutralElectrodeHole2ZDisplacement);
    TGeoCombiTrans neutralElectrodeHole2Com(neutralElectrodeHole2Tra,neutralElectrodeHoleRot);
    TGeoHMatrix neutralElectrodeHole2Mat = neutralElectrodeHole2Com;
-   chamber->AddNode(neutralElectrodeHole2, 1, new TGeoHMatrix(neutralElectrodeHole2Mat));
+//   chamber->AddNode(neutralElectrodeHole2, 1, new TGeoHMatrix(neutralElectrodeHole2Mat));
    // 3
    TrackingVolume* neutralElectrodeHole3 = new TrackingVolume("NeutralElectrodeHole3", neutralElectrodeHoleShape, heliumII);
    neutralElectrodeHole3->SetLineColor(kMagenta-8);
@@ -393,7 +393,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix neutralElectrodeHole3Mat = neutralElectrodeHole3Com;
    chamber->AddNode(neutralElectrodeHole3, 1, new TGeoHMatrix(neutralElectrodeHole3Mat));
    // 4
-   TrackingVolume* neutralElectrodeHole4 = new TrackingVolume("NeutralElectrodeHole4", neutralElectrodeHoleShape, beryllium);
+   Boundary* neutralElectrodeHole4 = new Boundary("NeutralElectrodeHole4", neutralElectrodeHoleShape, beryllium, surfaceRoughness);
    neutralElectrodeHole4->SetLineColor(kGray+3);
    neutralElectrodeHole4->SetLineWidth(1);
    neutralElectrodeHole4->SetVisibility(kTRUE);
@@ -401,7 +401,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoTranslation neutralElectrodeHole4Tra("NeutralElectrodeHole4Tra", neutralElectrodeHole4XDisplacement, neutralElectrodeHole4YDisplacement, neutralElectrodeHole4ZDisplacement);
    TGeoCombiTrans neutralElectrodeHole4Com(neutralElectrodeHole4Tra,neutralElectrodeHoleRot);
    TGeoHMatrix neutralElectrodeHole4Mat = neutralElectrodeHole4Com;
-   chamber->AddNode(neutralElectrodeHole4, 1, new TGeoHMatrix(neutralElectrodeHole4Mat));
+//   chamber->AddNode(neutralElectrodeHole4, 1, new TGeoHMatrix(neutralElectrodeHole4Mat));
    
    // Neutral Cell
    Tube *neutralCellShape = new Tube("NeutralCellShape", neutralCellRMin, neutralCellRMax, neutralCellHalfZ);
@@ -431,7 +431,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // Define Central electrode 
    Tube *centralElectrodeShape = new Tube("CentralElectrodeShape", centralElectrodeRMin, centralElectrodeRMax, centralElectrodeHalfZ);
-   TrackingVolume* centralElectrode = new TrackingVolume("CentralElectrode", centralElectrodeShape, beryllium);
+   Boundary* centralElectrode = new Boundary("CentralElectrode", centralElectrodeShape, beryllium, surfaceRoughness);
    centralElectrode->SetLineColor(kRed-7);
    centralElectrode->SetLineWidth(1);
    centralElectrode->SetVisibility(kTRUE);
@@ -470,7 +470,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // Define HV electrode 
    Tube *hvElectrodeShape = new Tube("HVElectrodeShape", hvElectrodeRMin, hvElectrodeRMax, hvElectrodeHalfZ);
-   TrackingVolume* hvElectrode = new TrackingVolume("HVElectrode", hvElectrodeShape, beryllium);
+   Boundary* hvElectrode = new Boundary("HVElectrode", hvElectrodeShape, beryllium, surfaceRoughness);
    hvElectrode->SetLineColor(kRed-8);
    hvElectrode->SetLineWidth(1);
    hvElectrode->SetVisibility(kTRUE);

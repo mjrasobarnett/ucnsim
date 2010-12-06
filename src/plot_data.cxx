@@ -28,13 +28,11 @@
 
 using namespace std;
 
-void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, const InitialConfig& initialConfig, const RunConfig& runConfig);
+void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, const InitialConfig& initialConfig, const RunConfig& runConfig, TGeoManager* geoManager);
 void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
 void PlotBounceCounters(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
-
-void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
-
-void CalculateParticleHistory(const Track& track);
+void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig, TGeoManager* geoManager);
+vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoManager);
 
 Double_t ExponentialDecay(Double_t *x, Double_t *par);
 Double_t SpinPrecession(Double_t *x, Double_t *par);
@@ -102,8 +100,16 @@ Int_t main(Int_t argc,Char_t **argv)
    file = TFile::Open(dataFileName, "update");
    if (!file || file->IsZombie()) {
       cerr << "Cannot open file: " << dataFileName << endl;
-      return 0;
+      return -1;
    }
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Load the Geometry
+   TString geomFileName = runConfig.GeomVisFileName();
+   if (geomFileName == "") { 
+      cout << "No File holding the geometry can be found" << endl;
+      return -1;
+   }
+   TGeoManager* geoManager = TGeoManager::Import(geomFileName);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Navigate to and store folder for selected state
    //////////////////////////////////////////////////////////////////////////////////////
@@ -121,21 +127,21 @@ Int_t main(Int_t argc,Char_t **argv)
    TDirectory* const stateDir = gDirectory;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Particle final state
-   PlotFinalStates(histDir, stateDir, initialConfig, runConfig);
+//   PlotFinalStates(histDir, stateDir, initialConfig, runConfig, geoManager);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Polarisation
    if (runConfig.ObservePolarisation() == kTRUE) {
-      PlotSpinPolarisation(histDir, stateDir, runConfig);
+//      PlotSpinPolarisation(histDir, stateDir, runConfig);
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounce Data
    if (runConfig.ObserveBounces() == kTRUE) {
-      PlotBounceCounters(histDir, stateDir, runConfig);
+//      PlotBounceCounters(histDir, stateDir, runConfig);
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Track History
    if (runConfig.ObserveTracks() == kTRUE) {
-      PlotParticleHistory(histDir, stateDir, runConfig);
+      PlotParticleHistories(histDir, stateDir, runConfig, geoManager);
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
@@ -146,7 +152,7 @@ Int_t main(Int_t argc,Char_t **argv)
 }
 
 //_____________________________________________________________________________
-void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, const InitialConfig& initialConfig, const RunConfig& runConfig)
+void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, const InitialConfig& initialConfig, const RunConfig& runConfig, TGeoManager* geoManager)
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into the Histogram's directory
@@ -286,16 +292,8 @@ void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, cons
    Double_t emptyingTimeError = decayConstantError/(decayConstant*decayConstant);
    cout << "EmptyingTime: " << emptyingTime << "\t" << "Error: " << emptyingTimeError << endl;
 */
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Load the Geometry
-   TString geomFileName = runConfig.GeomVisFileName();
-   if (geomFileName == "") { 
-      cout << "No File holding the geometry can be found" << endl;
-      return;
-   }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Final Positions
-   TGeoManager* geoManager = TGeoManager::Import(geomFileName);
    TCanvas *poscanvas = new TCanvas("Positions","Neutron Positions",60,30,400,400);
    poscanvas->cd();
    geoManager->GetTopVolume()->Draw("ogl");
@@ -523,18 +521,145 @@ void PlotBounceCounters(TDirectory* const histDir, TDirectory* const stateDir, c
 }
 
 //_____________________________________________________________________________
-void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig)
+void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig, TGeoManager* geoManager)
 {
+   
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- cd into Histogram's dir
+   histDir->cd();
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Define Histograms
+   Char_t histname[40];
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Bounces
+   sprintf(histname,"%s:Source",stateDir->GetName());
+   TH1F* timeInSourceHist = new TH1F(histname,"Source", 100, 0.0, 1.);
+   sprintf(histname,"%s:TransferSection",stateDir->GetName());
+   TH1F* timeInTransferSecHist = new TH1F(histname,"TransferSection", 100, 0.0, 1.);
+   sprintf(histname,"%s:RamseyCell",stateDir->GetName());
+   TH1F* timeInRamseyCellHist = new TH1F(histname,"RamseyCell", 100, 0.0, 1.);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- cd into the State's folder
+   stateDir->cd();
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Loop over all particle folders in the current state's folder
+   TKey *folderKey;
+   TIter folderIter(stateDir->GetListOfKeys());
+   while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
+      const char *classname = folderKey->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TDirectory")) {
+         // Loop over all objects in particle dir
+         stateDir->cd(folderKey->GetName());
+         TDirectory* particleDir = gDirectory;
+         TKey *objKey;
+         TIter objIter(particleDir->GetListOfKeys());
+         while ((objKey = static_cast<TKey*>(objIter.Next()))) {
+            // For Each object in the particle's directory, check its class name and what it
+            // inherits from to determine what to do.
+            classname = objKey->GetClassName();
+            cl = gROOT->GetClass(classname);
+            if (!cl) continue;
+            if (cl->InheritsFrom("Track")) {
+               Track* track = dynamic_cast<Track*>(objKey->ReadObj());
+               vector<Double_t> times = CalculateParticleHistory(*track, geoManager);
+               const Vertex& lastVertex = track->GetVertex(track->TotalVertices());
+               Double_t totalTime = lastVertex.T();
+               delete track;
+               Double_t sourcePercent = times[0]/totalTime;
+               Double_t transferPercent = times[1]/totalTime;
+               Double_t ramseyPercent = times[2]/totalTime;
+               timeInSourceHist->Fill(sourcePercent);
+               timeInTransferSecHist->Fill(transferPercent);
+               timeInRamseyCellHist->Fill(ramseyPercent);
+            }
+         }
+      }
+   }
+   
+   TCanvas *historycanvas = new TCanvas("History","Histories",60,0,1200,800);
+   historycanvas->Divide(3,1);
+   historycanvas->cd(1);
+   timeInSourceHist->Draw();
+   historycanvas->cd(2);
+   timeInRamseyCellHist->Draw();
+   historycanvas->cd(3);
+   timeInTransferSecHist->Draw();
    
 }
 
 //_____________________________________________________________________________
-void CalculateParticleHistory(const Track& track) {
+vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoManager) {
    // -- Walk though provided track and determine at each step which volume the particle is in,
    // -- and use this to calculate the percentage of time the particle spends in each User-defined
    // -- 'region of interest' in the experiment
+   const string source = "Source";
+   const string transferSection = "TransferSection";
+   const string ramseyCell = "RamseyCell";
    
-    
+   map<string, string> regionList;
+   regionList.insert(pair<string,string>("SourceSeg",source));
+   regionList.insert(pair<string,string>("ValveVolEntrance",source));
+   regionList.insert(pair<string,string>("ValveVolFront",source));
+   regionList.insert(pair<string,string>("ValveVolBack",source));
+   regionList.insert(pair<string,string>("BendEntrance",source));
+   regionList.insert(pair<string,string>("ValveVol",source));
+   
+   regionList.insert(pair<string,string>("CircleBend",transferSection));
+   regionList.insert(pair<string,string>("BendBox",transferSection));
+   regionList.insert(pair<string,string>("BendVol",transferSection));
+   regionList.insert(pair<string,string>("DetectorValveVol",transferSection));
+   regionList.insert(pair<string,string>("DetectorTubeTop",transferSection));
+   regionList.insert(pair<string,string>("DetectorTube",transferSection));
+   regionList.insert(pair<string,string>("Detector",transferSection));
+   regionList.insert(pair<string,string>("GuideSeg",transferSection));
+   
+   regionList.insert(pair<string,string>("NeutralElectrode",ramseyCell));
+   regionList.insert(pair<string,string>("PreVolumeBox",ramseyCell));
+   regionList.insert(pair<string,string>("NeutralElectrodeHole1",ramseyCell));
+   regionList.insert(pair<string,string>("NeutralElectrodeHole2",ramseyCell));
+   regionList.insert(pair<string,string>("NeutralElectrodeHole3",ramseyCell));
+   regionList.insert(pair<string,string>("NeutralElectrodeHole4",ramseyCell));
+   regionList.insert(pair<string,string>("NeutralCell",ramseyCell));
+   regionList.insert(pair<string,string>("CellConnector",ramseyCell));
+   regionList.insert(pair<string,string>("CentralElectrode",ramseyCell));
+   regionList.insert(pair<string,string>("CentralElectrodeHole",ramseyCell));
+   regionList.insert(pair<string,string>("HVCell",ramseyCell));
+   regionList.insert(pair<string,string>("HVElectrode",ramseyCell));
+   
+   Double_t previousTime = 0.;
+   Double_t nextTime = 0.;
+   Double_t timeInSource = 0.;
+   Double_t timeInTransferSec = 0.;
+   Double_t timeInRamseyCell = 0.;
+   
+   for (UInt_t vertexNum = 0; vertexNum < track.TotalVertices(); vertexNum++) {
+      const Vertex& vertex = track.GetVertex(vertexNum);
+      TGeoNode* node = geoManager->FindNode(vertex.X(), vertex.Y(), vertex.Z());
+      TGeoVolume* volume = node->GetVolume();
+      map<string, string>::iterator key = regionList.find(volume->GetName());
+      if (key == regionList.end()) {
+         continue;
+      }
+      nextTime = vertex.T();
+      Double_t deltaT = nextTime - previousTime;
+      if (key->second == source) {
+         timeInSource += deltaT;
+      } else if (key->second == transferSection) {
+         timeInTransferSec += deltaT;
+      } else if (key->second == ramseyCell) {
+         timeInRamseyCell += deltaT;
+      } else {
+         cout << "Error:" << key->second << endl;
+      }
+      previousTime = nextTime;
+   }
+   vector<Double_t> times;
+   times.push_back(timeInSource);
+   times.push_back(timeInTransferSec);
+   times.push_back(timeInRamseyCell);
+   return times;
 }
 
 //_____________________________________________________________________________
