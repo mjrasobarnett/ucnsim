@@ -73,7 +73,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    sourceSeg->SetLineWidth(1);
    sourceSeg->SetVisibility(kTRUE);
    sourceSeg->SetTransparency(20);
-   
+   Double_t sourceCapacity = 0.0;
    Double_t segmentYPosition = sourceSegHalfLength;
    for (Int_t segNum = 1; segNum <= 13; segNum++) {
       // -- Define SourceTube matrix
@@ -88,6 +88,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
       segmentMat.SetName(sourceMatrixName);
       chamber->AddNode(sourceSeg, segNum, new TGeoHMatrix(segmentMat));
       segmentYPosition += 2.*sourceSegHalfLength; // Shift next segment along by length of segment 
+      sourceCapacity += sourceSegShape->Capacity();
    }
    
    // -------------------------------------
@@ -106,6 +107,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans valveVolEntranceCom(valveVolEntranceTra,valveVolEntranceRot);
    TGeoHMatrix valveVolEntranceMat = valveVolEntranceCom;
    chamber->AddNode(valveVolEntrance, 1, new TGeoHMatrix(valveVolEntranceMat));
+   Double_t valveVolEntraceCapacity = valveVolEntranceShape->Capacity();
    
    // -------------------------------------
    // -- Valve volume front - this is what the valve press against
@@ -121,6 +123,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans valveVolFrontCom(valveVolFrontTra,valveVolFrontRot);
    TGeoHMatrix valveVolFrontMat = valveVolFrontCom;
    chamber->AddNode(valveVolFront, 1, new TGeoHMatrix(valveVolFrontMat));
+   Double_t valveVolFrontCapacity = valveVolFrontShape->Capacity();
    
    // -------------------------------------
    // -- Valve volume - this is what the valve sits in
@@ -160,6 +163,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans valveVolCom(valveVolTra,valveVolRot);
    TGeoHMatrix valveVolMat = valveVolCom;
    chamber->AddNode(valveVol, 1, new TGeoHMatrix(valveVolMat));
+   Double_t valveVolCapacity = valveVolShape->Capacity();
    
 /* // -- Define the valve in its open state 
    Double_t openValveRMin = 0., openValveRMax = 36.0*Units::mm, openValveHalfLength = 1.375*Units::mm;
@@ -221,6 +225,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans bendVolCom(bendVolTra,bendVolRot);
    TGeoHMatrix bendVolMat = bendVolCom;
    chamber->AddNode(bendVol, 1, new TGeoHMatrix(bendVolMat));
+   Double_t bendCapacity = bendShape->Capacity();
    
    // -------------------------------------
    // -- DETECTOR VALVE
@@ -237,6 +242,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans detectorValveVolCom(detectorValveVolTra,detectorValveVolRot);
    TGeoHMatrix detectorValveVolMat = detectorValveVolCom;
    chamber->AddNode(detectorValveVol, 1, new TGeoHMatrix(detectorValveVolMat));
+   Double_t detectorValveVolCapacity = detectorValveVolShape->Capacity();
    
 /* // -------------------------------------
    // -- DetectorValve
@@ -272,6 +278,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans detectorTubeTopCom(detectorTubeTopTra,detectorTubeTopRot);
    TGeoHMatrix detectorTubeTopMat = detectorTubeTopCom; 
    chamber->AddNode(detectorTubeTop, 1, new TGeoHMatrix(detectorTubeTopMat));
+   Double_t detectorTubeTopCapacity = detectorTubeTopShape->Capacity();
    
    // -------------------------------------
    // -- DetectorTube
@@ -287,6 +294,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans detectorTubeCom(detectorTubeTra,detectorTubeRot);
    TGeoHMatrix detectorTubeMat = detectorTubeCom;
    chamber->AddNode(detectorTube, 1, new TGeoHMatrix(detectorTubeMat));
+   Double_t detectorTubeCapacity = detectorTubeShape->Capacity();
    
    // -------------------------------------
    // -- Detector
@@ -314,6 +322,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    guideSeg->SetVisibility(kTRUE);
    guideSeg->SetTransparency(20);
    Double_t guideSegXPos = guideXDisplacement;
+   Double_t guideCapacity = 0.0;
    for (Int_t segNum = 1; segNum <= 5; segNum++) {
       // Define Guide Seg matrix
       TGeoRotation segmentRot("SegmentRot",guidePhi,guideTheta,0); // phi, theta, psi
@@ -326,7 +335,12 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
       chamber->AddNode(guideSeg, segNum, new TGeoHMatrix(segmentMat));
       // Shift next segment along by length of segment
       guideSegXPos = guideSegXPos - 2.0*guideSegHalfZ;
+      // Calculate guide's volume
+      guideCapacity += guideSegShape->Capacity();
    }
+   
+   Double_t totalVolume = sourceCapacity + valveVolEntraceCapacity + valveVolFrontCapacity + valveVolCapacity + bendCapacity + detectorValveVolCapacity + detectorTubeTopCapacity + guideCapacity;
+   
    
    // -------------------------------------
    // -- RAMSEY CELL PRE-VOLUME SECTION
@@ -342,7 +356,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans preVolumeBoxCom(preVolumeBoxTra,preVolumeBoxRot);
    TGeoHMatrix preVolumeBoxMat = preVolumeBoxCom;
    chamber->AddNode(preVolumeBox, 1, new TGeoHMatrix(preVolumeBoxMat));
-   
+   Double_t preVolumeBoxCapacity = preVolumeBoxShape->Capacity();
    
    // -------------------------------------
    // -- RAMSEY CELL
@@ -358,7 +372,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans neutralElectrodeCom(neutralElectrodeTra,neutralElectrodeRot);
    TGeoHMatrix neutralElectrodeMat = neutralElectrodeCom;
 //   chamber->AddNode(neutralElectrode, 1, new TGeoHMatrix(neutralElectrodeMat));
-   
+      
    // Define valve holes in neutral electrode 
    Tube *neutralElectrodeHoleShape = new Tube("NeutralElectrodeHoleShape", neutralElectrodeHoleRMin, neutralElectrodeHoleRMax, neutralElectrodeHoleHalfZ);
    // 1
@@ -372,6 +386,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans neutralElectrodeHole1Com(neutralElectrodeHole1Tra,neutralElectrodeHoleRot);
    TGeoHMatrix neutralElectrodeHole1Mat = neutralElectrodeHole1Com;
    chamber->AddNode(neutralElectrodeHole1, 1, new TGeoHMatrix(neutralElectrodeHole1Mat));
+   Double_t neutralElectrodeHole1Capacity = neutralElectrodeHoleShape->Capacity();
+   
    // 2
    Boundary* neutralElectrodeHole2 = new Boundary("NeutralElectrodeHole2", neutralElectrodeHoleShape, beryllium, surfaceRoughness);
    neutralElectrodeHole2->SetLineColor(kGray+3);
@@ -392,6 +408,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans neutralElectrodeHole3Com(neutralElectrodeHole3Tra,neutralElectrodeHoleRot);
    TGeoHMatrix neutralElectrodeHole3Mat = neutralElectrodeHole3Com;
    chamber->AddNode(neutralElectrodeHole3, 1, new TGeoHMatrix(neutralElectrodeHole3Mat));
+   Double_t neutralElectrodeHole3Capacity = neutralElectrodeHoleShape->Capacity();
+   
    // 4
    Boundary* neutralElectrodeHole4 = new Boundary("NeutralElectrodeHole4", neutralElectrodeHoleShape, beryllium, surfaceRoughness);
    neutralElectrodeHole4->SetLineColor(kGray+3);
@@ -415,6 +433,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans neutralCellCom(neutralCellTra,neutralCellRot);
    TGeoHMatrix neutralCellMat = neutralCellCom;
    chamber->AddNode(neutralCell, 1, new TGeoHMatrix(neutralCellMat));
+   Double_t neutralCellCapacity = neutralCellShape->Capacity();
    
    // Cell Connector Tube
    Tube *cellConnectorShape = new Tube("CellConnectorShape", cellConnectorRMin, cellConnectorRMax, cellConnectorHalfZ);
@@ -428,6 +447,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans cellConnectorCom(cellConnectorTra,cellConnectorRot);
    TGeoHMatrix cellConnectorMat = cellConnectorCom;
    chamber->AddNode(cellConnector, 1, new TGeoHMatrix(cellConnectorMat));
+   Double_t cellConnectorCapacity = cellConnectorShape->Capacity();
    
    // Define Central electrode 
    Tube *centralElectrodeShape = new Tube("CentralElectrodeShape", centralElectrodeRMin, centralElectrodeRMax, centralElectrodeHalfZ);
@@ -454,6 +474,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans centralElectrodeHoleCom(centralElectrodeHoleTra,centralElectrodeHoleRot);
    TGeoHMatrix centralElectrodeHoleMat = centralElectrodeHoleCom;
    chamber->AddNode(centralElectrodeHole, 1, new TGeoHMatrix(centralElectrodeHoleMat));
+   Double_t centralElectrodeHoleCapacity = centralElectrodeHoleShape->Capacity(); 
    
    // HV Cell
    Tube *hvCellShape = new Tube("HVShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
@@ -467,7 +488,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans hvCellCom(hvCellTra,hvCellRot);
    TGeoHMatrix hvCellMat = hvCellCom;
    chamber->AddNode(hvCell, 1, new TGeoHMatrix(hvCellMat));
-   
+   Double_t hvCellCapacity = hvCellShape->Capacity();
+
    // Define HV electrode 
    Tube *hvElectrodeShape = new Tube("HVElectrodeShape", hvElectrodeRMin, hvElectrodeRMax, hvElectrodeHalfZ);
    Boundary* hvElectrode = new Boundary("HVElectrode", hvElectrodeShape, beryllium, surfaceRoughness);
@@ -489,7 +511,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // -- Write out geometry to file
    const char *fileName = "$(UCN_GEOM)/cryoedm_geom.root";
-   cerr << "Simulation Geometry Built... Writing to file: " << fileName << endl;
+   cout << "Simulation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    
    // -------------------------------------
@@ -507,8 +529,21 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // -- Write out visualisation geometry to file
    const char *visFileName = "$(UCN_GEOM)/cryoedm_vis.root";
-   cerr << "Visualisation Geometry Built... Writing to file: " << visFileName << endl;
+   cout << "Visualisation Geometry Built... Writing to file: " << visFileName << endl;
    geoManager->Export(visFileName);
+   
+   // -------------------------------------
+   // -- Calculate total volume of model
+   Double_t totalVolume = sourceCapacity + valveVolEntraceCapacity + valveVolFrontCapacity + valveVolCapacity + bendCapacity + detectorValveVolCapacity + guideCapacity + preVolumeBoxCapacity + neutralElectrodeHole1Capacity + neutralElectrodeHole3Capacity + neutralCellCapacity + cellConnectorCapacity + centralElectrodeHoleCapacity + hvCellCapacity;
+   Double_t closedSourceVolume = sourceCapacity + valveVolEntraceCapacity + valveVolFrontCapacity;
+   Double_t transferSecVolume = valveVolCapacity + bendCapacity + detectorValveVolCapacity + guideCapacity + preVolumeBoxCapacity;
+   cout << "-------------------------------------------" << endl;
+   cout << "Model's Total Real Volume: " << totalVolume << "m^3" << endl;
+   cout << "Closed Source Volume: " << closedSourceVolume << "m^3" << "\t" << closedSourceVolume/totalVolume << " factor of Total" << endl;
+   cout << "Transfer Section Volume: " << transferSecVolume << "\t" << transferSecVolume/totalVolume << " factor of Total" << endl;
+   cout << "HV + Neutral Cell Volume: " << neutralCellCapacity + hvCellCapacity << "m^3" << "\t"  << (neutralCellCapacity + hvCellCapacity)/totalVolume << " factor of Total" << endl;
+   cout << "Dilution factor: " << (neutralCellCapacity + hvCellCapacity)/totalVolume << endl;
+   cout << "-------------------------------------------" << endl;
    
    return kTRUE;
 }
