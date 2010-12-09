@@ -534,10 +534,16 @@ void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir
    // -- Bounces
    sprintf(histname,"%s:Source",stateDir->GetName());
    TH1F* timeInSourceHist = new TH1F(histname,"Source", 100, 0.0, 1.);
+   timeInSourceHist->SetXTitle("Percent Time spent in Source");
+   timeInSourceHist->SetYTitle("Percentage of total Neutrons");
    sprintf(histname,"%s:TransferSection",stateDir->GetName());
    TH1F* timeInTransferSecHist = new TH1F(histname,"TransferSection", 100, 0.0, 1.);
+   timeInTransferSecHist->SetXTitle("Percent Time spent in Transfer Section");
+   timeInTransferSecHist->SetYTitle("Percentage of total Neutrons");
    sprintf(histname,"%s:RamseyCell",stateDir->GetName());
    TH1F* timeInRamseyCellHist = new TH1F(histname,"RamseyCell", 100, 0.0, 1.);
+   timeInRamseyCellHist->SetXTitle("Percent Time spent in Ramsey Cell");
+   timeInRamseyCellHist->SetYTitle("Percentage of total Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into the State's folder
    stateDir->cd();
@@ -581,11 +587,17 @@ void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir
    TCanvas *historycanvas = new TCanvas("History","Histories",60,0,1200,800);
    historycanvas->Divide(3,1);
    historycanvas->cd(1);
+   timeInSourceHist->Scale(1.0/stateDir->GetNkeys());
+   timeInSourceHist->SetMaximum(1.0);
    timeInSourceHist->Draw();
    historycanvas->cd(2);
-   timeInRamseyCellHist->Draw();
-   historycanvas->cd(3);
+   timeInTransferSecHist->Scale(1.0/stateDir->GetNkeys());
+   timeInTransferSecHist->SetMaximum(1.0);
    timeInTransferSecHist->Draw();
+   historycanvas->cd(3);
+   timeInRamseyCellHist->Scale(1.0/stateDir->GetNkeys());
+   timeInRamseyCellHist->SetMaximum(1.0);
+   timeInRamseyCellHist->Draw();
    
 }
 
@@ -614,9 +626,9 @@ vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoMa
    regionList.insert(pair<string,string>("DetectorTube",transferSection));
    regionList.insert(pair<string,string>("Detector",transferSection));
    regionList.insert(pair<string,string>("GuideSeg",transferSection));
+   regionList.insert(pair<string,string>("PreVolumeBox",transferSection));
    
    regionList.insert(pair<string,string>("NeutralElectrode",ramseyCell));
-   regionList.insert(pair<string,string>("PreVolumeBox",ramseyCell));
    regionList.insert(pair<string,string>("NeutralElectrodeHole1",ramseyCell));
    regionList.insert(pair<string,string>("NeutralElectrodeHole2",ramseyCell));
    regionList.insert(pair<string,string>("NeutralElectrodeHole3",ramseyCell));
