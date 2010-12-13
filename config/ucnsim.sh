@@ -70,14 +70,14 @@ fi
 #------------------------------------------------------------------------------
 # ROOT & UCN_DIR PATHS
 #------------------------------------------------------------------------------
-if [[ -z "${LD_LIBRARY_PATH}" ]] ; then
+if [[ -n "${LD_LIBRARY_PATH}" ]] ; then
 	export LD_LIBRARY_PATH=${UCN_DIR}/lib:${ROOTSYS}/lib:${LD_LIBRARY_PATH}
 else
 	export LD_LIBRARY_PATH=${UCN_DIR}/lib:${ROOTSYS}/lib
 fi
 
 if [[ `uname` == Darwin ]] ; then
-  if [[ -z "${DYLD_LIBRARY_PATH}" ]] ; then
+  if [[ -n "${DYLD_LIBRARY_PATH}" ]] ; then
    export DYLD_LIBRARY_PATH=${UCN_DIR}/lib:${ROOTSYS}/lib:${DYLD_LIBRARY_PATH}
   else
    export DYLD_LIBRARY_PATH=${UCN_DIR}/lib:${ROOTSYS}/lib
