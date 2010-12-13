@@ -55,8 +55,18 @@ elif [[ `uname -n` == "ubuntu" ]] ; then
 		export PATH=${ROOTSYS}/bin:${PATH}
 		export MANPATH=${ROOTSYS}/man:${MANPATH}
 	fi
+elif [[ `uname -n` == "feynman" ]] ; then 
+	# Test if we are running on matt's linux virtual machine
+	echo "Configuring for Feynman remote machine"
+	export UCN_DIR=/epp/data/nedm/mb325/ucnsim
+	export UCN_GEOM=${UCN_DIR}/geom
+	export PATH=${UCN_DIR}/bin:${PATH}
+	if [[ -z "${ROOTSYS}" ]] ; then
+		export ROOTSYS=${HOME}/root
+		export PATH=${ROOTSYS}/bin:${PATH}
+		export MANPATH=${ROOTSYS}/man:${MANPATH}
+	fi
 fi
-
 #------------------------------------------------------------------------------
 # ROOT & UCN_DIR PATHS
 #------------------------------------------------------------------------------
