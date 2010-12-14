@@ -225,7 +225,7 @@ namespace GeomParameters {
    // Neutral Cell
    const Double_t neutralCellRMin = 0.0*Units::mm;
    const Double_t neutralCellRMax = 125.0*Units::mm;
-   const Double_t neutralCellHalfZ = 27.5*Units::mm;
+   const Double_t neutralCellHalfZ = 22.5*Units::mm;
    const Double_t neutralCellPhi = 90;
    const Double_t neutralCellTheta = 90;
    const Double_t neutralCellPsi = 0;
@@ -284,7 +284,7 @@ namespace GeomParameters {
    // HV Cell
    const Double_t hvCellRMin = 0.0*Units::mm;
    const Double_t hvCellRMax = 125.0*Units::mm;
-   const Double_t hvCellHalfZ = 27.5*Units::mm;
+   const Double_t hvCellHalfZ = 22.5*Units::mm;
    const Double_t hvCellPhi = 90;
    const Double_t hvCellTheta = 90;
    const Double_t hvCellPsi = 0;
