@@ -50,5 +50,6 @@
 #pragma link C++ class TrackObserver+;
 #pragma link C++ class Track+;
 #pragma link C++ class Vertex+;
+#pragma link C++ class FieldMap+;
 
 #endif

@@ -85,6 +85,8 @@ OBSERVABLESO = src/Observables.$(ObjSuf) UCNDict.$(ObjSuf)
 OBSERVABLESS = src/Observables.$(SrcSuf) UCNDict.$(SrcSuf)
 TRACKO = src/Track.$(ObjSuf) UCNDict.$(ObjSuf)
 TRACKS = src/Track.$(SrcSuf) UCNDict.$(SrcSuf)
+FIELDMAPO = src/FieldMap.$(ObjSuf) UCNDict.$(ObjSuf)
+FIELDMAPS = src/FieldMap.$(SrcSuf) UCNDict.$(SrcSuf)
 
 #------------------------------------------------------------------------------
 # my library with my classes
@@ -98,7 +100,7 @@ $(DRAW_TRACKSO) $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO)
 $(STATEO) $(SPINO) $(DATAPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
 $(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
 $(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) $(INITIALCONFIGO) \
-$(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO)
+$(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO) $(FIELDMAPO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(PLOT_DATA) $(SANDBOX) \
 $(DRAW_TRACKS) 
@@ -153,7 +155,8 @@ $(UCNSO):		$(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) \
 					$(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) \
 					$(FIELDMANAGERO) $(CONFIGFILEO) $(COMPOSITESHAPEO) \
 					$(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) \
-					$(INITIALCONFIGO) $(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO)
+					$(INITIALCONFIGO) $(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO) \
+					$(FIELDMAPO)
 
 ifeq ($(ARCH),aix)
 		/usr/ibmcxx/bin/makeC++SharedLib $(OutPutOpt) $@ $(LIBS) -p 0 $^
@@ -207,6 +210,7 @@ RUNCONFIGO: 				include/RunConfig.h
 OBSERVERO: 					include/Observer.h
 OBSERVABLESO: 				include/Observables.h
 TRACKO:						include/Track.h
+FIELDMAPO:					include/FieldMap.h
 
 UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/Material.h include/GravField.h include/Particle.h \
@@ -218,7 +222,7 @@ UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/CompositeShape.h include/BoolNode.h \
 								include/Volume.h include/Element.h include/MagFieldManager.h \
 								include/InitialConfig.h include/RunConfig.h include/Observer.h \
-								include/Observables.h include/Track.h $(LINKDEF)
+								include/Observables.h include/Track.h include/FieldMap.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 
