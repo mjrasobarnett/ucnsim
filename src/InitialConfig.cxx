@@ -16,6 +16,11 @@ ClassImp(InitialConfig)
 
 //__________________________________________________________________________
 InitialConfig::InitialConfig()
+              :fRunName(""), fGeomFile(""), fGeomVisFile(""), fOutputDataFile(""),
+               fBeamShape(""), fBeamRadius(0.), fBeamLength(0.), fBeamPhi(0.), fBeamTheta(0.),
+               fBeamPsi(0.), fBeamDisplacement(), fInitialParticles(0), fInitialMaxVelocity(0.),
+               fFillingTime(0.), fDirMinTheta(0.), fDirMaxTheta(0.), fDirMinPhi(0.), fDirMaxPhi(0.),
+               fPercentagePolarised(0.), fSpinAxis(), fSpinUp(kTRUE)
 {
    Info("InitialConfig","Default Constructor");
 }
@@ -31,9 +36,25 @@ InitialConfig::InitialConfig(const string& initialConfigFileName)
    fGeomVisFile = initialConfigFile.GetString("GeomVisFile","Files");
    fOutputDataFile = initialConfigFile.GetString("OutputDataFile","Files");
    
+   fBeamShape = initialConfigFile.GetString("Shape","Beam");
+   fBeamRadius = initialConfigFile.GetFloat("Radius","Beam");
+   fBeamLength = initialConfigFile.GetFloat("Length","Beam");
+   fBeamPhi = initialConfigFile.GetFloat("Phi","Beam");
+   fBeamTheta = initialConfigFile.GetFloat("Theta","Beam");
+   fBeamPsi = initialConfigFile.GetFloat("Psi","Beam");
+   Double_t xPosition = initialConfigFile.GetFloat("XPos","Beam");
+   Double_t yPosition = initialConfigFile.GetFloat("YPos","Beam");
+   Double_t zPosition = initialConfigFile.GetFloat("ZPos","Beam");
+   fBeamDisplacement.SetXYZ(xPosition,yPosition,zPosition);
+   
    fInitialParticles = initialConfigFile.GetInt("InitialParticles", "Neutrons");
    fInitialMaxVelocity = initialConfigFile.GetFloat("InitialMaxVelocity", "Neutrons");
    fFillingTime = initialConfigFile.GetFloat("FillingTime", "Neutrons");
+   
+   fDirMinTheta = initialConfigFile.GetFloat("MinTheta","Direction");
+   fDirMaxTheta = initialConfigFile.GetFloat("MaxTheta","Direction");
+   fDirMinPhi = initialConfigFile.GetFloat("MinPhi","Direction");
+   fDirMaxPhi = initialConfigFile.GetFloat("MaxPhi","Direction");
    
    fPercentagePolarised = initialConfigFile.GetFloat("PercentagePolarised","Spin");
    // -- Read in Axis against which we will polarise our neutrons
@@ -63,9 +84,20 @@ InitialConfig::InitialConfig(const InitialConfig& other)
                    fGeomFile(other.fGeomFile),
                    fGeomVisFile(other.fGeomVisFile),
                    fOutputDataFile(other.fOutputDataFile),
+                   fBeamShape(other.fBeamShape),
+                   fBeamRadius(other.fBeamRadius),
+                   fBeamLength(other.fBeamLength),
+                   fBeamPhi(other.fBeamPhi),
+                   fBeamTheta(other.fBeamTheta),
+                   fBeamPsi(other.fBeamPsi),
+                   fBeamDisplacement(other.fBeamDisplacement),
                    fInitialParticles(other.fInitialParticles),
                    fInitialMaxVelocity(other.fInitialMaxVelocity),
                    fFillingTime(other.fFillingTime),
+                   fDirMinTheta(other.fDirMinTheta),
+                   fDirMaxTheta(other.fDirMaxTheta),
+                   fDirMinPhi(other.fDirMinPhi),
+                   fDirMaxPhi(other.fDirMaxPhi),
                    fPercentagePolarised(other.fPercentagePolarised),
                    fSpinAxis(other.fSpinAxis),
                    fSpinUp(other.fSpinUp)
@@ -82,9 +114,20 @@ InitialConfig& InitialConfig::operator=(const InitialConfig& other)
       fGeomFile = other.fGeomFile;
       fGeomVisFile = other.fGeomVisFile;
       fOutputDataFile = other.fOutputDataFile;
+      fBeamShape = other.fBeamShape;
+      fBeamRadius = other.fBeamRadius;
+      fBeamLength = other.fBeamLength;
+      fBeamPhi = other.fBeamPhi;
+      fBeamTheta = other.fBeamTheta;
+      fBeamPsi = other.fBeamPsi;
+      fBeamDisplacement = other.fBeamDisplacement;
       fInitialParticles = other.fInitialParticles;
       fInitialMaxVelocity = other.fInitialMaxVelocity;
       fFillingTime = other.fFillingTime;
+      fDirMinTheta = other.fDirMinTheta;
+      fDirMaxTheta = other.fDirMaxTheta;
+      fDirMinPhi = other.fDirMinPhi;
+      fDirMaxPhi =other.fDirMaxPhi;
       fPercentagePolarised = other.fPercentagePolarised;
       fSpinAxis = other.fSpinAxis;
       fSpinUp = other.fSpinUp;
@@ -107,9 +150,21 @@ void InitialConfig::Print(Option_t* /*option*/) const
    cout << "GeomFile: " << fGeomFile << endl;
    cout << "GeomVisFile: " << fGeomVisFile << endl;
    cout << "OutputDataFile: " << fOutputDataFile << endl;
-   cout << "InitialParticle: " << fInitialParticles << endl;
+   cout << "Beam Shape: " << fBeamShape << endl;
+   cout << "Beam Radius: " << fBeamRadius << endl;
+   cout << "Beam Length: " << fBeamLength << endl;
+   cout << "Beam Phi: " << fBeamPhi << "\t";
+   cout << "Theta: " << fBeamTheta << "\t";
+   cout << "Psi: " << fBeamPsi << endl;
+   cout << "Beam Displacement: " << endl;
+   fBeamDisplacement.Print();
+   cout << "InitialParticles: " << fInitialParticles << endl;
    cout << "InitialMaxVelocity: " << fInitialMaxVelocity << " m/s" << endl;
    cout << "FillingTime: " << fFillingTime << " s" << endl;
+   cout << "Beam Direction Min Theta: " << fDirMinTheta << "\t";
+   cout << "Max Theta: " << fDirMaxTheta << endl;
+   cout << "Beam Direction Min Theta: " << fDirMinPhi << "\t";
+   cout << "Max Theta: " << fDirMaxPhi << endl;
    cout << "PercentagePolarised: " << fPercentagePolarised << "%" << endl;
    cout << "Spin Up: " << fSpinUp << endl;
    fSpinAxis.Print();

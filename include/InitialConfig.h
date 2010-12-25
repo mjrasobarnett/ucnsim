@@ -17,9 +17,22 @@ private:
    std::string fGeomVisFile;
    std::string fOutputDataFile;
    
+   std::string fBeamShape;
+   Double_t fBeamRadius;
+   Double_t fBeamLength;
+   Double_t fBeamPhi;
+   Double_t fBeamTheta;
+   Double_t fBeamPsi;
+   TVector3 fBeamDisplacement;
+   
    Int_t fInitialParticles;
    Double_t fInitialMaxVelocity; // m/s
    Double_t fFillingTime;  // s
+   
+   Double_t fDirMinTheta;
+   Double_t fDirMaxTheta;
+   Double_t fDirMinPhi;
+   Double_t fDirMaxPhi;
    
    Double_t fPercentagePolarised;
    TVector3 fSpinAxis;
@@ -39,11 +52,24 @@ public:
    std::string GeomVisFileName() const {return fGeomVisFile;}
    std::string OutputFileName() const {return fOutputDataFile;}
    
+   std::string BeamShape() const {return fBeamShape;}
+   Double_t BeamRadius() const {return fBeamRadius;}
+   Double_t BeamLength() const {return fBeamLength;}
+   Double_t BeamPhi() const {return fBeamPhi;}
+   Double_t BeamTheta() const {return fBeamTheta;}
+   Double_t BeamPsi() const {return fBeamPsi;}
+   const TVector3& BeamDisplacement() const {return fBeamDisplacement;}
+
    Int_t InitialParticles() const {return fInitialParticles;}
    Double_t InitialMaxVelocity() const {return fInitialMaxVelocity;}
    Double_t FillingTime() const {return fFillingTime;}
    
-   TVector3 SpinAxis() const {return fSpinAxis;}
+   Double_t DirectionMinTheta() const {return fDirMinTheta;}
+   Double_t DirectionMaxTheta() const {return fDirMaxTheta;}
+   Double_t DirectionMinPhi() const {return fDirMinPhi;}
+   Double_t DirectionMaxPhi() const {return fDirMaxPhi;}
+   
+   const TVector3& SpinAxis() const {return fSpinAxis;}
    Bool_t SpinUp() const {return fSpinUp;}
    Double_t PercentPolarised() const {return fPercentagePolarised;}
    
