@@ -20,6 +20,10 @@
 #include "TRandom.h"
 #include "TRint.h"
 #include "TBenchmark.h"
+#include "TGLViewer.h"
+#include "TGLCamera.h"
+#include "TGLPerspectiveCamera.h"
+#include "TPolyMarker3D.h"
 
 #include "Materials.h"
 #include "Constants.h"
@@ -158,6 +162,10 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    TH1F* initialVHist = new TH1F("InitialVHist","Initial V velocity, Units of (m/s)", nbins, 0.0, vmax);
    TH1F* initialTHist = new TH1F("InitialTHist","Initial T time, Units of s", nbins, 0.0, fillTime);
    
+   TPolyMarker3D* positions = new TPolyMarker3D(particles, 1); // 1 is marker style
+   positions->SetMarkerColor(2);
+   positions->SetMarkerStyle(6);
+   
    cout << "-------------------------------------------" << endl;
    cout << "Generating " << particles << " Particles." << endl;
    cout << "Boundary X (m): " << boundary->GetDX() << "\t";
@@ -190,6 +198,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       initialVZHist->Fill(particle->Vz());
       initialVHist->Fill(particle->V());
       initialTHist->Fill(particle->T());
+      positions->SetPoint(particle->Id(), particle->X(), particle->Y(), particle->Z());
       // -- Add particle to data file
       data->SaveParticle(particle, Folders::initialstates);
       if (particle) delete particle;
@@ -218,6 +227,34 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    initialVZHist->Draw();
    canvas1->cd(8);
    initialVHist->Draw();
+   
+   TCanvas* canvas2 = new TCanvas("InitialPositions","Positions",60,0,100,100);
+   canvas2->cd();
+   TString geomFileName = initialConfig.GeomVisFileName();
+   TGeoManager* geoManager = TGeoManager::Import(geomFileName);
+   geoManager->GetTopVolume()->Draw("ogl");
+   geoManager->SetVisLevel(4);
+   geoManager->SetVisOption(0);
+   positions->Draw();
+   // -- Get the GLViewer so we can manipulate the camera
+   TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
+   // -- Select Draw style 
+   glViewer->SetStyle(TGLRnrCtx::kFill);
+   // -- Set Background colour
+   glViewer->SetClearColor(kWhite);
+   // -- Set Camera type
+   TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
+   glViewer->SetCurrentCamera(camera);
+   glViewer->CurrentCamera().SetExternalCenter(kTRUE);
+   Double_t cameraCentre[3] = {0,0,0};
+   glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
+   // -- Draw Reference Point, Axes
+   Double_t refPoint[3] = {0.,0.,0.};
+   // Int_t axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const Double_t referencePos[3]
+   glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
+   glViewer->UpdateScene();
+   glViewer = 0;
+   
    cout << "Successfully generated " << particles << " particles." << endl;
    cout << "-------------------------------------------" << endl;	
    return kTRUE;
