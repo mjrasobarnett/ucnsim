@@ -17,61 +17,66 @@ ClassImp(ConfigFile)
 //_____________________________________________________________________________
 ConfigFile::ConfigFile()
 {
-	Info("ConfigFile", "Dummy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "ConfigFile::Dummy Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
 ConfigFile::ConfigFile(string filename)
 {
-  	Info("ConfigFile", "Constructor");
-	/// Try opening the file
-  ifstream cfg(filename.c_str());
-  if(cfg.is_open())
-  {
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "ConfigFile::Constructor" << endl;
+   #endif
+   /// Try opening the file
+   ifstream cfg(filename.c_str());
+   if(cfg.is_open())
+   {
     // All is well, read the file in!
-    ReadFile(cfg);
-    
-  } else {
+    ReadFile(cfg); 
+   } else {
     // Print an error message if we were trying to open a file
     if (filename != "") {
-      Fatal("ConfigFile", "Could not read configuration file");
       throw runtime_error("Could not read configuration file.");
     }
-  }
-  
-  /// Otherwise, we are blank! Nothing more needs to be done....
+   }
+   
+   /// Otherwise, we are blank! Nothing more needs to be done....
 }
 
 //_____________________________________________________________________________
 ConfigFile::ConfigFile(ConfigFile& other)
-					:TObject(other),
-					 fStore(other.fStore)
+           :fStore(other.fStore)
 {
-  	Info("ConfigFile", "Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "ConfigFile::Copy Constructor" << endl;
+   #endif
 }
 
 //_____________________________________________________________________________
 ConfigFile& ConfigFile::operator=(const ConfigFile& other)
 {
-  	Info("ConfigFile", "Assignment");
-	if (this!=&other) {
-		TObject::operator=(other);
-		fStore = other.fStore;
-	}
-	return *this;
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "ConfigFile::Assignment" << endl;
+   #endif
+   if (this!=&other) {
+      fStore = other.fStore;
+   }
+   return *this;
 }
 
 //_____________________________________________________________________________
 ConfigFile::~ConfigFile()
 {
-  	Info("ConfigFile", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "ConfigFile::Destructor" << endl;
+   #endif
 }
 
 //_____________________________________________________________________________
 string ConfigFile::Decomment(const string &source)
 {
   // Strips comments from a line
-  
   // Find any instances of '#', and then remove them
   int comment = source.find_first_of("#%");
   if (comment == -1) return source;
@@ -93,7 +98,6 @@ void ConfigFile::ReadFile(std::ifstream &file)
 {
   int lineNo = 0;
   string line, section = "";
-  
   // Loop over all lines in the file
   while(std::getline(file, line))
   {
@@ -108,18 +112,15 @@ void ConfigFile::ReadFile(std::ifstream &file)
     
     // Several paths here: Section header, Key-Value pair or invalid.
     // First test for section header
-    if (IsSectionChange(line))
-    {
+    if (IsSectionChange(line)) {
       section = Section(line);
       continue;
     }
     
     // Must be a key pair, or invalid
-    if (!ReadKeyPair(section, line))
-    {
-      Warning("ReadFile", "Invalid line %i: \" %s \" ", lineNo, line.c_str()); 
+    if (!ReadKeyPair(section, line)) {
+       cout << "ReadFile::Invalid line " << lineNo << ": \" " << line << " \"" << endl; 
     }
-    
   } // Go to next line
 }
 
@@ -138,7 +139,7 @@ bool ConfigFile::IsSectionChange(const string &line)
       // Make sure it is valid
       string newsec = line.substr(1, line.size()-2);
       if (newsec.size() == 0) {
-		  Warning("IsSectionChange","Invalid Section Change: Section cannot be blank");
+         cout << "IsSectionChange::Invalid Section Change: Section cannot be blank" << endl;
       } else {
         return true;
       }
@@ -153,7 +154,6 @@ string ConfigFile::Section(const string &line)
 {
   // Extracts the section from a line
   string newsec = line.substr(1, line.size()-2);
-  
   return newsec;
 }
 
@@ -174,7 +174,6 @@ bool ConfigFile::ReadKeyPair(const string &section, const string &line)
   string key = Trim(line.substr(0, split));
   string keyval = Trim(line.substr(split+1, line.size()-split+2));
   fStore[section][key] = keyval;
-  
   return true;
 }
 
@@ -204,7 +203,8 @@ int ConfigFile::GetInt(string key, string section, int defaultval)
   {
     return ival;
   } else {
-    Warning("GetInteger", "Failed to read [ %s ]. %s = %s as integer.", section.c_str(), key.c_str(), value.c_str());
+     cout << "GetInteger::Failed to read [ " << section << " ]. " << key;
+     cout << " = " << value << " as integer." << endl;
     return defaultval;
   }
 }
@@ -224,7 +224,8 @@ double ConfigFile::GetFloat(string key, string section, double defaultval)
   {
     return ival;
   } else {
-    Warning("GetFloat", "Failed to read [ %s ]. %s = %s as float.", section.c_str(), key.c_str(), value.c_str());
+    cout << "GetFloat:: Failed to read [ " << section << " ]. " << key;
+    cout << " = " << value << " as float." << endl;
     return defaultval;
   }
 }
@@ -232,25 +233,26 @@ double ConfigFile::GetFloat(string key, string section, double defaultval)
 //_____________________________________________________________________________
 bool ConfigFile::GetBool(string key, string section, bool defaultval)
 {
-  string value = fStore[section][key];
-  if (value.size() == 0) return defaultval;
-  
-  // Now try to work out what it is
-  if (value == "True" || value == "true" || value == "TRUE" || value == "ON" || value == "On" || value == "on" || value == "YES" || value == "Yes" || value == "yes") return true;
-  if (value == "False" || value == "false" || value == "FALSE" || value == "OFF" || value == "Off" || value == "off" || value == "NO" || value == "No" || value == "no" ) return false;
-  
-  // Try to convert to an integer, and see if it is non-zero
-  istringstream iss (value);
-  int ival = 0;
-  iss >> ival;
-  
-  // It worked - just return the value
-  if (!iss.fail())
-  {
+   string value = fStore[section][key];
+   if (value.size() == 0) return defaultval;
+
+   // Now try to work out what it is
+   if (value == "True" || value == "true" || value == "TRUE" || value == "ON" || value == "On" || value == "on" || value == "YES" || value == "Yes" || value == "yes") return true;
+   if (value == "False" || value == "false" || value == "FALSE" || value == "OFF" || value == "Off" || value == "off" || value == "NO" || value == "No" || value == "no" ) return false;
+
+   // Try to convert to an integer, and see if it is non-zero
+   istringstream iss (value);
+   int ival = 0;
+   iss >> ival;
+
+   // It worked - just return the value
+   if (!iss.fail())
+   {
     return ival;
-  }
-  
-  // It failed..... give up here for now
-  Warning("GetBool", "Failed to read [ %s ]. %s = %s as bool.", section.c_str(), key.c_str(), value.c_str());
-  return defaultval;
+   }
+
+   // It failed..... give up here for now
+   cout << "GetBool::Failed to read [ " << section << " ]. " << key;
+   cout << " = " << value << " as bool." << endl;
+   return defaultval;
 }

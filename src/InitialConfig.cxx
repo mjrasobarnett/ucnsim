@@ -22,14 +22,18 @@ InitialConfig::InitialConfig()
                fFillingTime(0.), fDirMinTheta(0.), fDirMaxTheta(0.), fDirMinPhi(0.), fDirMaxPhi(0.),
                fPercentagePolarised(0.), fSpinAxis(), fSpinUp(kTRUE)
 {
-   Info("InitialConfig","Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "InitialConfig::Default Constructor" << endl;
+   #endif
 }
 
 //__________________________________________________________________________
 InitialConfig::InitialConfig(const string& initialConfigFileName)
 {
    // -- Take Batch config file, open the Initial config file and read in all parameters
-   Info("InitialConfig","Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "InitialConfig::Constructor" << endl;
+   #endif
    ConfigFile initialConfigFile(initialConfigFileName);
    fRunName = initialConfigFile.GetString("RunName","Name");
    fGeomFile = initialConfigFile.GetString("GeomFile","Files");
@@ -79,37 +83,37 @@ InitialConfig::InitialConfig(const string& initialConfigFileName)
 
 //__________________________________________________________________________
 InitialConfig::InitialConfig(const InitialConfig& other)
-                  :TObject(other),
-                   fRunName(other.fRunName),
-                   fGeomFile(other.fGeomFile),
-                   fGeomVisFile(other.fGeomVisFile),
-                   fOutputDataFile(other.fOutputDataFile),
-                   fBeamShape(other.fBeamShape),
-                   fBeamRadius(other.fBeamRadius),
-                   fBeamLength(other.fBeamLength),
-                   fBeamPhi(other.fBeamPhi),
-                   fBeamTheta(other.fBeamTheta),
-                   fBeamPsi(other.fBeamPsi),
-                   fBeamDisplacement(other.fBeamDisplacement),
-                   fInitialParticles(other.fInitialParticles),
-                   fInitialMaxVelocity(other.fInitialMaxVelocity),
-                   fFillingTime(other.fFillingTime),
-                   fDirMinTheta(other.fDirMinTheta),
-                   fDirMaxTheta(other.fDirMaxTheta),
-                   fDirMinPhi(other.fDirMinPhi),
-                   fDirMaxPhi(other.fDirMaxPhi),
-                   fPercentagePolarised(other.fPercentagePolarised),
-                   fSpinAxis(other.fSpinAxis),
-                   fSpinUp(other.fSpinUp)
+              :fRunName(other.fRunName),
+               fGeomFile(other.fGeomFile),
+               fGeomVisFile(other.fGeomVisFile),
+               fOutputDataFile(other.fOutputDataFile),
+               fBeamShape(other.fBeamShape),
+               fBeamRadius(other.fBeamRadius),
+               fBeamLength(other.fBeamLength),
+               fBeamPhi(other.fBeamPhi),
+               fBeamTheta(other.fBeamTheta),
+               fBeamPsi(other.fBeamPsi),
+               fBeamDisplacement(other.fBeamDisplacement),
+               fInitialParticles(other.fInitialParticles),
+               fInitialMaxVelocity(other.fInitialMaxVelocity),
+               fFillingTime(other.fFillingTime),
+               fDirMinTheta(other.fDirMinTheta),
+               fDirMaxTheta(other.fDirMaxTheta),
+               fDirMinPhi(other.fDirMinPhi),
+               fDirMaxPhi(other.fDirMaxPhi),
+               fPercentagePolarised(other.fPercentagePolarised),
+               fSpinAxis(other.fSpinAxis),
+               fSpinUp(other.fSpinUp)
 {
-   Info("InitialConfig","Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "InitialConfig::Copy Constructor" << endl;
+   #endif
 }
 
 //__________________________________________________________________________
 InitialConfig& InitialConfig::operator=(const InitialConfig& other)
 {
    if(this!=&other) {
-      TObject::operator=(other);
       fRunName = other.fRunName;
       fGeomFile = other.fGeomFile;
       fGeomVisFile = other.fGeomVisFile;
@@ -138,7 +142,9 @@ InitialConfig& InitialConfig::operator=(const InitialConfig& other)
 //__________________________________________________________________________
 InitialConfig::~InitialConfig()
 {
-   cout << "InitialConfig::Destructor" << endl;
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "InitialConfig::Destructor" << endl;
+   #endif
 }
 
 //__________________________________________________________________________

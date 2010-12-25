@@ -6,7 +6,7 @@
 #include "TObject.h"
 #include <map>
 
-class ConfigFile : public TObject {
+class ConfigFile {
 public:
    // Constructors
    ConfigFile();
@@ -43,7 +43,7 @@ private:
    /// Reads a key-pair out of a line
    bool ReadKeyPair(const std::string &section, const std::string &line);
    
-   ClassDef(ConfigFile, 1) // 
+   ClassDef(ConfigFile, 0) // 
 };
 
 #endif /* CONFIGFILE_H */

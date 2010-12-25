@@ -5,11 +5,10 @@
 #ifndef INITIALCONFIG_H
 #define INITIALCONFIG_H
 
-#include "TObject.h"
 #include "TVector3.h"
 #include <string>
 
-class InitialConfig : public TObject {
+class InitialConfig {
 private:
    std::string fRunName;
    
@@ -18,25 +17,25 @@ private:
    std::string fOutputDataFile;
    
    std::string fBeamShape;
-   Double_t fBeamRadius;
-   Double_t fBeamLength;
-   Double_t fBeamPhi;
-   Double_t fBeamTheta;
-   Double_t fBeamPsi;
+   double fBeamRadius;
+   double fBeamLength;
+   double fBeamPhi;
+   double fBeamTheta;
+   double fBeamPsi;
    TVector3 fBeamDisplacement;
    
-   Int_t fInitialParticles;
-   Double_t fInitialMaxVelocity; // m/s
-   Double_t fFillingTime;  // s
+   int fInitialParticles;
+   double fInitialMaxVelocity; // m/s
+   double fFillingTime;  // s
    
-   Double_t fDirMinTheta;
-   Double_t fDirMaxTheta;
-   Double_t fDirMinPhi;
-   Double_t fDirMaxPhi;
+   double fDirMinTheta;
+   double fDirMaxTheta;
+   double fDirMinPhi;
+   double fDirMaxPhi;
    
-   Double_t fPercentagePolarised;
+   double fPercentagePolarised;
    TVector3 fSpinAxis;
-   Bool_t fSpinUp;
+   bool fSpinUp;
    
 public:
    // Constructors
@@ -53,28 +52,28 @@ public:
    std::string OutputFileName() const {return fOutputDataFile;}
    
    std::string BeamShape() const {return fBeamShape;}
-   Double_t BeamRadius() const {return fBeamRadius;}
-   Double_t BeamLength() const {return fBeamLength;}
-   Double_t BeamPhi() const {return fBeamPhi;}
-   Double_t BeamTheta() const {return fBeamTheta;}
-   Double_t BeamPsi() const {return fBeamPsi;}
+   double BeamRadius() const {return fBeamRadius;}
+   double BeamLength() const {return fBeamLength;}
+   double BeamPhi() const {return fBeamPhi;}
+   double BeamTheta() const {return fBeamTheta;}
+   double BeamPsi() const {return fBeamPsi;}
    const TVector3& BeamDisplacement() const {return fBeamDisplacement;}
 
-   Int_t InitialParticles() const {return fInitialParticles;}
-   Double_t InitialMaxVelocity() const {return fInitialMaxVelocity;}
-   Double_t FillingTime() const {return fFillingTime;}
+   int InitialParticles() const {return fInitialParticles;}
+   double InitialMaxVelocity() const {return fInitialMaxVelocity;}
+   double FillingTime() const {return fFillingTime;}
    
-   Double_t DirectionMinTheta() const {return fDirMinTheta;}
-   Double_t DirectionMaxTheta() const {return fDirMaxTheta;}
-   Double_t DirectionMinPhi() const {return fDirMinPhi;}
-   Double_t DirectionMaxPhi() const {return fDirMaxPhi;}
+   double DirectionMinTheta() const {return fDirMinTheta;}
+   double DirectionMaxTheta() const {return fDirMaxTheta;}
+   double DirectionMinPhi() const {return fDirMinPhi;}
+   double DirectionMaxPhi() const {return fDirMaxPhi;}
    
    const TVector3& SpinAxis() const {return fSpinAxis;}
-   Bool_t SpinUp() const {return fSpinUp;}
-   Double_t PercentPolarised() const {return fPercentagePolarised;}
+   bool SpinUp() const {return fSpinUp;}
+   double PercentPolarised() const {return fPercentagePolarised;}
    
    virtual void Print(Option_t* option = "") const;
    
-   ClassDef(InitialConfig, 1)
+   ClassDef(InitialConfig, 0)
 };
 #endif /*INITIALCONFIG_H*/

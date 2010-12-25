@@ -16,16 +16,24 @@ ClassImp(RunConfig)
 
 //__________________________________________________________________________
 RunConfig::RunConfig()
-              :TObject()
+          :fRunName(""), fGeomFile(""), fGeomVisFile(""), fInputDataFile(""),
+           fOutputDataFile(""), fFieldsFile(""), fInputRunName(""),
+           fParticlesToLoad(""), fLoadAllParticles(true), fRestartParticles(false),
+           fGravFieldOn(true), fMagFieldOn(false), fWallLossesOn(true), fRunTime(0.),
+           fMaxStepTime(0.), fObsPolarisation(false), fObsMeasAxis(), fObsBounces(false),
+           fObsTracks(false)
 {
-   Info("RunConfig","Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "RunConfig::Default Constructor" << endl;
+   #endif
 }
 
 //__________________________________________________________________________
 RunConfig::RunConfig(const string& runConfigFileName)
-              :TObject()
 {
-   Info("RunConfig","Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "RunConfig::Constructor" << endl;
+   #endif
    ConfigFile runConfigFile(runConfigFileName);
    fRunName = runConfigFile.GetString("RunName","Name");
    fGeomFile = runConfigFile.GetString("GeomFile","Files");
@@ -47,9 +55,9 @@ RunConfig::RunConfig(const string& runConfigFileName)
    fMaxStepTime = runConfigFile.GetFloat("MaxStepTime(s)","Properties");
    
    fObsPolarisation = runConfigFile.GetBool("Polarisation","Observables");
-   Double_t obsMeasAxisX = runConfigFile.GetFloat("MeasureAxisX","Observables");
-   Double_t obsMeasAxisY = runConfigFile.GetFloat("MeasureAxisY","Observables");
-   Double_t obsMeasAxisZ = runConfigFile.GetFloat("MeasureAxisZ","Observables");
+   double obsMeasAxisX = runConfigFile.GetFloat("MeasureAxisX","Observables");
+   double obsMeasAxisY = runConfigFile.GetFloat("MeasureAxisY","Observables");
+   double obsMeasAxisZ = runConfigFile.GetFloat("MeasureAxisZ","Observables");
    fObsMeasAxis.SetXYZ(obsMeasAxisX, obsMeasAxisY, obsMeasAxisZ);
    fObsBounces = runConfigFile.GetBool("Bounces","Observables");
    fObsTracks = runConfigFile.GetBool("RecordTracks","Observables");
@@ -59,35 +67,35 @@ RunConfig::RunConfig(const string& runConfigFileName)
 
 //__________________________________________________________________________
 RunConfig::RunConfig(const RunConfig& other)
-              :TObject(other),
-               fRunName(other.fRunName),
-               fGeomFile(other.fGeomFile),
-               fGeomVisFile(other.fGeomVisFile),
-               fInputDataFile(other.fInputDataFile),
-               fOutputDataFile(other.fOutputDataFile),
-               fFieldsFile(other.fFieldsFile),
-               fInputRunName(other.fInputRunName),
-               fParticlesToLoad(other.fParticlesToLoad),
-               fLoadAllParticles(other.fLoadAllParticles),
-               fRestartParticles(other.fRestartParticles),
-               fGravFieldOn(other.fGravFieldOn),
-               fMagFieldOn(other.fMagFieldOn),
-               fWallLossesOn(other.fWallLossesOn),
-               fRunTime(other.fRunTime),
-               fMaxStepTime(other.fMaxStepTime),
-               fObsPolarisation(other.fObsPolarisation),
-               fObsMeasAxis(other.fObsMeasAxis),
-               fObsBounces(other.fObsBounces),
-               fObsTracks(other.fObsTracks)
+          :fRunName(other.fRunName),
+            fGeomFile(other.fGeomFile),
+            fGeomVisFile(other.fGeomVisFile),
+            fInputDataFile(other.fInputDataFile),
+            fOutputDataFile(other.fOutputDataFile),
+            fFieldsFile(other.fFieldsFile),
+            fInputRunName(other.fInputRunName),
+            fParticlesToLoad(other.fParticlesToLoad),
+            fLoadAllParticles(other.fLoadAllParticles),
+            fRestartParticles(other.fRestartParticles),
+            fGravFieldOn(other.fGravFieldOn),
+            fMagFieldOn(other.fMagFieldOn),
+            fWallLossesOn(other.fWallLossesOn),
+            fRunTime(other.fRunTime),
+            fMaxStepTime(other.fMaxStepTime),
+            fObsPolarisation(other.fObsPolarisation),
+            fObsMeasAxis(other.fObsMeasAxis),
+            fObsBounces(other.fObsBounces),
+            fObsTracks(other.fObsTracks)
 {
-   Info("RunConfig","Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "RunConfig::Copy Constructor" << endl;
+   #endif
 }
 
 //__________________________________________________________________________
 RunConfig& RunConfig::operator=(const RunConfig& other)
 {
    if(this!=&other) {
-      TObject::operator=(other);
       fRunName = other.fRunName;
       fGeomFile=other.fGeomFile;
       fGeomVisFile=other.fGeomVisFile;
@@ -114,7 +122,9 @@ RunConfig& RunConfig::operator=(const RunConfig& other)
 //__________________________________________________________________________
 RunConfig::~RunConfig()
 {
-   Info("RunConfig","Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "RunConfig::Destructor" << endl;
+   #endif
 }
 
 //__________________________________________________________________________
