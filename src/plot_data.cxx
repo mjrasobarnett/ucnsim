@@ -120,23 +120,23 @@ Int_t main(Int_t argc,Char_t **argv)
    } else {
       gDirectory->cd(Folders::finalstates.c_str());
       if (gDirectory->cd(statename) == kFALSE) {
-         cout << "State name provided is not found in the under /particles/finalstates" << endl;
+         cout << "State name: " << statename << " is not found in file" << endl;
          return -1;
       }
    }
    TDirectory* const stateDir = gDirectory;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Particle final state
-//   PlotFinalStates(histDir, stateDir, initialConfig, runConfig, geoManager);
+   PlotFinalStates(histDir, stateDir, initialConfig, runConfig, geoManager);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Polarisation
    if (runConfig.ObservePolarisation() == kTRUE) {
-//      PlotSpinPolarisation(histDir, stateDir, runConfig);
+      PlotSpinPolarisation(histDir, stateDir, runConfig);
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounce Data
    if (runConfig.ObserveBounces() == kTRUE) {
-//      PlotBounceCounters(histDir, stateDir, runConfig);
+      PlotBounceCounters(histDir, stateDir, runConfig);
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Track History
@@ -234,7 +234,7 @@ void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, cons
                // -- Extract Final Particle State Data
                Particle* particle = dynamic_cast<Particle*>(objKey->ReadObj());
                // -- Fill Histograms
-               Plot::points->SetPoint(particle->Id(), particle->X(), particle->Y(), particle->Z());
+               Plot::points->SetPoint(particle->Id()-1, particle->X(), particle->Y(), particle->Z());
                Plot::thetaHist->Fill(particle->Theta()/TMath::Pi());
                Plot::phiHist->Fill(particle->Phi()/TMath::Pi());
                Plot::energyHist->Fill(particle->V());
@@ -465,11 +465,11 @@ void PlotBounceCounters(TDirectory* const histDir, TDirectory* const stateDir, c
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounces
    sprintf(histname,"%s:Bounces",stateDir->GetName());
-   Plot::bounceHist = new TH1F(histname,"Bounces", 200, 0.0, 20000);
+   Plot::bounceHist = new TH1F(histname,"Bounces", 100, 0.0, 100.0);
    sprintf(histname,"%s:Specular",stateDir->GetName());
-   Plot::specHist = new TH1F(histname,"Specular", 200, 0.0, 20000);
+   Plot::specHist = new TH1F(histname,"Specular", 100, 0.0, 100.0);
    sprintf(histname,"%s:Diffuse",stateDir->GetName());
-   Plot::diffHist = new TH1F(histname,"Diffuse", 200, 0.0, 20000);
+   Plot::diffHist = new TH1F(histname,"Diffuse", 100, 0.0, 100.0);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into the State's folder
    stateDir->cd();
