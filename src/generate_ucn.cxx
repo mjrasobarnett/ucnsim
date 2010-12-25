@@ -37,11 +37,10 @@ using std::string;
 using namespace GeomParameters;
 
 // Function Declarations
-Bool_t FillSourceTube(const InitialConfig& initialConfig);
-Bool_t FillRamseyCell(const InitialConfig& initialConfig);
+void GenerateBeam(const InitialConfig& initialConfig);
 Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix);
 Bool_t CreateRandomParticle(Particle* particle, const Double_t fillTime, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
-Bool_t DetermineParticleMomentum(Particle* particle, const Double_t maxEnergy);
+Bool_t DetermineParticleMomentum(Particle* particle, const Double_t maxEnergy, const Double_t minTheta, const Double_t maxTheta, const Double_t minPhi, const Double_t maxPhi);
 void DefinePolarisation(Particle* particle, const Double_t percentPolarised, const TVector3& spinAxis, const Bool_t spinUp);
 
 //__________________________________________________________________________
@@ -76,29 +75,7 @@ Int_t main(Int_t argc,Char_t **argv)
    ///////////////////////////////////////////////////////////////////////////////////////
    // Read in Initial Configuration from file.
    InitialConfig initialConfig(initialConfigFileName);   
-   // Ask User to choose which Volume to fill
-   cout << "Select which volume to fill with UCN: " << endl;
-   cout.width(15);
-   cout << "   Source Tube" << " -- Enter: 1" << endl;
-   cout.width(15);
-   cout << "   HV Cell" << " -- Enter: 2" << endl;
-   cout.width(15);
-   cout << "   Exit" << " -- Enter: 0" << endl;
-   Int_t userInput = -1;   
-   while (userInput != 0) {
-      cin >> userInput;
-      if (userInput == 1) {
-         FillSourceTube(initialConfig);
-         break;
-      } else if (userInput == 2) {
-         FillRamseyCell(initialConfig);
-         break;
-      } else if (userInput == 0) {
-         break;
-      } else {
-         cout << "Sorry I didn't understand that. Please try again." << endl;
-      }
-   }
+   GenerateBeam(initialConfigFileName);
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Output up benchmark
    benchmark.Stop("UCNSIM");
@@ -110,54 +87,44 @@ Int_t main(Int_t argc,Char_t **argv)
    return EXIT_SUCCESS;
 }
 
-
 //__________________________________________________________________________
-Bool_t FillRamseyCell(const InitialConfig& initialConfig)
+void GenerateBeam(const InitialConfig& initialConfig)
 {
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Find the initial volume
-   TString geomFileName = initialConfig.GeomFileName();
-   TGeoManager* geoManager = TGeoManager::Import(geomFileName);
+   // -- Make a 'virtual' beam volume within which we will generate our initial particles
+   const std::string beamShapeName = initialConfig.BeamShape();
+   const Double_t beamRMin = 0.0;
+   const Double_t beamRMax = initialConfig.BeamRadius();
+   const Double_t beamHalfLength = initialConfig.BeamLength()/2.0;
+   const Double_t beamPhi = initialConfig.BeamPhi();
+   const Double_t beamTheta = initialConfig.BeamTheta();
+   const Double_t beamPsi = initialConfig.BeamPsi();
+   const Double_t beamXPos = initialConfig.BeamDisplacement().X();
+   const Double_t beamYPos = initialConfig.BeamDisplacement().Y();
+   const Double_t beamZPos = initialConfig.BeamDisplacement().Z();
    
-   TGeoVolume* volume = 0;
-   TGeoMatrix* matrix = 0;
-   volume = geoManager->GetVolume("HVCell");
-   matrix = (TGeoMatrix*)geoManager->GetListOfMatrices()->FindObject("HVCellMat");
-   if (volume == 0 || matrix == 0) {
-      cout << volume << "\t" << matrix << endl;
-      cout << "Unable to find requested volume or matrix" << endl;
-      return false;
-   }
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Generate the particles
-   GenerateParticles(initialConfig, volume, matrix);
-   
-   return 0;
-}
-
-//__________________________________________________________________________
-Bool_t FillSourceTube(const InitialConfig& initialConfig)
-{
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Make the particle beam volume
+   // -- Make a Geomanager
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
    Materials::BuildMaterials(geoManager);
    TGeoMedium* liquidHelium = geoManager->GetMedium("HeliumII");
-   
-   Tube* tube = new Tube("NeutronBeamArea", neutronBeamAreaRMin, neutronBeamAreaRMax, neutronBeamAreaHalfLength);
-   TrackingVolume* neutronBeamArea = new TrackingVolume("NeutronBeamArea", tube, liquidHelium);
-   
-   TGeoRotation neutronBeamAreaRot("NeutronBeamAreaRot",0,neutronBeamAreaAngle,0); // phi,theta,psi
-   TGeoTranslation neutronBeamAreaTra("NeutronBeamAreaTra",0.,neutronBeamAreaYDisplacement,0.);
-   TGeoCombiTrans neutronBeamAreaCom(neutronBeamAreaTra,neutronBeamAreaRot);
-   TGeoHMatrix neutronBeamAreaMat = neutronBeamAreaCom;
-   TGeoMatrix* neutronBeamAreaMatrix = new TGeoHMatrix(neutronBeamAreaMat);
+   // -- Create the Beam volume within which we shall generate the particles
+   TGeoShape* beamShape = NULL;
+   if (beamShapeName == "Tube") {
+      beamShape = new Tube("BeamShape", beamRMin, beamRMax, beamHalfLength);
+   } else {
+      beamShape = new Box("BeamShape", beamRMax, beamRMax, beamHalfLength);
+   }
+   TrackingVolume* beam = new TrackingVolume("Beam", beamShape, liquidHelium);
+   TGeoRotation beamRot("BeamRot",beamPhi,beamTheta,beamPsi);
+   TGeoTranslation beamTra("BeamTra",beamXPos,beamYPos,beamZPos);
+   TGeoCombiTrans beamCom(beamTra,beamRot);
+   TGeoHMatrix beamMat = beamCom;
+   TGeoMatrix* beamMatrix = new TGeoHMatrix(beamMat);
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Generate the particles
-   GenerateParticles(initialConfig, neutronBeamArea, neutronBeamAreaMatrix);
+   GenerateParticles(initialConfig, beam, beamMatrix);
    
-   return 0;
+   return;
 }
 
 //__________________________________________________________________________
@@ -165,37 +132,39 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
 {
    // Generates a uniform distribution of particles with random directions all with 
    // the same total energy (kinetic plus potential) defined at z = 0.   
-   Int_t particles = TMath::Abs(initialConfig.InitialParticles());
-   Double_t vmax = TMath::Abs(initialConfig.InitialMaxVelocity())*Units::m/Units::s;
-   Double_t fillTime = TMath::Abs(initialConfig.FillingTime())*Units::s;
+   const Int_t particles = TMath::Abs(initialConfig.InitialParticles());
+   const Double_t vmax = TMath::Abs(initialConfig.InitialMaxVelocity())*Units::m/Units::s;
+   const Double_t maxEnergy = 0.5*Neutron::mass_eV_c2*TMath::Power(vmax,2.0);
+   const Double_t fillTime = TMath::Abs(initialConfig.FillingTime())*Units::s;
    
-   Double_t percentPolarised = initialConfig.PercentPolarised();
-   TVector3 spinAxis = initialConfig.SpinAxis();
-   Bool_t spinUp = initialConfig.SpinUp();
+   const Double_t percentPolarised = initialConfig.PercentPolarised();
+   const TVector3 spinAxis = initialConfig.SpinAxis();
+   const Bool_t spinUp = initialConfig.SpinUp();
    
-   cout << "-------------------------------------------" << endl;
-   cout << "Generating " << particles << " Particles." << endl;
-   // Create Histograms to view the initial particle distributions
-   Int_t nbins = 100;
-   Double_t boundary[3];
-   boundary[0] = neutronBeamAreaRMax;
-   boundary[1] = 2.0*neutronBeamAreaHalfLength;
-   boundary[2] = neutronBeamAreaRMax;
-   cout << "Boundary X (m): " << boundary[0] << "\t" << "Y (m): " << boundary[1] << "\t";
-   cout << "Z (m): " << boundary[2] << endl;
+   const Double_t minTheta = initialConfig.DirectionMinTheta();
+   const Double_t maxTheta = initialConfig.DirectionMaxTheta();
+   const Double_t minPhi = initialConfig.DirectionMinPhi();
+   const Double_t maxPhi = initialConfig.DirectionMaxPhi();
    
-   TH1F* initialXHist = new TH1F("InitialXHist","Initial X Position, Units of (m)", nbins, -boundary[0], boundary[0]);
-   TH1F* initialYHist = new TH1F("InitialYHist","Initial Y Position, Units of (m)", nbins, 0., boundary[1]); 
-   TH1F* initialZHist = new TH1F("InitialZHist","Initial Z Position, Units of (m)", nbins, -boundary[2], boundary[2]);
-   
+   // Create Histograms to view the initial particle distributions   
+   Box* boundary = dynamic_cast<Box*>(beamVolume->GetShape());
+   const Int_t nbins = 100;
+   TH1F* initialXHist = new TH1F("InitialXHist","X Position, Units of (m)", nbins, -boundary->GetDX(), boundary->GetDX());
+   TH1F* initialYHist = new TH1F("InitialYHist","Y Position, Units of (m)", nbins, -boundary->GetDY(), boundary->GetDY()); 
+   TH1F* initialZHist = new TH1F("InitialZHist","Z Position, Units of (m)", nbins, -boundary->GetDZ(), boundary->GetDZ());
    TH1F* initialVXHist = new TH1F("InitialVXHist","Initial VX velocity, Units of (m/s)", nbins, -vmax, vmax);
    TH1F* initialVYHist = new TH1F("InitialVYHist","Initial VY velocity, Units of (m/s)", nbins, -vmax, vmax);
    TH1F* initialVZHist = new TH1F("InitialVZHist","Initial VZ velocity, Units of (m/s)", nbins, -vmax, vmax);
    TH1F* initialVHist = new TH1F("InitialVHist","Initial V velocity, Units of (m/s)", nbins, 0.0, vmax);
    TH1F* initialTHist = new TH1F("InitialTHist","Initial T time, Units of s", nbins, 0.0, fillTime);
    
-   Double_t maxEnergy = 0.5*Neutron::mass_eV_c2*TMath::Power(vmax,2.0);
+   cout << "-------------------------------------------" << endl;
+   cout << "Generating " << particles << " Particles." << endl;
+   cout << "Boundary X (m): " << boundary->GetDX() << "\t";
+   cout << "Y (m): " << boundary->GetDX() << "\t";
+   cout << "Z (m): " << boundary->GetDX() << endl;
    cout << "Max Energy (neV): " << maxEnergy/Units::neV << endl;
+   cout << "-------------------------------------------" << endl;
    
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Create storage for the particles
@@ -209,7 +178,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       particle->SetId(i);
       CreateRandomParticle(particle, fillTime, beamVolume, beamMatrix);
       // -- Initialise particle's momentum
-      DetermineParticleMomentum(particle, maxEnergy);
+      DetermineParticleMomentum(particle, maxEnergy, minTheta, maxTheta, minPhi, maxPhi);
       // -- Setup polarisation
       DefinePolarisation(particle, percentPolarised, spinAxis, spinUp); 
       // -- Fill histograms
@@ -290,12 +259,19 @@ Bool_t CreateRandomParticle(Particle* particle, const Double_t fillTime, const T
 }
 
 //__________________________________________________________________________
-Bool_t DetermineParticleMomentum(Particle* particle, const Double_t maxEnergy)
+Bool_t DetermineParticleMomentum(Particle* particle, const Double_t maxEnergy, const Double_t minTheta, const Double_t maxTheta, const Double_t minPhi, const Double_t maxPhi)
 {
    // -- Determine a random direction vector on the unit sphere dOmega = sin(theta).dTheta.dPhi
-   // Phi ranges from 0 to 2*Pi, Theta from 0 to Pi.
-   Double_t phi = gRandom->Uniform(0.0, 1.0)*2.0*TMath::Pi();
-   Double_t u   = gRandom->Uniform(-1.0, 1.0);
+   // Convert limits to radians
+   Double_t minThetaRad = minTheta*TMath::Pi()/180.0;
+   Double_t maxThetaRad = maxTheta*TMath::Pi()/180.0;
+   Double_t minPhiRad = minPhi*TMath::Pi()/180.0;
+   Double_t maxPhiRad = maxPhi*TMath::Pi()/180.0;
+   Double_t minU = -TMath::Cos(minThetaRad);
+   Double_t maxU = -TMath::Cos(maxThetaRad);
+   // Get Random angle between limits
+   Double_t phi = gRandom->Uniform(minPhiRad,maxPhiRad);
+   Double_t u   = gRandom->Uniform(minU,maxU);
    Double_t theta = TMath::ACos(-u);
    // Convert spherical polars into cartesian nx,ny,nz
    Double_t dir[3];
