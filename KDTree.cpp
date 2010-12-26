@@ -163,9 +163,11 @@ const KDTreeNode& KDTreeNode::FindContainingNode(const Point& point) const
    #endif
    // Search children
    if (insideLeft == true) {
-      return fLeft->FindContainingNode(point);
+      if (fLeft) {return fLeft->FindContainingNode(point);}
+      else {return *fRight;}
    } else {
-      return fRight->FindContainingNode(point);
+      if (fRight) {return fRight->FindContainingNode(point);}
+      else {return *fLeft;}
    }
 }
 
@@ -444,7 +446,6 @@ const Point& KDTree::NearestNeighbour(const Point& point) const
       cout << "Search for nearest neightbour of Point : ";
       cout << point.ToString() << endl;
    #endif
-   
    // Find leaf node that contains the point. Store as first guess 
    const KDTreeNode& firstGuess = fRoot->FindContainingNode(point);
    // Calculate distance from point to first guess nearest neighbour
