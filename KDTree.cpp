@@ -48,6 +48,16 @@ Point::~Point()
 }
 
 //______________________________________________________________________________
+bool Point::operator==(const Point& other) const
+{
+   if (other.X() == fX && other.Y() == fY && other.Z() == fZ){
+      return true;
+   } else {
+      return false;
+   }
+}
+
+//______________________________________________________________________________
 string Point::ToString() const 
 {
    ostringstream oss;

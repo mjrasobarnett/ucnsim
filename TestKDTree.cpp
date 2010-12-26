@@ -5,6 +5,7 @@
 #include <cmath>
 #include <time.h>
 #include <string>
+#include <cassert>
 
 #include "KDTree.hpp"
 #include "MWC.hpp"
@@ -78,6 +79,7 @@ void BenchMark(const int numPoints) {
    end = clock();
    const double treeSearchTime = (double)(end-start)/CLOCKS_PER_SEC;
    
+   assert(treePoint == brutePoint);
    
    cout << "--------------------" << endl;
    cout << "Brute force solution: " << brutePoint.ToString() << endl;

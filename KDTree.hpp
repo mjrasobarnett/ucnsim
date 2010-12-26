@@ -13,6 +13,8 @@ class Point {
       Point();
       Point(double x, double y, double z);
       Point(const Point& other);
+      bool operator==(const Point& other) const; 
+      
       virtual ~Point();
 
       // getters
