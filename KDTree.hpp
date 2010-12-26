@@ -62,7 +62,7 @@ class KDTreeNode {
       
       int GetDepth() const {return fDepth;}
       const Point& GetPoint() const {return *fPoint;}
-      const KDTreeNode& FindContainingNode(const Point& point, int depth) const;
+      const KDTreeNode& FindContainingNode(const Point& point) const;
       void OutputGraphViz(std::ostream& out) const;
       
    private:

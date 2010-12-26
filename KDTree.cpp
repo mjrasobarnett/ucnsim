@@ -108,7 +108,7 @@ KDTreeNode::~KDTreeNode()
 }
 
 //______________________________________________________________________________
-const KDTreeNode& KDTreeNode::FindContainingNode(const Point& point, int depth) const
+const KDTreeNode& KDTreeNode::FindContainingNode(const Point& point) const
 {
    // -- Check whether this node or its daughters are the containing
    // -- node of point
@@ -121,7 +121,7 @@ const KDTreeNode& KDTreeNode::FindContainingNode(const Point& point, int depth) 
       return *this;
    }
    // Choosing splitting axis
-   int axis = depth % 3;
+   int axis = this->GetDepth() % 3;
    bool insideLeft = false;
    switch (axis) {
       case 0 : 
@@ -146,9 +146,9 @@ const KDTreeNode& KDTreeNode::FindContainingNode(const Point& point, int depth) 
    #endif
    // Search children
    if (insideLeft == true) {
-      return fLeft->FindContainingNode(point, depth+1);
+      return fLeft->FindContainingNode(point);
    } else {
-      return fRight->FindContainingNode(point, depth+1);
+      return fRight->FindContainingNode(point);
    }
 }
 
@@ -276,7 +276,7 @@ const Point& KDTree::NearestNeighbour(const Point& point) const
    #endif
    
    // Find leaf node that contains the point. Store as current best nearest 
-   const KDTreeNode& currentBest = fRoot->FindContainingNode(point, 0);
+   const KDTreeNode& currentBest = fRoot->FindContainingNode(point);
    // Calculate distance from point to current best nearest neighbour
    double dist = currentBest.GetPoint().SquaredDistanceTo(point);
    #ifdef VERBOSE
