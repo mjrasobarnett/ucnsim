@@ -318,9 +318,6 @@ const KDTreeNode& KDTreeNode::SearchChildren(const Point& point, const KDTreeNod
       if (fLeft->IsCloserToPoint(point, *currentBest) == true) {
          // If it is closer to point than current best estimate then update estimate
          currentBest = fLeft;
-         #ifdef VERBOSE
-            cout << "Left is closer" << endl;
-         #endif
       }
       // Recursively search children of Left node for any improvement on current best estimate
       currentBest = &(fLeft->SearchChildren(point, *currentBest));
@@ -333,9 +330,6 @@ const KDTreeNode& KDTreeNode::SearchChildren(const Point& point, const KDTreeNod
       if (fRight->IsCloserToPoint(point, *currentBest) == true) {
          // If it is closer to point than current best estimate then update estimate
          currentBest = fRight;
-         #ifdef VERBOSE
-            cout << "Right is closer" << endl;
-         #endif
       }
       // Recursively search children of Left node for any improvement on current best estimate
       currentBest = &(fRight->SearchChildren(point, *currentBest));
@@ -356,6 +350,9 @@ bool KDTreeNode::IsCloserToPoint(const Point& point, const KDTreeNode& currentBe
    #endif
    if (dist < currentBestDist) {
       // If it is closer to point than current best estimate then update estimate
+      #ifdef VERBOSE
+         cout << "Node is closer" << endl;
+      #endif
       return true;
    }
    return false;
