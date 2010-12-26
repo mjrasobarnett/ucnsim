@@ -6,7 +6,7 @@
 #include "KDTree.hpp"
 
 //#define PRINT_CONSTRUCTORS 
-#define VERBOSE
+//#define VERBOSE
 
 using namespace std;
 
@@ -226,17 +226,17 @@ const KDTreeNode& KDTreeNode::CheckParentBranches(const Point& point, const KDTr
       default : 
          cout << "KDTreeNode - Error: axis: " << parentSplitAxis << endl;
    }
-   
-   cout << endl << "--------------------" << endl;
-   cout << "Checking Parent of current Node: " << this->GetPoint().ToString();
-   cout << ", to see if it intersects current best hypershpere around search point" << endl;
-   cout << "Parent Node: " << parent->GetPoint().ToString() << endl;
-   cout << "Search Point: " << point.ToString() << endl;
-   cout << "Sphere Radius: " << radius << endl;
-   cout << "Parent Depth: " << parentDepth << endl;
-   cout << "Axis: " << parentSplitAxis << " Intersects? " << planeIntersects << endl;
-   cout << endl;
-   
+   #ifdef VERBOSE
+      cout << endl << "--------------------" << endl;
+      cout << "Checking Parent of current Node: " << this->GetPoint().ToString();
+      cout << ", to see if it intersects current best hypershpere around search point" << endl;
+      cout << "Parent Node: " << parent->GetPoint().ToString() << endl;
+      cout << "Search Point: " << point.ToString() << endl;
+      cout << "Sphere Radius: " << radius << endl;
+      cout << "Parent Depth: " << parentDepth << endl;
+      cout << "Axis: " << parentSplitAxis << " Intersects? " << planeIntersects << endl;
+      cout << endl;
+   #endif
    // Check if splitting plane intersected sphere
    if (planeIntersects == true) {
       // If so, then we need to check the parent node and
@@ -244,14 +244,23 @@ const KDTreeNode& KDTreeNode::CheckParentBranches(const Point& point, const KDTr
       // for any closer nearest neighbours
       const double parentDist = parent->GetPoint().DistanceTo(point);
       const double currentBestDist = currentBest->GetPoint().DistanceTo(point);
-      if (parentDist < currentBestDist) {currentBest = parent;}
-      cout << "Recursively search children for any closer nodes" << endl;
+      #ifdef VERBOSE
+         cout << "Check if parent node is closer: " << parentDist << "\t";
+         cout << "Current Best Dist: " << currentBestDist << endl;
+      #endif
+      if (parentDist < currentBestDist) {
+         // If parent is closer then update current best
+         currentBest = parent;
+      }
+      #ifdef VERBOSE
+         cout << "Recursively search children for any closer nodes" << endl;
+      #endif
+      // Check all children of parent for any improvement to current best
       currentBest = &(parent->SearchChildren(point, *currentBest, *this));
    }
    
    // Ask Parent to check its Parent Branch to recursively search up the tree 
    currentBest = &(parent->CheckParentBranches(point, *currentBest));
-   
    return *currentBest;
 }
 
@@ -261,22 +270,28 @@ const KDTreeNode& KDTreeNode::SearchChildren(const Point& point, const KDTreeNod
    // Recursively search all children of current node to see whether any are closer to the point
    // than the provided 'current best' 
    if (fLeft == NULL && fRight == NULL) {return previousBest;}
-   cout << "Searching Children of Node: " << this->GetPoint().ToString() << endl;
+   #ifdef VERBOSE
+      cout << "Searching Children of Node: " << this->GetPoint().ToString() << endl;
+      cout << "Current Best: " << previousBest.GetPoint().ToString() << endl;
+   #endif
    const KDTreeNode* currentBest = &previousBest;
-   cout << "Current Best: " << previousBest.GetPoint().ToString() << endl;
    // If left child is the previous child (i.e: the branch we have come from)
    // then we don't have to check this again 
    if (fLeft != &previousChild && fLeft != NULL) {
       // Else, check if distance of left child to point is less than current best estimate 
       const double leftDist = fLeft->GetPoint().DistanceTo(point);
       double currentBestDist = currentBest->GetPoint().DistanceTo(point);
-      cout << "Check Left Child: " << fLeft->GetPoint().ToString() << endl;
-      cout << "Left Dist: " << leftDist << "\t" << "Current Best: " << currentBestDist << endl;
+      #ifdef VERBOSE
+         cout << "Check Left Child: " << fLeft->GetPoint().ToString() << endl;
+         cout << "Left Dist: " << leftDist << "\t" << "Current Best: " << currentBestDist << endl;
+      #endif
       if (leftDist < currentBestDist) {
          // If it is closer to point than current best estimate then update estimate
          currentBestDist = leftDist;
          currentBest = fLeft;
-         cout << "Left is closer" << endl;
+         #ifdef VERBOSE
+            cout << "Left is closer" << endl;
+         #endif
       }
       // Search children of Left node for any improvement on current best estimate
       currentBest = &(fLeft->SearchChildren(point, *currentBest, previousChild));
@@ -288,13 +303,17 @@ const KDTreeNode& KDTreeNode::SearchChildren(const Point& point, const KDTreeNod
       // Else, check if distance of right child to point is less than current best estimate 
       const double rightDist = fRight->GetPoint().DistanceTo(point);
       double currentBestDist = currentBest->GetPoint().DistanceTo(point);
-      cout << "Check Right Child: " << fRight->GetPoint().ToString() << endl;
-      cout << "Right Dist: " << rightDist << "\t" << "Current Best: " << currentBestDist << endl;
+      #ifdef VERBOSE
+         cout << "Check Right Child: " << fRight->GetPoint().ToString() << endl;
+         cout << "Right Dist: " << rightDist << "\t" << "Current Best: " << currentBestDist << endl;
+      #endif
       if (rightDist < currentBestDist) {
          // If it is closer to point than current best estimate then update estimate
          currentBestDist = rightDist;
          currentBest = fRight;
-         cout << "Right is closer" << endl;
+         #ifdef VERBOSE
+            cout << "Right is closer" << endl;
+         #endif
       }
       // Search children of Left node for any improvement on current best estimate
       currentBest = &(fRight->SearchChildren(point, *currentBest, previousChild));
@@ -438,12 +457,12 @@ const Point& KDTree::NearestNeighbour(const Point& point) const
    #endif
    // Now traverse back up tree looking for if any other nodes are closer
    const KDTreeNode& nearestNode = firstGuess.CheckParentBranches(point, firstGuess);
-   
-   cout << endl << "--------------------" << endl;
-   cout << "Nearest Node : ";
-   cout << nearestNode.GetPoint().ToString() << endl;
-   cout << "Distance to Point: " << nearestNode.GetPoint().DistanceTo(point) << endl;
-   
+   #ifdef VERBOSE
+      cout << "--------------------" << endl;
+      cout << "Nearest Node : ";
+      cout << nearestNode.GetPoint().ToString() << endl;
+      cout << "Distance to Point: " << nearestNode.GetPoint().DistanceTo(point) << endl;
+   #endif
    return nearestNode.GetPoint();
 }
 
