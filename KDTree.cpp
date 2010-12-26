@@ -246,6 +246,54 @@ const KDTreeNode& KDTreeNode::CheckParentBranches(const Point& point, const KDTr
 }
 
 //______________________________________________________________________________
+const KDTreeNode& KDTreeNode::SearchChildren(const Point& point, const KDTreeNode& previousBest, const KDTreeNode& previousChild) const
+{
+   // Recursively search all children of current node to see whether any are closer to the point
+   // than the provided 'current best' 
+   if (fLeft == NULL && fRight == NULL) {return previousBest;}
+   cout << "Searching Children of Node: " << this->GetPoint().ToString() << endl;
+   const KDTreeNode* currentBest = &previousBest;
+   cout << "Current Best: " << previousBest.GetPoint().ToString() << endl;
+   // If left child is the previous child (i.e: the branch we have come from)
+   // then we don't have to check this again 
+   if (fLeft != &previousChild && fLeft != NULL) {
+      // Else, check if distance of left child to point is less than current best estimate 
+      const double leftDist = fLeft->GetPoint().DistanceTo(point);
+      double currentBestDist = currentBest->GetPoint().DistanceTo(point);
+      cout << "Check Left Child: " << fLeft->GetPoint().ToString() << endl;
+      cout << "Left Dist: " << leftDist << "\t" << "Current Best: " << currentBestDist << endl;
+      if (leftDist < currentBestDist) {
+         // If it is closer to point than current best estimate then update estimate
+         currentBestDist = leftDist;
+         currentBest = fLeft;
+         cout << "Left is closer" << endl;
+      }
+      // Search children of Left node for any improvement on current best estimate
+      currentBest = &(fLeft->SearchChildren(point, *currentBest, previousChild));
+   }
+   
+   // If right child is the previous child (i.e: the branch we have come from)
+   // then we don't have to check this again
+   if (fRight != &previousChild  && fRight != NULL) {
+      // Else, check if distance of right child to point is less than current best estimate 
+      const double rightDist = fRight->GetPoint().DistanceTo(point);
+      double currentBestDist = currentBest->GetPoint().DistanceTo(point);
+      cout << "Check Right Child: " << fRight->GetPoint().ToString() << endl;
+      cout << "Right Dist: " << rightDist << "\t" << "Current Best: " << currentBestDist << endl;
+      if (rightDist < currentBestDist) {
+         // If it is closer to point than current best estimate then update estimate
+         currentBestDist = rightDist;
+         currentBest = fRight;
+         cout << "Right is closer" << endl;
+      }
+      // Search children of Left node for any improvement on current best estimate
+      currentBest = &(fRight->SearchChildren(point, *currentBest, previousChild));
+   }
+   return *currentBest;
+}
+
+
+//______________________________________________________________________________
 void KDTreeNode::OutputGraphViz(ostream& out) const
 {
    // Output Nodes in form of 'dot' language

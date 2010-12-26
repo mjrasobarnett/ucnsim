@@ -66,6 +66,7 @@ class KDTreeNode {
       const KDTreeNode* GetParent() const {return fParent;}
       const KDTreeNode& FindContainingNode(const Point& point) const;
       const KDTreeNode& CheckParentBranches(const Point& point, const KDTreeNode& prevBest) const;
+      const KDTreeNode& SearchChildren(const Point& point, const KDTreeNode& currentBest, const KDTreeNode& previousChild) const;
       void OutputGraphViz(std::ostream& out) const;
       
    private:
