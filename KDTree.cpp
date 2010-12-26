@@ -160,11 +160,11 @@ const KDTreeNode& KDTreeNode::FindContainingNode(const Point& point) const
 }
 
 //______________________________________________________________________________
-const KDTreeNode& KDTreeNode::CheckParentBranches(const Point& point, double dist) const
+const KDTreeNode& KDTreeNode::CheckParentBranches(const Point& point, const KDTreeNode& previousBest) const
 {
    // Recursively check parent node for whether its 'splitting hyperplane' (i.e: the axis
    // along which we split the tree at that node, either x, y, or z) intersects a sphere 
-   // of radius 'dist' centred on the 'point'. 
+   // of radius 'radius' centred on the 'point'. 
    // --
    // If the axis DOES intersect this sphere, then it is possible that another child node
    // of this parent is actually CLOSER to the point than the current best estimate.
@@ -172,10 +172,77 @@ const KDTreeNode& KDTreeNode::CheckParentBranches(const Point& point, double dis
    // Return the final best estimate of the nearest node.
    
    // Get the parent node
-   const KDTreeNode& parent = this->GetParent();
-   const int parentDepth = parent.GetDepth();
+   const KDTreeNode* parent = this->GetParent();
+   if (parent == NULL) {return previousBest;}
    
-   return *this;
+   const KDTreeNode* currentBest = &previousBest;
+   const double radius = currentBest->GetPoint().DistanceTo(point);
+   const int parentDepth = parent->GetDepth();
+   const int parentSplitAxis = parentDepth % 3;
+   bool planeIntersects = false;
+   // Determine splitting plane. Check for whether plane intersects sphere of radius 'radius'
+   // centred around 'point'
+   switch (parentSplitAxis) {
+      case 0 : 
+      {  // x-axis splitting
+         // Get X-coord of parent node. This coordinate defines the splitting plane (x=value)
+         const double plane = parent->GetPoint().X();
+         // Check whether splitting plane intersects sphere centred on point 
+         if (plane >= (point.X() - radius) && plane <= (point.X() + radius)) {
+            planeIntersects = true;
+         }
+         break;
+      }
+      case 1 : 
+      {  // y-axis splitting
+         // Get Y-coord of parent node. This coordinate defines the splitting plane (y=value)
+         const double plane = parent->GetPoint().Y();
+         // Check whether splitting plane intersects sphere centred on point 
+         if (plane >= (point.Y() - radius) && plane <= (point.Y() + radius)) {
+            planeIntersects = true;
+         }
+         break;
+      }
+      case 2 : 
+      {  // z-axis splitting
+         // Get Z-coord of parent node. This coordinate defines the splitting plane (z=value)
+         const double plane = parent->GetPoint().Z();
+         // Check whether splitting plane intersects sphere centred on point 
+         if (plane >= (point.Z() - radius) && plane <= (point.Z() + radius)) {
+            planeIntersects = true;
+         }
+         break;
+      }
+      default : 
+         cout << "KDTreeNode - Error: axis: " << parentSplitAxis << endl;
+   }
+   
+   cout << endl << "--------------------" << endl;
+   cout << "Checking Parent of current Node: " << this->GetPoint().ToString();
+   cout << ", to see if it intersects current best hypershpere around search point" << endl;
+   cout << "Parent Node: " << parent->GetPoint().ToString() << endl;
+   cout << "Search Point: " << point.ToString() << endl;
+   cout << "Sphere Radius: " << radius << endl;
+   cout << "Parent Depth: " << parentDepth << endl;
+   cout << "Axis: " << parentSplitAxis << " Intersects? " << planeIntersects << endl;
+   cout << endl;
+   
+   // Check if splitting plane intersected sphere
+   if (planeIntersects == true) {
+      // If so, then we need to check the parent node and
+      // and recursively search all (other) children of parent node
+      // for any closer nearest neighbours
+      const double parentDist = parent->GetPoint().DistanceTo(point);
+      const double currentBestDist = currentBest->GetPoint().DistanceTo(point);
+      if (parentDist < currentBestDist) {currentBest = parent;}
+      cout << "Recursively search children for any closer nodes" << endl;
+      currentBest = &(parent->SearchChildren(point, *currentBest, *this));
+   }
+   
+   // Ask Parent to check its Parent Branch to recursively search up the tree 
+   currentBest = &(parent->CheckParentBranches(point, *currentBest));
+   
+   return *currentBest;
 }
 
 //______________________________________________________________________________
