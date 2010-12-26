@@ -153,6 +153,25 @@ const KDTreeNode& KDTreeNode::FindContainingNode(const Point& point) const
 }
 
 //______________________________________________________________________________
+const KDTreeNode& KDTreeNode::CheckParentBranches(const Point& point, double dist) const
+{
+   // Recursively check parent node for whether its 'splitting hyperplane' (i.e: the axis
+   // along which we split the tree at that node, either x, y, or z) intersects a sphere 
+   // of radius 'dist' centred on the 'point'. 
+   // --
+   // If the axis DOES intersect this sphere, then it is possible that another child node
+   // of this parent is actually CLOSER to the point than the current best estimate.
+   // --
+   // Return the final best estimate of the nearest node.
+   
+   // Get the parent node
+   const KDTreeNode& parent = this->GetParent();
+   const int parentDepth = parent.GetDepth();
+   
+   return *this;
+}
+
+//______________________________________________________________________________
 void KDTreeNode::OutputGraphViz(ostream& out) const
 {
    // Output Nodes in form of 'dot' language
@@ -286,7 +305,7 @@ const Point& KDTree::NearestNeighbour(const Point& point) const
       cout << "Distance to Point: " << dist << endl;
    #endif
    // Now traverse back up tree looking for if any other nodes are closer
-//   const KDTreeNode& nearestNode = currentBest->
+   const KDTreeNode& nearestNode = currentBest.CheckParentBranches(point, dist);
    return currentBest.GetPoint();
 }
 
