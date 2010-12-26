@@ -26,6 +26,7 @@ class Point {
       void SetZ(double z){fZ=z;}
 
       std::string ToString() const;
+      double DistanceTo(const Point& point) const;
       double SquaredDistanceTo(const Point& point) const;
       
    private:
