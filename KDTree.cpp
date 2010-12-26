@@ -125,7 +125,7 @@ KDTreeNode::~KDTreeNode()
 }
 
 //______________________________________________________________________________
-const KDTreeNode& KDTreeNode::FindContainingNode(const Point& point) const
+const KDTreeNode& KDTreeNode::FindNodeContaining(const Point& point) const
 {
    // -- Check whether this node or its daughters are the containing
    // -- node of point
@@ -178,95 +178,45 @@ const KDTreeNode& KDTreeNode::FindContainingNode(const Point& point) const
    #endif
    // Search children
    if (insideLeft == true) {
-      return fLeft->FindContainingNode(point);
+      return fLeft->FindNodeContaining(point);
    } else {
-      return fRight->FindContainingNode(point);
+      return fRight->FindNodeContaining(point);
    }
 }
 
 //______________________________________________________________________________
-const KDTreeNode& KDTreeNode::CheckParentBranches(const Point& point, const KDTreeNode& previousBest) const
+const KDTreeNode& KDTreeNode::CheckParentForCloserNodes(const Point& point, const KDTreeNode& previousBest) const
 {
-   // Recursively check parent node for whether its 'splitting hyperplane' (i.e: the axis
-   // along which we split the tree at that node, either x, y, or z) intersects a sphere 
-   // of radius 'radius' centred on the 'point'. 
+   // -- Check to see if parent node is closer than current nearest neighbour. Determine
+   // -- whether other child nodes of parent could possibly be closer, and if so, search all of them
+   // -- for closer nearest neighbours.
    // --
-   // If the axis DOES intersect this sphere, then it is possible that another child node
-   // of this parent is actually CLOSER to the point than the current best estimate.
+   // -- This is done by checking for whether its 'splitting hyperplane' (i.e: the axis
+   // -- along which we split the tree at that node, either x, y, or z) intersects a sphere 
+   // -- of radius 'radius' centred on the 'point'.
+   // -- If the axis DOES intersect this sphere, then it is possible that another child node
+   // -- of this parent is actually CLOSER to the point than the current best estimate.
    // --
-   // Return the final best estimate of the nearest node.
-   
+   // -- Recursively search all parents up the tree until we reach the Root node.
+   // -- Return the final best estimate of the nearest node.
+   const KDTreeNode* currentBest = &previousBest;
    // Get the parent node
    const KDTreeNode* parent = this->GetParent();
+   // If there is no parent we have reached the root node and can stop our search
    if (parent == NULL) {return previousBest;}
-   
-   const KDTreeNode* currentBest = &previousBest;
-   const double radius = currentBest->GetPoint().DistanceTo(point);
-   const int parentDepth = parent->GetDepth();
-   const int parentSplitAxis = parentDepth % 3;
-   bool planeIntersects = false;
-   // Determine splitting plane. Check for whether plane intersects sphere of radius 'radius'
-   // centred around 'point'
-   switch (parentSplitAxis) {
-      case 0 : 
-      {  // x-axis splitting
-         // Get X-coord of parent node. This coordinate defines the splitting plane (x=value)
-         const double plane = parent->GetPoint().X();
-         // Check whether splitting plane intersects sphere centred on point 
-         if (plane >= (point.X() - radius) && plane <= (point.X() + radius)) {
-            planeIntersects = true;
-         }
-         break;
-      }
-      case 1 : 
-      {  // y-axis splitting
-         // Get Y-coord of parent node. This coordinate defines the splitting plane (y=value)
-         const double plane = parent->GetPoint().Y();
-         // Check whether splitting plane intersects sphere centred on point 
-         if (plane >= (point.Y() - radius) && plane <= (point.Y() + radius)) {
-            planeIntersects = true;
-         }
-         break;
-      }
-      case 2 : 
-      {  // z-axis splitting
-         // Get Z-coord of parent node. This coordinate defines the splitting plane (z=value)
-         const double plane = parent->GetPoint().Z();
-         // Check whether splitting plane intersects sphere centred on point 
-         if (plane >= (point.Z() - radius) && plane <= (point.Z() + radius)) {
-            planeIntersects = true;
-         }
-         break;
-      }
-      default : 
-         cout << "KDTreeNode - Error: axis: " << parentSplitAxis << endl;
-   }
+   // Check if parent node is closer than current best
+   const double parentDist = parent->GetPoint().DistanceTo(point);
+   const double currentBestDist = currentBest->GetPoint().DistanceTo(point);
+   if (parentDist < currentBestDist) {currentBest = parent;}
    #ifdef VERBOSE
-      cout << endl << "--------------------" << endl;
-      cout << "Checking Parent of current Node: " << this->GetPoint().ToString();
-      cout << ", to see if it intersects current best hypershpere around search point" << endl;
-      cout << "Parent Node: " << parent->GetPoint().ToString() << endl;
-      cout << "Search Point: " << point.ToString() << endl;
-      cout << "Sphere Radius: " << radius << endl;
-      cout << "Parent Depth: " << parentDepth << endl;
-      cout << "Axis: " << parentSplitAxis << " Intersects? " << planeIntersects << endl;
-      cout << endl;
+      cout << "Check if parent node is closer: " << parentDist << "\t";
+      cout << "Current Best Dist: " << currentBestDist << endl;
    #endif
-   // Check if splitting plane intersected sphere
-   if (planeIntersects == true) {
-      // If so, then we need to check the parent node and
-      // and recursively search all (other) children of parent node
+   // Check whether we need to search other children of parent for closer neighbouring points
+   const double radius = currentBest->GetPoint().DistanceTo(point);
+   if (parent->CheckOtherSideofSplittingPlane(point, radius) == true) {
+      // If so, then we need to recursively search all (other) children of parent node
       // for any closer nearest neighbours
-      const double parentDist = parent->GetPoint().DistanceTo(point);
-      const double currentBestDist = currentBest->GetPoint().DistanceTo(point);
-      #ifdef VERBOSE
-         cout << "Check if parent node is closer: " << parentDist << "\t";
-         cout << "Current Best Dist: " << currentBestDist << endl;
-      #endif
-      if (parentDist < currentBestDist) {
-         // If parent is closer then update current best
-         currentBest = parent;
-      }
       #ifdef VERBOSE
          cout << "Recursively search children for any closer nodes" << endl;
       #endif
@@ -275,21 +225,81 @@ const KDTreeNode& KDTreeNode::CheckParentBranches(const Point& point, const KDTr
    }
    
    // Ask Parent to check its Parent Branch to recursively search up the tree 
-   currentBest = &(parent->CheckParentBranches(point, *currentBest));
+   currentBest = &(parent->CheckParentForCloserNodes(point, *currentBest));
    return *currentBest;
+}
+
+//______________________________________________________________________________
+bool KDTreeNode::CheckOtherSideofSplittingPlane(const Point& point, const double radius) const
+{
+   // -- Check node for whether its 'splitting hyperplane' (i.e: the axis
+   // -- along which we split the tree at that node, either x, y, or z) intersects a sphere 
+   // -- of radius 'radius' centred on the 'point'.   
+   // -- Return whether this plane intersects or not
+   const int depth = this->GetDepth();
+   const int splitAxis = depth % 3;
+   bool planeIntersects = false;
+   // Determine splitting plane. Check for whether plane intersects sphere of radius 'radius'
+   // centred around 'point'
+   switch (splitAxis) {
+      case 0 : 
+      {  // x-axis splitting
+         // Get X-coord of node. This coordinate defines the splitting plane (x=value)
+         const double plane = this->GetPoint().X();
+         // Check whether splitting plane intersects sphere centred on point 
+         if (plane >= (point.X() - radius) && plane <= (point.X() + radius)) {
+            planeIntersects = true;
+         }
+         break;
+      }
+      case 1 : 
+      {  // y-axis splitting
+         // Get Y-coord of node. This coordinate defines the splitting plane (y=value)
+         const double plane = this->GetPoint().Y();
+         // Check whether splitting plane intersects sphere centred on point 
+         if (plane >= (point.Y() - radius) && plane <= (point.Y() + radius)) {
+            planeIntersects = true;
+         }
+         break;
+      }
+      case 2 : 
+      {  // z-axis splitting
+         // Get Z-coord of node. This coordinate defines the splitting plane (z=value)
+         const double plane = this->GetPoint().Z();
+         // Check whether splitting plane intersects sphere centred on point 
+         if (plane >= (point.Z() - radius) && plane <= (point.Z() + radius)) {
+            planeIntersects = true;
+         }
+         break;
+      }
+      default : 
+         cout << "KDTreeNode - Error: axis: " << splitAxis << endl;
+   }
+   #ifdef VERBOSE
+      cout << endl << "--------------------" << endl;
+      cout << "Checking Node: " << this->GetPoint().ToString();
+      cout << ", to see if it intersects current best hypershpere around search point" << endl;
+      cout << "Search Point: " << point.ToString() << endl;
+      cout << "Sphere Radius: " << radius << endl;
+      cout << "Parent Depth: " << depth << endl;
+      cout << "Axis: " << splitAxis << " Intersects? " << planeIntersects << endl;
+      cout << endl;
+   #endif
+   return planeIntersects;
 }
 
 //______________________________________________________________________________
 const KDTreeNode& KDTreeNode::SearchChildren(const Point& point, const KDTreeNode& previousBest, const KDTreeNode& previousChild) const
 {
-   // Recursively search all children of current node to see whether any are closer to the point
-   // than the provided 'current best' 
+   // -- Recursively search all children of current node to see whether any are closer to the point
+   // -- than the provided 'current best' 
    if (fLeft == NULL && fRight == NULL) {return previousBest;}
    #ifdef VERBOSE
       cout << "Searching Children of Node: " << this->GetPoint().ToString() << endl;
       cout << "Current Best: " << previousBest.GetPoint().ToString() << endl;
    #endif
    const KDTreeNode* currentBest = &previousBest;
+   ////////////////////////////////////////////////////////////////////////////////////
    // If left child is the previous child (i.e: the branch we have come from)
    // then we don't have to check this again 
    if (fLeft != &previousChild && fLeft != NULL) {
@@ -308,10 +318,10 @@ const KDTreeNode& KDTreeNode::SearchChildren(const Point& point, const KDTreeNod
             cout << "Left is closer" << endl;
          #endif
       }
-      // Search children of Left node for any improvement on current best estimate
+      // Recursively search children of Left node for any improvement on current best estimate
       currentBest = &(fLeft->SearchChildren(point, *currentBest, previousChild));
    }
-   
+   ////////////////////////////////////////////////////////////////////////////////////
    // If right child is the previous child (i.e: the branch we have come from)
    // then we don't have to check this again
    if (fRight != &previousChild  && fRight != NULL) {
@@ -330,9 +340,10 @@ const KDTreeNode& KDTreeNode::SearchChildren(const Point& point, const KDTreeNod
             cout << "Right is closer" << endl;
          #endif
       }
-      // Search children of Left node for any improvement on current best estimate
+      // Recursively search children of Left node for any improvement on current best estimate
       currentBest = &(fRight->SearchChildren(point, *currentBest, previousChild));
    }
+   // Return the current best estimate of the nearest neighbour
    return *currentBest;
 }
 
@@ -460,7 +471,7 @@ const Point& KDTree::NearestNeighbour(const Point& point) const
       cout << point.ToString() << endl;
    #endif
    // Find leaf node that contains the point. Store as first guess 
-   const KDTreeNode& firstGuess = fRoot->FindContainingNode(point);
+   const KDTreeNode& firstGuess = fRoot->FindNodeContaining(point);
    // Calculate distance from point to first guess nearest neighbour
    double dist = firstGuess.GetPoint().DistanceTo(point);
    #ifdef VERBOSE
@@ -470,7 +481,7 @@ const Point& KDTree::NearestNeighbour(const Point& point) const
       cout << "Distance to Point: " << dist << endl;
    #endif
    // Now traverse back up tree looking for if any other nodes are closer
-   const KDTreeNode& nearestNode = firstGuess.CheckParentBranches(point, firstGuess);
+   const KDTreeNode& nearestNode = firstGuess.CheckParentForCloserNodes(point, firstGuess);
    #ifdef VERBOSE
       cout << "--------------------" << endl;
       cout << "Nearest Node : ";
