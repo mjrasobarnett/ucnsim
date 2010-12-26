@@ -65,9 +65,6 @@ public:
    
    int GetDepth() const {return fDepth;}
    const Point& GetPoint() const {return *fPoint;}
-   const KDTreeNode* GetParent() const {return fParent;}
-   const KDTreeNode* GetLeftChild() const {return fLeft;}
-   const KDTreeNode* GetRightChild() const {return fRight;}
    
    const KDTreeNode& FindNodeContaining(const Point& point) const;
    const KDTreeNode& CheckParentForCloserNodes(const Point& point, const KDTreeNode& best) const;
@@ -80,6 +77,10 @@ private:
    KDTreeNode *fParent;
    KDTreeNode *fLeft;
    KDTreeNode *fRight;	
+   
+   const KDTreeNode* GetParent() const {return fParent;}
+   const KDTreeNode* GetLeftChild() const {return fLeft;}
+   const KDTreeNode* GetRightChild() const {return fRight;}
    
    bool CheckOtherSideofSplittingPlane(const Point& point, const double radius) const;
    const KDTreeNode& SearchChildren(const Point& point, const KDTreeNode& currentBest) const;
