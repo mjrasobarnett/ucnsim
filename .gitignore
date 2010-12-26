@@ -4,4 +4,6 @@ TestKDTree
 *.dot
 *.svg
 *.o
-
+*.txt
+*.pdf
+*.xls*
