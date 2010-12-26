@@ -136,7 +136,22 @@ const KDTreeNode& KDTreeNode::FindContainingNode(const Point& point) const
          cout << this->GetPoint().ToString() << endl;
       #endif
       return *this;
+   } else if (fLeft == NULL) {
+      // If node has only right node then this is containing node
+      #ifdef VERBOSE
+         cout << "One Child. This is Containing Node: ";
+         cout << fRight->GetPoint().ToString() << endl;
+      #endif
+      return *fRight;
+   } else if (fRight == NULL) {
+      // If node has only left node then this is containing node
+      #ifdef VERBOSE
+         cout << "One Child. This is Containing Node: ";
+         cout << fLeft->GetPoint().ToString() << endl;
+      #endif
+      return *fLeft;
    }
+   // Otherwise there are two children. Find out which child contains point
    // Choosing splitting axis
    int axis = this->GetDepth() % 3;
    bool insideLeft = false;
@@ -163,11 +178,9 @@ const KDTreeNode& KDTreeNode::FindContainingNode(const Point& point) const
    #endif
    // Search children
    if (insideLeft == true) {
-      if (fLeft) {return fLeft->FindContainingNode(point);}
-      else {return *fRight;}
+      return fLeft->FindContainingNode(point);
    } else {
-      if (fRight) {return fRight->FindContainingNode(point);}
-      else {return *fLeft;}
+      return fRight->FindContainingNode(point);
    }
 }
 
