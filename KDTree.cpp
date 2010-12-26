@@ -416,19 +416,25 @@ const Point& KDTree::NearestNeighbour(const Point& point) const
       cout << point.ToString() << endl;
    #endif
    
-   // Find leaf node that contains the point. Store as current best nearest 
-   const KDTreeNode& currentBest = fRoot->FindContainingNode(point);
-   // Calculate distance from point to current best nearest neighbour
-   double dist = currentBest.GetPoint().SquaredDistanceTo(point);
+   // Find leaf node that contains the point. Store as first guess 
+   const KDTreeNode& firstGuess = fRoot->FindContainingNode(point);
+   // Calculate distance from point to first guess nearest neighbour
+   double dist = firstGuess.GetPoint().DistanceTo(point);
    #ifdef VERBOSE
       cout << endl << "--------------------" << endl;
-      cout << "Current Best : ";
-      cout << currentBest.GetPoint().ToString() << endl;
+      cout << "First Guess : ";
+      cout << firstGuess.GetPoint().ToString() << endl;
       cout << "Distance to Point: " << dist << endl;
    #endif
    // Now traverse back up tree looking for if any other nodes are closer
-   const KDTreeNode& nearestNode = currentBest.CheckParentBranches(point, dist);
-   return currentBest.GetPoint();
+   const KDTreeNode& nearestNode = firstGuess.CheckParentBranches(point, firstGuess);
+   
+   cout << endl << "--------------------" << endl;
+   cout << "Nearest Node : ";
+   cout << nearestNode.GetPoint().ToString() << endl;
+   cout << "Distance to Point: " << nearestNode.GetPoint().DistanceTo(point) << endl;
+   
+   return nearestNode.GetPoint();
 }
 
 //______________________________________________________________________________
