@@ -75,7 +75,7 @@ public:
    void OutputGraphViz(std::ostream& out) const;
    
 private:
-   int fDepth;
+   unsigned int fDepth;
    Point* fPoint;
    KDTreeNode *fParent;
    KDTreeNode *fLeft;
