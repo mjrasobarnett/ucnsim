@@ -1,0 +1,7 @@
+.DS_Store
+TestExample
+TestKDTree
+*.dot
+*.svg
+*.o
+
