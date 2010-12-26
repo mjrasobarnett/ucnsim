@@ -54,16 +54,19 @@ class KDTreeNode {
       KDTreeNode(const KDTreeNode& other);
       virtual ~KDTreeNode();
       
+      void SetDepth(int depth) {fDepth = depth;}
       void SetPoint(Point* otherPoint) {fPoint = otherPoint;}
       void SetParent(KDTreeNode* other) {fParent = other;}
       void SetLeftChild(KDTreeNode* otherLeft) {fLeft = otherLeft;}
       void SetRightChild(KDTreeNode* otherRight) {fRight = otherRight;}
       
+      int GetDepth() const {return fDepth;}
       const Point& GetPoint() const {return *fPoint;}
       const KDTreeNode& FindContainingNode(const Point& point, int depth) const;
       void OutputGraphViz(std::ostream& out) const;
       
    private:
+      int fDepth;
       Point* fPoint;
       KDTreeNode *fParent;
       KDTreeNode *fLeft;

@@ -70,7 +70,8 @@ double Point::SquaredDistanceTo(const Point& point) const
 
 //______________________________________________________________________________
 KDTreeNode::KDTreeNode()
-           :fPoint(NULL), 
+           :fDepth(0),
+            fPoint(NULL), 
             fParent(NULL), 
             fLeft(NULL),
             fRight(NULL)
@@ -82,7 +83,8 @@ KDTreeNode::KDTreeNode()
 
 //______________________________________________________________________________
 KDTreeNode::KDTreeNode(const KDTreeNode& other)
-           :fPoint(other.fPoint), 
+           :fDepth(other.fDepth),
+            fPoint(other.fPoint), 
             fParent(other.fParent), 
             fLeft(other.fLeft),
             fRight(other.fRight)
@@ -207,7 +209,6 @@ KDTreeNode* KDTree::BuildNode(vector<Point*>& points, KDTreeNode* parent, int de
    } else {
       // Select axis based on depth so that axis cycles through all valid values
       int axis = depth % 3;
-      
       // Sort point list and choose median as pivot element
       switch (axis) {
          case 0 : 
@@ -228,6 +229,7 @@ KDTreeNode* KDTree::BuildNode(vector<Point*>& points, KDTreeNode* parent, int de
       int median = ceil(points.size()/2.0) - 1; 
       // Create node and construct subtrees
       KDTreeNode* node = new KDTreeNode();
+      node->SetDepth(depth);
       node->SetParent(parent);
       node->SetPoint(points[median]);
       // Create list of only those points before and after median
@@ -284,7 +286,7 @@ const Point& KDTree::NearestNeighbour(const Point& point) const
       cout << "Distance to Point: " << dist << endl;
    #endif
    // Now traverse back up tree looking for if any other nodes are closer
-   const KDTreeNode& nearestNode = currentBest->
+//   const KDTreeNode& nearestNode = currentBest->
    return currentBest.GetPoint();
 }
 
