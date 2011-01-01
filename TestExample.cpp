@@ -7,6 +7,8 @@
 #include <string>
 
 #include "KDTree.hpp"
+#include "KDTreeNode.hpp"
+#include "Point.hpp"
 #include "MWC.hpp"
 
 using namespace std;

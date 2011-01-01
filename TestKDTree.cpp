@@ -9,6 +9,8 @@
 #include <cassert>
 
 #include "KDTree.hpp"
+#include "KDTreeNode.hpp"
+#include "Point.hpp"
 #include "MWC.hpp"
 
 using namespace std;
@@ -28,8 +30,8 @@ int main(int argc, char **argv) {
    BenchMark(1000, 10, out);
    BenchMark(10000, 10, out);
    BenchMark(100000, 10, out);
-   BenchMark(1000000, 10, out);
-   BenchMark(10000000, 10, out);
+//   BenchMark(1000000, 10, out);
+//   BenchMark(10000000, 10, out);
    return 0;
 }
 

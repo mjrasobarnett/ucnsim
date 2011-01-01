@@ -1,93 +1,12 @@
 #ifndef __KD_TREE_HPP_
 #define __KD_TREE_HPP_
 
-#include <string>
 #include <iostream>
 #include <vector>
 
-//______________________________________________________________________________
-class Point {
-   public :
+#include "Point.hpp"
+#include "KDTreeNode.hpp"
 
-      // constructors
-      Point();
-      Point(double x, double y, double z);
-      Point(const Point& other);
-      bool operator==(const Point& other) const; 
-      
-      virtual ~Point();
-
-      // getters
-      double X() const {return fX;}
-      double Y() const {return fY;}
-      double Z() const {return fZ;}
-
-      // setters
-      void SetX(double x){fX=x;}
-      void SetY(double y){fY=y;}
-      void SetZ(double z){fZ=z;}
-
-      std::string ToString() const;
-      double DistanceTo(const Point& point) const;
-      double SquaredDistanceTo(const Point& point) const;
-      
-   private:
-      double fX,fY,fZ;
-};
-
-class sortX {
-	public:
-	bool operator() (Point *a, Point *b) { return ((*a).X() < (*b).X());}
-};
-
-class sortY {
-	public:
-	bool operator() (Point *a, Point *b) { return ((*a).Y() < (*b).Y());}
-};
-
-class sortZ {
-	public:
-	bool operator() (Point *a, Point *b) { return ((*a).Z() < (*b).Z());}
-};
-
-//______________________________________________________________________________
-class KDTreeNode {
-public:
-   KDTreeNode();
-   KDTreeNode(const KDTreeNode& other);
-   virtual ~KDTreeNode();
-   
-   void SetDepth(int depth) {fDepth = depth;}
-   void SetPoint(Point* otherPoint) {fPoint = otherPoint;}
-   void SetParent(KDTreeNode* other) {fParent = other;}
-   void SetLeftChild(KDTreeNode* otherLeft) {fLeft = otherLeft;}
-   void SetRightChild(KDTreeNode* otherRight) {fRight = otherRight;}
-   
-   int GetDepth() const {return fDepth;}
-   const Point& GetPoint() const {return *fPoint;}
-   
-   const KDTreeNode& FindNodeContaining(const Point& point) const;
-   const KDTreeNode& CheckParentForCloserNodes(const Point& point, const KDTreeNode& best) const;
-   
-   void OutputGraphViz(std::ostream& out) const;
-   
-private:
-   unsigned int fDepth;
-   Point* fPoint;
-   KDTreeNode *fParent;
-   KDTreeNode *fLeft;
-   KDTreeNode *fRight;	
-   
-   const KDTreeNode* GetParent() const {return fParent;}
-   const KDTreeNode* GetLeftChild() const {return fLeft;}
-   const KDTreeNode* GetRightChild() const {return fRight;}
-   
-   bool CheckOtherSideofSplittingPlane(const Point& point, const double radius) const;
-   const KDTreeNode& SearchChildren(const Point& point, const KDTreeNode& currentBest) const;
-   bool IsCloserToPoint(const Point& point, const KDTreeNode& currentBest) const;
-};
-
-//______________________________________________________________________________
 class KDTree {
    public:
       KDTree(std::vector<Point*>& pointList);
