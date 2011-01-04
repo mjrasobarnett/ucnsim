@@ -10,6 +10,7 @@ class Point {
       virtual ~Point();
       
       bool operator==(const Point& other) const; 
+      bool operator!=(const Point& other) const {return !(*this==other);}
 
       // getters
       double X() const {return fX;}
