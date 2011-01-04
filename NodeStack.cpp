@@ -6,7 +6,7 @@
 #include "NodeStack.hpp"
 
 #define PRINT_CONSTRUCTORS 
-#define VERBOSE
+//#define VERBOSE
 
 using namespace std;
 
@@ -37,7 +37,7 @@ NodeStack::~NodeStack()
 }
 
 //______________________________________________________________________________
-bool NodeStack::AddNode(const KDTreeNode& node, const double distance)
+bool NodeStack::AddNode(const KDTreeNode* node, const double distance)
 {
    // -- Take pointer to node and its distance from the search-point, and insert
    // -- into node stack if its distance is less than any other node in the stack.
@@ -46,7 +46,7 @@ bool NodeStack::AddNode(const KDTreeNode& node, const double distance)
    
    // If stack is empty, just add the node
    if (this->empty() == true) {
-      this->push_back(StackElement(&node, distance));
+      this->push_back(StackElement(node, distance));
       #ifdef VERBOSE
          cout << "Adding Node to Stack" << endl;
          cout << "Stack size: " << this->size() << endl;
@@ -57,11 +57,11 @@ bool NodeStack::AddNode(const KDTreeNode& node, const double distance)
    list<StackElement>::iterator listIter;
    for (listIter=this->begin(); listIter!=this->end(); listIter++) {
       // If node already exists in Stack, do nothing
-      if (node.GetPoint() == listIter->first->GetPoint()) {return false;}
+      if (node->GetPoint() == listIter->first->GetPoint()) {return false;}
       // Determine whether node's distance is smaller than others in the stack 
       if (distance < listIter->second) {
          // If node is closer, then insert into stack in front of current position
-         this->insert(listIter, StackElement(&node, distance));
+         this->insert(listIter, StackElement(node, distance));
          // If list has now grown greater than the specific size, throw out the last
          // (most distant) node in the stack
          if (this->size() > fSize) {
@@ -81,7 +81,7 @@ bool NodeStack::AddNode(const KDTreeNode& node, const double distance)
    // Node is not closer than any others in the list. Finally if stack is not yet full, just
    // add the node at the back
    if (this->size() < fSize) {
-      this->push_back(StackElement(&node, distance));
+      this->push_back(StackElement(node, distance));
       #ifdef VERBOSE
          cout << "Adding Node to Stack" << endl;
          cout << "Stack size: " << this->size() << endl;
