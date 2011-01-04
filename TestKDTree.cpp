@@ -19,6 +19,7 @@ using namespace std;
 
 void BenchMark(const int numPoints, const int repetitions, ostream& out); 
 const Point& BruteForceNearestNeighbour(const vector<Point*>& pointList, const Point& point);
+void InternetExample1(vector<Point*>& points);
 
 //______________________________________________________________________________
 int main(int argc, char **argv) {
@@ -181,4 +182,19 @@ const Point& BruteForceNearestNeighbour(const vector<Point*>& pointList, const P
       }
    }
    return *(pointList[currentBestPoint]);
+}
+
+//______________________________________________________________________________
+void InternetExample1(vector<Point*>& points)
+{
+ //http://syntaxandsemantic.blogspot.com/2010/03/knn-algorithm-and-kd-trees.html
+   points.push_back(new Point(5,9,10));
+   points.push_back(new Point(2,6,8));
+   points.push_back(new Point(14,3,7));
+   points.push_back(new Point(3,4,9));
+   points.push_back(new Point(4,13,5));
+   points.push_back(new Point(8,2,1));
+   points.push_back(new Point(7,9,6));
+   points.push_back(new Point(4,1,6));
+   points.push_back(new Point(2,2,10));
 }
