@@ -14,6 +14,8 @@ class NodeStack : public std::list<StackElement> {
       NodeStack(const NodeStack& other);
       virtual ~NodeStack();
       
+      bool operator==(const NodeStack& other) const;
+      
       bool AddNode(const KDTreeNode* node, const double distance);
       
    private:

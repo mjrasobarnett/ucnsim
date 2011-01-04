@@ -5,7 +5,7 @@
 
 #include "NodeStack.hpp"
 
-#define PRINT_CONSTRUCTORS 
+//#define PRINT_CONSTRUCTORS 
 //#define VERBOSE
 
 using namespace std;
@@ -34,6 +34,22 @@ NodeStack::~NodeStack()
    #ifdef PRINT_CONSTRUCTORS
       cout << "NodeStack Destruct" << endl;
    #endif
+}
+
+//______________________________________________________________________________
+bool NodeStack::operator==(const NodeStack& other) const
+{
+   // -- Comparison operator.
+   list<StackElement>::const_iterator thisIter = this->begin(), otherIter = other.begin();
+   while (thisIter != this->end() && otherIter != other.end()) {
+      if (thisIter->first->GetPoint() != otherIter->first->GetPoint() ||
+          thisIter->second != otherIter->second) {
+             return false;
+      }
+      thisIter++;
+      otherIter++;
+   }
+   return true;
 }
 
 //______________________________________________________________________________
