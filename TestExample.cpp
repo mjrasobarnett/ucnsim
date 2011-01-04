@@ -8,6 +8,7 @@
 
 #include "KDTree.hpp"
 #include "KDTreeNode.hpp"
+#include "NodeStack.hpp"
 #include "Point.hpp"
 #include "MWC.hpp"
 
@@ -18,6 +19,13 @@ int main(int argc, char **argv) {
    clock_t start, end;
    start = clock();
    
+   NodeStack nodestack(1);
+   
+   const KDTreeNode* node = new KDTreeNode();
+   const KDTreeNode* node2 = new KDTreeNode();
+
+   nodestack.AddNode(*node, 10.);
+   nodestack.AddNode(*node2, 9.);
    
    // Output timing
    end = clock();
