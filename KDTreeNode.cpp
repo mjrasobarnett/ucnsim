@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "KDTreeNode.hpp"
+#include "NodeStack.hpp"
 
 //#define PRINT_CONSTRUCTORS 
 //#define VERBOSE
@@ -110,7 +111,7 @@ const KDTreeNode& KDTreeNode::FindNodeContaining(const Point& point) const
 }
 
 //______________________________________________________________________________
-const KDTreeNode& KDTreeNode::CheckParentForCloserNodes(const Point& point, const KDTreeNode& previousBest) const
+bool KDTreeNode::CheckParentForCloserNodes(const Point& point, NodeStack& neighbours) const
 {
    // -- Check to see if parent node is closer than current nearest neighbour. Determine
    // -- whether other child nodes of parent could possibly be closer, and if so, search all of them
@@ -124,15 +125,17 @@ const KDTreeNode& KDTreeNode::CheckParentForCloserNodes(const Point& point, cons
    // --
    // -- Recursively search all parents up the tree until we reach the Root node.
    // -- Return the final best estimate of the nearest node.
-   const KDTreeNode* currentBest = &previousBest;
+   
    // Get the parent node
    const KDTreeNode* parent = this->GetParent();
    // If there is no parent we have reached the root node and can stop our search
-   if (parent == NULL) {return previousBest;}
+   if (parent == NULL) {return true;}
    // Check if parent node is closer than current best
-   if (parent->IsCloserToPoint(point, *currentBest) == true) {currentBest = parent;}
-   // Define radius of search sphere as distance from current best to point
-   const double radius = currentBest->GetPoint().DistanceTo(point);
+   neighbours.AddNode(parent, parent->DistanceTo(point));
+   // Define radius of search sphere as distance from current nearest neighbour to point
+   // Actually use the **furthest** of the n-th nearest neighbours so that we look for possible
+   // improvements on any of the n-nearest neighbours in the list
+   const double radius = neighbours.back().second;
    // Check whether we need to search other children of parent for closer neighbouring points
    if (parent->CheckOtherSideofSplittingPlane(point, radius) == true) {
       // If so, then we need to recursively search all branches of the other child of
@@ -154,15 +157,14 @@ const KDTreeNode& KDTreeNode::CheckParentForCloserNodes(const Point& point, cons
       // Check if parent actually has another child
       if (otherChild != NULL) {
          // Check whether child is closer than current best 
-         if (otherChild->IsCloserToPoint(point,*currentBest)) {currentBest = otherChild;}
+         neighbours.AddNode(otherChild, otherChild->DistanceTo(point));
          // Check all of child's children for closer nodes
-         currentBest = &(otherChild->SearchChildren(point, *currentBest));
+         otherChild->SearchChildren(point, neighbours);
       }
    }
-   
    // Ask Parent to check its Parent Branch to recursively search up the tree 
-   currentBest = &(parent->CheckParentForCloserNodes(point, *currentBest));
-   return *currentBest;
+   parent->CheckParentForCloserNodes(point, neighbours);
+   return true;
 }
 
 //______________________________________________________________________________
@@ -225,42 +227,37 @@ bool KDTreeNode::CheckOtherSideofSplittingPlane(const Point& point, const double
 }
 
 //______________________________________________________________________________
-const KDTreeNode& KDTreeNode::SearchChildren(const Point& point, const KDTreeNode& previousBest) const
+bool KDTreeNode::SearchChildren(const Point& point, NodeStack& neighbours) const
 {
    // -- Recursively search all children of current node to see whether any are closer to the point
    // -- than the provided 'current best' 
-   if (fLeft == NULL && fRight == NULL) {return previousBest;}
+   if (fLeft == NULL && fRight == NULL) {return true;}
    #ifdef VERBOSE
       cout << "Searching Children of Node: " << this->GetPoint().ToString() << endl;
-      cout << "Current Best: " << previousBest.GetPoint().ToString() << endl;
+      cout << "Current Best: " << neighbours.Front().first->GetPoint().ToString() << endl;
    #endif
-   const KDTreeNode* currentBest = &previousBest;
    ////////////////////////////////////////////////////////////////////////////////////
    // If left child is the previous child (i.e: the branch we have come from)
    // then we don't have to check this again 
    if (fLeft != NULL) {
       // Else, check if distance of left child to point is less than current best estimate 
-      if (fLeft->IsCloserToPoint(point, *currentBest) == true) {
-         // If it is closer to point than current best estimate then update estimate
-         currentBest = fLeft;
-      }
+      // If it is closer to point than current best estimate then update estimate
+      neighbours.AddNode(fLeft, fLeft->DistanceTo(point));
       // Recursively search children of Left node for any improvement on current best estimate
-      currentBest = &(fLeft->SearchChildren(point, *currentBest));
+      fLeft->SearchChildren(point, neighbours);
    }
    ////////////////////////////////////////////////////////////////////////////////////
    // If right child is the previous child (i.e: the branch we have come from)
    // then we don't have to check this again
    if (fRight != NULL) {
       // Else, check if distance of right child to point is less than current best estimate 
-      if (fRight->IsCloserToPoint(point, *currentBest) == true) {
-         // If it is closer to point than current best estimate then update estimate
-         currentBest = fRight;
-      }
+      // If it is closer to point than current best estimate then update estimate
+      neighbours.AddNode(fRight, fRight->DistanceTo(point));
       // Recursively search children of Left node for any improvement on current best estimate
-      currentBest = &(fRight->SearchChildren(point, *currentBest));
+      fRight->SearchChildren(point, neighbours);
    }
    // Return the current best estimate of the nearest neighbour
-   return *currentBest;
+   return true;
 }
 
 //______________________________________________________________________________

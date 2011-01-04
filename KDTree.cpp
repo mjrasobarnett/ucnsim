@@ -106,6 +106,7 @@ KDTreeNode* KDTree::BuildNode(vector<Point*>& points, KDTreeNode* parent, int de
    }  
 }
 
+/*
 //______________________________________________________________________________
 const Point& KDTree::NearestNeighbour(const Point& point) const
 {
@@ -135,6 +136,7 @@ const Point& KDTree::NearestNeighbour(const Point& point) const
    #endif
    return nearestNode.GetPoint();
 }
+*/
 
 //______________________________________________________________________________
 const NodeStack* KDTree::NearestNeighbours(const Point& point, const int numberNeighbours) const
@@ -161,9 +163,9 @@ const NodeStack* KDTree::NearestNeighbours(const Point& point, const int numberN
       cout << "Distance to Point: " << dist << endl;
    #endif
    // Add First guess to list of nearest neighbours
-   neighbours->AddNode(firstGuess, dist);
+   neighbours->AddNode(&firstGuess, dist);
    // Now traverse back up tree looking for if any other nodes are closer
-   firstGuess.CheckParentForCloserNodes(point, neighbours);
+   firstGuess.CheckParentForCloserNodes(point, *neighbours);
    #ifdef VERBOSE
       cout << "--------------------" << endl;
       cout << "Nearest Node : ";

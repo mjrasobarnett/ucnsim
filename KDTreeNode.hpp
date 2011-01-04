@@ -4,7 +4,8 @@
 #include <iostream>
 #include "Point.hpp"
 
-//______________________________________________________________________________
+class NodeStack;
+
 class KDTreeNode {
 public:
    KDTreeNode();
@@ -19,9 +20,10 @@ public:
    
    int GetDepth() const {return fDepth;}
    const Point& GetPoint() const {return *fPoint;}
+   double DistanceTo(const Point& point) const {return fPoint->DistanceTo(point);}
    
    const KDTreeNode& FindNodeContaining(const Point& point) const;
-   const KDTreeNode& CheckParentForCloserNodes(const Point& point, const KDTreeNode& best) const;
+   bool CheckParentForCloserNodes(const Point& point, NodeStack& neighbours) const;
    
    void OutputGraphViz(std::ostream& out) const;
    
@@ -37,7 +39,7 @@ private:
    const KDTreeNode* GetRightChild() const {return fRight;}
    
    bool CheckOtherSideofSplittingPlane(const Point& point, const double radius) const;
-   const KDTreeNode& SearchChildren(const Point& point, const KDTreeNode& currentBest) const;
+   bool SearchChildren(const Point& point, NodeStack& neighbours) const;
    bool IsCloserToPoint(const Point& point, const KDTreeNode& currentBest) const;
 };
 
