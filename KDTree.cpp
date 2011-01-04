@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <cmath>
+#include <stdexcept>
 
 #include "KDTree.hpp"
 
@@ -135,6 +136,42 @@ const Point& KDTree::NearestNeighbour(const Point& point) const
    return nearestNode.GetPoint();
 }
 
+//______________________________________________________________________________
+const NodeStack* KDTree::NearestNeighbours(const Point& point, const int numberNeighbours) const
+{
+   // -- For a given point, find the 'n' closest neighbouring nodes, defined by numberNeighbours.
+   if (numberNeighbours < 1) {
+      throw runtime_error("Invalid number of nearest numbers requested");
+   }
+   // Define the storage for the 'n'-nearest-neighbours
+   NodeStack* neighbours = new NodeStack(numberNeighbours);
+   #ifdef VERBOSE
+      cout << endl << "--------------------" << endl;
+      cout << "Search for " << numberNeighbours << " nearest neighbours of Point : ";
+      cout << point.ToString() << endl;
+   #endif
+   // Find leaf node that contains the point. Store as first guess 
+   const KDTreeNode& firstGuess = fRoot->FindNodeContaining(point);
+   // Calculate distance from point to first guess nearest neighbour
+   double dist = firstGuess.GetPoint().DistanceTo(point);
+   #ifdef VERBOSE
+      cout << endl << "--------------------" << endl;
+      cout << "First Guess : ";
+      cout << firstGuess.GetPoint().ToString() << endl;
+      cout << "Distance to Point: " << dist << endl;
+   #endif
+   // Add First guess to list of nearest neighbours
+   neighbours->AddNode(firstGuess, dist);
+   // Now traverse back up tree looking for if any other nodes are closer
+   firstGuess.CheckParentForCloserNodes(point, neighbours);
+   #ifdef VERBOSE
+      cout << "--------------------" << endl;
+      cout << "Nearest Node : ";
+      cout << neighbours->front()->GetPoint().ToString() << endl;
+      cout << "Distance to Point: " << neighbours->front()->second << endl;
+   #endif
+   return neighbours;
+}
 //______________________________________________________________________________
 void KDTree::OutputGraphViz(ostream& out) const
 {

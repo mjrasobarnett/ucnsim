@@ -6,6 +6,7 @@
 
 #include "Point.hpp"
 #include "KDTreeNode.hpp"
+#include "NodeStack.hpp"
 
 class KDTree {
    public:
@@ -14,6 +15,8 @@ class KDTree {
       virtual ~KDTree();
       
       const Point& NearestNeighbour(const Point& point) const;
+      const NodeStack* NearestNeighbours(const Point& point, const int numberNeighbours) const;
+      
       void OutputGraphViz(std::ostream& out) const;
       
    private:
