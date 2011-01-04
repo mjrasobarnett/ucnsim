@@ -6,7 +6,9 @@
 
 #include "KDTreeNode.hpp"
 
-class NodeStack {
+typedef std::pair<const KDTreeNode*, double> StackElement;
+
+class NodeStack : public std::list<StackElement> {
    public:
       NodeStack(const int size);
       NodeStack(const NodeStack& other);
@@ -15,8 +17,6 @@ class NodeStack {
       bool AddNode(const KDTreeNode& node, const double distance);
       
    private:
-      typedef std::pair<const KDTreeNode*, double> StackElement;
-      std::list<StackElement> fNodeStack;
       unsigned int fSize;
 };
 
