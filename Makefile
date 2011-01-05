@@ -107,8 +107,7 @@ LINKDEF = UCNLinkDef.h
 UCNSO = lib/libUCN.$(DllSuf)
 UCNLIB = -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lGeom -lEG -lm -lMathMore -lGui -lRGL -lGed
 #------------------------------------------------------------------------------
-OBJS = $(SIMULATE_UCNO) $(GENERATE_UCNO) $(SANDBOXO) $(PLOT_DATAO) \
-$(DRAW_TRACKSO) $(TEST_KDTREEO) $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
+OBJS = $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
 $(STATEO) $(SPINO) $(DATAPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
 $(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
 $(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) $(INITIALCONFIGO) \
@@ -135,7 +134,7 @@ $(SIMULATE_UCN):		$(SIMULATE_UCNO) $(UCNSO)
 
 generate_ucn:			$(GENERATE_UCN)
 $(GENERATE_UCN):		$(GENERATE_UCNO) $(UCNSO)
-							$(LD) $(LDFLAGS) $(GENERATE_UCNO) $(UCNLIB) $(LIBS)  \
+							$(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
 							$(OutPutOpt)$@
 							$(MT_EXE)
 							@echo "$@ done"
@@ -143,41 +142,34 @@ $(GENERATE_UCN):		$(GENERATE_UCNO) $(UCNSO)
 
 sandbox:			$(SANDBOX)
 $(SANDBOX):		$(SANDBOXO) $(UCNSO)
-					$(LD) $(LDFLAGS) $(SANDBOXO) $(UCNLIB) $(LIBS)  \
+					$(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
 					@echo "$@ done"
 
 plot_data:		$(PLOT_DATA)
 $(PLOT_DATA):	$(PLOT_DATAO) $(UCNSO)
-					$(LD) $(LDFLAGS) $(PLOT_DATAO) $(UCNLIB) $(LIBS)  \
+					$(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
 					@echo "$@ done"
 
 draw_tracks:	 $(DRAW_TRACKS)
 $(DRAW_TRACKS): $(DRAW_TRACKSO) $(UCNSO)
-					 $(LD) $(LDFLAGS) $(DRAW_TRACKSO) $(UCNLIB) $(LIBS)  \
+					 $(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
 					 $(OutPutOpt)$@
 					 $(MT_EXE)
 					 @echo "$@ done"
 
 test_kdtree:	 $(TEST_KDTREE)
 $(TEST_KDTREE): $(TEST_KDTREEO) $(UCNSO)
-					 $(LD) $(LDFLAGS) $(TEST_KDTREEO) $(UCNLIB) $(LIBS)  \
+					 $(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
 					 $(OutPutOpt)$@
 					 $(MT_EXE)
 					 @echo "$@ done"
 
 
-$(UCNSO):		$(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) \
-               $(GRAVFIELDO) $(PARTICLEO) $(STATEO) $(SPINO) $(DATAPARSERO) \
-					$(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
-					$(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) \
-					$(FIELDMANAGERO) $(CONFIGFILEO) $(COMPOSITESHAPEO) \
-					$(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) \
-					$(INITIALCONFIGO) $(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO) \
-					$(FIELDMAPO) $(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(NODESTACKO)
+$(UCNSO):		$(OBJS)
 
 ifeq ($(ARCH),aix)
 		/usr/ibmcxx/bin/makeC++SharedLib $(OutPutOpt) $@ $(LIBS) -p 0 $^
