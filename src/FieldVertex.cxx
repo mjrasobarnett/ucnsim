@@ -12,7 +12,7 @@ using namespace std;
 
 //______________________________________________________________________________
 FieldVertex::FieldVertex()
-      :fPos(0.,0.,0.)
+      :fX(0.), fY(0.), fZ(0.)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "FieldVertex Default Construct" << endl;
@@ -21,7 +21,7 @@ FieldVertex::FieldVertex()
 
 //______________________________________________________________________________
 FieldVertex::FieldVertex(double x, double y, double z)
-      :fPos(x,y,z)
+      :fX(x), fY(y), fZ(z)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "FieldVertex Construct" << endl;
@@ -30,7 +30,9 @@ FieldVertex::FieldVertex(double x, double y, double z)
 
 //______________________________________________________________________________
 FieldVertex::FieldVertex(const FieldVertex& other)
-      :fPos(other.fPos)
+      :fX(other.fX),
+       fY(other.fY),
+       fZ(other.fZ)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "FieldVertex Copy Construct" << endl;
@@ -48,7 +50,7 @@ FieldVertex::~FieldVertex()
 //______________________________________________________________________________
 bool FieldVertex::operator==(const FieldVertex& other) const
 {
-   if (other.X() == this->X() && other.Y() == this->Y() && other.Z() == this->Z()) {
+   if (other.X() == fX && other.Y() == fY && other.Z() == fZ){
       return true;
    } else {
       return false;
@@ -60,7 +62,7 @@ string FieldVertex::ToString() const
 {
    ostringstream oss;
    oss.precision(2);
-   oss << "(" << this->X() << ", " << this->Y() << ", " << this->Z() << ")";
+   oss << "(" << fX << ", " << fY << ", " << fZ << ")";
    return oss.str();
 }
 
