@@ -1,3 +1,5 @@
+// Authors: Matt Raso-Barnett, Emyr James Dec 2010
+
 #ifndef __KDTREE_NODE_HPP_
 #define __KDTREE_NODE_HPP_
 

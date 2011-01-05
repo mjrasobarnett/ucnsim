@@ -1,3 +1,5 @@
+// Authors: Matt Raso-Barnett, Emyr James Dec 2010
+
 #ifndef __KD_TREE_HPP_
 #define __KD_TREE_HPP_
 
