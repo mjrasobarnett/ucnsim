@@ -13,7 +13,7 @@ using namespace std;
 
 //______________________________________________________________________________
 VertexStack::VertexStack(const int size)
-          :fSize(size)
+          :fMaxSize(size)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "VertexStack Construct" << endl;
@@ -84,7 +84,7 @@ bool VertexStack::ExamineVertex(const FieldVertex& vertex, const double distance
          this->insert(listIter, StackElement(&vertex, distance));
          // If list has now grown greater than the specific size, throw out the last
          // (most distant) vertex in the stack
-         if (this->size() > fSize) {
+         if (this->size() > fMaxSize) {
             #ifdef VERBOSE
                cout << "Removing Node from End" << endl;
                cout << "Stack size: " << this->size() << endl;
@@ -100,7 +100,7 @@ bool VertexStack::ExamineVertex(const FieldVertex& vertex, const double distance
    }
    // Node is not closer than any others in the list. Finally if stack is not yet full, just
    // add the vertex at the back
-   if (this->size() < fSize) {
+   if (this->size() < fMaxSize) {
       this->push_back(StackElement(&vertex, distance));
       #ifdef VERBOSE
          cout << "Adding Node to Stack" << endl;
