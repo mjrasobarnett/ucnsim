@@ -5,7 +5,7 @@
 #include "ParabolicMagField.h"
 
 using std::string;
-
+/*
 ClassImp(ParabolicMagField)
 
 //_____________________________________________________________________________
@@ -58,30 +58,29 @@ ParabolicMagField::~ParabolicMagField()
 }   
 
 //_____________________________________________________________________________
-Bool_t ParabolicMagField::Contains(const TVector3& /*point*/) const
+Bool_t ParabolicMagField::Contains(const TVector3& point) const
 {
    return kFALSE;
 }
 
 //_____________________________________________________________________________
-void ParabolicMagField::GetFieldVector(const TVector3& /*pos*/, TVector3& /*field*/) const
+void ParabolicMagField::GetFieldVector(const TVector3& pos, TVector3& field) const
 {
    // B(r,z) = Bmax - A(r^2)/(R^2) with A=(0.1)Bmax
    // For now we assume we are in the local coordinates of the cylinder
-/*   Double_t r = TMath::Sqrt(pos.X()*pos.X() + pos.Y()*pos.Y());
-   Double_t theta = TMath::ACos(pos.X()/r);
-   Double_t bMag = this->B(pos);
-*/
+//   Double_t r = TMath::Sqrt(pos.X()*pos.X() + pos.Y()*pos.Y());
+//   Double_t theta = TMath::ACos(pos.X()/r);
+//   Double_t bMag = this->B(pos);
+
 }
 
 //______________________________________________________________________________
-Bool_t ParabolicMagField::Interact(Particle& /*particle*/, const Double_t /*stepTime*/) const
+Bool_t ParabolicMagField::Interact(Particle& particle, const Double_t stepTime) const
 {
    
    return kTRUE;
 }
 
-/*
 //_____________________________________________________________________________
 Double_t ParabolicMagField::IntegratedField(const Double_t stepTime, const Particle* initialState, const GravField* gravField) const
 {

@@ -14,7 +14,7 @@
 // ParabolicMagField                                                  //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-
+/*
 class ParabolicMagField : public MagField {
 private:
    Double_t fBMax;   // Field along z-axis, r = 0
@@ -39,5 +39,5 @@ public:
    
    ClassDef(ParabolicMagField, 1)  // parabolic mag field class
 };
-
+*/
 #endif

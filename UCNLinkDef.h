@@ -32,7 +32,7 @@
 #pragma link C++ class Data+;
 #pragma link C++ class MagField+;
 #pragma link C++ class UniformMagField+;
-#pragma link C++ class ParabolicMagField+;
+//#pragma link C++ class ParabolicMagField+;
 #pragma link C++ class ConfigFile+;
 #pragma link C++ class CompositeShape+;
 #pragma link C++ class BoolNode+;
