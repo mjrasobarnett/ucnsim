@@ -2,7 +2,7 @@
 #define __KDTREE_NODE_HPP_
 
 #include <iostream>
-#include "FieldVertex.hpp"
+#include "FieldVertex.h"
 
 class NodeStack;
 

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <list>
 
-#include "KDTreeNode.hpp"
+#include "KDTreeNode.h"
 
 typedef std::pair<const KDTreeNode*, double> StackElement;
 

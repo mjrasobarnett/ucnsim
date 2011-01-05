@@ -3,8 +3,8 @@
 #include <sstream>
 #include <cmath>
 
-#include "KDTreeNode.hpp"
-#include "NodeStack.hpp"
+#include "KDTreeNode.h"
+#include "NodeStack.h"
 
 //#define PRINT_CONSTRUCTORS 
 //#define VERBOSE

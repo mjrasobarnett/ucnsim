@@ -3,7 +3,7 @@
 #include <sstream>
 #include <cmath>
 
-#include "NodeStack.hpp"
+#include "NodeStack.h"
 
 //#define PRINT_CONSTRUCTORS 
 //#define VERBOSE
