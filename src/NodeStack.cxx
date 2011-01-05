@@ -40,6 +40,9 @@ NodeStack::~NodeStack()
 bool NodeStack::operator==(const NodeStack& other) const
 {
    // -- Comparison operator.
+   // Check they have same number of elements
+   if (this->size() != other.size()) {return false;}
+   // Check that all elements are the same and in same order
    list<StackElement>::const_iterator thisIter = this->begin(), otherIter = other.begin();
    while (thisIter != this->end() && otherIter != other.end()) {
       if (thisIter->first->GetPoint() != otherIter->first->GetPoint() ||
