@@ -198,30 +198,6 @@ NodeStack* BruteForceNearestNeighbours(const vector<FieldVertex*>& pointList, co
    return neighbours;
 }
 
-/*
-//______________________________________________________________________________
-const Point& BruteForceNearestNeighbour(const vector<Point*>& pointList, const Point& point)
-{
-   // Take list of points and do a brute force search to find the nearest neighbour
-   // Return nearest neighbour
-   double currentBestDist = 0.0;
-   int currentBestPoint = 0;
-   vector<Point*>::const_iterator it;
-   for (it = pointList.begin(); it != pointList.end(); it++) {
-      double dist = (*it)->DistanceTo(point);
-      #ifdef VERBOSE
-         cout << setfill(' ') << setw(20);
-         cout << (*it)->ToString();
-         cout << "\t" << dist << endl;
-      #endif
-      if (currentBestDist == 0.0 || dist < currentBestDist) {
-         currentBestDist = dist;
-         currentBestPoint = it - pointList.begin();
-      }
-   }
-   return *(pointList[currentBestPoint]);
-}
-*/
 //______________________________________________________________________________
 void InternetExample1(vector<FieldVertex*>& points)
 {

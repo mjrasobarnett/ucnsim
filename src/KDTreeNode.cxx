@@ -261,26 +261,6 @@ bool KDTreeNode::SearchChildren(const FieldVertex& point, NodeStack& neighbours)
 }
 
 //______________________________________________________________________________
-bool KDTreeNode::IsCloserToPoint(const FieldVertex& point, const KDTreeNode& currentBest) const
-{
-   // -- Calculate whether current node is closer to point than the 'current best'
-   const double dist = this->GetPoint().DistanceTo(point);
-   double currentBestDist = currentBest.GetPoint().DistanceTo(point);
-   #ifdef VERBOSE
-      cout << "Node: " << this->GetPoint().ToString() << endl;
-      cout << "Node Dist: " << dist << "\t" << "Current Best: " << currentBestDist << endl;
-   #endif
-   if (dist < currentBestDist) {
-      // If it is closer to point than current best estimate then update estimate
-      #ifdef VERBOSE
-         cout << "Node is closer" << endl;
-      #endif
-      return true;
-   }
-   return false;
-}
-
-//______________________________________________________________________________
 void KDTreeNode::OutputGraphViz(ostream& out) const
 {
    // Output Nodes in form of 'dot' language
