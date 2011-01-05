@@ -1,16 +1,16 @@
-#ifndef __POINT_HPP_
-#define __POINT_HPP_
+#ifndef __FIELD_VERTEX_H
+#define __FIELD_VERTEX_H
 
-class Point {
+class FieldVertex {
    public:
       // constructors
-      Point();
-      Point(double x, double y, double z);
-      Point(const Point& other);
-      virtual ~Point();
+      FieldVertex();
+      FieldVertex(double x, double y, double z);
+      FieldVertex(const FieldVertex& other);
+      virtual ~FieldVertex();
       
-      bool operator==(const Point& other) const; 
-      bool operator!=(const Point& other) const {return !(*this==other);}
+      bool operator==(const FieldVertex& other) const; 
+      bool operator!=(const FieldVertex& other) const {return !(*this==other);}
 
       // getters
       double X() const {return fX;}
@@ -23,8 +23,8 @@ class Point {
       void SetZ(double z){fZ=z;}
 
       std::string ToString() const;
-      double DistanceTo(const Point& point) const;
-      double SquaredDistanceTo(const Point& point) const;
+      double DistanceTo(const FieldVertex& vertex) const;
+      double SquaredDistanceTo(const FieldVertex& vertex) const;
       
    private:
       double fX,fY,fZ;
@@ -32,17 +32,17 @@ class Point {
 
 class sortX {
 	public:
-	bool operator() (Point *a, Point *b) { return ((*a).X() < (*b).X());}
+	bool operator() (FieldVertex *a, FieldVertex *b) { return ((*a).X() < (*b).X());}
 };
 
 class sortY {
 	public:
-	bool operator() (Point *a, Point *b) { return ((*a).Y() < (*b).Y());}
+	bool operator() (FieldVertex *a, FieldVertex *b) { return ((*a).Y() < (*b).Y());}
 };
 
 class sortZ {
 	public:
-	bool operator() (Point *a, Point *b) { return ((*a).Z() < (*b).Z());}
+	bool operator() (FieldVertex *a, FieldVertex *b) { return ((*a).Z() < (*b).Z());}
 };
 
 #endif

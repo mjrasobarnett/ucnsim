@@ -51,7 +51,7 @@ KDTreeNode::~KDTreeNode()
 }
 
 //______________________________________________________________________________
-const KDTreeNode& KDTreeNode::FindNodeContaining(const Point& point) const
+const KDTreeNode& KDTreeNode::FindNodeContaining(const FieldVertex& point) const
 {
    // -- Check whether this node or its daughters are the containing
    // -- node of point
@@ -111,7 +111,7 @@ const KDTreeNode& KDTreeNode::FindNodeContaining(const Point& point) const
 }
 
 //______________________________________________________________________________
-bool KDTreeNode::CheckParentForCloserNodes(const Point& point, NodeStack& neighbours) const
+bool KDTreeNode::CheckParentForCloserNodes(const FieldVertex& point, NodeStack& neighbours) const
 {
    // -- Check to see if parent node is closer than current nearest neighbour. Determine
    // -- whether other child nodes of parent could possibly be closer, and if so, search all of them
@@ -168,7 +168,7 @@ bool KDTreeNode::CheckParentForCloserNodes(const Point& point, NodeStack& neighb
 }
 
 //______________________________________________________________________________
-bool KDTreeNode::CheckOtherSideofSplittingPlane(const Point& point, const double radius) const
+bool KDTreeNode::CheckOtherSideofSplittingPlane(const FieldVertex& point, const double radius) const
 {
    // -- Check node for whether its 'splitting hyperplane' (i.e: the axis
    // -- along which we split the tree at that node, either x, y, or z) intersects a sphere 
@@ -227,7 +227,7 @@ bool KDTreeNode::CheckOtherSideofSplittingPlane(const Point& point, const double
 }
 
 //______________________________________________________________________________
-bool KDTreeNode::SearchChildren(const Point& point, NodeStack& neighbours) const
+bool KDTreeNode::SearchChildren(const FieldVertex& point, NodeStack& neighbours) const
 {
    // -- Recursively search all children of current node to see whether any are closer to the point
    // -- than the provided 'current best' 
@@ -261,7 +261,7 @@ bool KDTreeNode::SearchChildren(const Point& point, NodeStack& neighbours) const
 }
 
 //______________________________________________________________________________
-bool KDTreeNode::IsCloserToPoint(const Point& point, const KDTreeNode& currentBest) const
+bool KDTreeNode::IsCloserToPoint(const FieldVertex& point, const KDTreeNode& currentBest) const
 {
    // -- Calculate whether current node is closer to point than the 'current best'
    const double dist = this->GetPoint().DistanceTo(point);

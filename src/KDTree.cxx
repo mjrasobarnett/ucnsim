@@ -12,7 +12,7 @@
 using namespace std;
 
 //______________________________________________________________________________
-KDTree::KDTree(vector<Point*>& pointList)
+KDTree::KDTree(vector<FieldVertex*>& pointList)
        :fRoot(NULL)
 {
    #ifdef PRINT_CONSTRUCTORS
@@ -20,7 +20,7 @@ KDTree::KDTree(vector<Point*>& pointList)
    #endif
    fRoot = this->BuildNode(pointList,0);
    #ifdef VERBOSE
-      cout << endl << "Root Point: " << fRoot->GetPoint().ToString() << endl;
+      cout << endl << "Root FieldVertex: " << fRoot->GetPoint().ToString() << endl;
    #endif
 }
 
@@ -43,7 +43,7 @@ KDTree::~KDTree()
 }
 
 //______________________________________________________________________________
-KDTreeNode* KDTree::BuildNode(vector<Point*>& points, KDTreeNode* parent, int depth)
+KDTreeNode* KDTree::BuildNode(vector<FieldVertex*>& points, KDTreeNode* parent, int depth)
 {
    if (points.empty()) {
       return NULL;
@@ -74,14 +74,14 @@ KDTreeNode* KDTree::BuildNode(vector<Point*>& points, KDTreeNode* parent, int de
       node->SetParent(parent);
       node->SetPoint(points[median]);
       // Create list of only those points before and after median
-      vector<Point*> beforeMedian, afterMedian;
+      vector<FieldVertex*> beforeMedian, afterMedian;
       // Note: copy works elements in range [first, last)
       copy(points.begin(), points.begin()+median, back_inserter(beforeMedian));
       copy(points.begin()+median+1, points.end(), back_inserter(afterMedian));
       #ifdef VERBOSE
          cout << "--------------------" << endl;
          cout << "Ordered by Axis: " << axis << endl;
-         vector<Point*>::iterator it;
+         vector<FieldVertex*>::iterator it;
          for (it=points.begin(); it<points.end(); it++) {
             cout << it - points.begin() << "\t" << (*it)->ToString() << endl;
          }
@@ -139,7 +139,7 @@ const Point& KDTree::NearestNeighbour(const Point& point) const
 */
 
 //______________________________________________________________________________
-const NodeStack* KDTree::NearestNeighbours(const Point& point, const int numberNeighbours) const
+const NodeStack* KDTree::NearestNeighbours(const FieldVertex& point, const int numberNeighbours) const
 {
    // -- For a given point, find the 'n' closest neighbouring nodes, defined by numberNeighbours.
    if (numberNeighbours < 1) {

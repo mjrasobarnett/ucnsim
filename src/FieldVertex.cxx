@@ -3,7 +3,7 @@
 #include <sstream>
 #include <cmath>
 
-#include "Point.hpp"
+#include "FieldVertex.hpp"
 
 //#define PRINT_CONSTRUCTORS 
 //#define VERBOSE
@@ -11,44 +11,44 @@
 using namespace std;
 
 //______________________________________________________________________________
-Point::Point()
+FieldVertex::FieldVertex()
       :fX(0.), fY(0.), fZ(0.)
 {
    #ifdef PRINT_CONSTRUCTORS
-      cout << "Point Default Construct" << endl;
+      cout << "FieldVertex Default Construct" << endl;
    #endif
 }
 
 //______________________________________________________________________________
-Point::Point(double x, double y, double z)
+FieldVertex::FieldVertex(double x, double y, double z)
       :fX(x), fY(y), fZ(z)
 {
    #ifdef PRINT_CONSTRUCTORS
-      cout << "Point Construct" << endl;
+      cout << "FieldVertex Construct" << endl;
    #endif
 }
 
 //______________________________________________________________________________
-Point::Point(const Point& other)
+FieldVertex::FieldVertex(const FieldVertex& other)
       :fX(other.fX),
        fY(other.fY),
        fZ(other.fZ)
 {
    #ifdef PRINT_CONSTRUCTORS
-      cout << "Point Copy Construct" << endl;
+      cout << "FieldVertex Copy Construct" << endl;
    #endif
 }
 
 //______________________________________________________________________________
-Point::~Point()
+FieldVertex::~FieldVertex()
 {
    #ifdef PRINT_CONSTRUCTORS
-      cout << "Point Destruct" << endl;
+      cout << "FieldVertex Destruct" << endl;
    #endif
 }
 
 //______________________________________________________________________________
-bool Point::operator==(const Point& other) const
+bool FieldVertex::operator==(const FieldVertex& other) const
 {
    if (other.X() == fX && other.Y() == fY && other.Z() == fZ){
       return true;
@@ -58,7 +58,7 @@ bool Point::operator==(const Point& other) const
 }
 
 //______________________________________________________________________________
-string Point::ToString() const 
+string FieldVertex::ToString() const 
 {
    ostringstream oss;
    oss.precision(2);
@@ -67,16 +67,16 @@ string Point::ToString() const
 }
 
 //______________________________________________________________________________
-double Point::SquaredDistanceTo(const Point& point) const
+double FieldVertex::SquaredDistanceTo(const FieldVertex& vertex) const
 {
-   double xdist = pow((point.X() - this->X()), 2.0);
-   double ydist = pow((point.Y() - this->Y()), 2.0);
-   double zdist = pow((point.Z() - this->Z()), 2.0);
+   double xdist = pow((vertex.X() - this->X()), 2.0);
+   double ydist = pow((vertex.Y() - this->Y()), 2.0);
+   double zdist = pow((vertex.Z() - this->Z()), 2.0);
    return xdist + ydist + zdist;
 }
 
 //______________________________________________________________________________
-double Point::DistanceTo(const Point& point) const
+double FieldVertex::DistanceTo(const FieldVertex& vertex) const
 {
-   return sqrt(SquaredDistanceTo(point));
+   return sqrt(SquaredDistanceTo(vertex));
 }

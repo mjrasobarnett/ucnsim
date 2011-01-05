@@ -4,25 +4,25 @@
 #include <iostream>
 #include <vector>
 
-#include "Point.hpp"
+#include "FieldVertex.hpp"
 #include "KDTreeNode.hpp"
 #include "NodeStack.hpp"
 
 class KDTree {
    public:
-      KDTree(std::vector<Point*>& pointList);
+      KDTree(std::vector<FieldVertex*>& pointList);
       KDTree(const KDTree& other);
       virtual ~KDTree();
       
-      const Point& NearestNeighbour(const Point& point) const;
-      const NodeStack* NearestNeighbours(const Point& point, const int numberNeighbours) const;
+      const FieldVertex& NearestNeighbour(const FieldVertex& vertex) const;
+      const NodeStack* NearestNeighbours(const FieldVertex& vertex, const int numNeighbours) const;
       
       void OutputGraphViz(std::ostream& out) const;
       
    private:
       KDTreeNode *fRoot;
       
-      KDTreeNode* BuildNode(std::vector<Point*>& pointList, KDTreeNode* parent, int depth=0);
+      KDTreeNode* BuildNode(std::vector<FieldVertex*>& pointList, KDTreeNode* parent, int depth=0);
       
 };
 
