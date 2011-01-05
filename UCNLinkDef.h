@@ -26,7 +26,7 @@
 #pragma link C++ class Anomalous+;
 #pragma link C++ class Lost+;
 #pragma link C++ class GravField+;
-#pragma link C++ class DataParser+;
+#pragma link C++ class FileParser+;
 #pragma link C++ class Parabola+;
 #pragma link C++ class Polynomial+;
 #pragma link C++ class Data+;

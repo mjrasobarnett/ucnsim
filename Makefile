@@ -54,8 +54,8 @@ STATEO = src/State.$(ObjSuf) UCNDict.$(ObjSuf)
 STATES = src/State.$(SrcSuf) UCNDict.$(SrcSuf)
 SPINO = src/Spin.$(ObjSuf) UCNDict.$(ObjSuf)
 SPINS = src/Spin.$(SrcSuf) UCNDict.$(SrcSuf)
-DATAPARSERO = src/DataParser.$(ObjSuf) UCNDict.$(ObjSuf)
-DATAPARSERS = src/DatParser.$(SrcSuf) UCNDict.$(SrcSuf)
+FILEPARSERO = src/FileParser.$(ObjSuf) UCNDict.$(ObjSuf)
+FILEPARSERS = src/FileParser.$(SrcSuf) UCNDict.$(SrcSuf)
 PARABOLAO = src/Parabola.$(ObjSuf) UCNDict.$(ObjSuf)
 PARABOLAS = src/Parabola.$(SrcSuf) UCNDict.$(SrcSuf)
 POLYNOMIALO = src/Polynomial.$(ObjSuf) UCNDict.$(ObjSuf)
@@ -108,7 +108,7 @@ UCNSO = lib/libUCN.$(DllSuf)
 UCNLIB = -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lGeom -lEG -lm -lMathMore -lGui -lRGL -lGed
 #------------------------------------------------------------------------------
 OBJS = $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
-$(STATEO) $(SPINO) $(DATAPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
+$(STATEO) $(SPINO) $(FILEPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
 $(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
 $(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) $(INITIALCONFIGO) \
 $(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO) $(FIELDMAPO) $(KDTREEO) $(KDTREENODEO) \
@@ -202,7 +202,7 @@ GRAVFIELDO: 				include/GravField.h
 PARTICLEO: 					include/Particle.h
 STATEO: 						include/State.h
 SPINO: 						include/Spin.h
-DATAPARSERO: 				include/DataParser.h
+FILEPARSERO: 				include/FileParser.h
 PARABOLAO: 					include/Parabola.h
 POLYNOMIALO: 				include/Polynomial.h
 EXPERIMENTO: 				include/Experiment.h
@@ -231,7 +231,7 @@ VERTEXSTACKO:					include/VertexStack.h
 
 UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/Material.h include/GravField.h include/Particle.h \
-								include/State.h include/Spin.h include/DataParser.h \
+								include/State.h include/Spin.h include/FileParser.h \
 								include/Polynomial.h include/Parabola.h \
 								include/Experiment.h include/Data.h include/MagField.h \
 								include/UniformMagField.h include/ParabolicMagField.h \
