@@ -41,16 +41,6 @@ FieldMap::~FieldMap()
 }
 
 //______________________________________________________________________________
-Bool_t FieldMap::ReadFile(const std::string& /*filename*/)
-{
-   // Take input file and import field map data.
-   
-   
-   return true;
-}
-
-
-//______________________________________________________________________________
 // MagFieldMap - 
 //
 //______________________________________________________________________________
@@ -103,3 +93,11 @@ Bool_t MagFieldMap::Interact(Particle& /*particle*/, const Double_t /*stepTime*/
    return true;
 }
 
+//______________________________________________________________________________
+Bool_t MagFieldMap::ReadFile(const std::string& /*filename*/)
+{
+   // Take input file and import field map data.
+   
+   
+   return true;
+}
