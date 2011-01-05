@@ -1,6 +1,8 @@
 #ifndef __FIELD_VERTEX_H
 #define __FIELD_VERTEX_H
 
+#include "TVector3.h"
+
 class FieldVertex {
    public:
       // constructors
@@ -13,21 +15,21 @@ class FieldVertex {
       bool operator!=(const FieldVertex& other) const {return !(*this==other);}
 
       // getters
-      double X() const {return fX;}
-      double Y() const {return fY;}
-      double Z() const {return fZ;}
+      double X() const {return fPos.X();}
+      double Y() const {return fPos.Y();}
+      double Z() const {return fPos.Z();}
 
       // setters
-      void SetX(double x){fX=x;}
-      void SetY(double y){fY=y;}
-      void SetZ(double z){fZ=z;}
+      void SetX(double x) {fPos.SetX(x);}
+      void SetY(double y) {fPos.SetY(y);}
+      void SetZ(double z) {fPos.SetZ(z);}
 
       std::string ToString() const;
       double DistanceTo(const FieldVertex& vertex) const;
       double SquaredDistanceTo(const FieldVertex& vertex) const;
       
    private:
-      double fX,fY,fZ;
+      TVector3 fPos;
 };
 
 class sortX {
