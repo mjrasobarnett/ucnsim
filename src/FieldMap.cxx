@@ -82,12 +82,6 @@ MagFieldMap::~MagFieldMap()
 }
 
 //______________________________________________________________________________
-Bool_t MagFieldMap::Contains(const TVector3& /*point*/) const
-{
-   return true;
-}
-
-//______________________________________________________________________________
 Bool_t MagFieldMap::Interact(Particle& /*particle*/, const Double_t /*stepTime*/) const
 {
    return true;
