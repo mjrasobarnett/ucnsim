@@ -6,7 +6,9 @@
 
 #include "TNamed.h"
 #include "TVector3.h"
-#include "Particle.h"
+#include "TGeoShape.h"
+#include "TGeoMatrix.h"
+
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////
@@ -14,20 +16,21 @@
 // MagField - ABC for magnetic field.                                 //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+class Particle;
 
 class MagField : public TNamed {
-
-protected:
+private:
+   // Field Extent -- a virtual volume that defines the extent of this field in the geometry
+   const TGeoShape* fFieldShape;
+   const TGeoMatrix* fFieldMatrix;
    
 public:
    MagField();
-   MagField(const std::string& name);
+   MagField(const std::string& name, const TGeoShape* shape, const TGeoMatrix* matrix);
    MagField(const MagField&);
-   MagField& operator=(const MagField&);
    virtual ~MagField();
    
-   virtual Bool_t Contains(const TVector3& point) const = 0;
-   
+   virtual Bool_t Contains(const TVector3& point) const;
    virtual Bool_t Interact(Particle& particle, const Double_t stepTime) const = 0;
    
    ClassDef(MagField, 1)              // Abstract base Mag field class
