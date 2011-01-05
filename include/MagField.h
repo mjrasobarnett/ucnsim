@@ -24,6 +24,9 @@ private:
    const TGeoShape* fFieldShape;
    const TGeoMatrix* fFieldMatrix;
    
+protected:
+   TVector3& ConvertToLocalFrame(const TVector3& point) const; 
+   
 public:
    MagField();
    MagField(const std::string& name, const TGeoShape* shape, const TGeoMatrix* matrix);

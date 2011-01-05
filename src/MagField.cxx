@@ -60,3 +60,15 @@ Bool_t MagField::Contains(const TVector3& point) const
    // Check and return whether its contained
    return fFieldShape->Contains(localPoint);
 }
+
+//______________________________________________________________________________
+TVector3& MagField::ConvertToLocalFrame(const TVector3& point) const
+{
+   // -- Convert supplied point to local frame
+   Double_t masterPoint[3] = {point[0], point[1], point[2]};
+   Double_t localPoint[3] = {0.,0.,0.};
+   fFieldMatrix->MasterToLocal(masterPoint, localPoint);
+   TVector3* localpoint = new TVector3(localPoint[0],localPoint[1],localPoint[2]);
+   return *localpoint;
+}
+
