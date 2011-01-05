@@ -25,7 +25,7 @@ void InternetExample1(vector<FieldVertex*>& points);
 
 //______________________________________________________________________________
 int main(int /*argc*/, char ** /*argv*/) {
-   ofstream out("benchmark_data.txt");
+   ofstream out("temp/benchmark_data.txt");
    out << "Num Points" << "\t" << "Brute Force Time" << "\t" << "Tree Search Time" << "\t";
    out << "Std Dev Brute Force" << "\t" << "Std Dev Tree Search" << endl;
    const int repetitions = 10;
