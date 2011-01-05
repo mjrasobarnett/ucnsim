@@ -96,8 +96,8 @@ KDTREENODEO = src/KDTreeNode.$(ObjSuf) UCNDict.$(ObjSuf)
 KDTREENODES = src/KDTreeNode.$(SrcSuf) UCNDict.$(SrcSuf)
 FIELDVERTEXO = src/FieldVertex.$(ObjSuf) UCNDict.$(ObjSuf)
 FIELDVERTEXS = src/FieldVertex.$(SrcSuf) UCNDict.$(SrcSuf)
-NODESTACKO = src/NodeStack.$(ObjSuf) UCNDict.$(ObjSuf)
-NODESTACKS = src/NodeStack.$(SrcSuf) UCNDict.$(SrcSuf)
+VERTEXSTACKO = src/VertexStack.$(ObjSuf) UCNDict.$(ObjSuf)
+VERTEXSTACKS = src/VertexStack.$(SrcSuf) UCNDict.$(SrcSuf)
 
 
 #------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ $(STATEO) $(SPINO) $(DATAPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(D
 $(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
 $(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) $(INITIALCONFIGO) \
 $(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO) $(FIELDMAPO) $(KDTREEO) $(KDTREENODEO) \
-$(FIELDVERTEXO) $(NODESTACKO)
+$(FIELDVERTEXO) $(VERTEXSTACKO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(PLOT_DATA) $(SANDBOX) \
 $(DRAW_TRACKS) $(TEST_KDTREE)
@@ -227,7 +227,7 @@ FIELDMAPO:					include/FieldMap.h
 KDTREEO:						include/KDTree.h
 KDTREENODEO:				include/KDTreeNode.h
 FIELDVERTEXO:				include/FieldVertex.h
-NODESTACKO:					include/NodeStack.h
+VERTEXSTACKO:					include/VertexStack.h
 
 UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/Material.h include/GravField.h include/Particle.h \
@@ -241,7 +241,7 @@ UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/InitialConfig.h include/RunConfig.h include/Observer.h \
 								include/Observables.h include/Track.h include/FieldMap.h \
 								include/KDTree.h include/KDTreeNode.h include/FieldVertex.h \
-								include/NodeStack.h $(LINKDEF)
+								include/VertexStack.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 

@@ -55,6 +55,6 @@
 #pragma link C++ class KDTree+;
 #pragma link C++ class KDTreeNode+;
 #pragma link C++ class FieldVertex+;
-#pragma link C++ class NodeStack+;
+#pragma link C++ class VertexStack+;
 
 #endif
