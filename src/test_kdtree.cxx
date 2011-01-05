@@ -11,6 +11,7 @@
 #include "KDTree.h"
 #include "KDTreeNode.h"
 #include "FieldVertex.h"
+#include "VertexStack.h"
 
 #include "TRandom.h"
 
@@ -19,8 +20,7 @@ using namespace std;
 //#define VERBOSE
 
 void BenchMark(const int numPoints, const int repetitions, const int numNeighbours, ostream& out); 
-NodeStack* BruteForceNearestNeighbours(const vector<FieldVertex*>& pointList, const FieldVertex& point, const int nearestNeighbours);
-
+VertexStack* BruteForceNearestNeighbours(const vector<FieldVertex*>& pointList, const FieldVertex& point, const int nearestNeighbours);
 void InternetExample1(vector<FieldVertex*>& points);
 
 //______________________________________________________________________________
@@ -99,7 +99,7 @@ void BenchMark(const int numPoints, const int repetitions, const int numNeighbou
          cout << "--------------------" << endl;
          cout << "Performing Brute Force Search..." << endl;
       #endif
-      const NodeStack* bruteList = BruteForceNearestNeighbours(points, searchPoint, numNeighbours);
+      const VertexStack* bruteList = BruteForceNearestNeighbours(points, searchPoint, numNeighbours);
       // Output time to build tree
       end = clock();
       const double bruteForceTime = (double)(end-start)/CLOCKS_PER_SEC;
@@ -111,7 +111,7 @@ void BenchMark(const int numPoints, const int repetitions, const int numNeighbou
          cout << "--------------------" << endl;
          cout << "Performing Tree-based Search..." << endl;
       #endif
-      const NodeStack* treeList = tree.NearestNeighbours(searchPoint, numNeighbours);
+      const VertexStack* treeList = tree.NearestNeighbours(searchPoint, numNeighbours);
       // calculate time to build tree
       end = clock();
       const double treeSearchTime = (double)(end-start)/CLOCKS_PER_SEC;
@@ -178,11 +178,11 @@ void BenchMark(const int numPoints, const int repetitions, const int numNeighbou
 }
 
 //______________________________________________________________________________
-NodeStack* BruteForceNearestNeighbours(const vector<FieldVertex*>& pointList, const FieldVertex& point, const int nearestNeighbours)
+VertexStack* BruteForceNearestNeighbours(const vector<FieldVertex*>& pointList, const FieldVertex& point, const int nearestNeighbours)
 {
    // Take list of points and do a brute force search to find the nearest neighbour
    // Return nearest neighbour
-   NodeStack* neighbours = new NodeStack(nearestNeighbours);
+   VertexStack* neighbours = new VertexStack(nearestNeighbours);
    vector<FieldVertex*>::const_iterator it;
    for (it = pointList.begin(); it != pointList.end(); it++) {
       double dist = (*it)->DistanceTo(point);
@@ -191,9 +191,7 @@ NodeStack* BruteForceNearestNeighbours(const vector<FieldVertex*>& pointList, co
          cout << (*it)->ToString();
          cout << "\t" << dist << endl;
       #endif
-      KDTreeNode* node = new KDTreeNode();
-      node->SetPoint(*it);
-      neighbours->AddNode(node,dist);
+      neighbours->ExamineVertex(**it,dist);
    }
    return neighbours;
 }

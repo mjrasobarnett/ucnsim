@@ -107,14 +107,14 @@ KDTreeNode* KDTree::BuildNode(vector<FieldVertex*>& points, KDTreeNode* parent, 
 }
 
 //______________________________________________________________________________
-const NodeStack* KDTree::NearestNeighbours(const FieldVertex& point, const int numberNeighbours) const
+const VertexStack* KDTree::NearestNeighbours(const FieldVertex& point, const int numberNeighbours) const
 {
    // -- For a given point, find the 'n' closest neighbouring nodes, defined by numberNeighbours.
    if (numberNeighbours < 1) {
       throw runtime_error("Invalid number of nearest numbers requested");
    }
    // Define the storage for the 'n'-nearest-neighbours
-   NodeStack* neighbours = new NodeStack(numberNeighbours);
+   VertexStack* neighbours = new VertexStack(numberNeighbours);
    #ifdef VERBOSE
       cout << endl << "--------------------" << endl;
       cout << "Search for " << numberNeighbours << " nearest neighbours of Point : ";
@@ -131,7 +131,7 @@ const NodeStack* KDTree::NearestNeighbours(const FieldVertex& point, const int n
       cout << "Distance to Point: " << dist << endl;
    #endif
    // Add First guess to list of nearest neighbours
-   neighbours->AddNode(&firstGuess, dist);
+   neighbours->ExamineVertex(firstGuess.GetPoint(), dist);
    // Now traverse back up tree looking for if any other nodes are closer
    firstGuess.CheckParentForCloserNodes(point, *neighbours);
    #ifdef VERBOSE

@@ -6,7 +6,7 @@
 
 #include "FieldVertex.h"
 #include "KDTreeNode.h"
-#include "NodeStack.h"
+#include "VertexStack.h"
 
 class KDTree {
    public:
@@ -15,7 +15,7 @@ class KDTree {
       virtual ~KDTree();
       
       const FieldVertex& NearestNeighbour(const FieldVertex& vertex) const;
-      const NodeStack* NearestNeighbours(const FieldVertex& vertex, const int numNeighbours) const;
+      const VertexStack* NearestNeighbours(const FieldVertex& vertex, const int numNeighbours) const;
       
       void OutputGraphViz(std::ostream& out) const;
       

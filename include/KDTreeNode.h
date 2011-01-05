@@ -4,7 +4,7 @@
 #include <iostream>
 #include "FieldVertex.h"
 
-class NodeStack;
+class VertexStack;
 
 class KDTreeNode {
 public:
@@ -23,7 +23,7 @@ public:
    double DistanceTo(const FieldVertex& point) const {return fPoint->DistanceTo(point);}
    
    const KDTreeNode& FindNodeContaining(const FieldVertex& point) const;
-   bool CheckParentForCloserNodes(const FieldVertex& point, NodeStack& neighbours) const;
+   bool CheckParentForCloserNodes(const FieldVertex& point, VertexStack& neighbours) const;
    
    void OutputGraphViz(std::ostream& out) const;
    
@@ -39,8 +39,7 @@ private:
    const KDTreeNode* GetRightChild() const {return fRight;}
    
    bool CheckOtherSideofSplittingPlane(const FieldVertex& point, const double radius) const;
-   bool SearchChildren(const FieldVertex& point, NodeStack& neighbours) const;
-   bool IsCloserToPoint(const FieldVertex& point, const KDTreeNode& currentBest) const;
+   bool SearchChildren(const FieldVertex& point, VertexStack& neighbours) const;
 };
 
 #endif
