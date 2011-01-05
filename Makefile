@@ -87,6 +87,15 @@ TRACKO = src/Track.$(ObjSuf) UCNDict.$(ObjSuf)
 TRACKS = src/Track.$(SrcSuf) UCNDict.$(SrcSuf)
 FIELDMAPO = src/FieldMap.$(ObjSuf) UCNDict.$(ObjSuf)
 FIELDMAPS = src/FieldMap.$(SrcSuf) UCNDict.$(SrcSuf)
+KDTREEO = src/KDTree.$(ObjSuf) UCNDict.$(ObjSuf)
+KDTREES = src/KDTree.$(SrcSuf) UCNDict.$(SrcSuf)
+KDTREENODEO = src/KDTreeNode.$(ObjSuf) UCNDict.$(ObjSuf)
+KDTREENODES = src/KDTreeNode.$(SrcSuf) UCNDict.$(SrcSuf)
+FIELDVERTEXO = src/FieldVertex.$(ObjSuf) UCNDict.$(ObjSuf)
+FIELDVERTEXS = src/FieldVertex.$(SrcSuf) UCNDict.$(SrcSuf)
+NODESTACKO = src/NodeStack.$(ObjSuf) UCNDict.$(ObjSuf)
+NODESTACKS = src/NodeStack.$(SrcSuf) UCNDict.$(SrcSuf)
+
 
 #------------------------------------------------------------------------------
 # my library with my classes
@@ -100,7 +109,8 @@ $(DRAW_TRACKSO) $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO)
 $(STATEO) $(SPINO) $(DATAPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
 $(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
 $(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) $(INITIALCONFIGO) \
-$(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO) $(FIELDMAPO)
+$(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO) $(FIELDMAPO) $(KDTREEO) $(KDTREENODEO) \
+$(FIELDVERTEXO) $(NODESTACKO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(PLOT_DATA) $(SANDBOX) \
 $(DRAW_TRACKS) 
@@ -156,7 +166,7 @@ $(UCNSO):		$(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) \
 					$(FIELDMANAGERO) $(CONFIGFILEO) $(COMPOSITESHAPEO) \
 					$(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) \
 					$(INITIALCONFIGO) $(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO) \
-					$(FIELDMAPO)
+					$(FIELDMAPO) $(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(NODESTACKO)
 
 ifeq ($(ARCH),aix)
 		/usr/ibmcxx/bin/makeC++SharedLib $(OutPutOpt) $@ $(LIBS) -p 0 $^
@@ -211,6 +221,10 @@ OBSERVERO: 					include/Observer.h
 OBSERVABLESO: 				include/Observables.h
 TRACKO:						include/Track.h
 FIELDMAPO:					include/FieldMap.h
+KDTREEO:						include/KDTree.h
+KDTREENODEO:				include/KDTreeNode.h
+FIELDVERTEXO:				include/FieldVertex.h
+NODESTACKO:					include/NodeStack.h
 
 UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/Material.h include/GravField.h include/Particle.h \
@@ -222,7 +236,9 @@ UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/CompositeShape.h include/BoolNode.h \
 								include/Volume.h include/Element.h include/MagFieldManager.h \
 								include/InitialConfig.h include/RunConfig.h include/Observer.h \
-								include/Observables.h include/Track.h include/FieldMap.h $(LINKDEF)
+								include/Observables.h include/Track.h include/FieldMap.h \
+								include/KDTree.h include/KDTreeNode.h include/FieldVertex.h \
+								include/NodeStack.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 

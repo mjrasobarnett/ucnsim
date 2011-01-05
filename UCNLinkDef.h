@@ -52,5 +52,9 @@
 #pragma link C++ class Vertex+;
 #pragma link C++ class FieldMap+;
 #pragma link C++ class MagFieldMap+;
+#pragma link C++ class KDTree+;
+#pragma link C++ class KDTreeNode+;
+#pragma link C++ class FieldVertex+;
+#pragma link C++ class NodeStack+;
 
 #endif
