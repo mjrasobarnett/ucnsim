@@ -52,7 +52,7 @@ void BenchMark(const int numPoints, const int repetitions, const int numNeighbou
    // -- Generate random points
    vector<FieldVertex*> points;
    for (int i=0; i<numPoints; i++) {
-      points.push_back(new FieldVertex(gRandom->Rndm(),gRandom->Rndm(),gRandom->Rndm()));
+      points.push_back(new FieldVertex(gRandom->Rndm(),gRandom->Rndm(),gRandom->Rndm(),0,0,0));
    }
    // Print points
    #ifdef VERBOSE
@@ -86,7 +86,7 @@ void BenchMark(const int numPoints, const int repetitions, const int numNeighbou
    vector<double> bruteForceTimes;
    vector<double> treeSearchTimes;
    for (int iter = 0; iter < repetitions; iter++) {
-      FieldVertex searchPoint(gRandom->Rndm(),gRandom->Rndm(),gRandom->Rndm());
+      FieldVertex searchPoint(gRandom->Rndm(),gRandom->Rndm(),gRandom->Rndm(),0,0,0);
       #ifdef VERBOSE
          cout << "--------------------" << endl;
          cout << "Search Point: " << searchPoint.ToString() << endl;
@@ -200,13 +200,13 @@ VertexStack* BruteForceNearestNeighbours(const vector<FieldVertex*>& pointList, 
 void InternetExample1(vector<FieldVertex*>& points)
 {
  //http://syntaxandsemantic.blogspot.com/2010/03/knn-algorithm-and-kd-trees.html
-   points.push_back(new FieldVertex(5,9,10));
-   points.push_back(new FieldVertex(2,6,8));
-   points.push_back(new FieldVertex(14,3,7));
-   points.push_back(new FieldVertex(3,4,9));
-   points.push_back(new FieldVertex(4,13,5));
-   points.push_back(new FieldVertex(8,2,1));
-   points.push_back(new FieldVertex(7,9,6));
-   points.push_back(new FieldVertex(4,1,6));
-   points.push_back(new FieldVertex(2,2,10));
+   points.push_back(new FieldVertex(5,9,10, 0,0,0));
+   points.push_back(new FieldVertex(2,6,8, 0,0,0));
+   points.push_back(new FieldVertex(14,3,7, 0,0,0));
+   points.push_back(new FieldVertex(3,4,9, 0,0,0));
+   points.push_back(new FieldVertex(4,13,5, 0,0,0));
+   points.push_back(new FieldVertex(8,2,1, 0,0,0));
+   points.push_back(new FieldVertex(7,9,6, 0,0,0));
+   points.push_back(new FieldVertex(4,1,6, 0,0,0));
+   points.push_back(new FieldVertex(2,2,10, 0,0,0));
 }

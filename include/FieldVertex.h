@@ -1,11 +1,13 @@
 #ifndef __FIELD_VERTEX_H
 #define __FIELD_VERTEX_H
 
+#include "TVector3.h"
+
 class FieldVertex {
    public:
       // constructors
       FieldVertex();
-      FieldVertex(double x, double y, double z);
+      FieldVertex(double x, double y, double z, double bx, double by, double bz);
       FieldVertex(const FieldVertex& other);
       virtual ~FieldVertex();
       
@@ -28,6 +30,7 @@ class FieldVertex {
       
    private:
       double fX,fY,fZ;
+      TVector3 fBField;
 };
 
 class sortX {
