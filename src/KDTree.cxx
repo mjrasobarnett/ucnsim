@@ -106,38 +106,6 @@ KDTreeNode* KDTree::BuildNode(vector<FieldVertex*>& points, KDTreeNode* parent, 
    }  
 }
 
-/*
-//______________________________________________________________________________
-const Point& KDTree::NearestNeighbour(const Point& point) const
-{
-   // Find the nearest neighbouring point to the supplied point
-   #ifdef VERBOSE
-      cout << endl << "--------------------" << endl;
-      cout << "Search for nearest neightbour of Point : ";
-      cout << point.ToString() << endl;
-   #endif
-   // Find leaf node that contains the point. Store as first guess 
-   const KDTreeNode& firstGuess = fRoot->FindNodeContaining(point);
-   // Calculate distance from point to first guess nearest neighbour
-   double dist = firstGuess.GetPoint().DistanceTo(point);
-   #ifdef VERBOSE
-      cout << endl << "--------------------" << endl;
-      cout << "First Guess : ";
-      cout << firstGuess.GetPoint().ToString() << endl;
-      cout << "Distance to Point: " << dist << endl;
-   #endif
-   // Now traverse back up tree looking for if any other nodes are closer
-   const KDTreeNode& nearestNode = firstGuess.CheckParentForCloserNodes(point, firstGuess);
-   #ifdef VERBOSE
-      cout << "--------------------" << endl;
-      cout << "Nearest Node : ";
-      cout << nearestNode.GetPoint().ToString() << endl;
-      cout << "Distance to Point: " << nearestNode.GetPoint().DistanceTo(point) << endl;
-   #endif
-   return nearestNode.GetPoint();
-}
-*/
-
 //______________________________________________________________________________
 const NodeStack* KDTree::NearestNeighbours(const FieldVertex& point, const int numberNeighbours) const
 {
