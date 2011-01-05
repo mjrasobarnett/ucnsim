@@ -25,7 +25,7 @@ public:
    FieldMap& operator=(const FieldMap&);
    virtual ~FieldMap();
    
-   Bool_t ReadFile(const std::string& filename);
+   virtual Bool_t ReadFile(const std::string& filename);
    
    ClassDef(FieldMap, 1)              // Field Map class
 };
@@ -46,8 +46,8 @@ public:
    MagFieldMap& operator=(const MagFieldMap&);
    virtual ~MagFieldMap();
    
-   virtual Bool_t Contains(const TVector3& point) const = 0;
-   virtual Bool_t Interact(Particle& particle, const Double_t stepTime) const = 0;
+   virtual Bool_t Contains(const TVector3& point) const;
+   virtual Bool_t Interact(Particle& particle, const Double_t stepTime) const;
    
    ClassDef(MagFieldMap, 1)              // Mag Field Map class
 };

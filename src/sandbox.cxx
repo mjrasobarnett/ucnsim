@@ -17,6 +17,7 @@
 #include "UniformMagField.h"
 #include "MagFieldManager.h"
 #include "Data.h"
+#include "FieldMap.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -24,14 +25,43 @@
 using namespace std;
 
 int TestFieldManager();
+bool TestFieldMap();
 
 // -------------------------------------------------------------------------------------- 
 Int_t main(Int_t /*argc*/,Char_t ** /*argv*/)
 {
+   TestFieldMap();
    
    return EXIT_SUCCESS;
 }
 
+//__________________________________________________________________________
+bool TestFieldMap()
+{
+   // Create a Uniform Magnetic field and write it to file
+//   MagFieldManager* magFieldManager = new MagFieldManager();
+   string filename = "$(UCN_GEOM)/ramseycell_fieldmap.txt";
+   MagFieldMap magFieldMap;
+   magFieldMap.ReadFile(filename);
+   
+   // Add field to magfield manager
+//   magFieldManager->AddField(field);
+   
+   // -- Write magfieldmanager to geometry file
+/*   const char *magFileName = "$(UCN_DIR)/geom/ramseycell_fields.root";
+   TFile *f = TFile::Open(magFileName,"recreate");
+   if (!f || f->IsZombie()) {
+     Error("Export","Cannot open file: %s", magFileName);
+     return kFALSE;
+   }
+   magFieldManager->Write(magFieldManager->GetName());
+   f->ls();
+   f->Close();
+   if (magFieldManager) delete magFieldManager;
+   magFieldManager = 0;
+*/
+   return kTRUE;
+}
 
 // -------------------------------------------------------------------------------------- 
 int TestFieldManager()
