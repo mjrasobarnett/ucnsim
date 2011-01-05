@@ -8,22 +8,23 @@
 #include <string>
 #include <cassert>
 
-#include "KDTree.hpp"
-#include "KDTreeNode.hpp"
-#include "Point.hpp"
-#include "MWC.hpp"
+#include "KDTree.h"
+#include "KDTreeNode.h"
+#include "FieldVertex.h"
+
+#include "TRandom.h"
 
 using namespace std;
 
 //#define VERBOSE
 
 void BenchMark(const int numPoints, const int repetitions, const int numNeighbours, ostream& out); 
-NodeStack* BruteForceNearestNeighbours(const vector<Point*>& pointList, const Point& point, const int nearestNeighbours);
+NodeStack* BruteForceNearestNeighbours(const vector<FieldVertex*>& pointList, const FieldVertex& point, const int nearestNeighbours);
 
-void InternetExample1(vector<Point*>& points);
+void InternetExample1(vector<FieldVertex*>& points);
 
 //______________________________________________________________________________
-int main(int argc, char **argv) {
+int main(int /*argc*/, char ** /*argv*/) {
    ofstream out("benchmark_data.txt");
    out << "Num Points" << "\t" << "Brute Force Time" << "\t" << "Tree Search Time" << "\t";
    out << "Std Dev Brute Force" << "\t" << "Std Dev Tree Search" << endl;
@@ -49,16 +50,15 @@ void BenchMark(const int numPoints, const int repetitions, const int numNeighbou
    #endif
    //-----------------------------------------------------------
    // -- Generate random points
-   MWC rng;
-   vector<Point*> points;
+   vector<FieldVertex*> points;
    for (int i=0; i<numPoints; i++) {
-      points.push_back(new Point(rng.rnd(),rng.rnd(),rng.rnd()));
+      points.push_back(new FieldVertex(gRandom->Rndm(),gRandom->Rndm(),gRandom->Rndm()));
    }
    // Print points
    #ifdef VERBOSE
       cout << "--------------------" << endl;
       cout << "Input Points" << endl;
-      vector<Point*>::iterator it;
+      vector<FieldVertex*>::iterator it;
       for (it = points.begin(); it != points.end(); it++) {
          cout << it - points.begin() << "\t" << (*it)->ToString() << endl;
       }
@@ -86,7 +86,7 @@ void BenchMark(const int numPoints, const int repetitions, const int numNeighbou
    vector<double> bruteForceTimes;
    vector<double> treeSearchTimes;
    for (int iter = 0; iter < repetitions; iter++) {
-      Point searchPoint(rng.rnd(),rng.rnd(),rng.rnd());
+      FieldVertex searchPoint(gRandom->Rndm(),gRandom->Rndm(),gRandom->Rndm());
       #ifdef VERBOSE
          cout << "--------------------" << endl;
          cout << "Search Point: " << searchPoint.ToString() << endl;
@@ -178,12 +178,12 @@ void BenchMark(const int numPoints, const int repetitions, const int numNeighbou
 }
 
 //______________________________________________________________________________
-NodeStack* BruteForceNearestNeighbours(const vector<Point*>& pointList, const Point& point, const int nearestNeighbours)
+NodeStack* BruteForceNearestNeighbours(const vector<FieldVertex*>& pointList, const FieldVertex& point, const int nearestNeighbours)
 {
    // Take list of points and do a brute force search to find the nearest neighbour
    // Return nearest neighbour
    NodeStack* neighbours = new NodeStack(nearestNeighbours);
-   vector<Point*>::const_iterator it;
+   vector<FieldVertex*>::const_iterator it;
    for (it = pointList.begin(); it != pointList.end(); it++) {
       double dist = (*it)->DistanceTo(point);
       #ifdef VERBOSE
@@ -223,16 +223,16 @@ const Point& BruteForceNearestNeighbour(const vector<Point*>& pointList, const P
 }
 */
 //______________________________________________________________________________
-void InternetExample1(vector<Point*>& points)
+void InternetExample1(vector<FieldVertex*>& points)
 {
  //http://syntaxandsemantic.blogspot.com/2010/03/knn-algorithm-and-kd-trees.html
-   points.push_back(new Point(5,9,10));
-   points.push_back(new Point(2,6,8));
-   points.push_back(new Point(14,3,7));
-   points.push_back(new Point(3,4,9));
-   points.push_back(new Point(4,13,5));
-   points.push_back(new Point(8,2,1));
-   points.push_back(new Point(7,9,6));
-   points.push_back(new Point(4,1,6));
-   points.push_back(new Point(2,2,10));
+   points.push_back(new FieldVertex(5,9,10));
+   points.push_back(new FieldVertex(2,6,8));
+   points.push_back(new FieldVertex(14,3,7));
+   points.push_back(new FieldVertex(3,4,9));
+   points.push_back(new FieldVertex(4,13,5));
+   points.push_back(new FieldVertex(8,2,1));
+   points.push_back(new FieldVertex(7,9,6));
+   points.push_back(new FieldVertex(4,1,6));
+   points.push_back(new FieldVertex(2,2,10));
 }

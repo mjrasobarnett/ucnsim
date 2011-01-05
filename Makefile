@@ -25,6 +25,9 @@ PLOT_DATA = bin/plot_data$(ExeSuf)
 DRAW_TRACKSS = src/draw_tracks.$(SrcSuf)
 DRAW_TRACKSO = src/draw_tracks.$(ObjSuf)
 DRAW_TRACKS = bin/draw_tracks$(ExeSuf)
+TEST_KDTREES = src/test_kdtree.$(SrcSuf)
+TEST_KDTREEO = src/test_kdtree.$(ObjSuf)
+TEST_KDTREE = bin/test_kdtree$(ExeSuf)
 
 #------------------------------------------------------------------------------
 # my classes
@@ -105,7 +108,7 @@ UCNSO = lib/libUCN.$(DllSuf)
 UCNLIB = -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lGeom -lEG -lm -lMathMore -lGui -lRGL -lGed
 #------------------------------------------------------------------------------
 OBJS = $(SIMULATE_UCNO) $(GENERATE_UCNO) $(SANDBOXO) $(PLOT_DATAO) \
-$(DRAW_TRACKSO) $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
+$(DRAW_TRACKSO) $(TEST_KDTREEO) $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
 $(STATEO) $(SPINO) $(DATAPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
 $(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
 $(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) $(INITIALCONFIGO) \
@@ -113,7 +116,7 @@ $(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO) $(FIELDMAPO) $(KDTREEO) $(K
 $(FIELDVERTEXO) $(NODESTACKO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(PLOT_DATA) $(SANDBOX) \
-$(DRAW_TRACKS) 
+$(DRAW_TRACKS) $(TEST_KDTREE)
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 .PHONY: simulate_ucn sandbox buildtest fitdata generate_ucn plot_data draw_tracks
@@ -158,6 +161,14 @@ $(DRAW_TRACKS): $(DRAW_TRACKSO) $(UCNSO)
 					 $(OutPutOpt)$@
 					 $(MT_EXE)
 					 @echo "$@ done"
+
+test_kdtree:	 $(TEST_KDTREE)
+$(TEST_KDTREE): $(TEST_KDTREEO) $(UCNSO)
+					 $(LD) $(LDFLAGS) $(TEST_KDTREEO) $(UCNLIB) $(LIBS)  \
+					 $(OutPutOpt)$@
+					 $(MT_EXE)
+					 @echo "$@ done"
+
 
 $(UCNSO):		$(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) \
                $(GRAVFIELDO) $(PARTICLEO) $(STATEO) $(SPINO) $(DATAPARSERO) \
