@@ -2,8 +2,6 @@
 #include <string>
 #include <memory>
 
-#include <boost/shared_ptr.hpp>
-
 #include "ConfigFile.h"
 #include "Run.h"
 #include "Particle.h"
