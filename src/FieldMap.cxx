@@ -1,6 +1,10 @@
 // FieldMap
 // Author: Matthew Raso-Barnett  13/12/2010
+
 #include "FieldMap.h"
+#include "FileParser.h"
+#include "FieldVertex.h"
+#include "Particle.h"
 
 using namespace std;
 
@@ -24,15 +28,6 @@ FieldMap::FieldMap(const FieldMap& /*other*/)
 // Copy constructor.
 } 
 
-//_____________________________________________________________________________
-FieldMap &FieldMap::operator=(const FieldMap& other)
-{
-// Assignment.
-   if(this != &other) {
-   }
-   return *this;
-}
-
 //______________________________________________________________________________
 FieldMap::~FieldMap()
 {
@@ -49,7 +44,8 @@ ClassImp(MagFieldMap)
 
 //_____________________________________________________________________________
 MagFieldMap::MagFieldMap()
-            :FieldMap()
+            :FieldMap(),
+             fTree(NULL)
 {
 // Default constructor.
    Info("MagFieldMap", "Default Constructor");
@@ -58,27 +54,18 @@ MagFieldMap::MagFieldMap()
 //_____________________________________________________________________________
 MagFieldMap::MagFieldMap(const MagFieldMap& other)
             :FieldMap(other), 
-             MagField(other)
+             MagField(other),
+             fTree(NULL)
 {
 // Copy constructor.
 } 
-
-//_____________________________________________________________________________
-MagFieldMap &MagFieldMap::operator=(const MagFieldMap& other)
-{
-// Assignment.
-   if(this != &other) {
-      FieldMap::operator=(other);
-      MagField::operator=(other);
-   }
-   return *this;
-}
 
 //______________________________________________________________________________
 MagFieldMap::~MagFieldMap()
 {
 // Destructor.
    Info("MagFieldMap", "Destructor");
+   if (fTree) delete fTree;
 }
 
 //______________________________________________________________________________
@@ -88,10 +75,17 @@ Bool_t MagFieldMap::Interact(Particle& /*particle*/, const Double_t /*stepTime*/
 }
 
 //______________________________________________________________________________
-Bool_t MagFieldMap::ReadFile(const std::string& /*filename*/)
+Bool_t MagFieldMap::BuildMap(const std::string& filename)
 {
-   // Take input file and import field map data.
-   
-   
+   // -- Take input file and initialise a KDTree object data structure to hold the field points.
+   FileParser parser;
+   // Get flat list of Field vertices from provided file using the parser
+   vector<const FieldVertex*> vertices;
+   if (parser.ExtractFieldVertices(filename, vertices) == false) {
+      Error("BuildMap","Failed to extract field vertices from: %s", filename.c_str());
+      return false;
+   }
+   // Build Tree structure of FieldVertices
+   fTree = new KDTree(vertices);
    return true;
 }
