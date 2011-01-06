@@ -12,6 +12,7 @@
 
 class KDTree {
    public:
+      KDTree();
       KDTree(std::vector<const FieldVertex*>& pointList);
       KDTree(const KDTree& other);
       virtual ~KDTree();

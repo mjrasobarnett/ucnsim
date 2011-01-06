@@ -6,17 +6,26 @@
 
 #include "KDTree.h"
 
-//#define PRINT_CONSTRUCTORS 
+#define PRINT_CONSTRUCTORS 
 //#define VERBOSE
 
 using namespace std;
+
+//______________________________________________________________________________
+KDTree::KDTree()
+       :fRoot(NULL)
+{
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "KDTree Default Constructor" << endl;
+   #endif
+}
 
 //______________________________________________________________________________
 KDTree::KDTree(vector<const FieldVertex*>& pointList)
        :fRoot(NULL)
 {
    #ifdef PRINT_CONSTRUCTORS
-      cout << "KDTree Construct" << endl;
+      cout << "KDTree Constructor" << endl;
    #endif
    fRoot = this->BuildNode(pointList,0);
    #ifdef VERBOSE
