@@ -35,17 +35,17 @@ class FieldVertex {
 
 class sortX {
 	public:
-	bool operator() (FieldVertex *a, FieldVertex *b) { return ((*a).X() < (*b).X());}
+	bool operator() (const FieldVertex *a, const FieldVertex *b) const { return ((*a).X() < (*b).X());}
 };
 
 class sortY {
 	public:
-	bool operator() (FieldVertex *a, FieldVertex *b) { return ((*a).Y() < (*b).Y());}
+	bool operator() (const FieldVertex *a, const FieldVertex *b) const { return ((*a).Y() < (*b).Y());}
 };
 
 class sortZ {
 	public:
-	bool operator() (FieldVertex *a, FieldVertex *b) { return ((*a).Z() < (*b).Z());}
+	bool operator() (const FieldVertex *a, const FieldVertex *b) const { return ((*a).Z() < (*b).Z());}
 };
 
 #endif

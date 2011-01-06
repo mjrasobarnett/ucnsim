@@ -20,8 +20,8 @@ using namespace std;
 //#define VERBOSE
 
 void BenchMark(const int numPoints, const int repetitions, const int numNeighbours, ostream& out); 
-VertexStack* BruteForceNearestNeighbours(const vector<FieldVertex*>& pointList, const FieldVertex& point, const int nearestNeighbours);
-void InternetExample1(vector<FieldVertex*>& points);
+VertexStack* BruteForceNearestNeighbours(const vector<const FieldVertex*>& pointList, const FieldVertex& point, const int nearestNeighbours);
+void InternetExample1(vector<const FieldVertex*>& points);
 
 //______________________________________________________________________________
 int main(int /*argc*/, char ** /*argv*/) {
@@ -50,7 +50,7 @@ void BenchMark(const int numPoints, const int repetitions, const int numNeighbou
    #endif
    //-----------------------------------------------------------
    // -- Generate random points
-   vector<FieldVertex*> points;
+   vector<const FieldVertex*> points;
    for (int i=0; i<numPoints; i++) {
       points.push_back(new FieldVertex(gRandom->Rndm(),gRandom->Rndm(),gRandom->Rndm(),0,0,0));
    }
@@ -178,12 +178,12 @@ void BenchMark(const int numPoints, const int repetitions, const int numNeighbou
 }
 
 //______________________________________________________________________________
-VertexStack* BruteForceNearestNeighbours(const vector<FieldVertex*>& pointList, const FieldVertex& point, const int nearestNeighbours)
+VertexStack* BruteForceNearestNeighbours(const vector<const FieldVertex*>& pointList, const FieldVertex& point, const int nearestNeighbours)
 {
    // Take list of points and do a brute force search to find the nearest neighbour
    // Return nearest neighbour
    VertexStack* neighbours = new VertexStack(nearestNeighbours);
-   vector<FieldVertex*>::const_iterator it;
+   vector<const FieldVertex*>::const_iterator it;
    for (it = pointList.begin(); it != pointList.end(); it++) {
       double dist = (*it)->DistanceTo(point);
       #ifdef VERBOSE
@@ -197,7 +197,7 @@ VertexStack* BruteForceNearestNeighbours(const vector<FieldVertex*>& pointList, 
 }
 
 //______________________________________________________________________________
-void InternetExample1(vector<FieldVertex*>& points)
+void InternetExample1(vector<const FieldVertex*>& points)
 {
  //http://syntaxandsemantic.blogspot.com/2010/03/knn-algorithm-and-kd-trees.html
    points.push_back(new FieldVertex(5,9,10, 0,0,0));

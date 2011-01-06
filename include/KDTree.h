@@ -12,11 +12,10 @@
 
 class KDTree {
    public:
-      KDTree(std::vector<FieldVertex*>& pointList);
+      KDTree(std::vector<const FieldVertex*>& pointList);
       KDTree(const KDTree& other);
       virtual ~KDTree();
       
-      const FieldVertex& NearestNeighbour(const FieldVertex& vertex) const;
       const VertexStack* NearestNeighbours(const FieldVertex& vertex, const int numNeighbours) const;
       
       void OutputGraphViz(std::ostream& out) const;
@@ -24,7 +23,7 @@ class KDTree {
    private:
       KDTreeNode *fRoot;
       
-      KDTreeNode* BuildNode(std::vector<FieldVertex*>& pointList, KDTreeNode* parent, int depth=0);
+      KDTreeNode* BuildNode(std::vector<const FieldVertex*>& pointList, KDTreeNode* parent, int depth=0);
       
 };
 

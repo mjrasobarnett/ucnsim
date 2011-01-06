@@ -12,7 +12,7 @@
 using namespace std;
 
 //______________________________________________________________________________
-KDTree::KDTree(vector<FieldVertex*>& pointList)
+KDTree::KDTree(vector<const FieldVertex*>& pointList)
        :fRoot(NULL)
 {
    #ifdef PRINT_CONSTRUCTORS
@@ -43,7 +43,7 @@ KDTree::~KDTree()
 }
 
 //______________________________________________________________________________
-KDTreeNode* KDTree::BuildNode(vector<FieldVertex*>& points, KDTreeNode* parent, int depth)
+KDTreeNode* KDTree::BuildNode(vector<const FieldVertex*>& points, KDTreeNode* parent, int depth)
 {
    if (points.empty()) {
       return NULL;
@@ -53,6 +53,8 @@ KDTreeNode* KDTree::BuildNode(vector<FieldVertex*>& points, KDTreeNode* parent, 
       // Sort point list and choose median as pivot element
       switch (axis) {
          case 0 : 
+            // Note we are using the std::sort algorithm with a function object
+            // called sortX, defined in FieldVertex.h, that sorts the points along x-axis
             sort(points.begin(), points.end(), sortX());
             break;
          case 1 : 
@@ -74,7 +76,7 @@ KDTreeNode* KDTree::BuildNode(vector<FieldVertex*>& points, KDTreeNode* parent, 
       node->SetParent(parent);
       node->SetPoint(points[median]);
       // Create list of only those points before and after median
-      vector<FieldVertex*> beforeMedian, afterMedian;
+      vector<const FieldVertex*> beforeMedian, afterMedian;
       // Note: copy works elements in range [first, last)
       copy(points.begin(), points.begin()+median, back_inserter(beforeMedian));
       copy(points.begin()+median+1, points.end(), back_inserter(afterMedian));

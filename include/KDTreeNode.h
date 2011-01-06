@@ -15,7 +15,7 @@ public:
    virtual ~KDTreeNode();
    
    void SetDepth(int depth) {fDepth = depth;}
-   void SetPoint(FieldVertex* otherPoint) {fPoint = otherPoint;}
+   void SetPoint(const FieldVertex* otherPoint) {fPoint = otherPoint;}
    void SetParent(KDTreeNode* other) {fParent = other;}
    void SetLeftChild(KDTreeNode* otherLeft) {fLeft = otherLeft;}
    void SetRightChild(KDTreeNode* otherRight) {fRight = otherRight;}
@@ -31,7 +31,7 @@ public:
    
 private:
    unsigned int fDepth;
-   FieldVertex* fPoint;
+   const FieldVertex* fPoint;
    KDTreeNode *fParent;
    KDTreeNode *fLeft;
    KDTreeNode *fRight;	
