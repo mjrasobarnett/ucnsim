@@ -180,17 +180,22 @@ Bool_t BuildUniformField(const TGeoHMatrix& matrix)
 Bool_t BuildFieldMap()
 {
    // Create a Uniform Magnetic field and write it to file
-//   MagFieldManager* magFieldManager = new MagFieldManager();
-   string filename = "$(UCN_GEOM)/ramseycell_fieldmap.txt"
+   string filename = "runs/spins/ramseycell_fieldmap_raw.txt";
+   MagFieldMap* field = new MagFieldMap();
+   if (field->BuildMap(filename) == kFALSE) {
+      Error("BuildFieldMap","Cannot open file: %s", magFileName);
+      return kFALSE;
+   }
    
    // Add field to magfield manager
-//   magFieldManager->AddField(field);
+   MagFieldManager* magFieldManager = new MagFieldManager();
+   magFieldManager->AddField(field);
    
    // -- Write magfieldmanager to geometry file
-/*   const char *magFileName = "$(UCN_DIR)/geom/ramseycell_fields.root";
+   const char *magFileName = "$(UCN_DIR)/geom/ramseycell_fields.root";
    TFile *f = TFile::Open(magFileName,"recreate");
    if (!f || f->IsZombie()) {
-     Error("Export","Cannot open file: %s", magFileName);
+     Error("BuildFieldMap","Cannot open file: %s", magFileName);
      return kFALSE;
    }
    magFieldManager->Write(magFieldManager->GetName());
@@ -198,6 +203,5 @@ Bool_t BuildFieldMap()
    f->Close();
    if (magFieldManager) delete magFieldManager;
    magFieldManager = 0;
-*/
    return kTRUE;
 }
