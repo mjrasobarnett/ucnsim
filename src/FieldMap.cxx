@@ -5,6 +5,7 @@
 #include "FileParser.h"
 #include "FieldVertex.h"
 #include "Particle.h"
+#include "Run.h"
 
 using namespace std;
 
@@ -81,8 +82,39 @@ MagFieldMap::~MagFieldMap()
 }
 
 //______________________________________________________________________________
-Bool_t MagFieldMap::Interact(Particle& /*particle*/, const Double_t /*stepTime*/) const
+Bool_t MagFieldMap::Interact(Particle& particle, const Run& run, const Double_t stepTime) const
 {
+   // -- Precess particle's spin for a time 'stepTime'. For a field map this means
+   // -- splitting up the journey stepTime into smaller steps and performing interpolation
+   // -- to find the approximate field along that step.
+   Double_t currentTime = 0.;
+   Double_t interval = 1.0*Units::ms;
+   Int_t numInterpolatePoints = 6;
+   // Check that our small step interval isn't larger than the stepTime
+   if (interval > stepTime) {
+      interval = stepTime;
+   }
+   // Store the particle's current position and momentum
+   Double_t currentPos[3] = {particle.X(), particle.Y(), particle.Z()};
+   Double_t currentVel[3] = {particle.Vx(), particle.Vy(), particle.Vz()};
+   const GravField* gravField = run.GetFieldManager()->GetGravField();
+   Double_t grav_acc[3] = {gravField->Gx(), gravField->Gy(), gravField->Gz()}; 
+   // Loop over small steps
+   while (currentTime < stepTime) {
+      // Update current time. Check if we will reach the 'end' within the small step
+      if (currentTime+interval > stepTime) {interval = stepTime - currentTime;} 
+      currentTime += interval;
+      // Update current coordinates
+      for (int i = 0; i < 3; i++) {
+         currentPos[i] += currentVel[i]*interval + 0.5*grav_acc[i]*interval*interval;
+         currentVel[i] += grav_acc[i]*interval;
+      }
+      TVector3 position(currentPos[0],currentPos[1],currentPos[2]);
+      // Perform interpolation to get current field
+      TVector3 field = this->Interpolate(position, numInterpolatePoints);
+      // Precess particle's spin about this field
+      particle.PrecessSpin(field, interval);
+   }
    return true;
 }
 
@@ -101,3 +133,14 @@ Bool_t MagFieldMap::BuildMap(const std::string& filename)
    fTree = new KDTree(vertices);
    return true;
 }
+
+//______________________________________________________________________________
+TVector3 MagFieldMap::Interpolate(const TVector3& position, const Int_t numInterpolatePoints) const
+{
+   // -- For given position, find the n-nearest-neighbouring vertices (n being numInterpolatePoints)
+   // -- and perform IDW interpolation using Modified Shepard's Method,
+   // -- http://en.wikipedia.org/wiki/Inverse_distance_weighting
+   TVector3 field;
+   return field;
+}
+
