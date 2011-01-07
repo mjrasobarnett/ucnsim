@@ -49,14 +49,22 @@ bool FileParser::ExtractFieldVertices(std::string filename, std::vector<const Fi
    // Since file should be structured with a single 'header' line, followed 
    // by columns of data
    char lineDelim;
-   if (getline(in, line, '\n').eof() == false) {
-      lineDelim = '\n';
-   } else if (getline(in, line, '\r').eof() == false) {
-      lineDelim = '\r';
+   if (getline(in, line, '\n').eof() == true) {
+      // Reached end of file. Reset stream and try again with '\r'
+      in.clear();
+      in.seekg(0, ios::beg);
+      if (getline(in, line, '\r').eof() == true) {
+         // Reached end of file again. Exit.
+         cout << "Error::ExtractFieldVertices - file: " << filename;
+         cout << " appears to contain no data" << endl;
+         return false;
+      } else {
+         // Otherwise, note the line delimeter as '\r'
+         lineDelim = '\r';
+      }
    } else {
-      cout << "Error::ExtractFieldVertices - file: " << filename;
-      cout << " appears to contain no data" << endl;
-      return false;
+      // Otherwise, note the line delimeter as '\n'
+      lineDelim = '\n';
    }
    // At this point we know the line delimeter. All columns should be tab delimeted
    // according to structure 'x' 'y' 'z' 'bx' 'by' 'bz'
