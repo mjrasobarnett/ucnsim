@@ -68,7 +68,7 @@ protected:
    // -- Methods
    const Spin&      GetSpin() const;
    // State Change
-   void                 ChangeState(State* state);
+   void             ChangeState(State* state);
    
 public:
    // -- Constructors

@@ -87,7 +87,7 @@ void State::ChangeState(Particle* particle, State* newState)
 }
 
 //_____________________________________________________________________________
-Bool_t State::Propagate(Particle* /*particle*/, Run* /*run*/, TGeoNavigator* /*navigator*/, FieldManager* /*fieldManager*/)
+Bool_t State::Propagate(Particle* /*particle*/, Run* /*run*/)
 {
    // Default behaviour - don't propagate
    return kFALSE;
@@ -243,7 +243,7 @@ Bool_t Propagating::SaveState(Run* run, Particle* particle)
 }
 
 //_____________________________________________________________________________
-Bool_t Propagating::Propagate(Particle* particle, Run* run, TGeoNavigator* navigator, FieldManager* fieldManager)
+Bool_t Propagating::Propagate(Particle* particle, Run* run)
 {
    // Propagate track through geometry until it is either stopped or the runTime has been reached
    // Track passed MUST REFERENCE A PARTICLE as its particle type. 
@@ -252,7 +252,7 @@ Bool_t Propagating::Propagate(Particle* particle, Run* run, TGeoNavigator* navig
    ///////////////////////////////////////////////////////////////////////////////////////	
    // -- 1. Initialise Track
    // Initialise track - Sets navigator's current point/direction/node to that of the particle
-   navigator->InitTrack(particle->X(), particle->Y(), particle->Z(), particle->Nx(), particle->Ny(), particle->Nz());
+   run->GetNavigator()->InitTrack(particle->X(), particle->Y(), particle->Z(), particle->Nx(), particle->Ny(), particle->Nz());
    
    #ifdef VERBOSE_MODE
       cout << "Propagate - Starting Run - Max time (seconds): " <<  run->RunTime() << endl;
@@ -274,14 +274,14 @@ Bool_t Propagating::Propagate(Particle* particle, Run* run, TGeoNavigator* navig
       #ifdef VERBOSE_MODE
          cout << endl << "-------------------------------------------------------" << endl;
          cout << "STEP " << stepNumber << "\t" << particle->T() << " s" << "\t";
-         cout << navigator->GetCurrentNode()->GetName() << endl;	
+         cout << run->GetNavigator()->GetCurrentNode()->GetName() << endl;	
       #endif
       // -- Calculate the Next StepTime (i.e: are there any factors that reduce the maximum
       // -- step size before we work out boundary distance)
       Double_t stepTime = this->DetermineNextStepTime(particle, run->MaxStepTime(), run->RunTime());
 
       // -- Make a step
-      if (this->MakeStep(stepTime, particle, navigator, fieldManager) == kFALSE) {
+      if (this->MakeStep(stepTime, particle, run) == kFALSE) {
          // -- Particle has reached a final state (decay,detected)
          break; // -- End Propagation Loop
       }
@@ -296,13 +296,15 @@ Bool_t Propagating::Propagate(Particle* particle, Run* run, TGeoNavigator* navig
 }
 
 //_____________________________________________________________________________
-Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, TGeoNavigator* navigator, FieldManager* fieldManager)
+Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
 {
    // -- Find time to reach next boundary and step along parabola
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Step 1 - Get the initial parameters
    ///////////////////////////////////////////////////////////////////////////////////////
+   TGeoNavigator* navigator = run->GetNavigator();
+   FieldManager* fieldManager = run->GetFieldManager();
    const GravField* const gravField = fieldManager->GetGravField();
       
    // -- Store the Initial Node and Initial Matrix
@@ -383,7 +385,7 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, TGeoNavigato
    const string initialVolumeName = initialNode->GetVolume()->GetName();
    const MagField* const magField = fieldManager->GetMagField(initialPosition, initialVolumeName);
    if (magField != NULL) {
-      magField->Interact(*particle, stepTime);
+      magField->Interact(*particle, *run, stepTime);
    }
    
    ///////////////////////////////////////////////////////////////////////////////////////

@@ -37,8 +37,7 @@ public:
    virtual ~State();
    
    // -- Propagation
-   virtual Bool_t    Propagate(Particle* particle, Run* run,
-                                    TGeoNavigator* navigator, FieldManager* fieldManager);
+   virtual Bool_t    Propagate(Particle* particle, Run* run);
    virtual Bool_t    LocateInGeometry(Particle* particle, TGeoNavigator* navigator,
                            const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
                            const TGeoNode* crossedNode);
@@ -72,8 +71,8 @@ protected:
    virtual Double_t  DetermineNextStepTime(Particle* particle, const Double_t maxStepTime,
                                           const Double_t runTime=0.);
    // Propagation
-   virtual Bool_t    MakeStep(Double_t stepTime, Particle* particle, TGeoNavigator* navigator,
-                                          FieldManager* fieldManager);
+   virtual Bool_t    MakeStep(Double_t stepTime, Particle* particle, Run* run);
+   
    // Boundary Finding
    virtual TGeoNode* ParabolicBoundaryFinder(Double_t& stepTime, Particle* particle,
                                           TGeoNavigator* navigator, TGeoNode* crossedNode,
@@ -101,8 +100,7 @@ public:
    virtual ~Propagating();
    
    // -- Propagation
-   virtual Bool_t    Propagate(Particle* particle, Run* run,
-                                    TGeoNavigator* navigator, FieldManager* fieldManager);
+   virtual Bool_t    Propagate(Particle* particle, Run* run);
    virtual Bool_t    LocateInGeometry(Particle* particle, TGeoNavigator* navigator,
                            const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
                            const TGeoNode* crossedNode);
