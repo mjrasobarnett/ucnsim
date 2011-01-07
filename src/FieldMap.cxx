@@ -1,11 +1,16 @@
 // FieldMap
 // Author: Matthew Raso-Barnett  13/12/2010
+#include <list>
+#include <cmath>
 
 #include "FieldMap.h"
 #include "FileParser.h"
 #include "FieldVertex.h"
+#include "VertexStack.h"
 #include "Particle.h"
 #include "Run.h"
+
+//#define VERBOSE
 
 using namespace std;
 
@@ -140,7 +145,25 @@ TVector3 MagFieldMap::Interpolate(const TVector3& position, const Int_t numInter
    // -- For given position, find the n-nearest-neighbouring vertices (n being numInterpolatePoints)
    // -- and perform IDW interpolation using Modified Shepard's Method,
    // -- http://en.wikipedia.org/wiki/Inverse_distance_weighting
-   TVector3 field;
-   return field;
+   FieldVertex vertex(position.X(), position.Y(), position.Z(), 0.,0.,0.);
+   const VertexStack* neighbours = fTree->NearestNeighbours(vertex, numInterpolatePoints);
+   list<StackElement>::const_iterator stackIter;
+   double radius = (neighbours->back()).second;
+   double sumWeights = 0.;
+   TVector3 avgField;
+   for (stackIter = neighbours->begin(); stackIter != neighbours->end(); stackIter++) {
+      double distance = stackIter->second;
+      const FieldVertex* vertex = stackIter->first;
+      double weight = pow((radius - distance)/(radius*distance),2.0);
+      #ifdef VERBOSE
+         cout << "Vertex: " << vertex->ToString() << "\t";
+         cout << "Distance: " << distance << "\t";
+         cout << "Weight: " << weight << endl;
+      #endif
+      sumWeights += weight;
+      avgField += weight*(vertex->FieldVector());
+   }
+   avgField = avgField*(1.0/sumWeights);
+   return avgField;
 }
 

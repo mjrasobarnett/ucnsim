@@ -18,7 +18,8 @@ class FieldVertex {
       double X() const {return fX;}
       double Y() const {return fY;}
       double Z() const {return fZ;}
-
+      TVector3 FieldVector() const {return fBField;}
+      
       // setters
       void SetX(double x){fX=x;}
       void SetY(double y){fY=y;}
