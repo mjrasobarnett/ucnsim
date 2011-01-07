@@ -52,12 +52,24 @@ MagFieldMap::MagFieldMap()
 }
 
 //_____________________________________________________________________________
+MagFieldMap::MagFieldMap(const string& name, const TGeoShape* shape, const TGeoMatrix* matrix)
+            :FieldMap(),
+             MagField(name, shape, matrix), 
+             fTree(NULL)
+{
+// Default constructor.
+   Info("MagFieldMap", "Constructor");
+}
+
+
+//_____________________________________________________________________________
 MagFieldMap::MagFieldMap(const MagFieldMap& other)
             :FieldMap(other), 
              MagField(other),
              fTree(NULL)
 {
 // Copy constructor.
+   Info("MagFieldMap", "Copy Constructor");
 } 
 
 //______________________________________________________________________________

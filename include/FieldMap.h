@@ -44,6 +44,7 @@ private:
    
 public:
    MagFieldMap();
+   MagFieldMap(const std::string& name, const TGeoShape* fieldShape, const TGeoMatrix* fieldPosition);
    MagFieldMap(const MagFieldMap&);
    virtual ~MagFieldMap();
    
