@@ -123,7 +123,7 @@ $(DRAW_TRACKS) $(TEST_KDTREE)
 all: $(PROGRAMS)
 
 clean:
-		@rm -f $(OBJS) $(PROGRAMS) ./lib/* UCNDict.* core *Dict* ./*.txt
+		@rm -f $(OBJS) $(PROGRAMS) ./src/*.o ./lib/* UCNDict.* core *Dict* ./*.txt
 
 simulate_ucn:			$(SIMULATE_UCN)
 $(SIMULATE_UCN):		$(SIMULATE_UCNO) $(UCNSO)
