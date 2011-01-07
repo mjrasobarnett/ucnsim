@@ -17,6 +17,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 class Particle;
+class Run;
 
 class MagField : public TNamed {
 private:
@@ -34,7 +35,7 @@ public:
    virtual ~MagField();
    
    virtual Bool_t Contains(const TVector3& point) const;
-   virtual Bool_t Interact(Particle& particle, const Double_t stepTime) const = 0;
+   virtual Bool_t Interact(Particle& particle, const Run& run, const Double_t stepTime) const = 0;
    
    ClassDef(MagField, 1)              // Abstract base Mag field class
 };

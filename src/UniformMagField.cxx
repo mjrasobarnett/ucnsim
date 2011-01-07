@@ -58,7 +58,7 @@ const TVector3& UniformMagField::GetFieldVector(const TVector3& /*pos*/) const
 }
 
 //______________________________________________________________________________
-Bool_t UniformMagField::Interact(Particle& particle, const Double_t stepTime) const
+Bool_t UniformMagField::Interact(Particle& particle, const Run& /*run*/, const Double_t stepTime) const
 {
    // -- Precess spin vector of particle over period of time defined by stepTime
    particle.PrecessSpin(/*this->GetFieldVector()*/ fField, stepTime);

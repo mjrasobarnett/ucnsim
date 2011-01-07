@@ -31,7 +31,7 @@ public:
    UniformMagField& operator=(const UniformMagField&);
    virtual ~UniformMagField();
    
-   virtual Bool_t Interact(Particle& particle, const Double_t stepTime) const;
+   virtual Bool_t Interact(Particle& particle, const Run& run, const Double_t stepTime) const;
    
    ClassDef(UniformMagField, 1)              // uniform mag field class
 };

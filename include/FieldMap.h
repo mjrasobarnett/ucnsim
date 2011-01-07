@@ -37,10 +37,13 @@ public:
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 class Particle;
+class Run;
 
 class MagFieldMap : public FieldMap, public MagField {
 private:
    KDTree* fTree;
+   
+   TVector3 Interpolate(const TVector3& position, const Int_t numInterpolatePoints) const;
    
 public:
    MagFieldMap();
@@ -48,7 +51,7 @@ public:
    MagFieldMap(const MagFieldMap&);
    virtual ~MagFieldMap();
    
-   virtual Bool_t Interact(Particle& particle, const Double_t stepTime) const;
+   virtual Bool_t Interact(Particle& particle, const Run& run, const Double_t stepTime) const;
    virtual Bool_t BuildMap(const std::string& filename);
    
    ClassDef(MagFieldMap, 1)   // Mag Field Map class
