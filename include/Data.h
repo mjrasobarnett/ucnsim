@@ -2,7 +2,7 @@
 #define DATA_H
 
 #include "TNamed.h"
-#include <vector>
+#include <map>
 #include <string>
 #include "TFile.h"
 #include "TDirectory.h"
@@ -22,15 +22,15 @@ private:
    TIter *fCurrentParticleDir;
    
    // -- Observers
-   std::vector<Observer*> fObservers;
-   void           PurgeObservers();
+   std::multimap<std::string, Observer*> fObservers;
    
+   void           PurgeObservers();
    void           InitialiseObservers(const RunConfig& runConfig);
-   void           AddObserver(Observer* observer);
+   void           AddObserver(std::string subject, Observer* observer);
    void           RegisterObservers(Particle* particle);
    
    Bool_t         LoadParticles(const RunConfig& runConfig);
-   Particle*  LocateParticle(TDirectory * const particleDir);
+   Particle*      LocateParticle(TDirectory * const particleDir);
    
    void           CopyDirectory(TDirectory * const sourceDir, TDirectory * const outputDir);
    void           CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * const outputDir);

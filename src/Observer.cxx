@@ -80,21 +80,21 @@ SpinObserver::~SpinObserver()
 }
 
 //_____________________________________________________________________________
-void SpinObserver::RegisterInterest(Particle& particle)
+void SpinObserver::RecordEvent(const TObject* subject, const string& context)
 {
-   // -- Register as an observer with the particle
-   if (fSpinObservables != NULL) delete fSpinObservables; fSpinObservables = NULL;
-   fSpinObservables = new SpinObservables();
-   particle.Attach(this);
+   // -- Record the current polarisation
+   if (subject == fSubject && context == Context::Spin) {
+      const Particle* particle = dynamic_cast<const Particle*>(subject);
+      fSpinObservables->insert(pair<Double_t,Bool_t>(particle->T(), particle->IsSpinUp(fMeasAxis)));
+   }
 }
 
 //_____________________________________________________________________________
-void SpinObserver::RecordEvent(const Particle& particle, const string& context)
+void SpinObserver::ResetObservables()
 {
-   // -- Record the current polarisation
-   if (context == Context::Spin) {
-      fSpinObservables->insert(pair<Double_t, Bool_t>(particle.T(), particle.IsSpinUp(fMeasAxis)));
-   }
+   // -- Delete current observables and create a new version in its place
+   if (fSpinObservables != NULL) delete fSpinObservables; fSpinObservables = NULL;
+   fSpinObservables = new SpinObservables();
 }
 
 //_____________________________________________________________________________
@@ -180,23 +180,24 @@ BounceObserver::~BounceObserver()
 }
 
 //_____________________________________________________________________________
-void BounceObserver::RegisterInterest(Particle& particle)
+void BounceObserver::RecordEvent(const TObject* subject, const string& context)
 {
-   // -- Register as an observer with the particle
-   if (fBounceObservables != NULL) delete fBounceObservables; fBounceObservables = NULL;
-   fBounceObservables = new BounceObservables();
-   particle.Attach(this);
+   // -- Record the current polarisation
+   if (subject == fSubject) {
+      if (context == Context::SpecBounce) {
+         fBounceObservables->RecordSpecular();
+      } else if (context == Context::DiffBounce) {
+         fBounceObservables->RecordDiffuse();
+      }
+   }
 }
 
 //_____________________________________________________________________________
-void BounceObserver::RecordEvent(const Particle& particle, const string& context)
+void BounceObserver::ResetObservables()
 {
-   // -- Record the current polarisation
-   if (context == Context::SpecBounce) {
-      fBounceObservables->RecordSpecular();
-   } else if (context == Context::DiffBounce) {
-      fBounceObservables->RecordDiffuse();
-   }
+   // -- Delete current observables and create a new version in its place
+   if (fBounceObservables != NULL) delete fBounceObservables; fBounceObservables = NULL;
+   fBounceObservables = new BounceObservables();
 }
 
 //_____________________________________________________________________________
@@ -283,21 +284,21 @@ TrackObserver::~TrackObserver()
 }
 
 //_____________________________________________________________________________
-void TrackObserver::RegisterInterest(Particle& particle)
+void TrackObserver::RecordEvent(const TObject* subject, const string& context)
 {
-   // -- Register as an observer with the particle
-   if (fTrack != NULL) delete fTrack; fTrack = NULL;
-   fTrack = new Track();
-   particle.Attach(this);
+   // -- Record the current polarisation
+   if (subject == fSubject && context == Context::Step) {
+      const Particle* particle = dynamic_cast<const Particle*>(subject);
+      fTrack->AddVertex(particle->X(), particle->Y(), particle->Z(), particle->T());
+   }
 }
 
 //_____________________________________________________________________________
-void TrackObserver::RecordEvent(const Particle& particle, const string& context)
+void TrackObserver::ResetObservables()
 {
-   // -- Record the current polarisation
-   if (context == Context::Step) {
-      fTrack->AddVertex(particle.X(), particle.Y(), particle.Z(), particle.T());
-   }
+   // -- Delete current observables and create a new version in its place
+   if (fTrack != NULL) delete fTrack; fTrack = NULL;
+   fTrack = new Track();
 }
 
 //_____________________________________________________________________________

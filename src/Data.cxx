@@ -331,10 +331,10 @@ void Data::PurgeObservers()
 {
    // -- Delete all observers held
    if (fObservers.empty() == kFALSE) {
-      vector<Observer*>::iterator it;
+      multimap<string, Observer*>::iterator it;
       for(it = fObservers.begin(); it != fObservers.end(); ++it) {
-         delete *it;
-         *it = 0;
+         delete it->second;
+         it->second = 0;
       }
    }
 }
@@ -352,36 +352,43 @@ void Data::InitialiseObservers(const RunConfig& runConfig)
       // Create an observer to track UCN Spin polarisation
       Observer* obs = new SpinObserver(runConfig);
       // Add observer to the list
-      this->AddObserver(obs);
+      this->AddObserver("Particles", obs);
    }
    if (runConfig.ObserveBounces() == kTRUE) {
       // Create an observer to track UCN Bounces
       Observer* obs = new BounceObserver(runConfig);
       // Add observer to the list
-      this->AddObserver(obs);
+      this->AddObserver("Particles", obs);
    }
    if (runConfig.ObserveTracks() == kTRUE) {
       // Create an observer to track UCN path
       Observer* obs = new TrackObserver(runConfig);
       // Add observer to the list
-      this->AddObserver(obs);
+      this->AddObserver("Particles", obs);
    }
 }
 
 //_____________________________________________________________________________
-void Data::AddObserver(Observer* observer)
+void Data::AddObserver(string subject, Observer* observer)
 {
    // -- Add observer to internal list
-   fObservers.push_back(observer);
+   fObservers.insert(pair<string, Observer*>(subject, observer));
 }
 
 //_____________________________________________________________________________
 void Data::RegisterObservers(Particle* particle)
 {
-   // -- Register all observers in list with the particle
-   vector<Observer*>::iterator obsIter;
+   // -- Attach to particle only those observers in map with their subject being particles
+   multimap<string, Observer*>::iterator obsIter;
    for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
-      (*obsIter)->RegisterInterest(*particle);
+      string subject = obsIter->first;
+      Observer* observer = obsIter->second;
+      observer->ResetObservables();
+      // If observer's subject is particle, then attach it to the particle
+      if (subject == "Particles") {
+         observer->DefineSubject(particle);
+         particle->Attach(observer);
+      }
    }
 }
 
@@ -440,11 +447,12 @@ Particle* const Data::RetrieveParticle()
    TDirectory *nextParticleDir = gDirectory;
    // Search Directory for the particle
    Particle* nextParticle = this->LocateParticle(nextParticleDir);
+   // Register Observers with particle
+   this->RegisterObservers(nextParticle);
    // Search Directory for any observables previously recorded to be continued
-   vector<Observer*>::iterator obsIter;
+   multimap<string, Observer*>::iterator obsIter;
    for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
-      (*obsIter)->RegisterInterest(*nextParticle);
-      (*obsIter)->LoadExistingObservables(nextParticleDir);      
+      obsIter->second->LoadExistingObservables(nextParticleDir);
    }
    return nextParticle;
 }

@@ -45,10 +45,14 @@ class Data;
 
 class Observer : public TObject
 {
+protected:
+   const TObject* fSubject;
+   
 public:
    
-   virtual void RegisterInterest(Particle& particle) = 0;
-   virtual void RecordEvent(const Particle& particle, const std::string& context) = 0;
+   virtual void DefineSubject(const TObject* subject) {fSubject = subject;}
+   virtual void RecordEvent(const TObject* subject, const std::string& context) = 0;
+   virtual void ResetObservables() = 0;
    virtual void LoadExistingObservables(TDirectory* const particleDir) = 0;
    virtual void WriteToFile(TDirectory* particleDir) = 0;
       
@@ -75,8 +79,8 @@ public:
    SpinObserver& operator=(const SpinObserver&);
    virtual ~SpinObserver();
    
-   virtual void RegisterInterest(Particle& particle);
-   virtual void RecordEvent(const Particle& particle, const std::string& context);
+   virtual void RecordEvent(const TObject* subject, const std::string& context);
+   virtual void ResetObservables();
    virtual void LoadExistingObservables(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);
    
@@ -102,8 +106,8 @@ public:
    BounceObserver& operator=(const BounceObserver&);
    virtual ~BounceObserver();
    
-   virtual void RegisterInterest(Particle& particle);
-   virtual void RecordEvent(const Particle& particle, const std::string& context);
+   virtual void RecordEvent(const TObject* subject, const std::string& context);
+   virtual void ResetObservables();
    virtual void LoadExistingObservables(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);
    
@@ -129,8 +133,8 @@ public:
    TrackObserver& operator=(const TrackObserver&);
    virtual ~TrackObserver();
    
-   virtual void RegisterInterest(Particle& particle);
-   virtual void RecordEvent(const Particle& particle, const std::string& context);
+   virtual void RecordEvent(const TObject* subject, const std::string& context);
+   virtual void ResetObservables();
    virtual void LoadExistingObservables(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);
    

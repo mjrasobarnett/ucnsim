@@ -241,7 +241,7 @@ void Particle::NotifyObservers(const std::string& context)
    // -- Notify Observers of change
    list<Observer*>::iterator listIter;
    for(listIter = fObservers.begin(); listIter != fObservers.end(); listIter++) {
-      (*listIter)->RecordEvent(*this, context);
+      (*listIter)->RecordEvent(this, context);
    }
 }
 
