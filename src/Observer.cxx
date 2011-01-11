@@ -77,6 +77,7 @@ SpinObserver::~SpinObserver()
 {
    // Destructor
    Info("SpinObserver","Destructor");
+   if (fSpinObservables != NULL) delete fSpinObservables;
 }
 
 //_____________________________________________________________________________
@@ -177,6 +178,7 @@ BounceObserver::~BounceObserver()
 {
    // Destructor
    Info("BounceObserver","Destructor");
+   if (fBounceObservables != NULL) delete fBounceObservables;
 }
 
 //_____________________________________________________________________________
@@ -281,6 +283,7 @@ TrackObserver::~TrackObserver()
 {
    // Destructor
    Info("TrackObserver","Destructor");
+   if (fTrack != NULL) delete fTrack;
 }
 
 //_____________________________________________________________________________
