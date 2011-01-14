@@ -32,9 +32,7 @@ private:
    Double_t fRunTime;
    Double_t fMaxStepTime;
    
-   Bool_t fObsPolarisation;
-   TVector3 fObsMeasAxis;
-   
+   Bool_t fObsPolarisation;   
    Bool_t fObsBounces;
    Bool_t fObsTracks;
    
@@ -63,7 +61,6 @@ public:
    Bool_t MagFieldOn() const {return fMagFieldOn;}
    Bool_t WallLossesOn() const {return fWallLossesOn;}
    Bool_t ObservePolarisation() const {return fObsPolarisation;}
-   TVector3 PolarisationAxis() const {return fObsMeasAxis;}
    Bool_t ObserveBounces() const {return fObsBounces;}
    Bool_t ObserveTracks() const {return fObsTracks;}
    

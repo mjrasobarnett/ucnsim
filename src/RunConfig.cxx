@@ -47,10 +47,6 @@ RunConfig::RunConfig(const string& runConfigFileName)
    fMaxStepTime = runConfigFile.GetFloat("MaxStepTime(s)","Properties");
    
    fObsPolarisation = runConfigFile.GetBool("Polarisation","Observables");
-   Double_t obsMeasAxisX = runConfigFile.GetFloat("MeasureAxisX","Observables");
-   Double_t obsMeasAxisY = runConfigFile.GetFloat("MeasureAxisY","Observables");
-   Double_t obsMeasAxisZ = runConfigFile.GetFloat("MeasureAxisZ","Observables");
-   fObsMeasAxis.SetXYZ(obsMeasAxisX, obsMeasAxisY, obsMeasAxisZ);
    fObsBounces = runConfigFile.GetBool("Bounces","Observables");
    fObsTracks = runConfigFile.GetBool("RecordTracks","Observables");
    
@@ -76,7 +72,6 @@ RunConfig::RunConfig(const RunConfig& other)
                fRunTime(other.fRunTime),
                fMaxStepTime(other.fMaxStepTime),
                fObsPolarisation(other.fObsPolarisation),
-               fObsMeasAxis(other.fObsMeasAxis),
                fObsBounces(other.fObsBounces),
                fObsTracks(other.fObsTracks)
 {
@@ -104,7 +99,6 @@ RunConfig& RunConfig::operator=(const RunConfig& other)
       fRunTime=other.fRunTime;
       fMaxStepTime=other.fMaxStepTime;
       fObsPolarisation=other.fObsPolarisation;
-      fObsMeasAxis=other.fObsMeasAxis;
       fObsBounces=other.fObsBounces;
       fObsTracks=other.fObsTracks;
    }
@@ -138,8 +132,6 @@ void RunConfig::Print(Option_t* /*option*/) const
    cout << "RunTime: " << fRunTime << " s"<< endl;
    cout << "MaxStepTime: " << fMaxStepTime << " s"<< endl;
    cout << "Observe Polarisation: " << fObsPolarisation << endl;
-   cout << "Polrisation Axis: " << fObsMeasAxis.X() << "\t" << fObsMeasAxis.Y();
-   cout << "\t" << fObsMeasAxis.Z() << endl;
    cout << "Observe Bounces: " << fObsBounces << endl;
    cout << "Observe Tracks: " << fObsTracks << endl;
    cout << "-------------------------------------------" << endl;
