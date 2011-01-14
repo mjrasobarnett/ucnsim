@@ -61,12 +61,10 @@ Track::~Track()
 void Track::PurgeContainer()
 {
    // -- Delete all elements in container
-   if (fPoints.empty() == kFALSE) {
-      vector<Point*>::iterator it;
-      for(it = fPoints.begin(); it != fPoints.end(); ++it) {
-         delete *it;
-         *it = 0;
-      }
+   vector<Point*>::iterator it;
+   for(it = fPoints.begin(); it != fPoints.end(); ++it) {
+      delete *it;
+      *it = 0;
    }
 }
 

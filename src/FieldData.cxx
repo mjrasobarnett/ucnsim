@@ -53,11 +53,9 @@ FieldData::~FieldData()
 void FieldData::PurgeContainer()
 {
    // -- Delete all elements in container
-   if (this->empty() == kFALSE) {
-      vector<const FieldVertex*>::iterator it;
-      for(it = this->begin(); it != this->end(); ++it) {
-         delete *it;
-         *it = 0;
-      }
+   vector<const FieldVertex*>::iterator it;
+   for(it = this->begin(); it != this->end(); ++it) {
+      delete *it;
+      *it = 0;
    }
 }
