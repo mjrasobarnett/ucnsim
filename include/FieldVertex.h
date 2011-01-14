@@ -3,12 +3,13 @@
 
 #include "TVector3.h"
 
-class FieldVertex {
+class FieldVertex : public TObject {
    public:
       // constructors
       FieldVertex();
       FieldVertex(double x, double y, double z, double bx, double by, double bz);
       FieldVertex(const FieldVertex& other);
+      FieldVertex& operator=(const FieldVertex&);
       virtual ~FieldVertex();
       
       bool operator==(const FieldVertex& other) const; 
@@ -32,6 +33,8 @@ class FieldVertex {
    private:
       double fX,fY,fZ;
       TVector3 fBField;
+      
+   ClassDef(FieldVertex, 1)
 };
 
 class sortX {

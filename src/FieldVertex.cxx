@@ -10,9 +10,12 @@
 
 using namespace std;
 
+ClassImp(FieldVertex);
+
 //______________________________________________________________________________
 FieldVertex::FieldVertex()
-      :fX(0.), fY(0.), fZ(0.), fBField()
+      :TObject(),
+       fX(0.), fY(0.), fZ(0.), fBField()
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "FieldVertex Default Construct" << endl;
@@ -21,7 +24,8 @@ FieldVertex::FieldVertex()
 
 //______________________________________________________________________________
 FieldVertex::FieldVertex(double x, double y, double z, double bx, double by, double bz)
-      :fX(x), fY(y), fZ(z), fBField(bx, by, bz)
+      :TObject(),
+       fX(x), fY(y), fZ(z), fBField(bx, by, bz)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "FieldVertex Construct" << endl;
@@ -30,7 +34,8 @@ FieldVertex::FieldVertex(double x, double y, double z, double bx, double by, dou
 
 //______________________________________________________________________________
 FieldVertex::FieldVertex(const FieldVertex& other)
-      :fX(other.fX),
+      :TObject(other),
+       fX(other.fX),
        fY(other.fY),
        fZ(other.fZ),
        fBField(other.fBField)
@@ -38,6 +43,21 @@ FieldVertex::FieldVertex(const FieldVertex& other)
    #ifdef PRINT_CONSTRUCTORS
       cout << "FieldVertex Copy Construct" << endl;
    #endif
+}
+
+//______________________________________________________________________________
+FieldVertex& FieldVertex::operator=(const FieldVertex& other)
+{
+   // Assignment
+   if(this!=&other) {
+      TObject::operator=(other);
+      fX = other.fX;
+      fY = other.fY;
+      fZ = other.fZ;
+      fBField = other.fBField;
+   }
+   return *this;
+   
 }
 
 //______________________________________________________________________________
