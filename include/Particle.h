@@ -15,7 +15,7 @@
 #include "Point.h"
 #include "Spin.h"
 #include "State.h"
-#include "Observer.h"
+#include "Observable.h"
 
 #include "Constants.h"
 
@@ -43,9 +43,9 @@ class TGeoNavigator;
 
 //class ParticleState;
 
-class Particle : public TObject
+class Particle : public TObject, public Observable
 {
-protected:
+private:
    // -- Members
    Int_t       fId;        // Particle's number (assigned when its created to help keep track of it)
    Point       fPos;
@@ -62,9 +62,6 @@ protected:
    // Spin
    Spin         fSpin;
    
-   // Observers
-   std::list<Observer* > fObservers;
-   
    // -- Methods
    const Spin&      GetSpin() const;
    // State Change
@@ -75,7 +72,6 @@ public:
    Particle();
    Particle(Int_t id, Point& position, TVector3& mom, Double_t energy);
    Particle(const Particle &part);
-   Particle& operator=(const Particle&);
 
    // -- Destructor
    virtual ~Particle();
@@ -140,12 +136,9 @@ public:
    void                 IsAbsorbed();
    void                 IsAnomalous();
    
-   // -- Observer management
-   Int_t                CountObservers() {return fObservers.size();}
-   void                 Attach(Observer* observer);
-   void                 Detach(Observer* observer);
-   void                 NotifyObservers(const std::string& context);
-
+   // -- Observers
+   virtual void         NotifyObservers(const TObject* subject, const std::string& context);
+   
    // -- Output to file
    void                 SaveState(Run* run);
    void                 WriteToFile(TDirectory* particleDir);

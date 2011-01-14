@@ -100,6 +100,8 @@ VERTEXSTACKO = src/VertexStack.$(ObjSuf) UCNDict.$(ObjSuf)
 VERTEXSTACKS = src/VertexStack.$(SrcSuf) UCNDict.$(SrcSuf)
 POINTO = src/Point.$(ObjSuf) UCNDict.$(ObjSuf)
 POINTS = src/Point.$(SrcSuf) UCNDict.$(SrcSuf)
+OBSERVABLEO = src/Observable.$(ObjSuf) UCNDict.$(ObjSuf)
+OBSERVABLES = src/Observable.$(SrcSuf) UCNDict.$(SrcSuf)
 
 #------------------------------------------------------------------------------
 # my library with my classes
@@ -113,7 +115,7 @@ $(STATEO) $(SPINO) $(FILEPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(D
 $(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
 $(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) $(INITIALCONFIGO) \
 $(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO) $(FIELDMAPO) $(KDTREEO) $(KDTREENODEO) \
-$(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO)
+$(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLEO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(PLOT_DATA) $(SANDBOX) \
 $(DRAW_TRACKS) $(TEST_KDTREE)
@@ -228,8 +230,9 @@ FIELDMAPO:					include/FieldMap.h
 KDTREEO:						include/KDTree.h
 KDTREENODEO:				include/KDTreeNode.h
 FIELDVERTEXO:				include/FieldVertex.h
-VERTEXSTACKO:					include/VertexStack.h
+VERTEXSTACKO:				include/VertexStack.h
 POINTO:						include/Point.h
+OBSERVABLEO:				include/Observable.h
 
 UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/Material.h include/GravField.h include/Particle.h \
@@ -243,7 +246,7 @@ UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/InitialConfig.h include/RunConfig.h include/Observer.h \
 								include/Observables.h include/Track.h include/FieldMap.h \
 								include/KDTree.h include/KDTreeNode.h include/FieldVertex.h \
-								include/VertexStack.h include/Point.h $(LINKDEF)
+								include/VertexStack.h include/Point.h include/Observable.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 

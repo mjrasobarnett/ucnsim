@@ -340,11 +340,11 @@ Bool_t Boundary::ReflectParticle(Particle* particle, TGeoNavigator* navigator, D
    if (gRandom->Uniform(0.0,1.0) <= diffuseProbability) {
       // -- Diffuse Bounce
       if (this->DiffuseBounce(particle, navigator, norm) == kFALSE) {return kFALSE;}
-      particle->NotifyObservers(Context::DiffBounce);
+      particle->NotifyObservers(particle, Context::DiffBounce);
    } else {
       // -- Specular Bounce
       if (this->SpecularBounce(particle, navigator, norm) == kFALSE) {return kFALSE;}
-      particle->NotifyObservers(Context::SpecBounce);
+      particle->NotifyObservers(particle, Context::SpecBounce);
    
    }
    return kTRUE;

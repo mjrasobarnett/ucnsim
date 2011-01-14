@@ -16,6 +16,7 @@
 #pragma link C++ class Detector+;
 #pragma link C++ class BlackHole+;
 #pragma link C++ class Particle+;
+#pragma link C++ class Observable+;
 #pragma link C++ class Spin+;
 #pragma link C++ class Spinor+;
 #pragma link C++ class State+;

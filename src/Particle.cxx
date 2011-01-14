@@ -9,6 +9,7 @@
 
 #include "Particle.h"
 #include "Run.h"
+#include "Observer.h"
 
 #include "TMath.h"
 #include "TRandom.h"
@@ -29,9 +30,9 @@ ClassImp(Particle)
 
 //______________________________________________________________________________
 Particle::Particle()
-             :TObject(),
+             :TObject(), Observable(),
               fId(0), fPos(), fMom(), fE(0.),
-              fDistance(0.), fRandomSeed(0), fState(NULL), fSpin(), fObservers()
+              fDistance(0.), fRandomSeed(0), fState(NULL), fSpin()
 {
    // -- Default constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -42,9 +43,9 @@ Particle::Particle()
 
 //______________________________________________________________________________
 Particle::Particle(Int_t id, Point& pos, TVector3& mom, Double_t energy)
-             :TObject(),
+             :TObject(), Observable(),
               fId(id), fPos(pos), fMom(mom), fE(energy),
-              fDistance(0.), fRandomSeed(0), fSpin(), fObservers()
+              fDistance(0.), fRandomSeed(0), fSpin()
 {
    // -- Constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -55,37 +56,14 @@ Particle::Particle(Int_t id, Point& pos, TVector3& mom, Double_t energy)
 
 //_____________________________________________________________________________
 Particle::Particle(const Particle& p)
-             :TObject(p),
+             :TObject(p), Observable(p),
               fId(p.fId), fPos(p.fPos), fMom(p.fMom), fE(p.fE), fDistance(p.fDistance),
-              fRandomSeed(p.fRandomSeed), fState(p.fState), fSpin(p.fSpin), fObservers(p.fObservers)
+              fRandomSeed(p.fRandomSeed), fState(p.fState), fSpin(p.fSpin)
 {
    // -- Copy Constructor
    #ifdef PRINT_CONSTRUCTORS
       Info("Particle","Copy Constructor");
    #endif
-}
-
-//_____________________________________________________________________________
-Particle& Particle::operator=(const Particle& p)
-{
-   // -- assignment operator
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Particle","Assignment");
-   #endif
-   if(this!=&p) {
-      TObject::operator=(p);
-      fId = p.fId;
-      fPos = p.fPos;
-      fMom = p.fMom;
-      fE = p.fE;
-      fDistance = p.fDistance;
-      fRandomSeed = p.fRandomSeed;
-      if (fState) delete fState; fState = NULL;
-      fState = p.fState;
-      fSpin = p.fSpin;
-      fObservers = p.fObservers;
-   }
-   return *this;
 }
 
 //______________________________________________________________________________
@@ -210,7 +188,7 @@ void Particle::PrecessSpin(const TVector3& field, const Double_t precessTime)
    // -- Precess spin about field for time defined by precessTime 
    fSpin.Precess(field,precessTime);
    // Notify Observers of spin state change
-   this->NotifyObservers(Context::Spin);
+   NotifyObservers(this, Context::Spin);
 }
 
 //_____________________________________________________________________________
@@ -221,26 +199,12 @@ Bool_t Particle::IsSpinUp(const TVector3& axis) const
 }
 
 //_____________________________________________________________________________
-void Particle::Attach(Observer* observer)
-{
-   // -- Add an observer to the particle's list of observers
-   fObservers.push_back(observer);
-}
-
-//_____________________________________________________________________________
-void Particle::Detach(Observer* observer)
-{
-   // -- Remove an observer from the particle's list of observers
-   fObservers.remove(observer);
-}
-
-//_____________________________________________________________________________
-void Particle::NotifyObservers(const std::string& context)
+void Particle::NotifyObservers(const TObject* subject, const std::string& context)
 {
    // -- Notify Observers of change
-   list<Observer*>::iterator listIter;
-   for(listIter = fObservers.begin(); listIter != fObservers.end(); listIter++) {
-      (*listIter)->RecordEvent(this, context);
+   for(int i = 0; i < this->CountObservers(); i++) {
+      Observer* observer = this->GetObserver(i);
+      observer->RecordEvent(subject, context);
    }
 }
 
@@ -250,14 +214,10 @@ void Particle::WriteToFile(TDirectory* particleDir)
    // -- Write particle to given directory. Also tell the observers to write out the particle's
    // -- observables to the same directory.
    particleDir->cd();
-   // First write out the observers to file and detach them
-   list<Observer*>::iterator listIter;
-   for(listIter = fObservers.begin(); listIter != fObservers.end(); listIter++) {
-      // Write out
-      (*listIter)->WriteToFile(particleDir);
-      // Detach
-      fObservers.erase(listIter);
-   }
+   // First write out the observers to file
+   this->WriteObserversToFile(particleDir);
+   // Delete Observers
+   this->DetachAll();
    assert(this->CountObservers() == 0);
    // Next write particle to file
    this->Write("Particle",TObject::kOverwrite);
