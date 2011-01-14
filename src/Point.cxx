@@ -9,38 +9,33 @@
 
 using namespace std;
 
-ClassImp(Point)
-
 //_____________________________________________________________________________
 Point::Point()
-       :TObject(),
-        fX(0.), fY(0.), fZ(0.), fT(0.)
+      :fX(0.), fY(0.), fZ(0.), fT(0.)
 {
 // -- Default constructor
    #ifdef PRINT_CONSTRUCTORS
-      Info("Point", "Default Constructor");
+      cout << "Point - Default Constructor" << endl;
    #endif
 } 
 
 //_____________________________________________________________________________
-Point::Point(const Double_t x, const Double_t y, const Double_t z, const Double_t t)
-       :TObject(),
-        fX(x), fY(y), fZ(z), fT(t)
+Point::Point(double x, double y, double z, double t)
+      :fX(x), fY(y), fZ(z), fT(t)
 {
 // -- constructor
    #ifdef PRINT_CONSTRUCTORS
-      Info("Point", "Constructor");
+      cout << "Point", "Constructor" << endl;
    #endif
 }
 
 //_____________________________________________________________________________
 Point::Point(const Point& other)
-      :TObject(other),
-       fX(other.fX), fY(other.fY), fZ(other.fZ), fT(other.fT)
+      :fX(other.fX), fY(other.fY), fZ(other.fZ), fT(other.fT)
 {
 // -- Copy Constructor
    #ifdef PRINT_CONSTRUCTORS
-      Info("Point", "Copy Constructor");
+      cout << "Point", "Copy Constructor" << endl;
    #endif
 }
 
@@ -49,7 +44,6 @@ Point& Point::operator=(const Point& other)
 {
 // --assignment operator
    if(this!=&other) {
-      TObject::operator=(other);
       fX = other.fX;
       fY = other.fY;
       fZ = other.fZ;
@@ -63,6 +57,16 @@ Point::~Point()
 {
 // -- Destructor
    #ifdef PRINT_CONSTRUCTORS
-      Info("Point", "Destructor");
+      cout << "Point", "Destructor" << endl;
    #endif
+}
+
+//______________________________________________________________________________
+bool Point::operator==(const Point& other) const
+{
+   if (other.X() == fX && other.Y() == fY && other.Z() == fZ && other.T() == fT) {
+      return true;
+   } else {
+      return false;
+   }
 }

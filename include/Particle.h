@@ -96,6 +96,8 @@ public:
    Double_t             Nz()     const {return (this->P() != 0. ? this->Pz()/this->P() : 0.);}
    Double_t             Theta()  const {return fMom.Theta();}
    Double_t             Phi()    const {return fMom.Phi();}
+
+   const Point&         GetPosition() const {return fPos;}
    
    void                 SetId(const Int_t id) {fId = id;}
    void                 SetPosition(const Double_t x, const Double_t y, const Double_t z, 

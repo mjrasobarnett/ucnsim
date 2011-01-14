@@ -75,7 +75,7 @@ bool FileParser::ExtractFieldVertices(std::string filename, std::vector<const Fi
       // Check if row size corresponds to the expected 6 columns
       if (row.size() != 6) {continue;}
       // Create new FieldVertex and add to list
-      vertices.push_back(new FieldVertex(row[0],row[1],row[2],row[3],row[4],row[5]));
+      vertices.push_back(new FieldVertex(row[0],row[1],row[2],0.0,row[3],row[4],row[5]));
    }
    return true;
 }

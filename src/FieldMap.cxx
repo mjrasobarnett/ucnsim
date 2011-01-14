@@ -145,7 +145,7 @@ TVector3 MagFieldMap::Interpolate(const TVector3& position, const Int_t numInter
    // -- For given position, find the n-nearest-neighbouring vertices (n being numInterpolatePoints)
    // -- and perform IDW interpolation using Modified Shepard's Method,
    // -- http://en.wikipedia.org/wiki/Inverse_distance_weighting
-   FieldVertex vertex(position.X(), position.Y(), position.Z(), 0.,0.,0.);
+   FieldVertex vertex(position.X(), position.Y(), position.Z(), 0.,0.,0.,0.);
    const VertexStack* neighbours = fTree->NearestNeighbours(vertex, numInterpolatePoints);
    list<StackElement>::const_iterator stackIter;
    double radius = (neighbours->back()).second;

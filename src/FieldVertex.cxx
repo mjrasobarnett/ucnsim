@@ -14,8 +14,8 @@ ClassImp(FieldVertex);
 
 //______________________________________________________________________________
 FieldVertex::FieldVertex()
-      :TObject(),
-       fX(0.), fY(0.), fZ(0.), fBField()
+            :TObject(),
+             fPoint(), fBField()
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "FieldVertex Default Construct" << endl;
@@ -23,9 +23,20 @@ FieldVertex::FieldVertex()
 }
 
 //______________________________________________________________________________
-FieldVertex::FieldVertex(double x, double y, double z, double bx, double by, double bz)
-      :TObject(),
-       fX(x), fY(y), fZ(z), fBField(bx, by, bz)
+FieldVertex::FieldVertex(double x, double y, double z, double t, double bx, double by, double bz)
+            :TObject(),
+             fPoint(x,y,z,t), fBField(bx, by, bz)
+{
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "FieldVertex Construct" << endl;
+   #endif
+}
+
+
+//______________________________________________________________________________
+FieldVertex::FieldVertex(const Point& point, const TVector3& bfield)
+            :TObject(),
+             fPoint(point), fBField(bfield)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "FieldVertex Construct" << endl;
@@ -34,11 +45,9 @@ FieldVertex::FieldVertex(double x, double y, double z, double bx, double by, dou
 
 //______________________________________________________________________________
 FieldVertex::FieldVertex(const FieldVertex& other)
-      :TObject(other),
-       fX(other.fX),
-       fY(other.fY),
-       fZ(other.fZ),
-       fBField(other.fBField)
+            :TObject(other),
+             fPoint(other.fPoint),
+             fBField(other.fBField)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "FieldVertex Copy Construct" << endl;
@@ -51,9 +60,7 @@ FieldVertex& FieldVertex::operator=(const FieldVertex& other)
    // Assignment
    if(this!=&other) {
       TObject::operator=(other);
-      fX = other.fX;
-      fY = other.fY;
-      fZ = other.fZ;
+      fPoint = other.fPoint;
       fBField = other.fBField;
    }
    return *this;
@@ -71,7 +78,7 @@ FieldVertex::~FieldVertex()
 //______________________________________________________________________________
 bool FieldVertex::operator==(const FieldVertex& other) const
 {
-   if (other.X() == fX && other.Y() == fY && other.Z() == fZ) {
+   if (other.GetPoint() == fPoint) {
       return true;
    } else {
       return false;
@@ -83,7 +90,8 @@ string FieldVertex::ToString() const
 {
    ostringstream oss;
    oss.precision(2);
-   oss << "(" << fX << ", " << fY << ", " << fZ << "), ";
+   oss << "(" << fPoint.X() << ", " << fPoint.Y() << ", " << fPoint.X() << ", " << fPoint.T();
+   oss << "), ";
    oss << "(" << fBField.X() << ", " << fBField.Y() << ", " << fBField.Z() << ") ";
    return oss.str();
 }
