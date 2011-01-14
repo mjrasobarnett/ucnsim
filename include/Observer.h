@@ -31,6 +31,7 @@ namespace Context {
    const std::string SpecBounce = "specbounce";
    const std::string DiffBounce = "diffbounce";
    const std::string Step = "step";
+   const std::string MeasureField = "measurefield";
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -138,5 +139,32 @@ public:
    
    ClassDef(TrackObserver, 1)
 };
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    FieldObserver -                                                  //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+class FieldObserver : public Observer
+{
+private:
+   FieldObservables *fObservables;
+   
+public:
+   // -- Constructors
+   FieldObserver();
+   FieldObserver(const FieldObserver&);
+   FieldObserver& operator=(const FieldObserver&);
+   virtual ~FieldObserver();
+   
+   virtual void RecordEvent(const TObject* subject, const std::string& context);
+   virtual void ResetObservables();
+   virtual void LoadExistingObservables(TDirectory* const particleDir);
+   virtual void WriteToFile(TDirectory* const particleDir);
+   
+   ClassDef(FieldObserver, 1)
+};
+
 
 #endif /* OBSERVER_H */

@@ -313,3 +313,98 @@ void TrackObserver::WriteToFile(TDirectory* const particleDir)
    particleDir->cd();
    fTrack->Write("Track",TObject::kOverwrite);
 }
+
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    FieldObserver                                                   //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+ClassImp(FieldObserver)
+
+//_____________________________________________________________________________
+FieldObserver::FieldObserver()
+              :Observer(),
+               fObservables(NULL)
+{
+   // Constructor
+   Info("FieldObserver","Default Constructor");
+}
+
+//_____________________________________________________________________________
+FieldObserver::FieldObserver(const FieldObserver& other)
+              :Observer(other),
+               fObservables(other.fObservables)
+{
+   // Copy Constructor
+   Info("FieldObserver","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+FieldObserver& FieldObserver::operator=(const FieldObserver& other)
+{
+   // Assignment
+   Info("FieldObserver","Assignment");
+   if(this!=&other) {
+      Observer::operator=(other);
+      fObservables = other.fObservables;
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+FieldObserver::~FieldObserver()
+{
+   // Destructor
+   Info("FieldObserver","Destructor");
+   if (fObservables != NULL) delete fObservables;
+}
+
+//_____________________________________________________________________________
+void FieldObserver::RecordEvent(const TObject* subject, const string& context)
+{
+   // -- Record the current Field 
+   if (subject == fSubject && context == Context::MeasureField) {
+      const FieldVertex* vertex = dynamic_cast<const FieldVertex*>(subject);
+      const FieldVertex* copy = new FieldVertex(*vertex);
+      fObservables->push_back(copy);
+   }
+}
+
+//_____________________________________________________________________________
+void FieldObserver::ResetObservables()
+{
+   // -- Delete current observables and create a new version in its place
+   if (fObservables != NULL) delete fObservables; fObservables = NULL;
+   fObservables = new FieldObservables();
+}
+
+//_____________________________________________________________________________
+void FieldObserver::LoadExistingObservables(TDirectory* const particleDir)
+{
+   // -- Look for a SpinObservables object and if so load into memory
+   particleDir->cd();
+   // -- Loop on all entries of this directory
+   TKey *key;
+   TIter nextkey(particleDir->GetListOfKeys());
+   while ((key = static_cast<TKey*>(nextkey.Next()))) {
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("Track")) {
+         if (fObservables != NULL) delete fObservables; fObservables = NULL;
+         fObservables = dynamic_cast<FieldObservables*>(key->ReadObj());
+         break;
+      }
+   }
+}
+
+//_____________________________________________________________________________
+void FieldObserver::WriteToFile(TDirectory* const particleDir)
+{
+   // -- Write out the current observable to the provided directory
+   particleDir->cd();
+   fObservables->Write("FieldObservables",TObject::kOverwrite);
+}
+

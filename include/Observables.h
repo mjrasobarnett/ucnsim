@@ -15,6 +15,7 @@
 #include <map>
 #include "TObject.h"
 #include "TPolyLine3D.h"
+#include "FieldVertex.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -61,6 +62,25 @@ public:
    Int_t CountTotal() const {return (fDiffuse+fSpecular);}
    
    ClassDef(BounceObservables, 1)
+};
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    FieldObservables -                                              //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+class FieldObservables : public std::vector<const FieldVertex*>, public TObject
+{
+private:
+   void PurgeContainer();
+   
+public:
+   FieldObservables();
+   FieldObservables(const FieldObservables&);
+   virtual ~FieldObservables();
+   
+   ClassDef(FieldObservables, 1)
 };
 
 #endif /*OBSERVABLES*/

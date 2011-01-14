@@ -111,3 +111,57 @@ BounceObservables::~BounceObservables()
       Info("BounceObservables","Destructor");
    #endif
 }
+
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    FieldObservables                                                //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+ClassImp(FieldObservables)
+
+
+//_____________________________________________________________________________
+FieldObservables::FieldObservables()
+                 :std::vector<const FieldVertex*>(),
+                  TObject()
+{
+   // Constructor
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldObservables","Default Constructor");
+   #endif
+}
+
+//_____________________________________________________________________________
+FieldObservables::FieldObservables(const FieldObservables& other)
+                    :std::vector<const FieldVertex*>(other),
+                     TObject(other)
+{
+   // Copy Constructor
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldObservables","Copy Constructor");
+   #endif
+}
+
+//_____________________________________________________________________________
+FieldObservables::~FieldObservables()
+{
+   // Destructor
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldObservables","Destructor");
+   #endif
+   PurgeContainer();
+}
+
+//______________________________________________________________________________
+void FieldObservables::PurgeContainer()
+{
+   // -- Delete all elements in container
+   if (this->empty() == kFALSE) {
+      vector<const FieldVertex*>::iterator it;
+      for(it = this->begin(); it != this->end(); ++it) {
+         delete *it;
+         *it = 0;
+      }
+   }
+}
