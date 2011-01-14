@@ -356,7 +356,7 @@ FieldObserver::~FieldObserver()
 void FieldObserver::RecordEvent(const TObject* subject, const string& context)
 {
    // -- Record the current Field 
-   if (subject == fSubject && context == Context::MeasureField) {
+   if (context == Context::MeasureField) {
       const FieldVertex* vertex = dynamic_cast<const FieldVertex*>(subject);
       const FieldVertex* copy = new FieldVertex(*vertex);
       fFieldData->push_back(copy);
@@ -383,7 +383,7 @@ void FieldObserver::LoadExistingData(TDirectory* const particleDir)
       const char *classname = key->GetClassName();
       TClass *cl = gROOT->GetClass(classname);
       if (!cl) continue;
-      if (cl->InheritsFrom("Track")) {
+      if (cl->InheritsFrom("FieldData")) {
          if (fFieldData != NULL) delete fFieldData; fFieldData = NULL;
          fFieldData = dynamic_cast<FieldData*>(key->ReadObj());
          break;

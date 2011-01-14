@@ -183,6 +183,9 @@ void Particle::PrecessSpin(const TVector3& field, const Double_t precessTime)
    fSpin.Precess(field,precessTime);
    // Notify Observers of spin state change
    NotifyObservers(this, Context::Spin);
+   // Notify Observers of current MagField
+   FieldVertex fieldvertex(this->GetPosition(), field);
+   NotifyObservers(&fieldvertex, Context::MeasureField);
 }
 
 //_____________________________________________________________________________

@@ -26,6 +26,9 @@ class FieldVertex : public TObject {
       double Y() const {return fPoint.Y();}
       double Z() const {return fPoint.Z();}
       double T() const {return fPoint.T();}
+      double Bx() const {return fBField.X();}
+      double By() const {return fBField.Y();}
+      double Bz() const {return fBField.Z();}
       const Point& GetPoint() const {return fPoint;}
       const TVector3& FieldVector() const {return fBField;}
       
