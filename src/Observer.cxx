@@ -292,7 +292,7 @@ void TrackObserver::RecordEvent(const TObject* subject, const string& context)
    // -- Record the current polarisation
    if (subject == fSubject && context == Context::Step) {
       const Particle* particle = dynamic_cast<const Particle*>(subject);
-      fTrack->AddVertex(particle->X(), particle->Y(), particle->Z(), particle->T());
+      fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
    }
 }
 

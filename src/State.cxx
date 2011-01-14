@@ -137,7 +137,7 @@ void State::UpdateParticle(Particle* particle, const TGeoNavigator* navigator, c
    Double_t mom[3] = {momentum*dir[0], momentum*dir[1], momentum*dir[2]};
    
    // Update particle
-   particle->SetVertex(pos[0], pos[1], pos[2], particle->T() + timeInterval);
+   particle->SetPosition(pos[0], pos[1], pos[2], particle->T() + timeInterval);
    particle->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
    particle->IncreaseDistance(navigator->GetStep()); // Increase the distance travelled
    

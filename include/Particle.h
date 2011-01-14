@@ -12,6 +12,7 @@
 #include "TVector3.h"
 #include "TDirectory.h"
 
+#include "Point.h"
 #include "Spin.h"
 #include "State.h"
 #include "Observer.h"
@@ -47,9 +48,8 @@ class Particle : public TObject
 protected:
    // -- Members
    Int_t       fId;        // Particle's number (assigned when its created to help keep track of it)
-   TVector3    fPos;
+   Point       fPos;
    TVector3    fMom;
-   Double_t    fT;         // Time travelled
    Double_t    fE;         // kinetic energy
    Double_t    fDistance;  // Distance travelled
    
@@ -73,7 +73,7 @@ protected:
 public:
    // -- Constructors
    Particle();
-   Particle(Int_t id, TVector3& pos, TVector3& mom, Double_t energy, Double_t t=0);
+   Particle(Int_t id, Point& position, TVector3& mom, Double_t energy);
    Particle(const Particle &part);
    Particle& operator=(const Particle&);
 
@@ -87,7 +87,7 @@ public:
    Double_t             X()      const {return fPos.X();}
    Double_t             Y()      const {return fPos.Y();}
    Double_t             Z()      const {return fPos.Z();}
-   Double_t             T()      const {return fT;}
+   Double_t             T()      const {return fPos.T();}
    Double_t             Px()     const {return fMom.X();}
    Double_t             Py()     const {return fMom.Y();}
    Double_t             Pz()     const {return fMom.Z();}
@@ -100,12 +100,11 @@ public:
    Double_t             Nx()     const {return (this->P() != 0. ? this->Px()/this->P() : 0.);}
    Double_t             Ny()     const {return (this->P() != 0. ? this->Py()/this->P() : 0.);}
    Double_t             Nz()     const {return (this->P() != 0. ? this->Pz()/this->P() : 0.);}
-   Double_t             Rho()    const {return fPos.Mag();}
    Double_t             Theta()  const {return fMom.Theta();}
    Double_t             Phi()    const {return fMom.Phi();}
    
    void                 SetId(const Int_t id) {fId = id;}
-   void                 SetVertex(const Double_t x, const Double_t y, const Double_t z, 
+   void                 SetPosition(const Double_t x, const Double_t y, const Double_t z, 
                                        const Double_t t);
    void                 SetMomentum(const Double_t px, const Double_t py, const Double_t pz, 
                                        const Double_t energy);
@@ -122,7 +121,7 @@ public:
    inline void          IncreaseDistance(Double_t stepsize)    {fDistance += stepsize;}
    
    // State
-   State*           GetState()     {return fState;}
+   State*               GetState()     {return fState;}
    
    // Spin
    void                 Polarise(const TVector3& axis, const Bool_t up);

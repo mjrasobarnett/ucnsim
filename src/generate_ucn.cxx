@@ -284,7 +284,7 @@ Bool_t CreateRandomParticle(Particle* particle, const Double_t fillTime, const T
    // Thus a particle can be generated at any time in the filling time process when the beam is on
    Double_t startTime = gRandom->Uniform(0.0,fillTime);
    // -- Create Particle
-   particle->SetVertex(point[0], point[1], point[2], startTime);
+   particle->SetPosition(point[0], point[1], point[2], startTime);
    
    return kTRUE;
 }

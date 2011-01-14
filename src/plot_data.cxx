@@ -127,16 +127,16 @@ Int_t main(Int_t argc,Char_t **argv)
    TDirectory* const stateDir = gDirectory;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Particle final state
-//   PlotFinalStates(histDir, stateDir, initialConfig, runConfig, geoManager);
+   PlotFinalStates(histDir, stateDir, initialConfig, runConfig, geoManager);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Polarisation
    if (runConfig.ObservePolarisation() == kTRUE) {
-//      PlotSpinPolarisation(histDir, stateDir, runConfig);
+      PlotSpinPolarisation(histDir, stateDir, runConfig);
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounce Data
    if (runConfig.ObserveBounces() == kTRUE) {
-//      PlotBounceCounters(histDir, stateDir, runConfig);
+      PlotBounceCounters(histDir, stateDir, runConfig);
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Track History
@@ -521,7 +521,7 @@ void PlotBounceCounters(TDirectory* const histDir, TDirectory* const stateDir, c
 }
 
 //_____________________________________________________________________________
-void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig, TGeoManager* geoManager)
+void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& /*runConfig*/, TGeoManager* geoManager)
 {
    
    //////////////////////////////////////////////////////////////////////////////////////
@@ -570,8 +570,8 @@ void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir
             if (cl->InheritsFrom("Track")) {
                Track* track = dynamic_cast<Track*>(objKey->ReadObj());
                vector<Double_t> times = CalculateParticleHistory(*track, geoManager);
-               const Vertex& lastVertex = track->GetVertex(track->TotalVertices());
-               Double_t totalTime = lastVertex.T();
+               const Point& lastPoint = track->GetPoint(track->TotalPoints());
+               Double_t totalTime = lastPoint.T();
                delete track;
                Double_t sourcePercent = times[0]/totalTime;
                Double_t transferPercent = times[1]/totalTime;
@@ -646,15 +646,15 @@ vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoMa
    Double_t timeInTransferSec = 0.;
    Double_t timeInRamseyCell = 0.;
    
-   for (UInt_t vertexNum = 0; vertexNum < track.TotalVertices(); vertexNum++) {
-      const Vertex& vertex = track.GetVertex(vertexNum);
-      TGeoNode* node = geoManager->FindNode(vertex.X(), vertex.Y(), vertex.Z());
+   for (UInt_t pointNum = 0; pointNum < track.TotalPoints(); pointNum++) {
+      const Point& point = track.GetPoint(pointNum);
+      TGeoNode* node = geoManager->FindNode(point.X(), point.Y(), point.Z());
       TGeoVolume* volume = node->GetVolume();
       map<string, string>::iterator key = regionList.find(volume->GetName());
       if (key == regionList.end()) {
          continue;
       }
-      nextTime = vertex.T();
+      nextTime = point.T();
       Double_t deltaT = nextTime - previousTime;
       if (key->second == source) {
          timeInSource += deltaT;

@@ -49,7 +49,7 @@
 #pragma link C++ class BounceObservables+;
 #pragma link C++ class TrackObserver+;
 #pragma link C++ class Track+;
-#pragma link C++ class Vertex+;
+#pragma link C++ class Point+;
 #pragma link C++ class FieldMap+;
 #pragma link C++ class MagFieldMap+;
 #pragma link C++ class KDTree+;

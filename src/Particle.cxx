@@ -30,7 +30,7 @@ ClassImp(Particle)
 //______________________________________________________________________________
 Particle::Particle()
              :TObject(),
-              fId(0), fPos(), fMom(), fT(0.), fE(0.),
+              fId(0), fPos(), fMom(), fE(0.),
               fDistance(0.), fRandomSeed(0), fState(NULL), fSpin(), fObservers()
 {
    // -- Default constructor
@@ -41,9 +41,9 @@ Particle::Particle()
 
 
 //______________________________________________________________________________
-Particle::Particle(Int_t id, TVector3& pos, TVector3& mom, Double_t energy, Double_t t)
+Particle::Particle(Int_t id, Point& pos, TVector3& mom, Double_t energy)
              :TObject(),
-              fId(id), fPos(pos), fMom(mom), fT(t), fE(energy),
+              fId(id), fPos(pos), fMom(mom), fE(energy),
               fDistance(0.), fRandomSeed(0), fSpin(), fObservers()
 {
    // -- Constructor
@@ -56,7 +56,7 @@ Particle::Particle(Int_t id, TVector3& pos, TVector3& mom, Double_t energy, Doub
 //_____________________________________________________________________________
 Particle::Particle(const Particle& p)
              :TObject(p),
-              fId(p.fId), fPos(p.fPos), fMom(p.fMom), fT(p.fT), fE(p.fE), fDistance(p.fDistance),
+              fId(p.fId), fPos(p.fPos), fMom(p.fMom), fE(p.fE), fDistance(p.fDistance),
               fRandomSeed(p.fRandomSeed), fState(p.fState), fSpin(p.fSpin), fObservers(p.fObservers)
 {
    // -- Copy Constructor
@@ -77,7 +77,6 @@ Particle& Particle::operator=(const Particle& p)
       fId = p.fId;
       fPos = p.fPos;
       fMom = p.fMom;
-      fT = p.fT;
       fE = p.fE;
       fDistance = p.fDistance;
       fRandomSeed = p.fRandomSeed;
@@ -120,11 +119,11 @@ const Spin& Particle::GetSpin() const
 }
 
 //______________________________________________________________________________
-void Particle::SetVertex(const Double_t x, const Double_t y, const Double_t z,
+void Particle::SetPosition(const Double_t x, const Double_t y, const Double_t z,
                                     const Double_t t)
 {
    // Set current vertex to given coords
-   fPos.SetXYZ(x,y,z); fT = t;
+   fPos.SetPoint(x,y,z,t);
 }
 
 //______________________________________________________________________________

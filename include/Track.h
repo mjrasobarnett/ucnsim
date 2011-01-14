@@ -6,18 +6,19 @@
 
 #include <vector>
 #include "TObject.h"
+#include "Point.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
 //       Track                                                            //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-class Vertex;
+class Point;
 
 class Track : public TObject
 {
 private:
-   std::vector<Vertex*> fVertices;
+   std::vector<Point*> fPoints;
    
    void PurgeContainer();
    
@@ -30,44 +31,13 @@ public:
    virtual ~Track();
    
    // -- methods
-   void           AddVertex(const Double_t x, const Double_t y, const Double_t z, const Double_t t);
-   const Vertex&  GetVertex(unsigned int i) const;
-   unsigned int   TotalVertices() const {return fVertices.size();}
+   void           AddPoint(const Double_t x, const Double_t y, const Double_t z, const Double_t t);
+   const Point&  GetPoint(unsigned int i) const;
+   unsigned int   TotalPoints() const {return fPoints.size();}
    
    std::vector<Double_t> OutputPointsArray();
    
    ClassDef(Track, 1)
 };
-
-
-////////////////////////////////////////////////////////////////////////////
-//                                                                        //
-//       Vertex                                                           //
-//                                                                        //
-////////////////////////////////////////////////////////////////////////////
-
-class Vertex : public TObject
-{
-private:
-   Double_t fX, fY, fZ, fT;
-   
-public:
-   // -- constructors
-   Vertex();
-   Vertex(const Double_t x, const Double_t y, const Double_t z, const Double_t t);
-   Vertex(const Vertex&); 
-   Vertex& operator=(const Vertex&);
-   // -- destructor
-   virtual ~Vertex();
-   
-   // -- methods
-   Double_t X() const {return fX;}
-   Double_t Y() const {return fY;}
-   Double_t Z() const {return fZ;}
-   Double_t T() const {return fT;}
-   
-   ClassDef(Vertex, 1)
-};
-
 
 #endif

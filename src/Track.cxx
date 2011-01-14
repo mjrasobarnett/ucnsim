@@ -42,7 +42,7 @@ Track& Track::operator=(const Track& other)
    if(this!=&other) {
       TObject::operator=(other);
       this->PurgeContainer();
-      fVertices = other.fVertices;
+      fPoints = other.fPoints;
    }
    return *this;
 }
@@ -61,9 +61,9 @@ Track::~Track()
 void Track::PurgeContainer()
 {
    // -- Delete all elements in container
-   if (fVertices.empty() == kFALSE) {
-      vector<Vertex*>::iterator it;
-      for(it = fVertices.begin(); it != fVertices.end(); ++it) {
+   if (fPoints.empty() == kFALSE) {
+      vector<Point*>::iterator it;
+      for(it = fPoints.begin(); it != fPoints.end(); ++it) {
          delete *it;
          *it = 0;
       }
@@ -71,19 +71,19 @@ void Track::PurgeContainer()
 }
 
 //______________________________________________________________________________
-void Track::AddVertex(const Double_t x, const Double_t y, const Double_t z, const Double_t t)
+void Track::AddPoint(const Double_t x, const Double_t y, const Double_t z, const Double_t t)
 {
    // -- Add point to track
-   fVertices.push_back(new Vertex(x,y,z,t));
+   fPoints.push_back(new Point(x,y,z,t));
 }
 
 //______________________________________________________________________________
-const Vertex& Track::GetVertex(unsigned int i) const
+const Point& Track::GetPoint(unsigned int i) const
 {
    // -- Retrieve point from track
    // Check for requests past bounds of storage
-   if (i >= fVertices.size()) {return *(fVertices.back());}
-   return *(fVertices[i]);
+   if (i >= fPoints.size()) {return *(fPoints.back());}
+   return *(fPoints[i]);
 }
 
 //______________________________________________________________________________
@@ -93,8 +93,8 @@ vector<Double_t> Track::OutputPointsArray()
    // -- of each vertex, to be used for creating a TPolyLine3D for drawing purposes
    vector<Double_t> points;
    // Loop over all vertices
-   vector<Vertex*>::const_iterator vertexIter;
-   for (vertexIter = fVertices.begin(); vertexIter != fVertices.end(); vertexIter++) {
+   vector<Point*>::const_iterator vertexIter;
+   for (vertexIter = fPoints.begin(); vertexIter != fPoints.end(); vertexIter++) {
       // Fill array of points with X, Y, Z of each vertex
       points.push_back((*vertexIter)->X());
       points.push_back((*vertexIter)->Y());
@@ -103,65 +103,3 @@ vector<Double_t> Track::OutputPointsArray()
    return points;
 }
 
-//_____________________________________________________________________________
-//_____________________________________________________________________________
-//_____________________________________________________________________________
-
-
-ClassImp(Vertex)
-
-//_____________________________________________________________________________
-Vertex::Vertex()
-       :TObject(),
-        fX(0.), fY(0.), fZ(0.), fT(0.)
-{
-// -- Default constructor
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Vertex", "Default Constructor");
-   #endif
-} 
-
-//_____________________________________________________________________________
-Vertex::Vertex(const Double_t x, const Double_t y, const Double_t z, const Double_t t)
-       :TObject(),
-        fX(x), fY(y), fZ(z), fT(t)
-{
-// -- constructor
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Vertex", "Constructor");
-   #endif
-}
-
-//_____________________________________________________________________________
-Vertex::Vertex(const Vertex& other)
-      :TObject(other),
-       fX(other.fX), fY(other.fY), fZ(other.fZ), fT(other.fT)
-{
-// -- Copy Constructor
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Vertex", "Copy Constructor");
-   #endif
-}
-
-//_____________________________________________________________________________
-Vertex& Vertex::operator=(const Vertex& other)
-{
-// --assignment operator
-   if(this!=&other) {
-      TObject::operator=(other);
-      fX = other.fX;
-      fY = other.fY;
-      fZ = other.fZ;
-      fT = other.fT;
-   }
-   return *this;
-}
-
-//______________________________________________________________________________
-Vertex::~Vertex()
-{
-// -- Destructor
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Vertex", "Destructor");
-   #endif
-}
