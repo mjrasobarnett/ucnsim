@@ -383,7 +383,7 @@ void Data::RegisterObservers(Particle* particle)
    for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
       string subject = obsIter->first;
       Observer* observer = obsIter->second;
-      observer->ResetObservables();
+      observer->ResetData();
       // If observer's subject is particle, then attach it to the particle
       if (subject == "Particles") {
          observer->DefineSubject(particle);
@@ -452,7 +452,7 @@ Particle* const Data::RetrieveParticle()
    // Search Directory for any observables previously recorded to be continued
    multimap<string, Observer*>::iterator obsIter;
    for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
-      obsIter->second->LoadExistingObservables(nextParticleDir);
+      obsIter->second->LoadExistingData(nextParticleDir);
    }
    return nextParticle;
 }

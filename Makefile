@@ -84,8 +84,12 @@ RUNCONFIGO = src/RunConfig.$(ObjSuf) UCNDict.$(ObjSuf)
 RUNCONFIGS = src/RunConfig.$(SrcSuf) UCNDict.$(SrcSuf)
 OBSERVERO = src/Observer.$(ObjSuf) UCNDict.$(ObjSuf)
 OBSERVERS = src/Observer.$(SrcSuf) UCNDict.$(SrcSuf)
-OBSERVABLESO = src/Observables.$(ObjSuf) UCNDict.$(ObjSuf)
-OBSERVABLESS = src/Observables.$(SrcSuf) UCNDict.$(SrcSuf)
+SPINDATAO = src/SpinData.$(ObjSuf) UCNDict.$(ObjSuf)
+SPINDATAS = src/SpinData.$(SrcSuf) UCNDict.$(SrcSuf)
+BOUNCEDATAO = src/BounceData.$(ObjSuf) UCNDict.$(ObjSuf)
+BOUNCEDATAS = src/BounceData.$(SrcSuf) UCNDict.$(SrcSuf)
+FIELDDATAO = src/FieldData.$(ObjSuf) UCNDict.$(ObjSuf)
+FIELDDATAS = src/FieldData.$(SrcSuf) UCNDict.$(SrcSuf)
 TRACKO = src/Track.$(ObjSuf) UCNDict.$(ObjSuf)
 TRACKS = src/Track.$(SrcSuf) UCNDict.$(SrcSuf)
 FIELDMAPO = src/FieldMap.$(ObjSuf) UCNDict.$(ObjSuf)
@@ -114,8 +118,8 @@ OBJS = $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
 $(STATEO) $(SPINO) $(FILEPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
 $(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
 $(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) $(INITIALCONFIGO) \
-$(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO) $(FIELDMAPO) $(KDTREEO) $(KDTREENODEO) \
-$(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLEO)
+$(RUNCONFIGO) $(OBSERVERO) $(SPINDATAO) $(BOUNCEDATAO) $(FIELDDATAO) $(TRACKO) $(FIELDMAPO) \
+$(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLEO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(PLOT_DATA) $(SANDBOX) \
 $(DRAW_TRACKS) $(TEST_KDTREE)
@@ -223,8 +227,10 @@ ELEMENTO: 					include/Element.h
 MAGFIELDMANAGERO: 		include/MagFieldManager.h
 INITIALCONFIGO: 			include/InitialConfig.h
 RUNCONFIGO: 				include/RunConfig.h
-OBSERVERO: 					include/Observer.h
-OBSERVABLESO: 				include/Observables.h
+OBSERVERO:					include/Observer.h
+SPINDATAO:					include/SpinData.h
+BOUNCEDATAO:				include/BounceData.h
+FIELDDATAO: 				include/FieldData.h
 TRACKO:						include/Track.h
 FIELDMAPO:					include/FieldMap.h
 KDTREEO:						include/KDTree.h

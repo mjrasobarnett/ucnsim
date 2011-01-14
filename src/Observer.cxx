@@ -33,7 +33,7 @@ ClassImp(SpinObserver)
 //_____________________________________________________________________________
 SpinObserver::SpinObserver()
                  :Observer(),
-                  fSpinObservables(NULL)
+                  fSpinData(NULL)
 {
    // Constructor
    Info("SpinObserver","Default Constructor");
@@ -42,7 +42,7 @@ SpinObserver::SpinObserver()
 //_____________________________________________________________________________
 SpinObserver::SpinObserver(const RunConfig& runConfig)
                  :Observer(),
-                  fSpinObservables(NULL)
+                  fSpinData(NULL)
 {
    // Constructor
    Info("SpinObserver","Constructor");
@@ -52,7 +52,7 @@ SpinObserver::SpinObserver(const RunConfig& runConfig)
 //_____________________________________________________________________________
 SpinObserver::SpinObserver(const SpinObserver& other)
                  :Observer(other),
-                  fSpinObservables(other.fSpinObservables),
+                  fSpinData(other.fSpinData),
                   fMeasAxis(other.fMeasAxis)
 {
    // Copy Constructor
@@ -66,7 +66,7 @@ SpinObserver& SpinObserver::operator=(const SpinObserver& other)
    Info("SpinObserver","Assignment");
    if(this!=&other) {
       Observer::operator=(other);
-      fSpinObservables = other.fSpinObservables;
+      fSpinData = other.fSpinData;
       fMeasAxis = other.fMeasAxis;
    }
    return *this;
@@ -77,7 +77,7 @@ SpinObserver::~SpinObserver()
 {
    // Destructor
    Info("SpinObserver","Destructor");
-   if (fSpinObservables != NULL) delete fSpinObservables;
+   if (fSpinData != NULL) delete fSpinData;
 }
 
 //_____________________________________________________________________________
@@ -86,22 +86,22 @@ void SpinObserver::RecordEvent(const TObject* subject, const string& context)
    // -- Record the current polarisation
    if (subject == fSubject && context == Context::Spin) {
       const Particle* particle = dynamic_cast<const Particle*>(subject);
-      fSpinObservables->insert(pair<Double_t,Bool_t>(particle->T(), particle->IsSpinUp(fMeasAxis)));
+      fSpinData->insert(pair<Double_t,Bool_t>(particle->T(), particle->IsSpinUp(fMeasAxis)));
    }
 }
 
 //_____________________________________________________________________________
-void SpinObserver::ResetObservables()
+void SpinObserver::ResetData()
 {
    // -- Delete current observables and create a new version in its place
-   if (fSpinObservables != NULL) delete fSpinObservables; fSpinObservables = NULL;
-   fSpinObservables = new SpinObservables();
+   if (fSpinData != NULL) delete fSpinData; fSpinData = NULL;
+   fSpinData = new SpinData();
 }
 
 //_____________________________________________________________________________
-void SpinObserver::LoadExistingObservables(TDirectory* const particleDir)
+void SpinObserver::LoadExistingData(TDirectory* const particleDir)
 {
-   // -- Look for a SpinObservables object and if so load into memory
+   // -- Look for a SpinData object and if so load into memory
    particleDir->cd();
    // -- Loop on all entries of this directory
    TKey *key;
@@ -110,9 +110,9 @@ void SpinObserver::LoadExistingObservables(TDirectory* const particleDir)
       const char *classname = key->GetClassName();
       TClass *cl = gROOT->GetClass(classname);
       if (!cl) continue;
-      if (cl->InheritsFrom("SpinObservables")) {
-         if (fSpinObservables != NULL) delete fSpinObservables; fSpinObservables = NULL;
-         fSpinObservables = dynamic_cast<SpinObservables*>(key->ReadObj());
+      if (cl->InheritsFrom("SpinData")) {
+         if (fSpinData != NULL) delete fSpinData; fSpinData = NULL;
+         fSpinData = dynamic_cast<SpinData*>(key->ReadObj());
          break;
       }
    }
@@ -123,7 +123,7 @@ void SpinObserver::WriteToFile(TDirectory* const particleDir)
 {
    // -- Write out the current observable to the provided directory
    particleDir->cd();
-   fSpinObservables->Write("SpinObservables",TObject::kOverwrite);
+   fSpinData->Write("SpinData",TObject::kOverwrite);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -137,7 +137,7 @@ ClassImp(BounceObserver)
 //_____________________________________________________________________________
 BounceObserver::BounceObserver()
                    :Observer(),
-                    fBounceObservables(NULL)
+                    fBounceData(NULL)
 {
    // Constructor
    Info("BounceObserver","Default Constructor");
@@ -146,7 +146,7 @@ BounceObserver::BounceObserver()
 //_____________________________________________________________________________
 BounceObserver::BounceObserver(const BounceObserver& other)
                  :Observer(other),
-                  fBounceObservables(other.fBounceObservables)
+                  fBounceData(other.fBounceData)
 {
    // Copy Constructor
    Info("BounceObserver","Copy Constructor");
@@ -159,7 +159,7 @@ BounceObserver& BounceObserver::operator=(const BounceObserver& other)
    Info("BounceObserver","Assignment");
    if(this!=&other) {
       Observer::operator=(other);
-      fBounceObservables = other.fBounceObservables;
+      fBounceData = other.fBounceData;
    }
    return *this;
 }
@@ -169,7 +169,7 @@ BounceObserver::~BounceObserver()
 {
    // Destructor
    Info("BounceObserver","Destructor");
-   if (fBounceObservables != NULL) delete fBounceObservables;
+   if (fBounceData != NULL) delete fBounceData;
 }
 
 //_____________________________________________________________________________
@@ -178,25 +178,25 @@ void BounceObserver::RecordEvent(const TObject* subject, const string& context)
    // -- Record the current polarisation
    if (subject == fSubject) {
       if (context == Context::SpecBounce) {
-         fBounceObservables->RecordSpecular();
+         fBounceData->RecordSpecular();
       } else if (context == Context::DiffBounce) {
-         fBounceObservables->RecordDiffuse();
+         fBounceData->RecordDiffuse();
       }
    }
 }
 
 //_____________________________________________________________________________
-void BounceObserver::ResetObservables()
+void BounceObserver::ResetData()
 {
    // -- Delete current observables and create a new version in its place
-   if (fBounceObservables != NULL) delete fBounceObservables; fBounceObservables = NULL;
-   fBounceObservables = new BounceObservables();
+   if (fBounceData != NULL) delete fBounceData; fBounceData = NULL;
+   fBounceData = new BounceData();
 }
 
 //_____________________________________________________________________________
-void BounceObserver::LoadExistingObservables(TDirectory* const particleDir)
+void BounceObserver::LoadExistingData(TDirectory* const particleDir)
 {
-   // -- Look for a SpinObservables object and if so load into memory
+   // -- Look for a SpinData object and if so load into memory
    particleDir->cd();
    // -- Loop on all entries of this directory
    TKey *key;
@@ -205,9 +205,9 @@ void BounceObserver::LoadExistingObservables(TDirectory* const particleDir)
       const char *classname = key->GetClassName();
       TClass *cl = gROOT->GetClass(classname);
       if (!cl) continue;
-      if (cl->InheritsFrom("BounceObservables")) {
-         if (fBounceObservables != NULL) delete fBounceObservables; fBounceObservables = NULL;
-         fBounceObservables = dynamic_cast<BounceObservables*>(key->ReadObj());
+      if (cl->InheritsFrom("BounceData")) {
+         if (fBounceData != NULL) delete fBounceData; fBounceData = NULL;
+         fBounceData = dynamic_cast<BounceData*>(key->ReadObj());
          break;
       }
    }
@@ -218,7 +218,7 @@ void BounceObserver::WriteToFile(TDirectory* const particleDir)
 {
    // -- Write out the current observable to the provided directory
    particleDir->cd();
-   fBounceObservables->Write("BounceObservables",TObject::kOverwrite);
+   fBounceData->Write("BounceData",TObject::kOverwrite);
 }
 
 
@@ -279,7 +279,7 @@ void TrackObserver::RecordEvent(const TObject* subject, const string& context)
 }
 
 //_____________________________________________________________________________
-void TrackObserver::ResetObservables()
+void TrackObserver::ResetData()
 {
    // -- Delete current observables and create a new version in its place
    if (fTrack != NULL) delete fTrack; fTrack = NULL;
@@ -287,9 +287,9 @@ void TrackObserver::ResetObservables()
 }
 
 //_____________________________________________________________________________
-void TrackObserver::LoadExistingObservables(TDirectory* const particleDir)
+void TrackObserver::LoadExistingData(TDirectory* const particleDir)
 {
-   // -- Look for a SpinObservables object and if so load into memory
+   // -- Look for a SpinData object and if so load into memory
    particleDir->cd();
    // -- Loop on all entries of this directory
    TKey *key;
@@ -326,7 +326,7 @@ ClassImp(FieldObserver)
 //_____________________________________________________________________________
 FieldObserver::FieldObserver()
               :Observer(),
-               fObservables(NULL)
+               fFieldData(NULL)
 {
    // Constructor
    Info("FieldObserver","Default Constructor");
@@ -335,7 +335,7 @@ FieldObserver::FieldObserver()
 //_____________________________________________________________________________
 FieldObserver::FieldObserver(const FieldObserver& other)
               :Observer(other),
-               fObservables(other.fObservables)
+               fFieldData(other.fFieldData)
 {
    // Copy Constructor
    Info("FieldObserver","Copy Constructor");
@@ -348,7 +348,7 @@ FieldObserver& FieldObserver::operator=(const FieldObserver& other)
    Info("FieldObserver","Assignment");
    if(this!=&other) {
       Observer::operator=(other);
-      fObservables = other.fObservables;
+      fFieldData = other.fFieldData;
    }
    return *this;
 }
@@ -358,7 +358,7 @@ FieldObserver::~FieldObserver()
 {
    // Destructor
    Info("FieldObserver","Destructor");
-   if (fObservables != NULL) delete fObservables;
+   if (fFieldData != NULL) delete fFieldData;
 }
 
 //_____________________________________________________________________________
@@ -368,22 +368,22 @@ void FieldObserver::RecordEvent(const TObject* subject, const string& context)
    if (subject == fSubject && context == Context::MeasureField) {
       const FieldVertex* vertex = dynamic_cast<const FieldVertex*>(subject);
       const FieldVertex* copy = new FieldVertex(*vertex);
-      fObservables->push_back(copy);
+      fFieldData->push_back(copy);
    }
 }
 
 //_____________________________________________________________________________
-void FieldObserver::ResetObservables()
+void FieldObserver::ResetData()
 {
    // -- Delete current observables and create a new version in its place
-   if (fObservables != NULL) delete fObservables; fObservables = NULL;
-   fObservables = new FieldObservables();
+   if (fFieldData != NULL) delete fFieldData; fFieldData = NULL;
+   fFieldData = new FieldData();
 }
 
 //_____________________________________________________________________________
-void FieldObserver::LoadExistingObservables(TDirectory* const particleDir)
+void FieldObserver::LoadExistingData(TDirectory* const particleDir)
 {
-   // -- Look for a SpinObservables object and if so load into memory
+   // -- Look for a SpinData object and if so load into memory
    particleDir->cd();
    // -- Loop on all entries of this directory
    TKey *key;
@@ -393,8 +393,8 @@ void FieldObserver::LoadExistingObservables(TDirectory* const particleDir)
       TClass *cl = gROOT->GetClass(classname);
       if (!cl) continue;
       if (cl->InheritsFrom("Track")) {
-         if (fObservables != NULL) delete fObservables; fObservables = NULL;
-         fObservables = dynamic_cast<FieldObservables*>(key->ReadObj());
+         if (fFieldData != NULL) delete fFieldData; fFieldData = NULL;
+         fFieldData = dynamic_cast<FieldData*>(key->ReadObj());
          break;
       }
    }
@@ -405,6 +405,6 @@ void FieldObserver::WriteToFile(TDirectory* const particleDir)
 {
    // -- Write out the current observable to the provided directory
    particleDir->cd();
-   fObservables->Write("FieldObservables",TObject::kOverwrite);
+   fFieldData->Write("FieldData",TObject::kOverwrite);
 }
 

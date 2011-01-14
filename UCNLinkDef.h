@@ -45,9 +45,9 @@
 #pragma link C++ class RunConfig+;
 #pragma link C++ class Observer+;
 #pragma link C++ class SpinObserver+;
-#pragma link C++ class SpinObservables+;
+#pragma link C++ class SpinData+;
 #pragma link C++ class BounceObserver+;
-#pragma link C++ class BounceObservables+;
+#pragma link C++ class BounceData+;
 #pragma link C++ class TrackObserver+;
 #pragma link C++ class Track+;
 #pragma link C++ class Point+;
@@ -58,6 +58,6 @@
 #pragma link C++ class FieldVertex+;
 #pragma link C++ class VertexStack+;
 #pragma link C++ class FieldObserver+;
-#pragma link C++ class FieldObservables+;
+#pragma link C++ class FieldData+;
 
 #endif

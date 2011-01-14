@@ -20,7 +20,9 @@
 #include "ConfigFile.h"
 #include "InitialConfig.h"
 #include "RunConfig.h"
-#include "Observables.h"
+#include "SpinData.h"
+#include "BounceData.h"
+#include "FieldData.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -380,11 +382,11 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
             classname = objKey->GetClassName();
             cl = gROOT->GetClass(classname);
             if (!cl) continue;
-            if (cl->InheritsFrom("SpinObservables")) {
+            if (cl->InheritsFrom("SpinData")) {
                // -- Extract Spin Observer Data if recorded
-               SpinObservables* data = dynamic_cast<SpinObservables*>(objKey->ReadObj());
+               SpinData* data = dynamic_cast<SpinData*>(objKey->ReadObj());
                // Loop over spin data recorded for particle
-               SpinObservables::iterator dataIter;
+               SpinData::iterator dataIter;
                for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
                   if (dataIter->second == kTRUE) {
                      // If spin up, bin the time
@@ -493,9 +495,9 @@ void PlotBounceCounters(TDirectory* const histDir, TDirectory* const stateDir, c
             classname = objKey->GetClassName();
             cl = gROOT->GetClass(classname);
             if (!cl) continue;
-            if (cl->InheritsFrom("BounceObservables")) {
+            if (cl->InheritsFrom("BounceData")) {
                // -- Extract Bounce Observer Data if recorded
-               BounceObservables* data =dynamic_cast<BounceObservables*>(objKey->ReadObj());
+               BounceData* data =dynamic_cast<BounceData*>(objKey->ReadObj());
                Plot::bounceHist->Fill(data->CountTotal());
                Plot::specHist->Fill(data->CountSpecular());
                Plot::diffHist->Fill(data->CountDiffuse());

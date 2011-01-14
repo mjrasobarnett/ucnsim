@@ -10,6 +10,7 @@
 #include "TCanvas.h"
 #include "TPolyMarker3D.h"
 #include "TPointSet3D.h"
+#include "TPolyLine3D.h"
 #include "TFile.h"
 #include "TMath.h"
 #include "TLegend.h"
