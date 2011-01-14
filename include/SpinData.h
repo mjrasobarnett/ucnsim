@@ -7,6 +7,7 @@
 
 #include <map>
 #include "TObject.h"
+#include "Spin.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -14,10 +15,11 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
-class SpinData : public std::map<Double_t, Bool_t>, public TObject
+class SpinData : public std::map<Double_t, const Spin*>, public TObject
 {
 private:
-
+   void PurgeContainer();
+   
 public:
    SpinData();
    SpinData(const SpinData&);

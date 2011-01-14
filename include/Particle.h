@@ -62,8 +62,6 @@ private:
    // Spin
    Spin         fSpin;
    
-   // -- Methods
-   const Spin&      GetSpin() const;
    // State Change
    void             ChangeState(State* state);
    
@@ -120,6 +118,7 @@ public:
    State*               GetState()     {return fState;}
    
    // Spin
+   const Spin&          GetSpin() const {return fSpin;}
    void                 Polarise(const TVector3& axis, const Bool_t up);
    void                 PrecessSpin(const TVector3& field, const Double_t precessTime);
    Bool_t               IsSpinUp(const TVector3& axis) const;

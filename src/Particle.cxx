@@ -91,12 +91,6 @@ void Particle::SaveState(Run* run)
 }
 
 //______________________________________________________________________________
-const Spin& Particle::GetSpin() const
-{
-   return fSpin;
-}
-
-//______________________________________________________________________________
 void Particle::SetPosition(const Double_t x, const Double_t y, const Double_t z,
                                     const Double_t t)
 {

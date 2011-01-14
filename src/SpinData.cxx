@@ -18,8 +18,8 @@ ClassImp(SpinData)
 
 //_____________________________________________________________________________
 SpinData::SpinData()
-                    :std::map<Double_t, Bool_t>(),
-                     TObject()
+         :map<Double_t, const Spin*>(),
+          TObject()
 {
    // Constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -29,8 +29,8 @@ SpinData::SpinData()
 
 //_____________________________________________________________________________
 SpinData::SpinData(const SpinData& other)
-                    :std::map<Double_t, Bool_t>(other),
-                     TObject(other)
+         :map<Double_t, const Spin*>(other),
+          TObject(other)
 {
    // Copy Constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -46,7 +46,7 @@ SpinData& SpinData::operator=(const SpinData& other)
       Info("SpinData","Assignment");
    #endif
    if(this!=&other) {
-      std::map<Double_t,Bool_t>::operator=(other);
+      map<Double_t,const Spin*>::operator=(other);
       TObject::operator=(other);
    }
    return *this;
@@ -59,4 +59,16 @@ SpinData::~SpinData()
    #ifdef PRINT_CONSTRUCTORS
       Info("SpinData","Destructor");
    #endif
+   PurgeContainer();
+}
+
+//______________________________________________________________________________
+void SpinData::PurgeContainer()
+{
+   // -- Delete all elements in container
+   map<Double_t, const Spin*>::iterator it;
+   for(it = this->begin(); it != this->end(); ++it) {
+      delete it->second;
+      it->second = NULL;
+   }
 }

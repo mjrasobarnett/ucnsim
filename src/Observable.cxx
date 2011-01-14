@@ -45,7 +45,7 @@ void Observable::Attach(Observer* observer)
 //_____________________________________________________________________________
 void Observable::DetachAll()
 {
-   // -- Remove an observer from the particle's list of observers
+   // -- Remove all observers from the particle's list of observers
    fObservers.erase(fObservers.begin(), fObservers.end());
 }
 

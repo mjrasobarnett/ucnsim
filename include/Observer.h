@@ -72,12 +72,10 @@ class SpinObserver : public Observer
 {
 private:
    SpinData *fSpinData;
-   TVector3 fMeasAxis;
    
 public:
    // -- Constructors
    SpinObserver();
-   SpinObserver(const RunConfig& runConfig);
    SpinObserver(const SpinObserver&);
    SpinObserver& operator=(const SpinObserver&);
    virtual ~SpinObserver();

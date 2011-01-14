@@ -57,10 +57,16 @@ namespace Plot {
    TH1F* specHist = NULL;
    TH1F* diffHist = NULL;
    
-   TH1F* spinUpHist = NULL;
-   TH1F* spinDownHist = NULL;
+   TH1F* spinUpAlongXHist = NULL;
+   TH1F* spinDownAlongXHist = NULL;
+   TH1F* spinUpDownAlongXHist = NULL;
+   TH1F* spinUpAlongYHist = NULL;
+   TH1F* spinDownAlongYHist = NULL;
+   TH1F* spinUpDownAlongYHist = NULL;
+   TH1F* spinUpAlongZHist = NULL;
+   TH1F* spinDownAlongZHist = NULL;
+   TH1F* spinUpDownAlongZHist = NULL;
    
-   TH1F* spinUpDownHist = NULL;
 }
 
 Int_t main(Int_t argc,Char_t **argv)
@@ -332,33 +338,85 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Define Histograms
    Char_t histname[40];
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Spin Polarisation
    const Double_t runTime = runConfig.RunTime();
-   sprintf(histname,"%s:SpinUp",stateDir->GetName());
-   Plot::spinUpHist = new TH1F(histname,"SpinUp", 500, 0.0, runTime);      
-   Plot::spinUpHist->SetXTitle("Time (s)");
-   Plot::spinUpHist->SetYTitle("Spin Up Neutrons");
-   //spinUpHist->SetLineColor(kBlue);
-   Plot::spinUpHist->SetFillStyle(1001);
-   Plot::spinUpHist->SetFillColor(kBlue-7);
+   const TVector3 xAxis(1.0,0.0,0.0);
+   const TVector3 yAxis(0.0,1.0,0.0);
+   const TVector3 zAxis(0.0,0.0,1.0);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- X Axis Spin Polarisation
+   sprintf(histname,"%s:SpinUp AlongX",stateDir->GetName());
+   Plot::spinUpAlongXHist = new TH1F(histname,"SpinUp AlongX", 500, 0.0, runTime);      
+   Plot::spinUpAlongXHist->SetXTitle("Time (s)");
+   Plot::spinUpAlongXHist->SetYTitle("Spin Up Neutrons");
+   //spinUpAlongXHist->SetLineColor(kBlue);
+   Plot::spinUpAlongXHist->SetFillStyle(1001);
+   Plot::spinUpAlongXHist->SetFillColor(kBlue-7);
 
-   sprintf(histname,"%s:SpinDown",stateDir->GetName());
-   Plot::spinDownHist = new TH1F(histname,"SpinDown", 500, 0.0, runTime);      
-   Plot::spinDownHist->SetXTitle("Time (s)");
-   Plot::spinDownHist->SetYTitle("Spin Down Neutrons");
-   //spinDownHist->SetLineColor(kRed);
-   Plot::spinDownHist->SetFillStyle(3001);
-   Plot::spinDownHist->SetFillColor(kRed-7);
+   sprintf(histname,"%s:SpinDown AlongX",stateDir->GetName());
+   Plot::spinDownAlongXHist = new TH1F(histname,"SpinDown AlongX", 500, 0.0, runTime);      
+   Plot::spinDownAlongXHist->SetXTitle("Time (s)");
+   Plot::spinDownAlongXHist->SetYTitle("Spin Down Neutrons");
+   //spinDownAlongXHist->SetLineColor(kRed);
+   Plot::spinDownAlongXHist->SetFillStyle(3001);
+   Plot::spinDownAlongXHist->SetFillColor(kRed-7);
    
-   sprintf(histname,"%s:SpinUp+Down",stateDir->GetName());
-   Plot::spinUpDownHist  = new TH1F(histname,"SpinUp+Down", 500, 0.0, runTime);   
-   Plot::spinUpDownHist->SetXTitle("Time (s)");
-   Plot::spinUpDownHist->SetYTitle("Spin Up+Down Neutrons");
+   sprintf(histname,"%s:SpinUp+Down Along X",stateDir->GetName());
+   Plot::spinUpDownAlongXHist  = new TH1F(histname,"SpinUp+Down Along X", 500, 0.0, runTime);   
+   Plot::spinUpDownAlongXHist->SetXTitle("Time (s)");
+   Plot::spinUpDownAlongXHist->SetYTitle("Spin Up+Down Neutrons");
    //spinDownHist->SetLineColor(kRed);
-   Plot::spinUpDownHist->SetFillStyle(3001);
-   Plot::spinUpDownHist->SetFillColor(kBlack);
+   Plot::spinUpDownAlongXHist->SetFillStyle(3001);
+   Plot::spinUpDownAlongXHist->SetFillColor(kBlack);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Y Axis Spin Polarisation
+   sprintf(histname,"%s:SpinUp Along Y",stateDir->GetName());
+   Plot::spinUpAlongYHist = new TH1F(histname,"SpinUp Along Y", 500, 0.0, runTime);      
+   Plot::spinUpAlongYHist->SetXTitle("Time (s)");
+   Plot::spinUpAlongYHist->SetYTitle("Spin Up Neutrons");
+   //spinUpAlongYHist->SetLineColor(kBlue);
+   Plot::spinUpAlongYHist->SetFillStyle(1001);
+   Plot::spinUpAlongYHist->SetFillColor(kBlue-7);
+
+   sprintf(histname,"%s:SpinDown Along Y",stateDir->GetName());
+   Plot::spinDownAlongYHist = new TH1F(histname,"SpinDown Along Y", 500, 0.0, runTime);      
+   Plot::spinDownAlongYHist->SetXTitle("Time (s)");
+   Plot::spinDownAlongYHist->SetYTitle("Spin Down Neutrons");
+   //spinDownAlongYHist->SetLineColor(kRed);
+   Plot::spinDownAlongYHist->SetFillStyle(3001);
+   Plot::spinDownAlongYHist->SetFillColor(kRed-7);
    
+   sprintf(histname,"%s:SpinUp+Down Along Y",stateDir->GetName());
+   Plot::spinUpDownAlongYHist  = new TH1F(histname,"SpinUp+Down Along Y", 500, 0.0, runTime);   
+   Plot::spinUpDownAlongYHist->SetXTitle("Time (s)");
+   Plot::spinUpDownAlongYHist->SetYTitle("Spin Up+Down Neutrons");
+   //spinDownHist->SetLineColor(kRed);
+   Plot::spinUpDownAlongYHist->SetFillStyle(3001);
+   Plot::spinUpDownAlongYHist->SetFillColor(kBlack);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Z Axis Spin Polarisation
+   sprintf(histname,"%s:SpinUp Along Z",stateDir->GetName());
+   Plot::spinUpAlongZHist = new TH1F(histname,"SpinUp Along Z", 500, 0.0, runTime);      
+   Plot::spinUpAlongZHist->SetXTitle("Time (s)");
+   Plot::spinUpAlongZHist->SetYTitle("Spin Up Neutrons");
+   //spinUpAlongZHist->SetLineColor(kBlue);
+   Plot::spinUpAlongZHist->SetFillStyle(1001);
+   Plot::spinUpAlongZHist->SetFillColor(kBlue-7);
+
+   sprintf(histname,"%s:SpinDown Along Z",stateDir->GetName());
+   Plot::spinDownAlongZHist = new TH1F(histname,"SpinDown Along Z", 500, 0.0, runTime);      
+   Plot::spinDownAlongZHist->SetXTitle("Time (s)");
+   Plot::spinDownAlongZHist->SetYTitle("Spin Down Neutrons");
+   //spinDownAlongZHist->SetLineColor(kRed);
+   Plot::spinDownAlongZHist->SetFillStyle(3001);
+   Plot::spinDownAlongZHist->SetFillColor(kRed-7);
+   
+   sprintf(histname,"%s:SpinUp+Down Along Z",stateDir->GetName());
+   Plot::spinUpDownAlongZHist  = new TH1F(histname,"SpinUp+Down Along Z", 500, 0.0, runTime);   
+   Plot::spinUpDownAlongZHist->SetXTitle("Time (s)");
+   Plot::spinUpDownAlongZHist->SetYTitle("Spin Up+Down Neutrons");
+   //spinDownHist->SetLineColor(kRed);
+   Plot::spinUpDownAlongZHist->SetFillStyle(3001);
+   Plot::spinUpDownAlongZHist->SetFillColor(kBlack);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into the State's folder
    stateDir->cd();
@@ -388,14 +446,35 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
                // Loop over spin data recorded for particle
                SpinData::iterator dataIter;
                for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
-                  if (dataIter->second == kTRUE) {
+                  Plot::spinUpDownAlongXHist->Fill(dataIter->first);
+                  Plot::spinUpDownAlongYHist->Fill(dataIter->first);
+                  Plot::spinUpDownAlongZHist->Fill(dataIter->first);
+                  // For each data point, record the spin polarisation along each axis
+                  const Spin* spin = dataIter->second;
+                  // Measure polarisation along X
+                  if (spin->IsSpinUp(xAxis)) {
                      // If spin up, bin the time
-                     if (Plot::spinUpHist) Plot::spinUpHist->Fill(dataIter->first);
+                     if (Plot::spinUpAlongXHist) Plot::spinUpAlongXHist->Fill(dataIter->first);
                   } else {
                      // If spin down, bin the time
-                     if (Plot::spinUpHist) Plot::spinDownHist->Fill(dataIter->first);
+                     if (Plot::spinUpAlongXHist) Plot::spinDownAlongXHist->Fill(dataIter->first);
                   }
-                  Plot::spinUpDownHist->Fill(dataIter->first);
+                  // Measure polarisation along Y
+                  if (spin->IsSpinUp(yAxis)) {
+                     // If spin up, bin the time
+                     if (Plot::spinUpAlongYHist) Plot::spinUpAlongYHist->Fill(dataIter->first);
+                  } else {
+                     // If spin down, bin the time
+                     if (Plot::spinUpAlongYHist) Plot::spinDownAlongYHist->Fill(dataIter->first);
+                  }
+                  // Measure polarisation along Y
+                  if (spin->IsSpinUp(zAxis)) {
+                     // If spin up, bin the time
+                     if (Plot::spinUpAlongZHist) Plot::spinUpAlongZHist->Fill(dataIter->first);
+                  } else {
+                     // If spin down, bin the time
+                     if (Plot::spinUpAlongZHist) Plot::spinDownAlongZHist->Fill(dataIter->first);
+                  }
                }
                delete data;
             }
@@ -408,10 +487,26 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Spin Precession Plots
    // -- Down
-   TCanvas *spincanvas = new TCanvas("Spin","Spin Polarisation",60,0,1200,800);
-   spincanvas->Divide(3,1);
-   spincanvas->cd(1);
-   Plot::spinDownHist->Draw();
+   TCanvas *spinXcanvas = new TCanvas("SpinAlongX","Spin Polarisation Along X",60,0,1200,800);
+   spinXcanvas->Divide(3,1);
+   spinXcanvas->cd(1);
+   Plot::spinUpAlongXHist->Draw();
+   //   spinUpHist->GetYaxis()->SetRangeUser(0.0,200.0);
+   /*   TF1 *upprecession = new TF1("UpSpinPrecessionFunc", SpinPrecession, 0.0, 20., 3);
+      upprecession->SetParameters(150.0,1.0,0.0);
+      upprecession->SetParNames("Amplitude","Omega (rad/s)","Phase (Pi/2)");
+      spinUpHist->Fit(upprecession, "RQ");
+      Double_t upamplitude = upprecession->GetParameter(0);
+      Double_t upomega = upprecession->GetParameter(1);
+      Double_t upphase = upprecession->GetParameter(2);
+      cout << "------------------------------------" << endl;
+      cout << "Spin Up:" << endl;
+      cout << "Amplitude: " << upamplitude << "\t" << "Omega: " << upomega;
+      cout << "\t" << "Phase: " << upphase << endl;
+      cout << "------------------------------------" << endl;
+   */
+   spinXcanvas->cd(2);
+   Plot::spinDownAlongXHist->Draw();
    //   spinDownHist->GetYaxis()->SetRangeUser(0.0,200.0);
    /*   TF1 *downprecession = new TF1("DownSpinPrecessionFunc", SpinPrecession, 0.0, 20., 3);
       downprecession->SetParameters(150.0,1.0,0.0);
@@ -425,25 +520,9 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
       cout << "Amplitude: " << downamplitude << "\t" << "Omega: " << downomega;
       cout << "\t" << "Phase: " << downphase << endl;   
       cout << "------------------------------------" << endl;
-   */   // -- Up
-   spincanvas->cd(2);
-   //   spinUpHist->GetYaxis()->SetRangeUser(0.0,200.0);
-   Plot::spinUpHist->Draw();
-   /*   TF1 *upprecession = new TF1("UpSpinPrecessionFunc", SpinPrecession, 0.0, 20., 3);
-      upprecession->SetParameters(150.0,1.0,0.0);
-      upprecession->SetParNames("Amplitude","Omega (rad/s)","Phase (Pi/2)");
-      spinUpHist->Fit(upprecession, "RQ");
-      Double_t upamplitude = upprecession->GetParameter(0);
-      Double_t upomega = upprecession->GetParameter(1);
-      Double_t upphase = upprecession->GetParameter(2);
-      cout << "------------------------------------" << endl;
-      cout << "Spin Up:" << endl;
-      cout << "Amplitude: " << upamplitude << "\t" << "Omega: " << upomega;
-      cout << "\t" << "Phase: " << upphase << endl;
-      cout << "------------------------------------" << endl;
-   */   // -- Combined
-   spincanvas->cd(3);
-   Plot::spinUpDownHist->Draw();
+   */ 
+   spinXcanvas->cd(3);
+   Plot::spinUpDownAlongXHist->Draw();
    /*
       TLegend* leg = new TLegend(0.7,0.91,0.9,0.99); //coordinates are fractions of pad dimensions
       leg->SetFillColor(0);
@@ -451,6 +530,23 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
       leg->AddEntry(spinDownHist,"Spin Down");
       leg->Draw();
    */
+   TCanvas *spinYcanvas = new TCanvas("SpinAlongY","Spin Polarisation Along Y",60,0,1200,800);
+   spinYcanvas->Divide(3,1);
+   spinYcanvas->cd(1);
+   Plot::spinUpAlongYHist->Draw();
+   spinYcanvas->cd(2);
+   Plot::spinDownAlongYHist->Draw();
+   spinYcanvas->cd(3);
+   Plot::spinUpDownAlongYHist->Draw();
+   
+   TCanvas *spinZcanvas = new TCanvas("SpinAlongZ","Spin Polarisation Along Z",60,0,1200,800);
+   spinZcanvas->Divide(3,1);
+   spinZcanvas->cd(1);
+   Plot::spinUpAlongZHist->Draw();
+   spinZcanvas->cd(2);
+   Plot::spinDownAlongZHist->Draw();
+   spinZcanvas->cd(3);
+   Plot::spinUpDownAlongZHist->Draw();
    
    return;
 }

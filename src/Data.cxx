@@ -350,7 +350,7 @@ void Data::InitialiseObservers(const RunConfig& runConfig)
    cout << "ObserveTracks: " << runConfig.ObserveTracks() << endl;
    if (runConfig.ObservePolarisation() == kTRUE) {
       // Create an observer to track UCN Spin polarisation
-      Observer* obs = new SpinObserver(runConfig);
+      Observer* obs = new SpinObserver();
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }

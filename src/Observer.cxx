@@ -32,28 +32,17 @@ ClassImp(SpinObserver)
 
 //_____________________________________________________________________________
 SpinObserver::SpinObserver()
-                 :Observer(),
-                  fSpinData(NULL)
+             :Observer(),
+              fSpinData(NULL)
 {
    // Constructor
    Info("SpinObserver","Default Constructor");
 }
 
 //_____________________________________________________________________________
-SpinObserver::SpinObserver(const RunConfig& runConfig)
-                 :Observer(),
-                  fSpinData(NULL)
-{
-   // Constructor
-   Info("SpinObserver","Constructor");
-   fMeasAxis = runConfig.PolarisationAxis();
-}
-
-//_____________________________________________________________________________
 SpinObserver::SpinObserver(const SpinObserver& other)
                  :Observer(other),
-                  fSpinData(other.fSpinData),
-                  fMeasAxis(other.fMeasAxis)
+                  fSpinData(other.fSpinData)
 {
    // Copy Constructor
    Info("SpinObserver","Copy Constructor");
@@ -67,7 +56,6 @@ SpinObserver& SpinObserver::operator=(const SpinObserver& other)
    if(this!=&other) {
       Observer::operator=(other);
       fSpinData = other.fSpinData;
-      fMeasAxis = other.fMeasAxis;
    }
    return *this;
 }
@@ -83,10 +71,13 @@ SpinObserver::~SpinObserver()
 //_____________________________________________________________________________
 void SpinObserver::RecordEvent(const TObject* subject, const string& context)
 {
-   // -- Record the current polarisation
+   // -- Record the current spin state
    if (subject == fSubject && context == Context::Spin) {
       const Particle* particle = dynamic_cast<const Particle*>(subject);
-      fSpinData->insert(pair<Double_t,Bool_t>(particle->T(), particle->IsSpinUp(fMeasAxis)));
+      // Make a copy of the current spin state
+      const Spin* spin = new Spin(particle->GetSpin());
+      // Insert copy into data structure
+      fSpinData->insert(pair<Double_t,const Spin*>(particle->T(), spin));
    }
 }
 
