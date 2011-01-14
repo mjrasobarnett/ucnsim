@@ -35,6 +35,7 @@ private:
    Bool_t fObsPolarisation;   
    Bool_t fObsBounces;
    Bool_t fObsTracks;
+   Bool_t fObsField;
    
 public:
    // Constructors
@@ -63,6 +64,7 @@ public:
    Bool_t ObservePolarisation() const {return fObsPolarisation;}
    Bool_t ObserveBounces() const {return fObsBounces;}
    Bool_t ObserveTracks() const {return fObsTracks;}
+   Bool_t ObserveField() const {return fObsField;}
    
    virtual void Print(Option_t* option = "") const;
    

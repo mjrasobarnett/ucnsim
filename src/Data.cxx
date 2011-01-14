@@ -366,6 +366,12 @@ void Data::InitialiseObservers(const RunConfig& runConfig)
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }
+   if (runConfig.ObserveField() == kTRUE) {
+      // Create an observer to record field seen by spin
+      Observer* obs = new FieldObserver();
+      // Add observer to the list
+      this->AddObserver("Particles", obs);
+   }
 }
 
 //_____________________________________________________________________________
