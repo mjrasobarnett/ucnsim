@@ -3,6 +3,7 @@
 
 #include "TGeoManager.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TF1.h"
 #include "TRint.h"
 #include "TCanvas.h"
@@ -33,6 +34,7 @@ using namespace std;
 void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, const InitialConfig& initialConfig, const RunConfig& runConfig, TGeoManager* geoManager);
 void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
 void PlotBounceCounters(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
+void PlotField(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
 void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig, TGeoManager* geoManager);
 vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoManager);
 
@@ -67,6 +69,9 @@ namespace Plot {
    TH1F* spinDownAlongZHist = NULL;
    TH1F* spinUpDownAlongZHist = NULL;
    
+   TH2F* bxHist = NULL;
+   TH2F* byHist = NULL;
+   TH2F* bzHist = NULL;
 }
 
 Int_t main(Int_t argc,Char_t **argv)
@@ -135,7 +140,7 @@ Int_t main(Int_t argc,Char_t **argv)
    TDirectory* const stateDir = gDirectory;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Particle final state
-   PlotFinalStates(histDir, stateDir, initialConfig, runConfig, geoManager);
+/*   PlotFinalStates(histDir, stateDir, initialConfig, runConfig, geoManager);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Polarisation
    if (runConfig.ObservePolarisation() == kTRUE) {
@@ -150,6 +155,11 @@ Int_t main(Int_t argc,Char_t **argv)
    // -- Track History
    if (runConfig.ObserveTracks() == kTRUE) {
       PlotParticleHistories(histDir, stateDir, runConfig, geoManager);
+   }
+*/   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Track History
+   if (runConfig.ObserveField() == kTRUE) {
+      PlotField(histDir, stateDir, runConfig);
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
@@ -442,9 +452,9 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
             if (!cl) continue;
             if (cl->InheritsFrom("SpinData")) {
                // -- Extract Spin Observer Data if recorded
-               SpinData* data = dynamic_cast<SpinData*>(objKey->ReadObj());
+               const SpinData* data = dynamic_cast<const SpinData*>(objKey->ReadObj());
                // Loop over spin data recorded for particle
-               SpinData::iterator dataIter;
+               SpinData::const_iterator dataIter;
                for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
                   Plot::spinUpDownAlongXHist->Fill(dataIter->first);
                   Plot::spinUpDownAlongYHist->Fill(dataIter->first);
@@ -619,9 +629,86 @@ void PlotBounceCounters(TDirectory* const histDir, TDirectory* const stateDir, c
 }
 
 //_____________________________________________________________________________
+void PlotField(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig)
+{
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- cd into Histogram's dir
+   histDir->cd();
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Define Histograms
+   Char_t histname[40];
+   const Double_t runTime = runConfig.RunTime();
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Bx
+   sprintf(histname,"%s:Field Bx",stateDir->GetName());
+   Plot::bxHist = new TH2F(histname,"Bx", 500, -0.1*Units::uT, 0.1*Units::uT, 500, 0.0, runTime);
+   Plot::bxHist->SetXTitle("Field measured (T)");
+   Plot::bxHist->SetYTitle("Time (s)");
+   Plot::bxHist->SetZTitle("Neutrons");
+   // -- Bz
+   sprintf(histname,"%s:Field By",stateDir->GetName());
+   Plot::byHist = new TH2F(histname,"By", 500, -0.1*Units::uT, 0.1*Units::uT, 500, 0.0, runTime);
+   Plot::byHist->SetXTitle("Field measured (T)");
+   Plot::byHist->SetYTitle("Time (s)");
+   Plot::byHist->SetZTitle("Neutrons");
+   // -- Bx
+   sprintf(histname,"%s:Field Bz",stateDir->GetName());
+   Plot::bzHist = new TH2F(histname,"Bz", 500, -0.1*Units::uT, 0.1*Units::uT, 500, 0.0, runTime);
+   Plot::bzHist->SetXTitle("Field measured (T)");
+   Plot::bzHist->SetYTitle("Time (s)");
+   Plot::bzHist->SetZTitle("Neutrons");
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- cd into the State's folder
+   stateDir->cd();
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Loop over all particle folders in the current state's folder
+   TKey *folderKey;
+   TIter folderIter(stateDir->GetListOfKeys());
+   while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
+      const char *classname = folderKey->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TDirectory")) {
+         // Loop over all objects in particle dir
+         stateDir->cd(folderKey->GetName());
+         TDirectory* particleDir = gDirectory;
+         TKey *objKey;
+         TIter objIter(particleDir->GetListOfKeys());
+         while ((objKey = static_cast<TKey*>(objIter.Next()))) {
+            // For Each object in the particle's directory, check its class name and what it
+            // inherits from to determine what to do.
+            classname = objKey->GetClassName();
+            cl = gROOT->GetClass(classname);
+            if (!cl) continue;
+            if (cl->InheritsFrom("FieldData")) {
+               // -- Extract Spin Observer Data if recorded
+               const FieldData* fieldData = dynamic_cast<const FieldData*>(objKey->ReadObj());
+               FieldData::const_iterator dataIter;
+               for (dataIter = fieldData->begin(); dataIter != fieldData->end(); dataIter++) {
+                  Plot::bxHist->Fill((*dataIter)->Bx(),(*dataIter)->T());
+                  Plot::byHist->Fill((*dataIter)->By(),(*dataIter)->T());
+                  Plot::bzHist->Fill((*dataIter)->Bz(),(*dataIter)->T());
+               }
+               delete fieldData;
+            }
+         }
+      }
+   }
+   TCanvas *bxcanvas = new TCanvas("BxField","Bx (T)",60,0,1200,800);
+   bxcanvas->cd();
+   Plot::bxHist->Draw("COLZ");
+   TCanvas *bycanvas = new TCanvas("ByField","By (T)",60,0,1200,800);
+   bycanvas->cd();
+   Plot::byHist->Draw("COLZ");
+   TCanvas *bzcanvas = new TCanvas("BzFields","Bz (T)",60,0,1200,800);
+   bzcanvas->cd();
+   Plot::bzHist->Draw("COLZ");
+   return;
+}
+
+//_____________________________________________________________________________
 void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& /*runConfig*/, TGeoManager* geoManager)
 {
-   
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into Histogram's dir
    histDir->cd();
