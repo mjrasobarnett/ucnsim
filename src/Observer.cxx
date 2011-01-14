@@ -144,15 +144,6 @@ BounceObserver::BounceObserver()
 }
 
 //_____________________________________________________________________________
-BounceObserver::BounceObserver(const RunConfig& /*runConfig*/)
-                 :Observer(),
-                  fBounceObservables(NULL)
-{
-   // Constructor
-   Info("BounceObserver","Constructor");
-}
-
-//_____________________________________________________________________________
 BounceObserver::BounceObserver(const BounceObserver& other)
                  :Observer(other),
                   fBounceObservables(other.fBounceObservables)
@@ -246,15 +237,6 @@ TrackObserver::TrackObserver()
 {
    // Constructor
    Info("TrackObserver","Default Constructor");
-}
-
-//_____________________________________________________________________________
-TrackObserver::TrackObserver(const RunConfig& /*runConfig*/)
-                 :Observer(),
-                  fTrack(NULL)
-{
-   // Constructor
-   Info("TrackObserver","Constructor");
 }
 
 //_____________________________________________________________________________

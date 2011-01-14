@@ -356,13 +356,13 @@ void Data::InitialiseObservers(const RunConfig& runConfig)
    }
    if (runConfig.ObserveBounces() == kTRUE) {
       // Create an observer to track UCN Bounces
-      Observer* obs = new BounceObserver(runConfig);
+      Observer* obs = new BounceObserver();
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }
    if (runConfig.ObserveTracks() == kTRUE) {
       // Create an observer to track UCN path
-      Observer* obs = new TrackObserver(runConfig);
+      Observer* obs = new TrackObserver();
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }

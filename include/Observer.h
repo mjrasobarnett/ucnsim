@@ -101,7 +101,6 @@ private:
 public:
    // -- Constructors
    BounceObserver();
-   BounceObserver(const RunConfig& runConfig);
    BounceObserver(const BounceObserver&);
    BounceObserver& operator=(const BounceObserver&);
    virtual ~BounceObserver();
@@ -128,7 +127,6 @@ private:
 public:
    // -- Constructors
    TrackObserver();
-   TrackObserver(const RunConfig& runConfig);
    TrackObserver(const TrackObserver&);
    TrackObserver& operator=(const TrackObserver&);
    virtual ~TrackObserver();
