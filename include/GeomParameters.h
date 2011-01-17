@@ -310,7 +310,7 @@ namespace FieldParameters {
    // X, Y, Z are in the local coord system of the volume
    const Double_t solenoidBx = 0.;
    const Double_t solenoidBy = 0.;
-   const Double_t solenoidBz = 0.01*Units::uT;
+   const Double_t solenoidBz = 5.0*Units::uT;
    
 }
 

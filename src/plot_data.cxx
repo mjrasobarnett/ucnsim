@@ -732,7 +732,7 @@ void PlotField(TDirectory* const histDir, TDirectory* const stateDir, const RunC
    Plot::byHist->SetZTitle("Neutrons");
    // -- Bx
    sprintf(histname,"%s:Field Bz",stateDir->GetName());
-   Plot::bzHist = new TH2F(histname,"Bz", 500, 4.8*Units::uT, 5.2*Units::uT, 500, 0.0, runTime);
+   Plot::bzHist = new TH2F(histname,"Bz", 500, -5.0*Units::uT, 5.2*Units::uT, 500, 0.0, runTime);
    Plot::bzHist->SetXTitle("Field measured (T)");
    Plot::bzHist->SetYTitle("Time (s)");
    Plot::bzHist->SetZTitle("Neutrons");

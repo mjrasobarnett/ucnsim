@@ -16,6 +16,9 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
+//#define PRINT_CONSTRUCTORS 
+#define VERBOSE
+
 using namespace std;
 
 ClassImp(Spin)
@@ -95,9 +98,16 @@ Bool_t Spin::IsSpinUp(const TVector3& axis) const
    // -- Calculate whether particle is in the Spin-up state defined by measurement Axis
    // -- This is a non-destructive calculation, that does not leave the the particle in this
    // -- state after the calculation, as opposed to MeasureSpinUp()
-   Double_t probSpinUp = this->CalculateProbSpinUp(axis);
+   const double probSpinUp = this->CalculateProbSpinUp(axis);
+   bool up = probSpinUp > 1.0 ? false : true;
+   cout.precision(10);
+   cout << (double)probSpinUp << endl;
+   cout << "Up? " << up << endl;
+   bool equal = probSpinUp == 1.0 ? true : false;
+   cout << "Equal to 1? " << equal << endl;   
    // Check for errorneous probability
    if (probSpinUp < 0.0 || probSpinUp > 1.0) {
+      axis.Print();
       throw runtime_error("Spin::IsSpinUp - Found probability outside of 0 -> 1 range.");
    }
    // Roll dice to determine whether Spin Up or Spin Down
@@ -188,6 +198,10 @@ void Spinor::Print(Option_t* /*option*/) const
 Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
 {
    // -- Take mag field (in the global coordinate system) and precess about it
+   #ifdef VERBOSE
+      cout << "Precess Spinor:" << endl;
+      this->Print();
+   #endif
    Double_t omegaX = Neutron::gyromag_ratio*avgMagField.X();
    Double_t omegaY = Neutron::gyromag_ratio*avgMagField.Y();
    Double_t omegaZ = Neutron::gyromag_ratio*avgMagField.Z();
@@ -215,10 +229,15 @@ Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
    TComplex newDown(newDownRe, newDownIm);
    fUp = newUp;
    fDown = newDown;
-   
-//   TVector3 axis(0,1,0);
-//   CalculateProbSpinUp(axis);
-   
+   #ifdef VERBOSE
+      cout << "Precess Time: " << precessTime << endl;
+      cout << "Mag Field - Bx: " << avgMagField.X() << "\t";
+      cout << "By: " << avgMagField.Y() << "\t Bz: " << avgMagField.Z() << endl;
+      cout << "Omega - X: " << omegaX << "\t";
+      cout << "Y: " << omegaY << "\t Z: " << omegaZ << "\t Mag: " << omega << endl;
+      this->Print();
+      cout << "-----------------------------------------------" << endl;
+   #endif
    return kTRUE;
 }
 
@@ -242,6 +261,19 @@ Double_t Spinor::CalculateProbSpinUp(const TVector3& axis) const
    TComplex numer4 = (uz + 1.0)*(ux - TComplex::I()*uy)*fDown*conjugateUp;
    
    TComplex prob = (numer1 + numer2 + numer3 + numer4)/denominator;
-//   cout << "Probability: " << prob.Re() << "\t" << prob.Im() << endl;
+   #ifdef VERBOSE
+      cout.precision(10);
+      cout << "Calculate Prob Spin Up: " << endl;
+      cout << "denominator: " << denominator << endl;
+      cout << conjugateUp.Re() << "\t" << conjugateUp.Im() << endl;
+      cout << conjugateDown.Re() << "\t" << conjugateDown.Im() << endl;
+      cout << numer1.Re() << "\t" << numer1.Im() << endl;
+      cout << numer2.Re() << "\t" << numer2.Im() << endl;
+      cout << numer3.Re() << "\t" << numer3.Im() << endl;
+      cout << numer4.Re() << "\t" << numer4.Im() << endl;
+      cout.precision(10);
+      cout << "Probability: " << prob.Re() << "\t" << prob.Im() << endl;
+      cout << "-----------------------------------------------" << endl;
+   #endif
    return prob.Re();
 }

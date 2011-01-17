@@ -127,6 +127,7 @@ Bool_t MagFieldMap::Interact(Particle& particle, const Run& run, const Double_t 
 Bool_t MagFieldMap::BuildMap(const std::string& filename)
 {
    // -- Take input file and initialise a KDTree object data structure to hold the field points.
+   cout << "Building MagFieldMap from file: " << filename << endl;
    FileParser parser;
    // Get flat list of Field vertices from provided file using the parser
    vector<const FieldVertex*> vertices;
