@@ -19,8 +19,8 @@
 class Spinor : public TObject
 {
 private:
-   TComplex fUp;  // Spinor component for Spin 'Up'
-   TComplex fDown; // Spinor component for Spin 'Down'
+   Double_t fUpRe, fUpIm;  // Spinor components for Spin 'Up'
+   Double_t fDownRe, fDownIm; // Spinor components for Spin 'Down'
    
 public:
    // -- Constructors
