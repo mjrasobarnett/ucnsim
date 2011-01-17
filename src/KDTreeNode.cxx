@@ -234,7 +234,7 @@ bool KDTreeNode::SearchChildren(const FieldVertex& point, VertexStack& neighbour
    if (fLeft == NULL && fRight == NULL) {return true;}
    #ifdef VERBOSE
       cout << "Searching Children of Node: " << this->GetPoint().ToString() << endl;
-      cout << "Current Best: " << neighbours.Front().first->GetPoint().ToString() << endl;
+      cout << "Current Best: " << neighbours.front().first->ToString() << endl;
    #endif
    ////////////////////////////////////////////////////////////////////////////////////
    // If left child is the previous child (i.e: the branch we have come from)

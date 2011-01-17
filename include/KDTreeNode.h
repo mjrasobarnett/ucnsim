@@ -23,6 +23,7 @@ public:
    int GetDepth() const {return fDepth;}
    const FieldVertex& GetPoint() const {return *fPoint;}
    double DistanceTo(const FieldVertex& point) const {return fPoint->DistanceTo(point);}
+   double SquaredDistanceTo(const FieldVertex& point) const {return fPoint->SquaredDistanceTo(point);}
    
    const KDTreeNode& FindNodeContaining(const FieldVertex& point) const;
    bool CheckParentForCloserNodes(const FieldVertex& point, VertexStack& neighbours) const;

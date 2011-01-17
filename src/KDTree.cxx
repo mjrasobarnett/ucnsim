@@ -92,7 +92,7 @@ KDTreeNode* KDTree::BuildNode(vector<const FieldVertex*>& points, KDTreeNode* pa
       #ifdef VERBOSE
          cout << "--------------------" << endl;
          cout << "Ordered by Axis: " << axis << endl;
-         vector<FieldVertex*>::iterator it;
+         vector<const FieldVertex*>::const_iterator it;
          for (it=points.begin(); it<points.end(); it++) {
             cout << it - points.begin() << "\t" << (*it)->ToString() << endl;
          }
@@ -148,8 +148,8 @@ const VertexStack* KDTree::NearestNeighbours(const FieldVertex& point, const int
    #ifdef VERBOSE
       cout << "--------------------" << endl;
       cout << "Nearest Node : ";
-      cout << neighbours->front()->GetPoint().ToString() << endl;
-      cout << "Distance to Point: " << neighbours->front()->second << endl;
+      cout << (neighbours->front()).first->ToString() << endl;
+      cout << "Distance to Point: " << neighbours->front().second << endl;
    #endif
    return neighbours;
 }
