@@ -99,7 +99,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    cout << "Initialising Magnetic fields" << endl;
    cout << "--------------------------------" << endl;
 //   BuildUniformField(hvCellMat);
-   BuildFieldMap();
+   BuildFieldMap(hvCellMat);
    cout << "--------------------------------" << endl;   
    // -------------------------------------
    return kTRUE;
@@ -177,11 +177,15 @@ Bool_t BuildUniformField(const TGeoHMatrix& matrix)
 }
 
 //__________________________________________________________________________
-Bool_t BuildFieldMap()
+Bool_t BuildFieldMap(const TGeoHMatrix& matrix)
 {
    // Create a Uniform Magnetic field and write it to file
    string filename = "runs/spins/ramseycell_fieldmap_raw.txt";
-   MagFieldMap* field = new MagFieldMap();
+   // Define shape of field
+   TGeoShape* fieldShape = new Tube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
+   // Define transformation that locates field in geometry
+   TGeoMatrix* fieldPosition = new TGeoHMatrix(matrix);
+   MagFieldMap* field = new MagFieldMap("SolenoidField", fieldShape, fieldPosition);
    if (field->BuildMap(filename) == kFALSE) {
       Error("BuildFieldMap","Cannot open file: %s", magFileName);
       return kFALSE;
