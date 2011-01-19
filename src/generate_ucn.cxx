@@ -150,12 +150,18 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    const Double_t minPhi = initialConfig.DirectionMinPhi();
    const Double_t maxPhi = initialConfig.DirectionMaxPhi();
    
-   // Create Histograms to view the initial particle distributions   
+   // Calculate the boundaries of the beam volume using the beam matrix
    Box* boundary = dynamic_cast<Box*>(beamVolume->GetShape());
+   Double_t bounds[3] = {0.,0.,0.};
+   Double_t localBounds[3] = {boundary->GetDX(), boundary->GetDY(), boundary->GetDZ()};
+   beamMatrix->LocalToMaster(localBounds, bounds);
+   beamMatrix->Print();
+
+   // Create Histograms to view the initial particle distributions
    const Int_t nbins = 100;
-   TH1F* initialXHist = new TH1F("InitialXHist","X Position, Units of (m)", nbins, -boundary->GetDX(), boundary->GetDX());
-   TH1F* initialYHist = new TH1F("InitialYHist","Y Position, Units of (m)", nbins, -boundary->GetDY(), boundary->GetDY()); 
-   TH1F* initialZHist = new TH1F("InitialZHist","Z Position, Units of (m)", nbins, -boundary->GetDZ(), boundary->GetDZ());
+   TH1F* initialXHist = new TH1F("InitialXHist","X Position, Units of (m)", nbins, -bounds[0], bounds[0]);
+   TH1F* initialYHist = new TH1F("InitialYHist","Y Position, Units of (m)", nbins, -bounds[1], bounds[1]); 
+   TH1F* initialZHist = new TH1F("InitialZHist","Z Position, Units of (m)", nbins, -bounds[2], bounds[2]);
    TH1F* initialVXHist = new TH1F("InitialVXHist","Initial VX velocity, Units of (m/s)", nbins, -vmax, vmax);
    TH1F* initialVYHist = new TH1F("InitialVYHist","Initial VY velocity, Units of (m/s)", nbins, -vmax, vmax);
    TH1F* initialVZHist = new TH1F("InitialVZHist","Initial VZ velocity, Units of (m/s)", nbins, -vmax, vmax);
