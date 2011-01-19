@@ -2,6 +2,8 @@
 #include <string>
 #include <memory>
 
+#include "gsl/gsl_poly.h"
+
 #include "ConfigFile.h"
 #include "Run.h"
 #include "Particle.h"
@@ -14,13 +16,14 @@
 #include "TMath.h"
 #include "TRint.h"
 #include "TVector3.h"
+#include "TGeoMatrix.h"
 #include "UniformMagField.h"
 #include "MagFieldManager.h"
 #include "Data.h"
 #include "FieldMap.h"
 #include "FileParser.h"
 #include "Tube.h"
-#include "TGeoMatrix.h"
+#include "Polynomial.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -35,8 +38,22 @@ bool TestFieldMap();
 // -------------------------------------------------------------------------------------- 
 Int_t main(Int_t /*argc*/,Char_t ** /*argv*/)
 {
-   TestFieldMap();
+ 
    return EXIT_SUCCESS;
+}
+
+//__________________________________________________________________________
+void TestPolynomial()
+{
+//   Double_t params[5] = {1.0, 6.0, 10.0, 1.0, 1.0};
+   Double_t params[5] = {1.0, 4.0, 3.0, 4.0, 1.0};
+   Double_t roots[4] = {0.,0.,0.,0.};
+   Polynomial::Instance()->QuarticRootFinder(params, roots);
+
+//   Double_t params[4] = {1.0, 4.0, 3.0, 1.0};
+//   Double_t roots[3] = {0.,0.,0.};
+//   Polynomial::Instance()->CubicRootFinder(params, roots);
+
 }
 
 //__________________________________________________________________________
@@ -91,6 +108,12 @@ bool TestFieldMap()
    TVector3 avgField = map->Interpolate(point, 6);
    cout << "Final Field (T): " << avgField.X() << "\t" << avgField.Y() << "\t" << avgField.Z() << endl;
    return kTRUE;
+}
+
+//   Double_t params[4] = {1.0, 4.0, 3.0, 1.0};
+//   Double_t roots[3] = {0.,0.,0.};
+//   Polynomial::Instance()->CubicRootFinder(params, roots);
+
 }
 
 // -------------------------------------------------------------------------------------- 

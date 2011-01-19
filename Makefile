@@ -112,7 +112,7 @@ OBSERVABLES = src/Observable.$(SrcSuf) UCNDict.$(SrcSuf)
 #------------------------------------------------------------------------------
 LINKDEF = UCNLinkDef.h
 UCNSO = lib/libUCN.$(DllSuf)
-UCNLIB = -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lGeom -lEG -lm -lMathMore -lGui -lRGL -lGed
+UCNLIB = -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -L$(GSL)/lib -lgsl -lgslcblas -lGeom -lEG -lm -lMathMore -lGui -lRGL -lGed
 #------------------------------------------------------------------------------
 OBJS = $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
 $(STATEO) $(SPINO) $(FILEPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
@@ -257,4 +257,4 @@ UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								$(ROOTCINT) -f $@ -c $^
 
 .$(SrcSuf).$(ObjSuf):
-	$(CXX)  $(CXXFLAGS) -I$(UCN_DIR)/include -c $< -o $@
+	$(CXX)  $(CXXFLAGS) -I$(UCN_DIR)/include -I$(GSL)/include -c $< -o $@

@@ -10,7 +10,7 @@
 #include "TGeoManager.h"
 #include "TVirtualGeoTrack.h"
 
-#include "Math/Polynomial.h"
+#include "gsl/gsl_poly.h"
 
 #include "Polynomial.h"
 #include "Units.h"
@@ -27,16 +27,16 @@ Polynomial *Polynomial::fgPolynomial = NULL;
 
 //_____________________________________________________________________________
 Polynomial::Polynomial()
-				 	:TObject()
+           :TObject()
 {
 // -- Default constructor.
 //   Info("Polynomial", "Constructor");
-	fgPolynomial = this;
+   fgPolynomial = this;
 } 
 
 //_____________________________________________________________________________
 Polynomial::Polynomial(const Polynomial& other)
-				 	:TObject(other)
+           :TObject(other)
 {
 // -- Copy constructor.
    Error("Polynomial","Copying not allowed for Polynomial");
@@ -47,7 +47,7 @@ Polynomial::~Polynomial()
 {
 // -- Destructor.
    Info("Polynomial", "Destructor");
-	fgPolynomial = NULL;
+   fgPolynomial = NULL;
 }   
 
 //_____________________________________________________________________________
@@ -63,248 +63,244 @@ Polynomial* Polynomial::Instance()
 {
 // -- Return pointer to singleton.  
    if (!fgPolynomial) fgPolynomial = new Polynomial();
-	return fgPolynomial;
+   return fgPolynomial;
 }   
 
 //_____________________________________________________________________________
 Int_t Polynomial::QuadraticRootFinder(const Double_t* params, Double_t* roots)
 {
-// Solve quadratic equation and return number of REAL roots if any, and return their values.
-	Int_t numberOfSolutions = 0;
-	
-	// Ensure that potential roots are set to zero to begin with.
-	roots[0] = 0.0;
-	roots[1] = 0.0;
-			
-	// The constants of quadratic equation
-	Double_t a, b, c;
-	a = params[0];
-	b = params[1]; 
-	c = params[2];
-	
-	#ifdef VERBOSE_MODE		
-		cout << "QuadraticRootFinder - a: " << a << "\t" << "b: " << b << "\t" << "c: " << c << endl;
-	#endif
-		
-	// -- Check if we have a linear, rather than quadratic equation
-	if (a == 0.0) {
-		// --------------------------------------------------
-		// -- CASE 0: Linear Equation - One potential root
-		// --------------------------------------------------
-		// -- Check that b > 0. Otherwise there is no solution. 
-		if (b == 0.0) {
-			numberOfSolutions = 0;
-		} else {
-			Double_t t = -c/b;
-			if (t <= 0.) { 
-				numberOfSolutions = 0;
-				#ifdef VERBOSE_MODE		
-					cout << "QuadraticRootFinder - Linear eqn. - t < 0. No Solution." << endl; 
-				#endif
-			} else {
-				numberOfSolutions = 1;
-				roots[0] = t;
-				#ifdef VERBOSE_MODE		
-					cout << "QuadraticRootFinder - Linear eqn. t: " << roots[0] << endl;
-				#endif
-			}
-		}
-		return numberOfSolutions;
-	} 
-	
-	// If c = 0, then one of the solutions must be zero (since we can then factor a t out of each term), and so we actually have a linear
-	// equation. Set the second root of the "roots" storage to zero and solve the linear equation for the final root. 
-	if (c == 0.0) {
-		#ifdef VERBOSE_MODE		
-			cout << "CubicRootFinder - Constant parameter is zero, implying one solution is zero. Remaining equation is now a quadratic." << endl;
-		#endif
-		assert(a != 0.0); // Catch in case this code is moved above the previous 'if' block for some reason. 
-		roots[1] = 0.0;
-		roots[0] = -b/a;
-		numberOfSolutions = 1;
-		return numberOfSolutions;
-	}
-	
-	
-	// -- We therefore have a quadratic equation. Check the discriminant to determine number of roots 
-	Double_t discriminant = b*b - 4*a*c;
-	#ifdef VERBOSE_MODE		
-		cout << "QuadraticRootFinder - Quad. eqn - b*b - 4*a*c: " << discriminant << endl;
-	#endif	
-	if (discriminant > 0.0) {
-		// --------------------------------------------------
-		// -- CASE 1: Two Real Roots
-		// --------------------------------------------------
-		numberOfSolutions = 2;
-		roots[0] = (-b + TMath::Sqrt(b*b - 4*a*c))/(2*a);
-		roots[1] = (-b - TMath::Sqrt(b*b - 4*a*c))/(2*a);
-		#ifdef VERBOSE_MODE		
-			cout << "QuadraticRootFinder - 2 Solutions - t+: " << roots[0] << "\t" << "t-: " << roots[1] << endl;
-		#endif
-	} else if (discriminant == 0.0) {
-		// --------------------------------------------------
-		// -- CASE 2: One Real Root
-		// --------------------------------------------------
-		Double_t t = -b/(2*a);
-		// Check if root is negative 
-		if (t < 0.) { 
-			numberOfSolutions = 0;
-			#ifdef VERBOSE_MODE		
-				cout << "QuadraticRootFinder - 1 Solution - solution is negative." << endl; 
-			#endif
-		} else {
-			roots[0] = t;
-			numberOfSolutions = 1;
-			#ifdef VERBOSE_MODE		
-				cout << "QuadraticRootFinder - 1 Solution - t: " << roots[0] << endl;
-			#endif
-		}
-	} else {
-		// --------------------------------------------------
-		// -- CASE 3: No Real Roots
-		// --------------------------------------------------
-		numberOfSolutions = 0;
-		#ifdef VERBOSE_MODE		
-			cout << "QuadraticRootFinder - 0 Solutions" << endl;
-		#endif
-	}
-
-	return numberOfSolutions; 	
-	
-/*	ROOT::Math::Polynomial quadratic(a,b,c);
-	std::vector<Double_t> realroots = quadratic.FindRealRoots();
-	#ifdef VERBOSE_MODE
-		cout << "---------------------------" << endl;
-		cout << "ROOT::MATHMORE::Solver -- Quadratic" << endl;
-		cout << "No. of Roots: " << realroots.size() << endl;
-	#endif
-	for (UInt_t i = 0; i < realroots.size(); i++) {
-		#ifdef VERBOSE_MODE	
-			cout << i << "\t" << realroots[i] << "\t";
-		#endif
-		roots[i] = realroots[i];
-	}
-	#ifdef VERBOSE_MODE
-		cout << endl << "---------------------------" << endl;
-	#endif
-	return realroots.size();
-*/	
+   // -- Solves quadratic equation and returns number of REAL roots if any.
+   // -- Now using GNU Scientific Library to do all polynomial root finding
+   #ifdef VERBOSE_MODE
+      cout << "QuadraticRootFinder - a: " << params[0] << "\t";
+      cout << "b: " << params[1] << "\t" << "c: " << params[2] << endl;
+   #endif
+   Int_t numRoots = gsl_poly_solve_quadratic(params[0],params[1],params[2],&roots[0],&roots[1]);
+   #ifdef VERBOSE_MODE
+      cout << "QuadraticRootFinder - Num Roots: " << numRoots << endl;
+      cout << "Root 1: " << roots[0] << "\t";
+      cout << "Root 2: " << roots[1] << endl;
+   #endif
+   return numRoots;
 }
 
 //_____________________________________________________________________________
 Int_t Polynomial::CubicRootFinder(const Double_t* params, Double_t* roots)
 {
-	// Solves cubic equation for a polynomial of form ax^3 + bx^2 + cx + d = 0
-	
-	// -- 1. First get cubic into the standard form: x^3 + a2*x^2 + a1*x + a0 = 0   --  see notes
-	// Define parameters in a more readable form
-	Double_t a = params[0], b = params[1], c = params[2], d = params[3];
-	// Check that we actually have a cubic equation
-	assert(a != 0.0); 
-	#ifdef VERBOSE_MODE		
-		cout << "CubicRootFinder - Input Params -  a: " << a << "\t" << "b: " << b << "\t" << "c: " << c << "\t" << "d: " << d << endl;
-	#endif
-	
-	// If d = 0, then one of the solutions must be zero (since we can then factor a 't' out of each term), and so we actually have a quadratic
-	// equation. Set the third root of the "roots" storage to zero and pass the remaining parameters to the quadratic root finder. 
-	if (d == 0.0) {
-		#ifdef VERBOSE_MODE		
-			cout << "CubicRootFinder - Constant parameter is zero, implying one solution is zero. Remaining equation is now a quadratic." << endl;
-		#endif
-		roots[2] = 0.0;
-		Double_t quadraticParams[3] = {a, b, c};
-		return this->QuadraticRootFinder(quadraticParams, roots);
-	}
-	
-/*	// Define the constants of the standard form
-	Double_t a2 = b/a, a1 = c/a, a0 = d/a; 
-	#ifdef VERBOSE_MODE		
-		cout << "CubicRootFinder - Eliminate leading coefficient -  a2: " << a2 << "\t" << "a1: " << a1 << "\t" << "a0: " << a0 << endl;
-	#endif
-	
-	// -- 2. Get rid of the quadratic term through the substitution -- x = u - p/3
-	// -- u^3 + pu - q = 0
-	Double_t p = (3.0*a1 - (a2*a2))/3.0;
-	Double_t q = ((9.0*a1*a2) - (27.0*a0) - (2.0*a2*a2*a2))/27.0 ;
-	
-	#ifdef VERBOSE_MODE		
-		cout << "CubicRootFinder - Vieta's Form -  p: " << p << "\t" << "q: " << q << endl;
-	#endif	
-	// -- Choose Algorithm to use
-	Int_t solutions = this->AnalyticCubicAlgorithm(p, q, a2, &roots[0]);
-*/	
-	ROOT::Math::Polynomial cubic(a,b,c,d);
-	std::vector<Double_t> realroots = cubic.FindRealRoots();
-	#ifdef VERBOSE_MODE
-		cout << "---------------------------" << endl;
-		cout << "ROOT::MATHMORE::Solver" << endl;
-		cout << "No. of Roots: " << realroots.size() << endl;
-	#endif
-	for (UInt_t i = 0; i < realroots.size(); i++) {
-		#ifdef VERBOSE_MODE	
-			cout << i << "\t" << realroots[i] << "\t";
-		#endif
-		roots[i] = realroots[i];
-	}
-	#ifdef VERBOSE_MODE
-		cout << endl << "---------------------------" << endl;
-	#endif
-	return realroots.size();
+   // -- Solves cubic equation for a polynomial of form ax^3 + bx^2 + cx + d = 0
+   Double_t a = params[0], b = params[1], c = params[2], d = params[3];
+   // Check that we actually have a cubic equation
+   assert(a != 0.0); 
+   #ifdef VERBOSE_MODE
+      cout << "CubicRootFinder - Input Params - ";
+      cout << " a: " << a << "\t" << "b: " << b << "\t" << "c: " << c << "\t" << "d: " << d << endl;
+   #endif
+   // If d = 0, then one of the solutions must be zero (since we can then factor a 't'
+   // out of each term), and so we actually have a quadratic equation. Set the third root
+   // of the "roots" storage to zero and pass the remaining parameters to the quadratic root finder. 
+   if (d == 0.0) {
+      #ifdef VERBOSE_MODE
+         cout << "CubicRootFinder - Constant parameter is zero, implying one solution is zero. ";
+         cout << "Remaining equation is now a quadratic." << endl;
+      #endif
+      roots[2] = 0.0;
+      Double_t quadraticParams[3] = {a, b, c};
+      return this->QuadraticRootFinder(quadraticParams, roots);
+   }
+   // Get cubic into the standard form: x^3 + a2*x^2 + a1*x + a0 = 0  --  see notes
+   Double_t a2 = b/a, a1 = c/a, a0 = d/a;
+   // Use GNU Scientific Library polynomial algorithms to solve cubic
+   Double_t realroots[3] = {0.,0.,0.};
+   Int_t numRoots = gsl_poly_solve_cubic(a2, a1, a0, &realroots[0], &realroots[1], &realroots[2]);
+   #ifdef VERBOSE_MODE
+      cout << "---------------------------" << endl;
+      cout << "GSL:Cubic" << endl;
+      cout << "No. of Roots: " << numRoots << endl;
+   #endif
+   // Copy real roots into ouput
+   for (UInt_t i = 0; i < 3; i++) {
+      #ifdef VERBOSE_MODE
+         cout << i << ": " << realroots[i] << "\t";
+      #endif
+      roots[i] = realroots[i];
+   }
+   #ifdef VERBOSE_MODE
+      cout << endl << "---------------------------" << endl;
+   #endif
+   // Return number of real roots
+   return numRoots;
 }
 
 //_____________________________________________________________________________
 Int_t Polynomial::QuarticRootFinder(const Double_t* params, Double_t* roots)
 {
-	// -- Solves quartic equation for all REAL solutions to a polynomial of form ax^4 + bx^3 + cx^2 + dx + e = 0
-	// -- Takes 5 parameters and 4 roots as arguments.
-	
-	// -- Step 1. First get quartic into the standard form: x^4 + a3*x^3 + a2*x^2 + a1*x + a0 = 0   --  see notes
-	
-	// Define parameters in a more read-able form
-	Double_t a = params[0], b = params[1], c = params[2], d = params[3], e = params[4];
-	// Check that we actually have a quartic equation
-	assert(a != 0.0); 
-	#ifdef VERBOSE_MODE		
-		cout << "QuarticRootFinder - a: " << a << "\t" << "b: " << b << "\t" << "c: " << c << "\t" << "d: " << d << "\t" << "e: " << e << endl;
-	#endif
-		
-	// If e = 0, then one of the solutions must be zero (since we can then factor a 't' out of each term), and so we actually have a cubic
-	// equation. Set the final root of the "roots" storage to zero and pass the remaining parameters to the cubic root finder. 
-	if (e == 0.0) {
-		#ifdef VERBOSE_MODE		
-			cout << "QuarticRootFinder - Constant parameter is zero, implying one solution is zero. Remaining equation is now a cubic." << endl;
-		#endif
-		roots[3] = 0.0;
-		Double_t cubicParams[4] = {a, b, c, d};
-		return this->CubicRootFinder(cubicParams, roots);
-	}
-	
-/*	// Define the constants of the standard form
-	const Double_t a3 = b/a;
-	const Double_t a2 = c/a;
-	const Double_t a1 = d/a;
-	const Double_t a0 = e/a;
-	
-	Int_t solutions = this->AnalyticQuarticAlgorithm(a3, a2, a1, a0, roots);
-*/
-	ROOT::Math::Polynomial quartic(a,b,c,d,e);
-	std::vector<Double_t> realroots = quartic.FindRealRoots();
-	#ifdef VERBOSE_MODE
-		cout << "---------------------------" << endl;
-		cout << "ROOT::MATHMORE::Solver" << endl;
-		cout << "No. of Roots: " << realroots.size() << endl;
-	#endif
-	for (UInt_t i = 0; i < realroots.size(); i++) {
-		#ifdef VERBOSE_MODE	
-			cout << i << "\t" << realroots[i] << "\t";
-		#endif
-		roots[i] = realroots[i];
-	}
-	#ifdef VERBOSE_MODE
-		cout << endl << "---------------------------" << endl;
-	#endif
-	return realroots.size();
-	
+   // -- Solves quartic equation for all REAL solutions to a polynomial of form
+   // -- ax^4 + bx^3 + cx^2 + dx + e = 0 
+   // -- Takes 5 parameters and 4 roots as arguments.	
+   Double_t a = params[0], b = params[1], c = params[2], d = params[3], e = params[4];
+   // Check that we actually have a quartic equation
+   assert(a != 0.0); 
+   #ifdef VERBOSE_MODE
+      cout << "QuarticRootFinder - a: " << a << "\t" << "b: " << b << "\t" << "c: " << c << "\t" << "d: " << d << "\t" << "e: " << e << endl;
+   #endif
+   // If e = 0, then one of the solutions must be zero (since we can then factor a 't'
+   // out of each term), and so we actually have a cubic equation. Set the 4th root
+   // to zero and pass the remaining parameters to the cubic root finder. 
+   if (e == 0.0) {
+      #ifdef VERBOSE_MODE
+         cout << "QuarticRootFinder - Constant parameter is zero, implying one solution is zero. Remaining equation is now a cubic." << endl;
+      #endif
+      roots[3] = 0.0;
+      Double_t cubicParams[4] = {a, b, c, d};
+      return this->CubicRootFinder(cubicParams, roots);
+   }
+   // Get quartic into the standard form: x^4 + a3*x^3 + a2*x^2 + a1*x + a0 = 0   --  see notes
+   const Double_t a3 = b/a, a2 = c/a, a1 = d/a, a0 = e/a;
+   // Solve Quartic using GNU Scientific Library's general polynomial complex solver
+   double std_params[5] = { a0, a1, a2, a3, 1};
+   double complexRoots[8];
+   std::vector<Double_t> realroots;
+   gsl_poly_complex_workspace* workspace = gsl_poly_complex_workspace_alloc(5);
+   gsl_poly_complex_solve(std_params, 5, workspace, complexRoots);
+   gsl_poly_complex_workspace_free(workspace);
+   // Find only the REAL roots (by checking for Im = 0 to within defined tolerance)
+   for (int i = 0; i < 4; i++) {
+      if (TMath::Abs(complexRoots[2*i+1]) < Units::tolerance) {
+         realroots.push_back(complexRoots[2*i]);
+      }
+   }
+   #ifdef VERBOSE_MODE
+      cout << "---------------------------" << endl;
+      cout << "GSL::Complex Root Finder" << endl;
+      cout << "No. of Roots: " << realroots.size() << endl;
+   #endif
+   // Copy real roots into ouput
+   for (UInt_t i = 0; i < realroots.size(); i++) {
+      #ifdef VERBOSE_MODE
+         cout << i << ": " << realroots[i] << "\t";
+      #endif
+      roots[i] = realroots[i];
+   }
+   #ifdef VERBOSE_MODE
+      cout << endl << "---------------------------" << endl;
+   #endif
+   return realroots.size();
+}
+
+//_____________________________________________________________________________
+Int_t Polynomial::AnalyticQuadraticAlgorithm(const Double_t a, const Double_t b, const Double_t c, Double_t* roots)
+{
+   // Solve quadratic equation and return number of REAL roots if any, and return their values.
+   Int_t numberOfSolutions = 0;
+   // Ensure that potential roots are set to zero to begin with.
+   roots[0] = 0.0;
+   roots[1] = 0.0;
+   #ifdef VERBOSE_MODE		
+   	cout << "QuadraticRootFinder - a: " << a << "\t" << "b: " << b << "\t" << "c: " << c << endl;
+   #endif
+   // -- Check if we have a linear, rather than quadratic equation
+   if (a == 0.0) {
+   	// --------------------------------------------------
+   	// -- CASE 0: Linear Equation - One potential root
+   	// --------------------------------------------------
+   	// -- Check that b > 0. Otherwise there is no solution. 
+   	if (b == 0.0) {
+   		numberOfSolutions = 0;
+   	} else {
+   		Double_t t = -c/b;
+   		if (t <= 0.) { 
+   			numberOfSolutions = 0;
+   			#ifdef VERBOSE_MODE		
+   				cout << "QuadraticRootFinder - Linear eqn. - t < 0. No Solution." << endl; 
+   			#endif
+   		} else {
+   			numberOfSolutions = 1;
+   			roots[0] = t;
+   			#ifdef VERBOSE_MODE		
+   				cout << "QuadraticRootFinder - Linear eqn. t: " << roots[0] << endl;
+   			#endif
+   		}
+   	}
+   	return numberOfSolutions;
+   } 
+
+   // If c = 0, then one of the solutions must be zero (since we can then factor a t out of each term), and so we actually have a linear
+   // equation. Set the second root of the "roots" storage to zero and solve the linear equation for the final root. 
+   if (c == 0.0) {
+   	#ifdef VERBOSE_MODE		
+   		cout << "CubicRootFinder - Constant parameter is zero, implying one solution is zero. Remaining equation is now a quadratic." << endl;
+   	#endif
+   	assert(a != 0.0); // Catch in case this code is moved above the previous 'if' block for some reason. 
+   	roots[1] = 0.0;
+   	roots[0] = -b/a;
+   	numberOfSolutions = 1;
+   	return numberOfSolutions;
+   }
+
+
+   // -- We therefore have a quadratic equation. Check the discriminant to determine number of roots 
+   Double_t discriminant = b*b - 4*a*c;
+   #ifdef VERBOSE_MODE		
+   	cout << "QuadraticRootFinder - Quad. eqn - b*b - 4*a*c: " << discriminant << endl;
+   #endif	
+   if (discriminant > 0.0) {
+   	// --------------------------------------------------
+   	// -- CASE 1: Two Real Roots
+   	// --------------------------------------------------
+   	numberOfSolutions = 2;
+   	roots[0] = (-b + TMath::Sqrt(b*b - 4*a*c))/(2*a);
+   	roots[1] = (-b - TMath::Sqrt(b*b - 4*a*c))/(2*a);
+   	#ifdef VERBOSE_MODE		
+   		cout << "QuadraticRootFinder - 2 Solutions - t+: " << roots[0] << "\t" << "t-: " << roots[1] << endl;
+   	#endif
+   } else if (discriminant == 0.0) {
+   	// --------------------------------------------------
+   	// -- CASE 2: One Real Root
+   	// --------------------------------------------------
+   	Double_t t = -b/(2*a);
+   	// Check if root is negative 
+   	if (t < 0.) { 
+   		numberOfSolutions = 0;
+   		#ifdef VERBOSE_MODE		
+   			cout << "QuadraticRootFinder - 1 Solution - solution is negative." << endl; 
+   		#endif
+   	} else {
+   		roots[0] = t;
+   		numberOfSolutions = 1;
+   		#ifdef VERBOSE_MODE		
+   			cout << "QuadraticRootFinder - 1 Solution - t: " << roots[0] << endl;
+   		#endif
+   	}
+   } else {
+   	// --------------------------------------------------
+   	// -- CASE 3: No Real Roots
+   	// --------------------------------------------------
+   	numberOfSolutions = 0;
+   	#ifdef VERBOSE_MODE		
+   		cout << "QuadraticRootFinder - 0 Solutions" << endl;
+   	#endif
+   }
+
+   return numberOfSolutions; 	
+
+   /*	ROOT::Math::Polynomial quadratic(a,b,c);
+   std::vector<Double_t> realroots = quadratic.FindRealRoots();
+   #ifdef VERBOSE_MODE
+   	cout << "---------------------------" << endl;
+   	cout << "ROOT::MATHMORE::Solver -- Quadratic" << endl;
+   	cout << "No. of Roots: " << realroots.size() << endl;
+   #endif
+   for (UInt_t i = 0; i < realroots.size(); i++) {
+   	#ifdef VERBOSE_MODE	
+   		cout << i << "\t" << realroots[i] << "\t";
+   	#endif
+   	roots[i] = realroots[i];
+   }
+   #ifdef VERBOSE_MODE
+   	cout << endl << "---------------------------" << endl;
+   #endif
+   return realroots.size();
+   */
 }
 
 //_____________________________________________________________________________
