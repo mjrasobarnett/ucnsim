@@ -307,15 +307,19 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
    FieldManager* fieldManager = run->GetFieldManager();
    const GravField* const gravField = fieldManager->GetGravField();
       
-   // -- Store the Initial Node and Initial Matrix
+   // -- Store the Initial coordinates, volume, matrix
+   const TVector3 initialPosition(particle->X(), particle->Y(), particle->Z());
    const TGeoNode* initialNode = navigator->GetCurrentNode();
+   const string initialVolumeName = initialNode->GetVolume()->GetName();
    TGeoHMatrix initMatrix = *(navigator->GetCurrentMatrix()); // Copy the initial matrix here
-   TGeoMatrix* initialMatrix = &initMatrix; // Hold pointer to the stored matrix
+   const TGeoMatrix* initialMatrix = &initMatrix; // Hold pointer to the stored matrix
+   // -- Save Path to current node - we will want to return to this in the event we make a bounce
+   const char* initialPath = navigator->GetPath();
+   
    
    // -- Determine the current local coordinates
    Double_t* currentGlobalPoint = 0;
    Double_t initialLocalPoint[3] = {0.,0.,0.};
-   
    currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
    initialMatrix->MasterToLocal(currentGlobalPoint,&initialLocalPoint[0]);
    
@@ -332,12 +336,6 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
       cout << "Is Step Entering?  " << fIsStepEntering << endl;
       cout << "Is Step Exiting?  " << fIsStepExiting << endl;
       cout << "-----------------------------" << endl << endl;
-   #endif
-     
-   // -- We now should be sure we have begun in the current volume. 	
-   // -- Save Path to current node - we will want to return to this in the event we make a bounce
-   const char* initialPath = navigator->GetPath();
-   #ifdef VERBOSE_MODE	
       cout << "Current PATH: " << initialPath << endl;
    #endif
    
@@ -381,8 +379,6 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
    ///////////////////////////////////////////////////////////////////////////////////////
    // Navigator's state now corresponds to the next position of the particle. Before we move the
    // particle to this position, calculate the motion of the spin vector along this trajectory
-   const TVector3 initialPosition(particle->X(), particle->Y(), particle->Z());
-   const string initialVolumeName = initialNode->GetVolume()->GetName();
    const MagField* const magField = fieldManager->GetMagField(initialPosition, initialVolumeName);
    if (magField != NULL) {
       magField->Interact(*particle, *run, stepTime);
