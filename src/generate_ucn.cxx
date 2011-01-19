@@ -44,7 +44,7 @@ using namespace GeomParameters;
 void GenerateBeam(const InitialConfig& initialConfig);
 Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix);
 Bool_t CreateRandomParticle(Particle* particle, const Double_t fillTime, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
-Bool_t DetermineParticleVelocity(Particle* particle, const Double_t maxVelocity);
+Bool_t DetermineParticleVelocity(Particle* particle, const Double_t maxVelocity, const Double_t minTheta, const Double_t maxTheta, const Double_t minPhi, const Double_t maxPhi);
 void DefinePolarisation(Particle* particle, const Double_t percentPolarised, const TVector3& spinAxis, const Bool_t spinUp);
 
 //__________________________________________________________________________
@@ -186,7 +186,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       particle->SetId(i);
       CreateRandomParticle(particle, fillTime, beamVolume, beamMatrix);
       // -- Initialise particle's momentum
-      DetermineParticleVelocity(particle, vmax);
+      DetermineParticleVelocity(particle, vmax, minTheta, maxTheta, minPhi, maxPhi);
       // -- Setup polarisation
       DefinePolarisation(particle, percentPolarised, spinAxis, spinUp); 
       // -- Fill histograms
@@ -296,7 +296,7 @@ Bool_t CreateRandomParticle(Particle* particle, const Double_t fillTime, const T
 }
 
 //__________________________________________________________________________
-Bool_t DetermineParticleVelocity(Particle* particle, const Double_t maxVelocity)
+Bool_t DetermineParticleVelocity(Particle* particle, const Double_t maxVelocity, const Double_t minTheta, const Double_t maxTheta, const Double_t minPhi, const Double_t maxPhi)
 {
    // -- Determine a random direction vector on the unit sphere dOmega = sin(theta).dTheta.dPhi
    // Convert limits to radians

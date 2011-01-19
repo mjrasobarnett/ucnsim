@@ -220,7 +220,6 @@ void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, cons
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Run Time
    const Double_t runTime = runConfig.RunTime();
-   const Double_t maximumDistance = 10000*Units::m; 
    sprintf(histname,"%s:Time",stateDir->GetName());
    Plot::timeHist = new TH1F(histname,"Time: Units of s", nbins, 0.0, runTime+10);
    Plot::timeHist->SetXTitle("Time (s)");

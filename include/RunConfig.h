@@ -9,7 +9,7 @@
 #include <string>
 #include "TVector3.h"
 
-class RunConfig : public TObject {
+class RunConfig {
 private:
    std::string fRunName;
    
@@ -21,22 +21,22 @@ private:
    
    std::string fInputRunName;
    std::string fParticlesToLoad;
-   Bool_t fLoadAllParticles;
+   bool fLoadAllParticles;
 //   std::vector<Int_t> fParticleIDs;
-   Bool_t fRestartParticles;
+   bool fRestartParticles;
    
-   Bool_t fGravFieldOn;
-   Bool_t fMagFieldOn;
-   Bool_t fWallLossesOn;
+   bool fGravFieldOn;
+   bool fMagFieldOn;
+   bool fWallLossesOn;
    
-   Double_t fRunTime;
-   Double_t fMaxStepTime;
-   Double_t fSpinStepTime;
+   double fRunTime;
+   double fMaxStepTime;
+   double fSpinStepTime;
    
-   Bool_t fObsPolarisation;   
-   Bool_t fObsBounces;
-   Bool_t fObsTracks;
-   Bool_t fObsField;
+   bool fObsPolarisation;   
+   bool fObsBounces;
+   bool fObsTracks;
+   bool fObsField;
    
 public:
    // Constructors
@@ -55,21 +55,19 @@ public:
    std::string OutputFileName() const {return fOutputDataFile;}
    std::string InputRunName() const {return fInputRunName;}
    std::string ParticlesToLoad() const {return fParticlesToLoad;}
-   Bool_t LoadAllParticles() const {return fLoadAllParticles;}
-   Bool_t RestartFromBeginning() const {return fRestartParticles;}
-   Double_t RunTime() const {return fRunTime;}
-   Double_t MaxStepTime() const {return fMaxStepTime;}
-   Double_t SpinStepTime() const {return fSpinStepTime;}
-   Bool_t GravFieldOn() const {return fGravFieldOn;}
-   Bool_t MagFieldOn() const {return fMagFieldOn;}
-   Bool_t WallLossesOn() const {return fWallLossesOn;}
-   Bool_t ObservePolarisation() const {return fObsPolarisation;}
-   Bool_t ObserveBounces() const {return fObsBounces;}
-   Bool_t ObserveTracks() const {return fObsTracks;}
-   Bool_t ObserveField() const {return fObsField;}
+   bool LoadAllParticles() const {return fLoadAllParticles;}
+   bool RestartFromBeginning() const {return fRestartParticles;}
+   double RunTime() const {return fRunTime;}
+   double MaxStepTime() const {return fMaxStepTime;}
+   double SpinStepTime() const {return fSpinStepTime;}
+   bool GravFieldOn() const {return fGravFieldOn;}
+   bool MagFieldOn() const {return fMagFieldOn;}
+   bool WallLossesOn() const {return fWallLossesOn;}
+   bool ObservePolarisation() const {return fObsPolarisation;}
+   bool ObserveBounces() const {return fObsBounces;}
+   bool ObserveTracks() const {return fObsTracks;}
+   bool ObserveField() const {return fObsField;}
    
    virtual void Print(Option_t* option = "") const;
-   
-   ClassDef(RunConfig, 1)
 };
 #endif /*RUNCONFIG_H*/

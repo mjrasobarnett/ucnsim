@@ -12,16 +12,14 @@
 
 using namespace std;
 
-ClassImp(RunConfig)
-
 //__________________________________________________________________________
 RunConfig::RunConfig()
           :fRunName(""), fGeomFile(""), fGeomVisFile(""), fInputDataFile(""),
            fOutputDataFile(""), fFieldsFile(""), fInputRunName(""),
            fParticlesToLoad(""), fLoadAllParticles(true), fRestartParticles(false),
            fGravFieldOn(true), fMagFieldOn(false), fWallLossesOn(true), fRunTime(0.),
-           fMaxStepTime(0.), fObsPolarisation(false), fObsMeasAxis(), fObsBounces(false),
-           fObsTracks(false)
+           fMaxStepTime(0.), fSpinStepTime(0.), fObsPolarisation(false), fObsBounces(false),
+           fObsTracks(false), fObsField(false)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Default Constructor" << endl;
@@ -65,8 +63,7 @@ RunConfig::RunConfig(const string& runConfigFileName)
 
 //__________________________________________________________________________
 RunConfig::RunConfig(const RunConfig& other)
-              :TObject(other),
-               fRunName(other.fRunName),
+              :fRunName(other.fRunName),
                fGeomFile(other.fGeomFile),
                fGeomVisFile(other.fGeomVisFile),
                fInputDataFile(other.fInputDataFile),
