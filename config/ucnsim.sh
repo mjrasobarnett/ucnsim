@@ -17,9 +17,8 @@ if [[ `uname -n` == "MJRasoBarnett.local" ]] ; then
 		export PATH=${ROOTSYS}/bin:${PATH}
 		export MANPATH=${ROOTSYS}/man:${MANPATH}
 	fi
-	# Define path to Boost installation
-	export BOOST=${HOME}/Apps/Boost/boost
-	
+	# Define path to GSL installation
+	export GSL=${HOME}/Apps/GSL/gsl
 elif [[ `uname -n` == "simon-mbp.pact.cpes.susx.ac.uk" ]] ; then # Need Simon's local hostname
 	# Test if we are running on simon's machine
 	echo "Configuring for Simon's local machine"
@@ -92,5 +91,6 @@ export ROOTLOGOFF=${UCN_DIR}/config/ucn_rootlogoff.C
 #------------------------------------------------------------------------------
 echo "UCN   : " $UCN_DIR
 echo "ROOT  : " $ROOTSYS
+echo "GSL   : " $GSL
 echo "------------------------------------------------------------------------"
 #------------------------------------------------------------------------------

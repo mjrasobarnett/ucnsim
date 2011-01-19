@@ -35,7 +35,7 @@ using namespace GeomParameters;
 int TestFieldManager();
 bool TestFieldMap();
 
-// -------------------------------------------------------------------------------------- 
+//__________________________________________________________________________
 Int_t main(Int_t /*argc*/,Char_t ** /*argv*/)
 {
  
@@ -110,13 +110,7 @@ bool TestFieldMap()
    return kTRUE;
 }
 
-//   Double_t params[4] = {1.0, 4.0, 3.0, 1.0};
-//   Double_t roots[3] = {0.,0.,0.};
-//   Polynomial::Instance()->CubicRootFinder(params, roots);
-
-}
-
-// -------------------------------------------------------------------------------------- 
+//__________________________________________________________________________
 int TestFieldManager()
 {
    // -- Simple function tests putting a magfield into MagFieldManager object, and then writing
