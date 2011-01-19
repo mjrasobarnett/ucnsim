@@ -16,6 +16,9 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
+//#define PRINT_CONSTRUCTORS 
+//#define VERBOSE
+
 using namespace std;
 
 ClassImp(Spin)
@@ -98,7 +101,19 @@ Bool_t Spin::IsSpinUp(const TVector3& axis) const
    Double_t probSpinUp = this->CalculateProbSpinUp(axis);
    // Check for errorneous probability
    if (probSpinUp < 0.0 || probSpinUp > 1.0) {
-      throw runtime_error("Spin::IsSpinUp - Found probability outside of 0 -> 1 range.");
+      if (TMath::Abs(probSpinUp - 1.0) < 1.E-10) {
+         probSpinUp = 1.0;
+      } else if (TMath::Abs(probSpinUp) < 1.E-10) {
+         probSpinUp = 0.0;
+      } else {
+         bool up = probSpinUp > 1.0 ? false : true;
+         cout << probSpinUp - 1.0 << endl;
+         cout << "Up? " << up << endl;
+         bool equal = probSpinUp == 1.0 ? true : false;
+         cout << "Equal to 1? " << equal << endl;
+         axis.Print();
+         throw runtime_error("Spin::IsSpinUp - Found probability outside of 0 -> 1 range.");
+      }
    }
    // Roll dice to determine whether Spin Up or Spin Down
    if (gRandom->Uniform(0.0,1.0) <= probSpinUp) {return kTRUE;}
@@ -117,7 +132,7 @@ ClassImp(Spinor)
 
 //_____________________________________________________________________________
 Spinor::Spinor()
-           :TObject(), fUp(0,0), fDown(0,0)
+           :TObject(), fUpRe(0.), fUpIm(0.), fDownRe(0.), fDownIm(0.)
 {
    // Constructor
 //   Info("Spinor","Default Constructor");
@@ -125,7 +140,8 @@ Spinor::Spinor()
 
 //_____________________________________________________________________________
 Spinor::Spinor(const Spinor& other)
-           :TObject(other), fUp(other.fUp), fDown(other.fDown)
+           :TObject(other), fUpRe(other.fUpRe), fUpIm(other.fUpIm), fDownRe(other.fDownRe),
+            fDownIm(other.fDownIm)
 {
    // Copy Constructor
 //   Info("Spinor","Copy Constructor");
@@ -138,8 +154,10 @@ Spinor& Spinor::operator=(const Spinor& other)
 //   Info("Spinor","Assignment");
    if(this!=&other) {
       TObject::operator=(other);
-      fUp = other.fUp;
-      fDown = other.fDown;
+      fUpRe = other.fUpRe;
+      fUpIm = other.fUpIm;
+      fDownRe = other.fDownRe;
+      fDownIm = other.fDownIm;
    }
    return *this;
 }
@@ -157,11 +175,11 @@ void Spinor::PolariseUp(const TVector3& axis)
    // -- Set spinor components to be eigenvector of the operator for spin in the direction
    // -- defined by 'axis'. Expressions derived in notebook.
    TVector3 unit = axis.Unit();
-   Double_t mag = 1.0/TMath::Sqrt(2.0 + 2.0*TMath::Abs(unit.Z()));
-   TComplex up((unit.Z() + 1.0)*mag, 0);
-   TComplex down(unit.X()*mag, unit.Y()*mag);
-   fUp = up;
-   fDown = down;
+   const Double_t mag = 1.0/TMath::Sqrt(2.0 + 2.0*TMath::Abs(unit.Z()));
+   fUpRe = (unit.Z() + 1.0)*mag;
+   fUpIm = 0.;
+   fDownRe = unit.X()*mag;
+   fDownIm = unit.Y()*mag;
 }
 
 //_____________________________________________________________________________
@@ -170,55 +188,61 @@ void Spinor::PolariseDown(const TVector3& axis)
    // -- Set spinor components to be eigenvector of the operator for spin in the direction
    // -- defined by 'axis'. Expressions derived in notebook.
    TVector3 unit = axis.Unit();
-   Double_t mag = 1.0/TMath::Sqrt(2.0 + 2.0*TMath::Abs(unit.Z()));
-   TComplex up((unit.Z() - 1.0)*mag, 0);
-   TComplex down(unit.X()*mag, unit.Y()*mag);
-   fUp = up;
-   fDown = down;
+   const Double_t mag = 1.0/TMath::Sqrt(2.0 + 2.0*TMath::Abs(unit.Z()));
+   fUpRe = (unit.Z() - 1.0)*mag;
+   fUpIm = 0.;
+   fDownRe = unit.X()*mag;
+   fDownIm = unit.Y()*mag;
 }
 
 //_____________________________________________________________________________
 void Spinor::Print(Option_t* /*option*/) const
 {
-   cout << "Spin Up: " << fUp.Re() << " + i" << fUp.Im() << endl;
-   cout << "Spin Down: " << fDown.Re() << "+ i" << fDown.Im() << endl;
+   cout << "Spin Up: " << fUpRe << " + i" << fUpIm << endl;
+   cout << "Spin Down: " << fDownRe << "+ i" << fDownIm << endl;
 }
 
 //_____________________________________________________________________________
 Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
 {
    // -- Take mag field (in the global coordinate system) and precess about it
+   #ifdef VERBOSE
+      cout << "Precess Spinor:" << endl;
+      this->Print();
+   #endif
    Double_t omegaX = Neutron::gyromag_ratio*avgMagField.X();
    Double_t omegaY = Neutron::gyromag_ratio*avgMagField.Y();
    Double_t omegaZ = Neutron::gyromag_ratio*avgMagField.Z();
    // Precession frequency
    Double_t omega = TMath::Sqrt(omegaX*omegaX + omegaY*omegaY + omegaZ*omegaZ);
-   Double_t precessAngle = (omega*precessTime)/2.0;
    if (omega == 0.0) return kFALSE;
-   Double_t upRe = fUp.Re();
-   Double_t upIm = fUp.Im();
-   Double_t downRe = fDown.Re();
-   Double_t downIm = fDown.Im();
+   Double_t precessAngle = (omega*precessTime)/2.0;
    
    // Spin Up Real Part
-   Double_t newUpRe = upRe*TMath::Cos(precessAngle) + ((upIm*omegaZ - downIm*omegaX - downRe*omegaY)/omega)*TMath::Sin(precessAngle);
+   const Double_t newUpRe = fUpRe*TMath::Cos(precessAngle) + (fUpIm*(omegaZ/omega) - fDownIm*(omegaX/omega) - fDownRe*(omegaY/omega))*TMath::Sin(precessAngle);
    // Spin Up Imaginary Part
-   Double_t newUpIm = upIm*TMath::Cos(precessAngle) + ((downRe*omegaX - upRe*omegaZ - downIm*omegaY)/omega)*TMath::Sin(precessAngle);
+   const Double_t newUpIm = fUpIm*TMath::Cos(precessAngle) + (fDownRe*(omegaX/omega) - fUpRe*(omegaZ/omega) - fDownIm*(omegaY/omega))*TMath::Sin(precessAngle);
    
    // Spin Down Real Part
-   Double_t newDownRe = downRe*TMath::Cos(precessAngle) + ((upIm*omegaX - downIm*omegaZ + upRe*omegaY)/omega)*TMath::Sin(precessAngle);
+   const Double_t newDownRe = fDownRe*TMath::Cos(precessAngle) + (fUpIm*(omegaX/omega) - fDownIm*(omegaZ/omega) + fUpRe*(omegaY/omega))*TMath::Sin(precessAngle);
    // Spin Down Imaginary Part
-   Double_t newDownIm = downIm*TMath::Cos(precessAngle) + ((downRe*omegaZ - upRe*omegaX + upIm*omegaY)/omega)*TMath::Sin(precessAngle);
+   const Double_t newDownIm = fDownIm*TMath::Cos(precessAngle) + (fDownRe*(omegaZ/omega) - fUpRe*(omegaX/omega) + fUpIm*(omegaY/omega))*TMath::Sin(precessAngle);
    
    // Update spinor
-   TComplex newUp(newUpRe, newUpIm);
-   TComplex newDown(newDownRe, newDownIm);
-   fUp = newUp;
-   fDown = newDown;
-   
-//   TVector3 axis(0,1,0);
-//   CalculateProbSpinUp(axis);
-   
+   fUpRe = newUpRe;
+   fUpIm = newUpIm;
+   fDownRe = newDownRe;
+   fDownIm = newDownIm;
+   #ifdef VERBOSE
+      cout << "Precess Time: " << precessTime << endl;
+      cout << "Mag Field - Bx: " << avgMagField.X() << "\t";
+      cout << "By: " << avgMagField.Y() << "\t Bz: " << avgMagField.Z() << endl;
+      cout << "Omega - X: " << omegaX << "\t";
+      cout << "Y: " << omegaY << "\t Z: " << omegaZ << "\t Mag: " << omega << endl;
+      cout << "Precess Angle: " << precessAngle << endl;
+      this->Print();
+      cout << "-----------------------------------------------" << endl;
+   #endif
    return kTRUE;
 }
 
@@ -228,20 +252,32 @@ Double_t Spinor::CalculateProbSpinUp(const TVector3& axis) const
    // -- Calculate probability of being spin 'up' along provided axis
    // -- See notebook for equations
    TVector3 measurementAxis = axis.Unit();
-   Double_t ux = measurementAxis.X();
-   Double_t uy = measurementAxis.Y();
+   const Double_t ux = measurementAxis.X();
+   const Double_t uy = measurementAxis.Y();
    // Take absolute value of Z component to ensure we don't take uz = -1
-   Double_t uz = TMath::Abs(measurementAxis.Z());
-   Double_t denominator = 2.0 + 2.0*uz;
-   TComplex conjugateUp = TComplex::Conjugate(fUp);
-   TComplex conjugateDown = TComplex::Conjugate(fDown);
+   const Double_t uz = TMath::Abs(measurementAxis.Z());
+   const Double_t denominator = 2.0 + 2.0*uz;
    
-   TComplex numer1 = (uz + 1.0)*(uz + 1.0)*fUp*conjugateUp;
-   TComplex numer2 = (ux*ux + uy*uy)*fDown*conjugateDown;
-   TComplex numer3 = (uz + 1.0)*(ux + TComplex::I()*uy)*fUp*conjugateDown;
-   TComplex numer4 = (uz + 1.0)*(ux - TComplex::I()*uy)*fDown*conjugateUp;
+   // Calculate the numerator components -- all equations are in notebook
+   Double_t numer1 = (uz + 1.0)*(uz + 1.0)*(fUpRe*fUpRe + fUpIm*fUpIm);
+   Double_t numer2 = (ux*ux + uy*uy)*(fDownRe*fDownRe + fDownIm*fDownIm);
+   Double_t numer3 = (uz + 1.0)*(ux*(fUpRe*fDownRe + fUpIm*fDownIm) + uy*(fUpRe*fDownIm - fUpIm*fDownRe));
+   Double_t numer4 = (uz + 1.0)*(ux*(fDownRe*fUpRe + fDownIm*fUpIm) - uy*(fDownRe*fUpIm - fDownIm*fUpRe));
    
-   TComplex prob = (numer1 + numer2 + numer3 + numer4)/denominator;
-//   cout << "Probability: " << prob.Re() << "\t" << prob.Im() << endl;
-   return prob.Re();
+   // Calculate probability
+   Double_t prob = (numer1 + numer2 + numer3 + numer4)/denominator;
+   #ifdef VERBOSE
+      cout << "Calculate Prob Spin Up: " << endl;
+      this->Print();
+      cout << "denominator: " << denominator << endl;
+      cout << "Numer1: " << numer1 << "\t";
+      cout << "Numer2: " << numer2 << "\t";
+      cout << "Numer3: " << numer3 << "\t";
+      cout << "Numer4: " << numer4 << "\t" << endl;
+      cout << "Probability: " << prob << endl;
+      cout << "-----------------------------------------------" << endl;
+   #endif
+   
+//   assert(prob >= 0.0 && prob <= 1.0);
+   return prob;
 }

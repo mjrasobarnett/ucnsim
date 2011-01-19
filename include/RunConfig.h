@@ -5,10 +5,11 @@
 #ifndef RUNCONFIG_H
 #define RUNCONFIG_H
 
+#include "TObject.h"
 #include <string>
 #include "TVector3.h"
 
-class RunConfig {
+class RunConfig : public TObject {
 private:
    std::string fRunName;
    
@@ -20,21 +21,22 @@ private:
    
    std::string fInputRunName;
    std::string fParticlesToLoad;
-   bool fLoadAllParticles;
-   bool fRestartParticles;
+   Bool_t fLoadAllParticles;
+//   std::vector<Int_t> fParticleIDs;
+   Bool_t fRestartParticles;
    
-   bool fGravFieldOn;
-   bool fMagFieldOn;
-   bool fWallLossesOn;
+   Bool_t fGravFieldOn;
+   Bool_t fMagFieldOn;
+   Bool_t fWallLossesOn;
    
-   double fRunTime;
-   double fMaxStepTime;
+   Double_t fRunTime;
+   Double_t fMaxStepTime;
+   Double_t fSpinStepTime;
    
-   bool fObsPolarisation;
-   TVector3 fObsMeasAxis;
-   
-   bool fObsBounces;
-   bool fObsTracks;
+   Bool_t fObsPolarisation;   
+   Bool_t fObsBounces;
+   Bool_t fObsTracks;
+   Bool_t fObsField;
    
 public:
    // Constructors
@@ -53,20 +55,21 @@ public:
    std::string OutputFileName() const {return fOutputDataFile;}
    std::string InputRunName() const {return fInputRunName;}
    std::string ParticlesToLoad() const {return fParticlesToLoad;}
-   bool LoadAllParticles() const {return fLoadAllParticles;}
-   bool RestartFromBeginning() const {return fRestartParticles;}
-   double RunTime() const {return fRunTime;}
-   double MaxStepTime() const {return fMaxStepTime;}
-   bool GravFieldOn() const {return fGravFieldOn;}
-   bool MagFieldOn() const {return fMagFieldOn;}
-   bool WallLossesOn() const {return fWallLossesOn;}
-   bool ObservePolarisation() const {return fObsPolarisation;}
-   TVector3 PolarisationAxis() const {return fObsMeasAxis;}
-   bool ObserveBounces() const {return fObsBounces;}
-   bool ObserveTracks() const {return fObsTracks;}
+   Bool_t LoadAllParticles() const {return fLoadAllParticles;}
+   Bool_t RestartFromBeginning() const {return fRestartParticles;}
+   Double_t RunTime() const {return fRunTime;}
+   Double_t MaxStepTime() const {return fMaxStepTime;}
+   Double_t SpinStepTime() const {return fSpinStepTime;}
+   Bool_t GravFieldOn() const {return fGravFieldOn;}
+   Bool_t MagFieldOn() const {return fMagFieldOn;}
+   Bool_t WallLossesOn() const {return fWallLossesOn;}
+   Bool_t ObservePolarisation() const {return fObsPolarisation;}
+   Bool_t ObserveBounces() const {return fObsBounces;}
+   Bool_t ObserveTracks() const {return fObsTracks;}
+   Bool_t ObserveField() const {return fObsField;}
    
    virtual void Print(Option_t* option = "") const;
    
-   ClassDef(RunConfig, 0)
+   ClassDef(RunConfig, 1)
 };
 #endif /*RUNCONFIG_H*/

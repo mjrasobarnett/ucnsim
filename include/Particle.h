@@ -12,9 +12,10 @@
 #include "TVector3.h"
 #include "TDirectory.h"
 
+#include "Point.h"
 #include "Spin.h"
 #include "State.h"
-#include "Observer.h"
+#include "Observable.h"
 
 #include "Constants.h"
 
@@ -42,16 +43,14 @@ class TGeoNavigator;
 
 //class ParticleState;
 
-class Particle : public TObject
+class Particle : public TObject, public Observable
 {
-protected:
+private:
    // -- Members
    Int_t       fId;        // Particle's number (assigned when its created to help keep track of it)
-   TVector3    fPos;
-   TVector3    fMom;
-   Double_t    fT;         // Time travelled
+   Point       fPos;
+   TVector3    fVel;
    Double_t    fE;         // kinetic energy
-   Double_t    fDistance;  // Distance travelled
    
    Int_t       fRandomSeed;         // The seed of TRandom when the particle began to propagate
    
@@ -62,20 +61,14 @@ protected:
    // Spin
    Spin         fSpin;
    
-   // Observers
-   std::list<Observer* > fObservers;
-   
-   // -- Methods
-   const Spin&      GetSpin() const;
    // State Change
-   void                 ChangeState(State* state);
+   void             ChangeState(State* state);
    
 public:
    // -- Constructors
    Particle();
-   Particle(Int_t id, TVector3& pos, TVector3& mom, Double_t energy, Double_t t=0);
+   Particle(Int_t id, Point& position, TVector3& mom, Double_t energy);
    Particle(const Particle &part);
-   Particle& operator=(const Particle&);
 
    // -- Destructor
    virtual ~Particle();
@@ -87,28 +80,28 @@ public:
    Double_t             X()      const {return fPos.X();}
    Double_t             Y()      const {return fPos.Y();}
    Double_t             Z()      const {return fPos.Z();}
-   Double_t             T()      const {return fT;}
-   Double_t             Px()     const {return fMom.X();}
-   Double_t             Py()     const {return fMom.Y();}
-   Double_t             Pz()     const {return fMom.Z();}
-   Double_t             P()      const {return fMom.Mag();}
+   Double_t             T()      const {return fPos.T();}
+   Double_t             Vx()     const {return fVel.X();}
+   Double_t             Vy()     const {return fVel.Y();}
+   Double_t             Vz()     const {return fVel.Z();}
+   Double_t             V()      const {return fVel.Mag();}
    Double_t             Energy() const {return fE;}
-   Double_t             V()      const {return this->P()/Neutron::mass_eV_c;}
-   Double_t             Vx()     const {return this->Px()/Neutron::mass_eV_c;}
-   Double_t             Vy()     const {return this->Py()/Neutron::mass_eV_c;}
-   Double_t             Vz()     const {return this->Pz()/Neutron::mass_eV_c;}
-   Double_t             Nx()     const {return (this->P() != 0. ? this->Px()/this->P() : 0.);}
-   Double_t             Ny()     const {return (this->P() != 0. ? this->Py()/this->P() : 0.);}
-   Double_t             Nz()     const {return (this->P() != 0. ? this->Pz()/this->P() : 0.);}
-   Double_t             Rho()    const {return fPos.Mag();}
-   Double_t             Theta()  const {return fMom.Theta();}
-   Double_t             Phi()    const {return fMom.Phi();}
+   Double_t             P()      const {return this->V()*Neutron::mass_eV_c;}
+   Double_t             Px()     const {return this->Vx()*Neutron::mass_eV_c;}
+   Double_t             Py()     const {return this->Vy()*Neutron::mass_eV_c;}
+   Double_t             Pz()     const {return this->Vz()*Neutron::mass_eV_c;}
+   Double_t             Nx()     const {return (this->V() != 0. ? this->Vx()/this->V() : 0.);}
+   Double_t             Ny()     const {return (this->P() != 0. ? this->Vy()/this->V() : 0.);}
+   Double_t             Nz()     const {return (this->P() != 0. ? this->Vz()/this->V() : 0.);}
+   Double_t             Theta()  const {return fVel.Theta();}
+   Double_t             Phi()    const {return fVel.Phi();}
+
+   const Point&         GetPosition() const {return fPos;}
    
    void                 SetId(const Int_t id) {fId = id;}
-   void                 SetVertex(const Double_t x, const Double_t y, const Double_t z, 
+   void                 SetPosition(const Double_t x, const Double_t y, const Double_t z, 
                                        const Double_t t);
-   void                 SetMomentum(const Double_t px, const Double_t py, const Double_t pz, 
-                                       const Double_t energy);
+   void                 SetVelocity(const Double_t vx, const Double_t vy, const Double_t vz);
    void                 Print(const Option_t* option="") const;
    
    // Random Seed Storage 
@@ -117,36 +110,32 @@ public:
    void                 SetRandomSeed(const Int_t seed)        {fRandomSeed = seed;}
    Int_t                GetRandomSeed() const                  {return fRandomSeed;}
    
-   // Distance Counter
-   Double_t             Distance() const                       {return fDistance;}
-   inline void          IncreaseDistance(Double_t stepsize)    {fDistance += stepsize;}
-   
    // State
-   State*           GetState()     {return fState;}
+   State*               GetState()     {return fState;}
    
    // Spin
+   const Spin&          GetSpin() const {return fSpin;}
    void                 Polarise(const TVector3& axis, const Bool_t up);
    void                 PrecessSpin(const TVector3& field, const Double_t precessTime);
    Bool_t               IsSpinUp(const TVector3& axis) const;
    
    // -- Propagation
    Bool_t               Propagate(Run* run);
-   Bool_t               LocateInGeometry(Particle* particle, TGeoNavigator* navigator,
+   void                 Move(const Double_t stepTime, const Run* run);
+   void                 UpdateCoordinates(const TGeoNavigator* navigator);
+   Bool_t               WillDecay(const Double_t timeInterval);
+   Bool_t               LocateInGeometry(TGeoNavigator* navigator,
                            const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
                            const TGeoNode* crossedNode);
-   Bool_t               WillDecay(const Double_t timeInterval);
-
+   
    void                 IsDetected();
    void                 IsLost();
    void                 IsAbsorbed();
    void                 IsAnomalous();
    
-   // -- Observer management
-   Int_t                CountObservers() {return fObservers.size();}
-   void                 Attach(Observer* observer);
-   void                 Detach(Observer* observer);
-   void                 NotifyObservers(const std::string& context);
-
+   // -- Observers
+   virtual void         NotifyObservers(const TObject* subject, const std::string& context);
+   
    // -- Output to file
    void                 SaveState(Run* run);
    void                 WriteToFile(TDirectory* particleDir);

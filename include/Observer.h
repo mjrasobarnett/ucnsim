@@ -21,7 +21,9 @@
 #include "TTree.h"
 #include "TDirectory.h"
 
-#include "Observables.h"
+#include "SpinData.h"
+#include "BounceData.h"
+#include "FieldData.h"
 #include "Track.h"
 
 namespace Context {
@@ -31,6 +33,7 @@ namespace Context {
    const std::string SpecBounce = "specbounce";
    const std::string DiffBounce = "diffbounce";
    const std::string Step = "step";
+   const std::string MeasureField = "measurefield";
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -45,11 +48,15 @@ class Data;
 
 class Observer : public TObject
 {
+protected:
+   const TObject* fSubject;
+   
 public:
    
-   virtual void RegisterInterest(Particle& particle) = 0;
-   virtual void RecordEvent(const Particle& particle, const std::string& context) = 0;
-   virtual void LoadExistingObservables(TDirectory* const particleDir) = 0;
+   virtual void DefineSubject(const TObject* subject) {fSubject = subject;}
+   virtual void RecordEvent(const TObject* subject, const std::string& context) = 0;
+   virtual void ResetData() = 0;
+   virtual void LoadExistingData(TDirectory* const particleDir) = 0;
    virtual void WriteToFile(TDirectory* particleDir) = 0;
       
    ClassDef(Observer, 1)
@@ -64,20 +71,18 @@ public:
 class SpinObserver : public Observer
 {
 private:
-   SpinObservables *fSpinObservables;
-   TVector3 fMeasAxis;
+   SpinData *fSpinData;
    
 public:
    // -- Constructors
    SpinObserver();
-   SpinObserver(const RunConfig& runConfig);
    SpinObserver(const SpinObserver&);
    SpinObserver& operator=(const SpinObserver&);
    virtual ~SpinObserver();
    
-   virtual void RegisterInterest(Particle& particle);
-   virtual void RecordEvent(const Particle& particle, const std::string& context);
-   virtual void LoadExistingObservables(TDirectory* const particleDir);
+   virtual void RecordEvent(const TObject* subject, const std::string& context);
+   virtual void ResetData();
+   virtual void LoadExistingData(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);
    
    ClassDef(SpinObserver, 1)
@@ -92,19 +97,18 @@ public:
 class BounceObserver : public Observer
 {
 private:
-   BounceObservables *fBounceObservables;
+   BounceData *fBounceData;
    
 public:
    // -- Constructors
    BounceObserver();
-   BounceObserver(const RunConfig& runConfig);
    BounceObserver(const BounceObserver&);
    BounceObserver& operator=(const BounceObserver&);
    virtual ~BounceObserver();
    
-   virtual void RegisterInterest(Particle& particle);
-   virtual void RecordEvent(const Particle& particle, const std::string& context);
-   virtual void LoadExistingObservables(TDirectory* const particleDir);
+   virtual void RecordEvent(const TObject* subject, const std::string& context);
+   virtual void ResetData();
+   virtual void LoadExistingData(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);
    
    ClassDef(BounceObserver, 1)
@@ -124,17 +128,43 @@ private:
 public:
    // -- Constructors
    TrackObserver();
-   TrackObserver(const RunConfig& runConfig);
    TrackObserver(const TrackObserver&);
    TrackObserver& operator=(const TrackObserver&);
    virtual ~TrackObserver();
    
-   virtual void RegisterInterest(Particle& particle);
-   virtual void RecordEvent(const Particle& particle, const std::string& context);
-   virtual void LoadExistingObservables(TDirectory* const particleDir);
+   virtual void RecordEvent(const TObject* subject, const std::string& context);
+   virtual void ResetData();
+   virtual void LoadExistingData(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);
    
    ClassDef(TrackObserver, 1)
 };
+
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    FieldObserver -                                                  //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+class FieldObserver : public Observer
+{
+private:
+   FieldData *fFieldData;
+   
+public:
+   // -- Constructors
+   FieldObserver();
+   FieldObserver(const FieldObserver&);
+   FieldObserver& operator=(const FieldObserver&);
+   virtual ~FieldObserver();
+   
+   virtual void RecordEvent(const TObject* subject, const std::string& context);
+   virtual void ResetData();
+   virtual void LoadExistingData(TDirectory* const particleDir);
+   virtual void WriteToFile(TDirectory* const particleDir);
+   
+   ClassDef(FieldObserver, 1)
+};
+
 
 #endif /* OBSERVER_H */

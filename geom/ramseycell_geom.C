@@ -9,9 +9,14 @@
 #include "../include/Materials.h"
 #include "../include/GeomParameters.h"
 
+#include <string>
+
 Bool_t Build_Geom(const TGeoManager* geoManager);
 Bool_t Draw_Geom(const TGeoManager* geoManager);
+Bool_t BuildUniformField(const TGeoHMatrix& matrix);
+Bool_t BuildFieldMap();
 
+using namespace std;
 using namespace GeomParameters;
 using namespace FieldParameters;
 
@@ -93,33 +98,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    cout << "--------------------------------" << endl;
    cout << "Initialising Magnetic fields" << endl;
    cout << "--------------------------------" << endl;
-   MagFieldManager* magFieldManager = new MagFieldManager();
-   
-   // -- Define solenoid field - uniform magnetic field
-   // Define shape of field
-   TGeoShape* fieldShape = new Tube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
-   // Define transformation that locates field in geometry
-   TGeoMatrix* fieldPosition = new TGeoHMatrix(hvCellMat);
-   // Define field vector
-   TVector3 fieldStrength(solenoidBx, solenoidBy, solenoidBz);
-   // Define field object
-   MagField* uniformField = new UniformMagField("SolenoidField", fieldStrength, fieldShape, fieldPosition);
-   
-   // Add field to magfield manager
-   magFieldManager->AddField(uniformField);
-   
-   // -- Write magfieldmanager to geometry file
-   const char *magFileName = "$(UCN_DIR)/geom/ramseycell_fields.root";
-   TFile *f = TFile::Open(magFileName,"recreate");
-   if (!f || f->IsZombie()) {
-     Error("Export","Cannot open file: %s", magFileName);
-     return kFALSE;
-   }
-   magFieldManager->Write(magFieldManager->GetName());
-   f->ls();
-   f->Close();
-   if (magFieldManager) delete magFieldManager;
-   magFieldManager = 0;
+   BuildUniformField(hvCellMat);
+//   BuildFieldMap(hvCellMat);
    cout << "--------------------------------" << endl;   
    // -------------------------------------
    return kTRUE;
@@ -162,3 +142,70 @@ Bool_t Draw_Geom(const TGeoManager* geoManager)
    return kTRUE;
 }
 
+//__________________________________________________________________________
+Bool_t BuildUniformField(const TGeoHMatrix& matrix)
+{
+   // Create a Uniform Magnetic field and write it to file
+   MagFieldManager* magFieldManager = new MagFieldManager();
+   
+   // -- Define solenoid field - uniform magnetic field
+   // Define shape of field
+   TGeoShape* fieldShape = new Tube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
+   // Define transformation that locates field in geometry
+   TGeoMatrix* fieldPosition = new TGeoHMatrix(matrix);
+   // Define field vector
+   TVector3 fieldStrength(solenoidBx, solenoidBy, solenoidBz);
+   // Define field object
+   MagField* uniformField = new UniformMagField("SolenoidField", fieldStrength, fieldShape, fieldPosition);
+   
+   // Add field to magfield manager
+   magFieldManager->AddField(uniformField);
+   
+   // -- Write magfieldmanager to geometry file
+   const char *magFileName = "$(UCN_GEOM)/ramseycell_fields.root";
+   TFile *f = TFile::Open(magFileName,"recreate");
+   if (!f || f->IsZombie()) {
+     Error("Export","Cannot open file: %s", magFileName);
+     return kFALSE;
+   }
+   magFieldManager->Write(magFieldManager->GetName());
+   f->ls();
+   f->Close();
+   if (magFieldManager) delete magFieldManager;
+   magFieldManager = 0;
+   return kTRUE;
+}
+
+//__________________________________________________________________________
+Bool_t BuildFieldMap(const TGeoHMatrix& matrix)
+{
+   // Create a Uniform Magnetic field and write it to file
+   string filename = "runs/spins/ramseycell_fieldmap_raw.txt";
+   // Define shape of field
+   TGeoShape* fieldShape = new Tube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
+   // Define transformation that locates field in geometry
+   TGeoMatrix* fieldPosition = new TGeoHMatrix(matrix);
+   MagFieldMap* field = new MagFieldMap("SolenoidField", fieldShape, fieldPosition);
+   if (field->BuildMap(filename) == kFALSE) {
+      Error("BuildFieldMap","Cannot open file: %s", magFileName);
+      return kFALSE;
+   }
+   
+   // Add field to magfield manager
+   MagFieldManager* magFieldManager = new MagFieldManager();
+   magFieldManager->AddField(field);
+   
+   // -- Write magfieldmanager to geometry file
+   const char *magFileName = "$(UCN_DIR)/geom/ramseycell_fields.root";
+   TFile *f = TFile::Open(magFileName,"recreate");
+   if (!f || f->IsZombie()) {
+     Error("BuildFieldMap","Cannot open file: %s", magFileName);
+     return kFALSE;
+   }
+   magFieldManager->Write(magFieldManager->GetName());
+   f->ls();
+   f->Close();
+   if (magFieldManager) delete magFieldManager;
+   magFieldManager = 0;
+   return kTRUE;
+}

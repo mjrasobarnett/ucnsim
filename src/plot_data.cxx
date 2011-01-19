@@ -3,6 +3,7 @@
 
 #include "TGeoManager.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TF1.h"
 #include "TRint.h"
 #include "TCanvas.h"
@@ -15,12 +16,15 @@
 #include "TGLViewer.h"
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
+#include "TGraph.h"
 
 #include "Particle.h"
 #include "ConfigFile.h"
 #include "InitialConfig.h"
 #include "RunConfig.h"
-#include "Observables.h"
+#include "SpinData.h"
+#include "BounceData.h"
+#include "FieldData.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -31,6 +35,7 @@ using namespace std;
 void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, const InitialConfig& initialConfig, const RunConfig& runConfig, TGeoManager* geoManager);
 void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
 void PlotBounceCounters(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
+void PlotField(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
 void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig, TGeoManager* geoManager);
 vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoManager);
 
@@ -49,16 +54,28 @@ namespace Plot {
    TH1F* pzHist = NULL;
    
    TH1F* timeHist = NULL;
-   TH1F* distHist = NULL;
    
    TH1F* bounceHist = NULL;
    TH1F* specHist = NULL;
    TH1F* diffHist = NULL;
    
-   TH1F* spinUpHist = NULL;
-   TH1F* spinDownHist = NULL;
+   TH1F* spinUpAlongXHist = NULL;
+   TH1F* spinDownAlongXHist = NULL;
+   TH1F* spinUpDownAlongXHist = NULL;
+   TH1F* spinUpAlongYHist = NULL;
+   TH1F* spinDownAlongYHist = NULL;
+   TH1F* spinUpDownAlongYHist = NULL;
+   TH1F* spinUpAlongZHist = NULL;
+   TH1F* spinDownAlongZHist = NULL;
+   TH1F* spinUpDownAlongZHist = NULL;
    
-   TH1F* spinUpDownHist = NULL;
+   TGraph* spinAlphaX = NULL;
+   TGraph* spinAlphaY = NULL;
+   TGraph* spinAlphaZ = NULL;
+   
+   TH2F* bxHist = NULL;
+   TH2F* byHist = NULL;
+   TH2F* bzHist = NULL;
 }
 
 Int_t main(Int_t argc,Char_t **argv)
@@ -144,6 +161,11 @@ Int_t main(Int_t argc,Char_t **argv)
       PlotParticleHistories(histDir, stateDir, runConfig, geoManager);
    }
    //////////////////////////////////////////////////////////////////////////////////////
+   // -- Track History
+   if (runConfig.ObserveField() == kTRUE) {
+      PlotField(histDir, stateDir, runConfig);
+   }
+   //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
    file->Close();
    cout << "Finished" << endl;
@@ -203,10 +225,6 @@ void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, cons
    Plot::timeHist = new TH1F(histname,"Time: Units of s", nbins, 0.0, runTime+10);
    Plot::timeHist->SetXTitle("Time (s)");
    Plot::timeHist->SetYTitle("Neutrons");
-   sprintf(histname,"%s:Dist",stateDir->GetName());
-   Plot::distHist = new TH1F(histname,"Distance: Units of m", nbins, 0.0, maximumDistance);
-   Plot::distHist->SetXTitle("Distance (m)");
-   Plot::distHist->SetYTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into the State's folder
    stateDir->cd();
@@ -242,7 +260,6 @@ void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, cons
                Plot::pyHist->Fill(particle->Py()/Units::eV);
                Plot::pzHist->Fill(particle->Pz()/Units::eV);
                Plot::timeHist->Fill(particle->T()/Units::s);
-               Plot::distHist->Fill(particle->Distance()/Units::m);
                delete particle;
             }
          }
@@ -275,8 +292,6 @@ void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, cons
    momcanvas->cd(4);
    Plot::pzHist->Draw();
    momcanvas->cd(5);
-   Plot::distHist->Draw();
-   momcanvas->cd(6);
    Plot::timeHist->Draw();
    // Fit Final Time to Exponential - determine emptying time
 /*   Char_t linename[40];
@@ -330,32 +345,97 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Define Histograms
    Char_t histname[40];
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Spin Polarisation
    const Double_t runTime = runConfig.RunTime();
-   sprintf(histname,"%s:SpinUp",stateDir->GetName());
-   Plot::spinUpHist = new TH1F(histname,"SpinUp", 500, 0.0, runTime);      
-   Plot::spinUpHist->SetXTitle("Time (s)");
-   Plot::spinUpHist->SetYTitle("Spin Up Neutrons");
-   //spinUpHist->SetLineColor(kBlue);
-   Plot::spinUpHist->SetFillStyle(1001);
-   Plot::spinUpHist->SetFillColor(kBlue-7);
+   const TVector3 xAxis(1.0,0.0,0.0);
+   const TVector3 yAxis(0.0,1.0,0.0);
+   const TVector3 zAxis(0.0,0.0,1.0);
+   const int nbins = 500;
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- X Axis Spin Polarisation
+   sprintf(histname,"%s:SpinUp AlongX",stateDir->GetName());
+   Plot::spinUpAlongXHist = new TH1F(histname,"SpinUp AlongX", nbins, 0.0, runTime);      
+   Plot::spinUpAlongXHist->SetXTitle("Time (s)");
+   Plot::spinUpAlongXHist->SetYTitle("Spin Up Neutrons");
+   //spinUpAlongXHist->SetLineColor(kBlue);
+   Plot::spinUpAlongXHist->SetFillStyle(1001);
+   Plot::spinUpAlongXHist->SetFillColor(kBlue-7);
 
-   sprintf(histname,"%s:SpinDown",stateDir->GetName());
-   Plot::spinDownHist = new TH1F(histname,"SpinDown", 500, 0.0, runTime);      
-   Plot::spinDownHist->SetXTitle("Time (s)");
-   Plot::spinDownHist->SetYTitle("Spin Down Neutrons");
-   //spinDownHist->SetLineColor(kRed);
-   Plot::spinDownHist->SetFillStyle(3001);
-   Plot::spinDownHist->SetFillColor(kRed-7);
+   sprintf(histname,"%s:SpinDown AlongX",stateDir->GetName());
+   Plot::spinDownAlongXHist = new TH1F(histname,"SpinDown AlongX", nbins, 0.0, runTime);      
+   Plot::spinDownAlongXHist->SetXTitle("Time (s)");
+   Plot::spinDownAlongXHist->SetYTitle("Spin Down Neutrons");
+   //spinDownAlongXHist->SetLineColor(kRed);
+   Plot::spinDownAlongXHist->SetFillStyle(3001);
+   Plot::spinDownAlongXHist->SetFillColor(kRed-7);
    
-   sprintf(histname,"%s:SpinUp+Down",stateDir->GetName());
-   Plot::spinUpDownHist  = new TH1F(histname,"SpinUp+Down", 500, 0.0, runTime);   
-   Plot::spinUpDownHist->SetXTitle("Time (s)");
-   Plot::spinUpDownHist->SetYTitle("Spin Up+Down Neutrons");
+   sprintf(histname,"%s:SpinUp+Down Along X",stateDir->GetName());
+   Plot::spinUpDownAlongXHist  = new TH1F(histname,"SpinUp+Down Along X", nbins, 0.0, runTime);   
+   Plot::spinUpDownAlongXHist->SetXTitle("Time (s)");
+   Plot::spinUpDownAlongXHist->SetYTitle("Spin Up+Down Neutrons");
    //spinDownHist->SetLineColor(kRed);
-   Plot::spinUpDownHist->SetFillStyle(3001);
-   Plot::spinUpDownHist->SetFillColor(kBlack);
+   Plot::spinUpDownAlongXHist->SetFillStyle(3001);
+   Plot::spinUpDownAlongXHist->SetFillColor(kBlack);
+   
+   sprintf(histname,"%s:Polarisation Along X",stateDir->GetName());
+   Plot::spinAlphaX = new TGraph(nbins);
+   
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Y Axis Spin Polarisation
+   sprintf(histname,"%s:SpinUp Along Y",stateDir->GetName());
+   Plot::spinUpAlongYHist = new TH1F(histname,"SpinUp Along Y", nbins, 0.0, runTime);      
+   Plot::spinUpAlongYHist->SetXTitle("Time (s)");
+   Plot::spinUpAlongYHist->SetYTitle("Spin Up Neutrons");
+   //spinUpAlongYHist->SetLineColor(kBlue);
+   Plot::spinUpAlongYHist->SetFillStyle(1001);
+   Plot::spinUpAlongYHist->SetFillColor(kBlue-7);
+
+   sprintf(histname,"%s:SpinDown Along Y",stateDir->GetName());
+   Plot::spinDownAlongYHist = new TH1F(histname,"SpinDown Along Y", nbins, 0.0, runTime);      
+   Plot::spinDownAlongYHist->SetXTitle("Time (s)");
+   Plot::spinDownAlongYHist->SetYTitle("Spin Down Neutrons");
+   //spinDownAlongYHist->SetLineColor(kRed);
+   Plot::spinDownAlongYHist->SetFillStyle(3001);
+   Plot::spinDownAlongYHist->SetFillColor(kRed-7);
+   
+   sprintf(histname,"%s:SpinUp+Down Along Y",stateDir->GetName());
+   Plot::spinUpDownAlongYHist  = new TH1F(histname,"SpinUp+Down Along Y", nbins, 0.0, runTime);   
+   Plot::spinUpDownAlongYHist->SetXTitle("Time (s)");
+   Plot::spinUpDownAlongYHist->SetYTitle("Spin Up+Down Neutrons");
+   //spinDownHist->SetLineColor(kRed);
+   Plot::spinUpDownAlongYHist->SetFillStyle(3001);
+   Plot::spinUpDownAlongYHist->SetFillColor(kBlack);
+   
+   sprintf(histname,"%s:Polarisation Along Y",stateDir->GetName());
+   Plot::spinAlphaY = new TGraph(nbins);
+   
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Z Axis Spin Polarisation
+   sprintf(histname,"%s:SpinUp Along Z",stateDir->GetName());
+   Plot::spinUpAlongZHist = new TH1F(histname,"SpinUp Along Z", nbins, 0.0, runTime);      
+   Plot::spinUpAlongZHist->SetXTitle("Time (s)");
+   Plot::spinUpAlongZHist->SetYTitle("Spin Up Neutrons");
+   //spinUpAlongZHist->SetLineColor(kBlue);
+   Plot::spinUpAlongZHist->SetFillStyle(1001);
+   Plot::spinUpAlongZHist->SetFillColor(kBlue-7);
+
+   sprintf(histname,"%s:SpinDown Along Z",stateDir->GetName());
+   Plot::spinDownAlongZHist = new TH1F(histname,"SpinDown Along Z", nbins, 0.0, runTime);      
+   Plot::spinDownAlongZHist->SetXTitle("Time (s)");
+   Plot::spinDownAlongZHist->SetYTitle("Spin Down Neutrons");
+   //spinDownAlongZHist->SetLineColor(kRed);
+   Plot::spinDownAlongZHist->SetFillStyle(3001);
+   Plot::spinDownAlongZHist->SetFillColor(kRed-7);
+   
+   sprintf(histname,"%s:SpinUp+Down Along Z",stateDir->GetName());
+   Plot::spinUpDownAlongZHist  = new TH1F(histname,"SpinUp+Down Along Z", nbins, 0.0, runTime);   
+   Plot::spinUpDownAlongZHist->SetXTitle("Time (s)");
+   Plot::spinUpDownAlongZHist->SetYTitle("Spin Up+Down Neutrons");
+   //spinDownHist->SetLineColor(kRed);
+   Plot::spinUpDownAlongZHist->SetFillStyle(3001);
+   Plot::spinUpDownAlongZHist->SetFillColor(kBlack);
+   
+   sprintf(histname,"%s:Polarisation Along Z",stateDir->GetName());
+   Plot::spinAlphaZ = new TGraph(nbins);
    
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into the State's folder
@@ -380,20 +460,41 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
             classname = objKey->GetClassName();
             cl = gROOT->GetClass(classname);
             if (!cl) continue;
-            if (cl->InheritsFrom("SpinObservables")) {
+            if (cl->InheritsFrom("SpinData")) {
                // -- Extract Spin Observer Data if recorded
-               SpinObservables* data = dynamic_cast<SpinObservables*>(objKey->ReadObj());
+               const SpinData* data = dynamic_cast<const SpinData*>(objKey->ReadObj());
                // Loop over spin data recorded for particle
-               SpinObservables::iterator dataIter;
+               SpinData::const_iterator dataIter;
                for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
-                  if (dataIter->second == kTRUE) {
+                  Plot::spinUpDownAlongXHist->Fill(dataIter->first);
+                  Plot::spinUpDownAlongYHist->Fill(dataIter->first);
+                  Plot::spinUpDownAlongZHist->Fill(dataIter->first);
+                  // For each data point, record the spin polarisation along each axis
+                  const Spin* spin = dataIter->second;
+                  // Measure polarisation along X
+                  if (spin->IsSpinUp(xAxis)) {
                      // If spin up, bin the time
-                     if (Plot::spinUpHist) Plot::spinUpHist->Fill(dataIter->first);
+                     if (Plot::spinUpAlongXHist) Plot::spinUpAlongXHist->Fill(dataIter->first);
                   } else {
                      // If spin down, bin the time
-                     if (Plot::spinUpHist) Plot::spinDownHist->Fill(dataIter->first);
+                     if (Plot::spinUpAlongXHist) Plot::spinDownAlongXHist->Fill(dataIter->first);
                   }
-                  Plot::spinUpDownHist->Fill(dataIter->first);
+                  // Measure polarisation along Y
+                  if (spin->IsSpinUp(yAxis)) {
+                     // If spin up, bin the time
+                     if (Plot::spinUpAlongYHist) Plot::spinUpAlongYHist->Fill(dataIter->first);
+                  } else {
+                     // If spin down, bin the time
+                     if (Plot::spinUpAlongYHist) Plot::spinDownAlongYHist->Fill(dataIter->first);
+                  }
+                  // Measure polarisation along Y
+                  if (spin->IsSpinUp(zAxis)) {
+                     // If spin up, bin the time
+                     if (Plot::spinUpAlongZHist) Plot::spinUpAlongZHist->Fill(dataIter->first);
+                  } else {
+                     // If spin down, bin the time
+                     if (Plot::spinUpAlongZHist) Plot::spinDownAlongZHist->Fill(dataIter->first);
+                  }
                }
                delete data;
             }
@@ -406,10 +507,26 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Spin Precession Plots
    // -- Down
-   TCanvas *spincanvas = new TCanvas("Spin","Spin Polarisation",60,0,1200,800);
-   spincanvas->Divide(3,1);
-   spincanvas->cd(1);
-   Plot::spinDownHist->Draw();
+   TCanvas *spinXcanvas = new TCanvas("SpinAlongX","Spin Polarisation Along X",60,0,1200,800);
+   spinXcanvas->Divide(2,2);
+   spinXcanvas->cd(1);
+   Plot::spinUpAlongXHist->Draw();
+   //   spinUpHist->GetYaxis()->SetRangeUser(0.0,200.0);
+   /*   TF1 *upprecession = new TF1("UpSpinPrecessionFunc", SpinPrecession, 0.0, 20., 3);
+      upprecession->SetParameters(150.0,1.0,0.0);
+      upprecession->SetParNames("Amplitude","Omega (rad/s)","Phase (Pi/2)");
+      spinUpHist->Fit(upprecession, "RQ");
+      Double_t upamplitude = upprecession->GetParameter(0);
+      Double_t upomega = upprecession->GetParameter(1);
+      Double_t upphase = upprecession->GetParameter(2);
+      cout << "------------------------------------" << endl;
+      cout << "Spin Up:" << endl;
+      cout << "Amplitude: " << upamplitude << "\t" << "Omega: " << upomega;
+      cout << "\t" << "Phase: " << upphase << endl;
+      cout << "------------------------------------" << endl;
+   */
+   spinXcanvas->cd(2);
+   Plot::spinDownAlongXHist->Draw();
    //   spinDownHist->GetYaxis()->SetRangeUser(0.0,200.0);
    /*   TF1 *downprecession = new TF1("DownSpinPrecessionFunc", SpinPrecession, 0.0, 20., 3);
       downprecession->SetParameters(150.0,1.0,0.0);
@@ -423,25 +540,9 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
       cout << "Amplitude: " << downamplitude << "\t" << "Omega: " << downomega;
       cout << "\t" << "Phase: " << downphase << endl;   
       cout << "------------------------------------" << endl;
-   */   // -- Up
-   spincanvas->cd(2);
-   //   spinUpHist->GetYaxis()->SetRangeUser(0.0,200.0);
-   Plot::spinUpHist->Draw();
-   /*   TF1 *upprecession = new TF1("UpSpinPrecessionFunc", SpinPrecession, 0.0, 20., 3);
-      upprecession->SetParameters(150.0,1.0,0.0);
-      upprecession->SetParNames("Amplitude","Omega (rad/s)","Phase (Pi/2)");
-      spinUpHist->Fit(upprecession, "RQ");
-      Double_t upamplitude = upprecession->GetParameter(0);
-      Double_t upomega = upprecession->GetParameter(1);
-      Double_t upphase = upprecession->GetParameter(2);
-      cout << "------------------------------------" << endl;
-      cout << "Spin Up:" << endl;
-      cout << "Amplitude: " << upamplitude << "\t" << "Omega: " << upomega;
-      cout << "\t" << "Phase: " << upphase << endl;
-      cout << "------------------------------------" << endl;
-   */   // -- Combined
-   spincanvas->cd(3);
-   Plot::spinUpDownHist->Draw();
+   */ 
+   spinXcanvas->cd(3);
+   Plot::spinUpDownAlongXHist->Draw();
    /*
       TLegend* leg = new TLegend(0.7,0.91,0.9,0.99); //coordinates are fractions of pad dimensions
       leg->SetFillColor(0);
@@ -449,6 +550,84 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
       leg->AddEntry(spinDownHist,"Spin Down");
       leg->Draw();
    */
+   spinXcanvas->cd(4);
+   // Calculate polarisation
+   assert(Plot::spinUpAlongXHist->GetNbinsX() == nbins);
+   for (int i = 0; i < Plot::spinUpAlongXHist->GetNbinsX(); i++) {
+      Double_t binCentre = Plot::spinUpAlongXHist->GetBinCenter(i);
+      Double_t upCounts = Plot::spinUpAlongXHist->GetBinContent(i);
+      Double_t downCounts = Plot::spinDownAlongXHist->GetBinContent(i);
+      Double_t totalCounts = upCounts + downCounts;
+      Double_t alpha = totalCounts == 0 ? 0.0 : (upCounts - downCounts) / totalCounts;
+//      cout << "Time: " << binCentre << "\t" << "Up: " << upCounts << "\t";
+//      cout << "Down: " << downCounts << "\t" << "Alpha: " << alpha << endl;
+      Plot::spinAlphaX->SetPoint(i, binCentre, alpha);
+   }
+   Plot::spinAlphaX->SetMarkerStyle(7);
+   Plot::spinAlphaX->Draw("ALP");
+   Plot::spinAlphaX->GetXaxis()->SetTitle("Time (s)");
+   Plot::spinAlphaX->GetXaxis()->SetRangeUser(0.0,runTime);
+   Plot::spinAlphaX->GetYaxis()->SetTitle("Alpha");
+   Plot::spinAlphaX->GetYaxis()->SetRangeUser(-1.0,1.0);
+   Plot::spinAlphaX->SetTitle("Polarisation along X");
+   
+   TCanvas *spinYcanvas = new TCanvas("SpinAlongY","Spin Polarisation Along Y",60,0,1200,800);
+   spinYcanvas->Divide(2,2);
+   spinYcanvas->cd(1);
+   Plot::spinUpAlongYHist->Draw();
+   spinYcanvas->cd(2);
+   Plot::spinDownAlongYHist->Draw();
+   spinYcanvas->cd(3);
+   Plot::spinUpDownAlongYHist->Draw();
+   spinYcanvas->cd(4);
+   // Calculate polarisation
+   assert(Plot::spinUpAlongYHist->GetNbinsX() == nbins);
+   for (int i = 0; i < Plot::spinUpAlongYHist->GetNbinsX(); i++) {
+      Double_t binCentre = Plot::spinUpAlongYHist->GetBinCenter(i);
+      Double_t upCounts = Plot::spinUpAlongYHist->GetBinContent(i);
+      Double_t downCounts = Plot::spinDownAlongYHist->GetBinContent(i);
+      Double_t totalCounts = upCounts + downCounts;
+      Double_t alpha = totalCounts == 0 ? 0.0 : (upCounts - downCounts) / totalCounts;
+//      cout << "Time: " << binCentre << "\t" << "Up: " << upCounts << "\t";
+//      cout << "Down: " << downCounts << "\t" << "Alpha: " << alpha << endl;
+      Plot::spinAlphaY->SetPoint(i, binCentre, alpha);
+   }
+   Plot::spinAlphaY->SetMarkerStyle(7);
+   Plot::spinAlphaY->Draw("ALP");
+   Plot::spinAlphaY->GetXaxis()->SetTitle("Time (s)");
+   Plot::spinAlphaY->GetXaxis()->SetRangeUser(0.0,runTime);
+   Plot::spinAlphaY->GetYaxis()->SetTitle("Alpha");
+   Plot::spinAlphaY->GetYaxis()->SetRangeUser(-1.0,1.0);
+   Plot::spinAlphaY->SetTitle("Polarisation along Y");
+   
+   TCanvas *spinZcanvas = new TCanvas("SpinAlongZ","Spin Polarisation Along Z",60,0,1200,800);
+   spinZcanvas->Divide(2,2);
+   spinZcanvas->cd(1);
+   Plot::spinUpAlongZHist->Draw();
+   spinZcanvas->cd(2);
+   Plot::spinDownAlongZHist->Draw();
+   spinZcanvas->cd(3);
+   Plot::spinUpDownAlongZHist->Draw();
+   spinZcanvas->cd(4);
+   // Calculate polarisation
+   assert(Plot::spinUpAlongZHist->GetNbinsX() == nbins);
+   for (int i = 0; i < Plot::spinUpAlongZHist->GetNbinsX(); i++) {
+      Double_t binCentre = Plot::spinUpAlongZHist->GetBinCenter(i);
+      Double_t upCounts = Plot::spinUpAlongZHist->GetBinContent(i);
+      Double_t downCounts = Plot::spinDownAlongZHist->GetBinContent(i);
+      Double_t totalCounts = upCounts + downCounts;
+      Double_t alpha = totalCounts == 0 ? 0.0 : (upCounts - downCounts) / totalCounts;
+//      cout << "Time: " << binCentre << "\t" << "Up: " << upCounts << "\t";
+//      cout << "Down: " << downCounts << "\t" << "Alpha: " << alpha << endl;
+      Plot::spinAlphaZ->SetPoint(i, binCentre, alpha);
+   }
+   Plot::spinAlphaZ->SetMarkerStyle(7);
+   Plot::spinAlphaZ->Draw("ALP");
+   Plot::spinAlphaZ->GetXaxis()->SetTitle("Time (s)");
+   Plot::spinAlphaZ->GetXaxis()->SetRangeUser(0.0,runTime);
+   Plot::spinAlphaZ->GetYaxis()->SetTitle("Alpha");
+   Plot::spinAlphaZ->GetYaxis()->SetRangeUser(-1.0,1.0);
+   Plot::spinAlphaZ->SetTitle("Polarisation along Z");
    
    return;
 }
@@ -493,9 +672,9 @@ void PlotBounceCounters(TDirectory* const histDir, TDirectory* const stateDir, c
             classname = objKey->GetClassName();
             cl = gROOT->GetClass(classname);
             if (!cl) continue;
-            if (cl->InheritsFrom("BounceObservables")) {
+            if (cl->InheritsFrom("BounceData")) {
                // -- Extract Bounce Observer Data if recorded
-               BounceObservables* data =dynamic_cast<BounceObservables*>(objKey->ReadObj());
+               BounceData* data =dynamic_cast<BounceData*>(objKey->ReadObj());
                Plot::bounceHist->Fill(data->CountTotal());
                Plot::specHist->Fill(data->CountSpecular());
                Plot::diffHist->Fill(data->CountDiffuse());
@@ -521,9 +700,86 @@ void PlotBounceCounters(TDirectory* const histDir, TDirectory* const stateDir, c
 }
 
 //_____________________________________________________________________________
-void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig, TGeoManager* geoManager)
+void PlotField(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig)
 {
-   
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- cd into Histogram's dir
+   histDir->cd();
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Define Histograms
+   Char_t histname[40];
+   const Double_t runTime = runConfig.RunTime();
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Bx
+   sprintf(histname,"%s:Field Bx",stateDir->GetName());
+   Plot::bxHist = new TH2F(histname,"Bx", 500, -0.1*Units::uT, 0.1*Units::uT, 500, 0.0, runTime);
+   Plot::bxHist->SetXTitle("Field measured (T)");
+   Plot::bxHist->SetYTitle("Time (s)");
+   Plot::bxHist->SetZTitle("Neutrons");
+   // -- Bz
+   sprintf(histname,"%s:Field By",stateDir->GetName());
+   Plot::byHist = new TH2F(histname,"By", 500, -0.1*Units::uT, 0.1*Units::uT, 500, 0.0, runTime);
+   Plot::byHist->SetXTitle("Field measured (T)");
+   Plot::byHist->SetYTitle("Time (s)");
+   Plot::byHist->SetZTitle("Neutrons");
+   // -- Bx
+   sprintf(histname,"%s:Field Bz",stateDir->GetName());
+   Plot::bzHist = new TH2F(histname,"Bz", 500, -5.0*Units::uT, 5.2*Units::uT, 500, 0.0, runTime);
+   Plot::bzHist->SetXTitle("Field measured (T)");
+   Plot::bzHist->SetYTitle("Time (s)");
+   Plot::bzHist->SetZTitle("Neutrons");
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- cd into the State's folder
+   stateDir->cd();
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Loop over all particle folders in the current state's folder
+   TKey *folderKey;
+   TIter folderIter(stateDir->GetListOfKeys());
+   while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
+      const char *classname = folderKey->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TDirectory")) {
+         // Loop over all objects in particle dir
+         stateDir->cd(folderKey->GetName());
+         TDirectory* particleDir = gDirectory;
+         TKey *objKey;
+         TIter objIter(particleDir->GetListOfKeys());
+         while ((objKey = static_cast<TKey*>(objIter.Next()))) {
+            // For Each object in the particle's directory, check its class name and what it
+            // inherits from to determine what to do.
+            classname = objKey->GetClassName();
+            cl = gROOT->GetClass(classname);
+            if (!cl) continue;
+            if (cl->InheritsFrom("FieldData")) {
+               // -- Extract Spin Observer Data if recorded
+               const FieldData* fieldData = dynamic_cast<const FieldData*>(objKey->ReadObj());
+               FieldData::const_iterator dataIter;
+               for (dataIter = fieldData->begin(); dataIter != fieldData->end(); dataIter++) {
+                  Plot::bxHist->Fill((*dataIter)->Bx(),(*dataIter)->T());
+                  Plot::byHist->Fill((*dataIter)->By(),(*dataIter)->T());
+                  Plot::bzHist->Fill((*dataIter)->Bz(),(*dataIter)->T());
+               }
+               delete fieldData;
+            }
+         }
+      }
+   }
+   TCanvas *bxcanvas = new TCanvas("BxField","Bx (T)",60,0,1200,800);
+   bxcanvas->cd();
+   Plot::bxHist->Draw("COLZ");
+   TCanvas *bycanvas = new TCanvas("ByField","By (T)",60,0,1200,800);
+   bycanvas->cd();
+   Plot::byHist->Draw("COLZ");
+   TCanvas *bzcanvas = new TCanvas("BzFields","Bz (T)",60,0,1200,800);
+   bzcanvas->cd();
+   Plot::bzHist->Draw("COLZ");
+   return;
+}
+
+//_____________________________________________________________________________
+void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& /*runConfig*/, TGeoManager* geoManager)
+{
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into Histogram's dir
    histDir->cd();
@@ -570,8 +826,8 @@ void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir
             if (cl->InheritsFrom("Track")) {
                Track* track = dynamic_cast<Track*>(objKey->ReadObj());
                vector<Double_t> times = CalculateParticleHistory(*track, geoManager);
-               const Vertex& lastVertex = track->GetVertex(track->TotalVertices());
-               Double_t totalTime = lastVertex.T();
+               const Point& lastPoint = track->GetPoint(track->TotalPoints());
+               Double_t totalTime = lastPoint.T();
                delete track;
                Double_t sourcePercent = times[0]/totalTime;
                Double_t transferPercent = times[1]/totalTime;
@@ -646,15 +902,15 @@ vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoMa
    Double_t timeInTransferSec = 0.;
    Double_t timeInRamseyCell = 0.;
    
-   for (UInt_t vertexNum = 0; vertexNum < track.TotalVertices(); vertexNum++) {
-      const Vertex& vertex = track.GetVertex(vertexNum);
-      TGeoNode* node = geoManager->FindNode(vertex.X(), vertex.Y(), vertex.Z());
+   for (UInt_t pointNum = 0; pointNum < track.TotalPoints(); pointNum++) {
+      const Point& point = track.GetPoint(pointNum);
+      TGeoNode* node = geoManager->FindNode(point.X(), point.Y(), point.Z());
       TGeoVolume* volume = node->GetVolume();
       map<string, string>::iterator key = regionList.find(volume->GetName());
       if (key == regionList.end()) {
          continue;
       }
-      nextTime = vertex.T();
+      nextTime = point.T();
       Double_t deltaT = nextTime - previousTime;
       if (key->second == source) {
          timeInSource += deltaT;

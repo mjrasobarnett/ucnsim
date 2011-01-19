@@ -25,6 +25,9 @@ PLOT_DATA = bin/plot_data$(ExeSuf)
 DRAW_TRACKSS = src/draw_tracks.$(SrcSuf)
 DRAW_TRACKSO = src/draw_tracks.$(ObjSuf)
 DRAW_TRACKS = bin/draw_tracks$(ExeSuf)
+TEST_KDTREES = src/test_kdtree.$(SrcSuf)
+TEST_KDTREEO = src/test_kdtree.$(ObjSuf)
+TEST_KDTREE = bin/test_kdtree$(ExeSuf)
 
 #------------------------------------------------------------------------------
 # my classes
@@ -51,8 +54,8 @@ STATEO = src/State.$(ObjSuf) UCNDict.$(ObjSuf)
 STATES = src/State.$(SrcSuf) UCNDict.$(SrcSuf)
 SPINO = src/Spin.$(ObjSuf) UCNDict.$(ObjSuf)
 SPINS = src/Spin.$(SrcSuf) UCNDict.$(SrcSuf)
-DATAPARSERO = src/DataParser.$(ObjSuf) UCNDict.$(ObjSuf)
-DATAPARSERS = src/DatParser.$(SrcSuf) UCNDict.$(SrcSuf)
+FILEPARSERO = src/FileParser.$(ObjSuf) UCNDict.$(ObjSuf)
+FILEPARSERS = src/FileParser.$(SrcSuf) UCNDict.$(SrcSuf)
 PARABOLAO = src/Parabola.$(ObjSuf) UCNDict.$(ObjSuf)
 PARABOLAS = src/Parabola.$(SrcSuf) UCNDict.$(SrcSuf)
 POLYNOMIALO = src/Polynomial.$(ObjSuf) UCNDict.$(ObjSuf)
@@ -81,10 +84,28 @@ RUNCONFIGO = src/RunConfig.$(ObjSuf) UCNDict.$(ObjSuf)
 RUNCONFIGS = src/RunConfig.$(SrcSuf) UCNDict.$(SrcSuf)
 OBSERVERO = src/Observer.$(ObjSuf) UCNDict.$(ObjSuf)
 OBSERVERS = src/Observer.$(SrcSuf) UCNDict.$(SrcSuf)
-OBSERVABLESO = src/Observables.$(ObjSuf) UCNDict.$(ObjSuf)
-OBSERVABLESS = src/Observables.$(SrcSuf) UCNDict.$(SrcSuf)
+SPINDATAO = src/SpinData.$(ObjSuf) UCNDict.$(ObjSuf)
+SPINDATAS = src/SpinData.$(SrcSuf) UCNDict.$(SrcSuf)
+BOUNCEDATAO = src/BounceData.$(ObjSuf) UCNDict.$(ObjSuf)
+BOUNCEDATAS = src/BounceData.$(SrcSuf) UCNDict.$(SrcSuf)
+FIELDDATAO = src/FieldData.$(ObjSuf) UCNDict.$(ObjSuf)
+FIELDDATAS = src/FieldData.$(SrcSuf) UCNDict.$(SrcSuf)
 TRACKO = src/Track.$(ObjSuf) UCNDict.$(ObjSuf)
 TRACKS = src/Track.$(SrcSuf) UCNDict.$(SrcSuf)
+FIELDMAPO = src/FieldMap.$(ObjSuf) UCNDict.$(ObjSuf)
+FIELDMAPS = src/FieldMap.$(SrcSuf) UCNDict.$(SrcSuf)
+KDTREEO = src/KDTree.$(ObjSuf) UCNDict.$(ObjSuf)
+KDTREES = src/KDTree.$(SrcSuf) UCNDict.$(SrcSuf)
+KDTREENODEO = src/KDTreeNode.$(ObjSuf) UCNDict.$(ObjSuf)
+KDTREENODES = src/KDTreeNode.$(SrcSuf) UCNDict.$(SrcSuf)
+FIELDVERTEXO = src/FieldVertex.$(ObjSuf) UCNDict.$(ObjSuf)
+FIELDVERTEXS = src/FieldVertex.$(SrcSuf) UCNDict.$(SrcSuf)
+VERTEXSTACKO = src/VertexStack.$(ObjSuf) UCNDict.$(ObjSuf)
+VERTEXSTACKS = src/VertexStack.$(SrcSuf) UCNDict.$(SrcSuf)
+POINTO = src/Point.$(ObjSuf) UCNDict.$(ObjSuf)
+POINTS = src/Point.$(SrcSuf) UCNDict.$(SrcSuf)
+OBSERVABLEO = src/Observable.$(ObjSuf) UCNDict.$(ObjSuf)
+OBSERVABLES = src/Observable.$(SrcSuf) UCNDict.$(SrcSuf)
 
 #------------------------------------------------------------------------------
 # my library with my classes
@@ -93,15 +114,15 @@ LINKDEF = UCNLinkDef.h
 UCNSO = lib/libUCN.$(DllSuf)
 UCNLIB = -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -lGeom -lEG -lm -lMathMore -lGui -lRGL -lGed
 #------------------------------------------------------------------------------
-OBJS = $(SIMULATE_UCNO) $(GENERATE_UCNO) $(SANDBOXO) $(PLOT_DATAO) \
-$(DRAW_TRACKSO) $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
-$(STATEO) $(SPINO) $(DATAPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
+OBJS = $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
+$(STATEO) $(SPINO) $(FILEPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
 $(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
 $(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) $(INITIALCONFIGO) \
-$(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO)
+$(RUNCONFIGO) $(OBSERVERO) $(SPINDATAO) $(BOUNCEDATAO) $(FIELDDATAO) $(TRACKO) $(FIELDMAPO) \
+$(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLEO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(PLOT_DATA) $(SANDBOX) \
-$(DRAW_TRACKS) 
+$(DRAW_TRACKS) $(TEST_KDTREE)
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 .PHONY: simulate_ucn sandbox buildtest fitdata generate_ucn plot_data draw_tracks
@@ -109,7 +130,7 @@ $(DRAW_TRACKS)
 all: $(PROGRAMS)
 
 clean:
-		@rm -f $(OBJS) $(PROGRAMS) ./lib/* UCNDict.* core *Dict* ./*.txt
+		@rm -f $(OBJS) $(PROGRAMS) ./src/*.o ./lib/* UCNDict.* core *Dict* ./*.txt
 
 simulate_ucn:			$(SIMULATE_UCN)
 $(SIMULATE_UCN):		$(SIMULATE_UCNO) $(UCNSO)
@@ -120,7 +141,7 @@ $(SIMULATE_UCN):		$(SIMULATE_UCNO) $(UCNSO)
 
 generate_ucn:			$(GENERATE_UCN)
 $(GENERATE_UCN):		$(GENERATE_UCNO) $(UCNSO)
-							$(LD) $(LDFLAGS) $(GENERATE_UCNO) $(UCNLIB) $(LIBS)  \
+							$(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
 							$(OutPutOpt)$@
 							$(MT_EXE)
 							@echo "$@ done"
@@ -128,32 +149,34 @@ $(GENERATE_UCN):		$(GENERATE_UCNO) $(UCNSO)
 
 sandbox:			$(SANDBOX)
 $(SANDBOX):		$(SANDBOXO) $(UCNSO)
-					$(LD) $(LDFLAGS) $(SANDBOXO) $(UCNLIB) $(LIBS)  \
+					$(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
 					@echo "$@ done"
 
 plot_data:		$(PLOT_DATA)
 $(PLOT_DATA):	$(PLOT_DATAO) $(UCNSO)
-					$(LD) $(LDFLAGS) $(PLOT_DATAO) $(UCNLIB) $(LIBS)  \
+					$(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
 					@echo "$@ done"
 
 draw_tracks:	 $(DRAW_TRACKS)
 $(DRAW_TRACKS): $(DRAW_TRACKSO) $(UCNSO)
-					 $(LD) $(LDFLAGS) $(DRAW_TRACKSO) $(UCNLIB) $(LIBS)  \
+					 $(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
 					 $(OutPutOpt)$@
 					 $(MT_EXE)
 					 @echo "$@ done"
 
-$(UCNSO):		$(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) \
-               $(GRAVFIELDO) $(PARTICLEO) $(STATEO) $(SPINO) $(DATAPARSERO) \
-					$(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
-					$(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) \
-					$(FIELDMANAGERO) $(CONFIGFILEO) $(COMPOSITESHAPEO) \
-					$(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) \
-					$(INITIALCONFIGO) $(RUNCONFIGO) $(OBSERVERO) $(OBSERVABLESO) $(TRACKO)
+test_kdtree:	 $(TEST_KDTREE)
+$(TEST_KDTREE): $(TEST_KDTREEO) $(UCNSO)
+					 $(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
+					 $(OutPutOpt)$@
+					 $(MT_EXE)
+					 @echo "$@ done"
+
+
+$(UCNSO):		$(OBJS)
 
 ifeq ($(ARCH),aix)
 		/usr/ibmcxx/bin/makeC++SharedLib $(OutPutOpt) $@ $(LIBS) -p 0 $^
@@ -186,7 +209,7 @@ GRAVFIELDO: 				include/GravField.h
 PARTICLEO: 					include/Particle.h
 STATEO: 						include/State.h
 SPINO: 						include/Spin.h
-DATAPARSERO: 				include/DataParser.h
+FILEPARSERO: 				include/FileParser.h
 PARABOLAO: 					include/Parabola.h
 POLYNOMIALO: 				include/Polynomial.h
 EXPERIMENTO: 				include/Experiment.h
@@ -204,13 +227,22 @@ ELEMENTO: 					include/Element.h
 MAGFIELDMANAGERO: 		include/MagFieldManager.h
 INITIALCONFIGO: 			include/InitialConfig.h
 RUNCONFIGO: 				include/RunConfig.h
-OBSERVERO: 					include/Observer.h
-OBSERVABLESO: 				include/Observables.h
+OBSERVERO:					include/Observer.h
+SPINDATAO:					include/SpinData.h
+BOUNCEDATAO:				include/BounceData.h
+FIELDDATAO: 				include/FieldData.h
 TRACKO:						include/Track.h
+FIELDMAPO:					include/FieldMap.h
+KDTREEO:						include/KDTree.h
+KDTREENODEO:				include/KDTreeNode.h
+FIELDVERTEXO:				include/FieldVertex.h
+VERTEXSTACKO:				include/VertexStack.h
+POINTO:						include/Point.h
+OBSERVABLEO:				include/Observable.h
 
 UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/Material.h include/GravField.h include/Particle.h \
-								include/State.h include/Spin.h include/DataParser.h \
+								include/State.h include/Spin.h include/FileParser.h \
 								include/Polynomial.h include/Parabola.h \
 								include/Experiment.h include/Data.h include/MagField.h \
 								include/UniformMagField.h include/ParabolicMagField.h \
@@ -218,9 +250,11 @@ UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/CompositeShape.h include/BoolNode.h \
 								include/Volume.h include/Element.h include/MagFieldManager.h \
 								include/InitialConfig.h include/RunConfig.h include/Observer.h \
-								include/Observables.h include/Track.h $(LINKDEF)
+								include/Observables.h include/Track.h include/FieldMap.h \
+								include/KDTree.h include/KDTreeNode.h include/FieldVertex.h \
+								include/VertexStack.h include/Point.h include/Observable.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 
 .$(SrcSuf).$(ObjSuf):
-	$(CXX)  $(CXXFLAGS) -I$(UCN_DIR)/include -I$(BOOST) -c $< -o $@
+	$(CXX)  $(CXXFLAGS) -I$(UCN_DIR)/include -c $< -o $@

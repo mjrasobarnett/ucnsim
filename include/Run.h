@@ -47,7 +47,7 @@ public:
    
    Data*                GetData()            {return fData;}
    Experiment*          GetExperiment()      {return fExperiment;}
-   const RunConfig&     GetRunConfig()       {return fRunConfig;}
+   const RunConfig&     GetRunConfig() const {return fRunConfig;}
    
    // Run Procedures
    Bool_t               Initialise();

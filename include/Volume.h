@@ -37,6 +37,7 @@ public:
    virtual Double_t FermiPotential() const;
    virtual Double_t WPotential() const;
    virtual Double_t LossFactor() const;
+   virtual Bool_t   IsTrackingVolume() const {return kFALSE;}
    
    ClassDef(Volume, 1)
 };
@@ -65,6 +66,7 @@ public:
    virtual ~TrackingVolume();
    
    virtual Bool_t Interact(Particle* particle, Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath);
+   virtual Bool_t IsTrackingVolume() const {return kTRUE;}
    
    ClassDef(TrackingVolume, 1)
 };

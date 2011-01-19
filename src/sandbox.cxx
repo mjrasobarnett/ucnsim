@@ -2,8 +2,6 @@
 #include <string>
 #include <memory>
 
-#include <boost/shared_ptr.hpp>
-
 #include "ConfigFile.h"
 #include "Run.h"
 #include "Particle.h"
@@ -19,21 +17,81 @@
 #include "UniformMagField.h"
 #include "MagFieldManager.h"
 #include "Data.h"
+#include "FieldMap.h"
+#include "FileParser.h"
+#include "Tube.h"
+#include "TGeoMatrix.h"
 
 #include "Constants.h"
 #include "Units.h"
+#include "GeomParameters.h"
 
 using namespace std;
+using namespace GeomParameters;
 
 int TestFieldManager();
+bool TestFieldMap();
 
 // -------------------------------------------------------------------------------------- 
 Int_t main(Int_t /*argc*/,Char_t ** /*argv*/)
 {
-   
+   TestFieldMap();
    return EXIT_SUCCESS;
 }
 
+//__________________________________________________________________________
+bool TestFieldMap()
+{
+   // Create a Uniform Magnetic field and write it to file
+   
+   TGeoShape* fieldShape = new Tube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
+   TGeoRotation hvCellRot("HVCellRot", 0., 0., 0.);
+   TGeoTranslation hvCellTra("HVCellTra", 0., 0., 0.);
+   TGeoCombiTrans hvCellCom(hvCellTra,hvCellRot);
+   TGeoHMatrix hvCellMat = hvCellCom;   
+   TGeoMatrix* matrix = new TGeoHMatrix(hvCellMat);
+   
+   
+   string filename = "runs/spins/ramseycell_fieldmap_raw.txt";
+   MagFieldMap* field = new MagFieldMap("FieldMap", fieldShape, matrix);
+   if (field->BuildMap(filename) == kFALSE) {
+      Error("BuildFieldMap","Cannot open file: %s", filename.c_str());
+      return kFALSE;
+   }
+   
+   // Add field to magfield manager
+   MagFieldManager* magFieldManager = new MagFieldManager();
+   magFieldManager->AddField(field);
+   
+   // -- Write magfieldmanager to geometry file
+   const char *magFileName = "$(UCN_DIR)/geom/ramseycell_fields.root";
+   TFile *f = TFile::Open(magFileName,"recreate");
+   if (!f || f->IsZombie()) {
+     Error("BuildFieldMap","Cannot open file: %s", magFileName);
+     return kFALSE;
+   }
+   cout << sizeof(*magFieldManager) << endl;
+   magFieldManager->Write(magFieldManager->GetName());
+   f->ls();
+   f->Close();
+   if (magFieldManager) delete magFieldManager;
+   magFieldManager = NULL;
+   f = NULL;
+   
+   f = TFile::Open(magFileName,"read");
+   f->GetObject("MagFieldManager",magFieldManager);
+   f->ls();
+   f->Close();
+   cout << sizeof(*magFieldManager) << endl;
+   
+   TVector3 point(0.005,-0.005,0.001);
+   const MagField* magfield = magFieldManager->GetMagField(point," ");
+   const MagFieldMap* map = dynamic_cast<const MagFieldMap*>(magfield);
+   
+   TVector3 avgField = map->Interpolate(point, 6);
+   cout << "Final Field (T): " << avgField.X() << "\t" << avgField.Y() << "\t" << avgField.Z() << endl;
+   return kTRUE;
+}
 
 // -------------------------------------------------------------------------------------- 
 int TestFieldManager()

@@ -16,6 +16,7 @@
 #pragma link C++ class Detector+;
 #pragma link C++ class BlackHole+;
 #pragma link C++ class Particle+;
+#pragma link C++ class Observable+;
 #pragma link C++ class Spin+;
 #pragma link C++ class Spinor+;
 #pragma link C++ class State+;
@@ -26,13 +27,13 @@
 #pragma link C++ class Anomalous+;
 #pragma link C++ class Lost+;
 #pragma link C++ class GravField+;
-#pragma link C++ class DataParser+;
+#pragma link C++ class FileParser+;
 #pragma link C++ class Parabola+;
 #pragma link C++ class Polynomial+;
 #pragma link C++ class Data+;
 #pragma link C++ class MagField+;
 #pragma link C++ class UniformMagField+;
-#pragma link C++ class ParabolicMagField+;
+//#pragma link C++ class ParabolicMagField+;
 #pragma link C++ class ConfigFile+;
 #pragma link C++ class CompositeShape+;
 #pragma link C++ class BoolNode+;
@@ -44,11 +45,19 @@
 #pragma link C++ class RunConfig+;
 #pragma link C++ class Observer+;
 #pragma link C++ class SpinObserver+;
-#pragma link C++ class SpinObservables+;
+#pragma link C++ class SpinData+;
 #pragma link C++ class BounceObserver+;
-#pragma link C++ class BounceObservables+;
+#pragma link C++ class BounceData+;
 #pragma link C++ class TrackObserver+;
 #pragma link C++ class Track+;
-#pragma link C++ class Vertex+;
+#pragma link C++ class Point+;
+#pragma link C++ class FieldMap+;
+#pragma link C++ class MagFieldMap+;
+#pragma link C++ class KDTree+;
+#pragma link C++ class KDTreeNode+;
+#pragma link C++ class FieldVertex+;
+#pragma link C++ class VertexStack+;
+#pragma link C++ class FieldObserver+;
+#pragma link C++ class FieldData+;
 
 #endif

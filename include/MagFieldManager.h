@@ -44,7 +44,7 @@ public:
    virtual ~MagFieldManager();
 
    // -- methods
-   const MagField* const GetMagField(const TVector3&, const string&) const;
+   const MagField* const GetMagField(const TVector3&, const string = "") const;
    
    ClassDef(MagFieldManager, 1)
 };

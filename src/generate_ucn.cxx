@@ -44,7 +44,7 @@ using namespace GeomParameters;
 void GenerateBeam(const InitialConfig& initialConfig);
 Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix);
 Bool_t CreateRandomParticle(Particle* particle, const Double_t fillTime, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
-Bool_t DetermineParticleMomentum(Particle* particle, const Double_t maxEnergy, const Double_t minTheta, const Double_t maxTheta, const Double_t minPhi, const Double_t maxPhi);
+Bool_t DetermineParticleVelocity(Particle* particle, const Double_t maxVelocity);
 void DefinePolarisation(Particle* particle, const Double_t percentPolarised, const TVector3& spinAxis, const Bool_t spinUp);
 
 //__________________________________________________________________________
@@ -186,7 +186,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       particle->SetId(i);
       CreateRandomParticle(particle, fillTime, beamVolume, beamMatrix);
       // -- Initialise particle's momentum
-      DetermineParticleMomentum(particle, maxEnergy, minTheta, maxTheta, minPhi, maxPhi);
+      DetermineParticleVelocity(particle, vmax);
       // -- Setup polarisation
       DefinePolarisation(particle, percentPolarised, spinAxis, spinUp); 
       // -- Fill histograms
@@ -290,13 +290,13 @@ Bool_t CreateRandomParticle(Particle* particle, const Double_t fillTime, const T
    // Thus a particle can be generated at any time in the filling time process when the beam is on
    Double_t startTime = gRandom->Uniform(0.0,fillTime);
    // -- Create Particle
-   particle->SetVertex(point[0], point[1], point[2], startTime);
+   particle->SetPosition(point[0], point[1], point[2], startTime);
    
    return kTRUE;
 }
 
 //__________________________________________________________________________
-Bool_t DetermineParticleMomentum(Particle* particle, const Double_t maxEnergy, const Double_t minTheta, const Double_t maxTheta, const Double_t minPhi, const Double_t maxPhi)
+Bool_t DetermineParticleVelocity(Particle* particle, const Double_t maxVelocity)
 {
    // -- Determine a random direction vector on the unit sphere dOmega = sin(theta).dTheta.dPhi
    // Convert limits to radians
@@ -318,23 +318,16 @@ Bool_t DetermineParticleMomentum(Particle* particle, const Double_t maxEnergy, c
    // Check that it is a normalised direction vector
    assert(TMath::Abs(TMath::Sqrt(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]) - 1.0) < 1.E-10);
 
-   // -- Determine Particle Kinetic Energy
+   // -- Determine Particle Velocity
    // Pick random velocity in range, distributed along curve alpha.v^2, alpha is normalisation
-   Double_t maxVelocity = TMath::Sqrt(2.*maxEnergy/Neutron::mass_eV_c2);
    Double_t normalisation = (3.)/(TMath::Power(maxVelocity,3.0));
    Double_t prob = gRandom->Uniform(0.0,1.0);
-   Double_t velocity = TMath::Power(((3.0*prob)/normalisation),(1.0/3.0));
-   
-   Double_t kineticEnergy = 0.5*Neutron::mass_eV_c2*TMath::Power(velocity,2.0);
-   // -- Determine Particle Momentum (eV)
-   Double_t mom[3];
-   Double_t momentum = TMath::Sqrt(2.0*Neutron::mass_eV*kineticEnergy);
-   mom[0] = momentum*dir[0];
-   mom[1] = momentum*dir[1];
-   mom[2] = momentum*dir[2];  
-   
-   particle->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
-   
+   Double_t velocity = TMath::Power(((3.0*prob)/normalisation),(1.0/3.0));   
+   Double_t vel[3];
+   vel[0] = velocity*dir[0];
+   vel[1] = velocity*dir[1];
+   vel[2] = velocity*dir[2];
+   particle->SetVelocity(vel[0], vel[1], vel[2]);
    return kTRUE;
 }
 

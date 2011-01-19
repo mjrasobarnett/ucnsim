@@ -87,7 +87,7 @@ void State::ChangeState(Particle* particle, State* newState)
 }
 
 //_____________________________________________________________________________
-Bool_t State::Propagate(Particle* /*particle*/, Run* /*run*/, TGeoNavigator* /*navigator*/, FieldManager* /*fieldManager*/)
+Bool_t State::Propagate(Particle* /*particle*/, Run* /*run*/)
 {
    // Default behaviour - don't propagate
    return kFALSE;
@@ -97,60 +97,6 @@ Bool_t State::Propagate(Particle* /*particle*/, Run* /*run*/, TGeoNavigator* /*n
 Bool_t State::LocateInGeometry(Particle* /*particle*/, TGeoNavigator* /*navigator*/, const TGeoNode* /*initialNode*/, const TGeoMatrix* /*initialMatrix*/, const TGeoNode* /*crossedNode*/)
 {
    return kTRUE;
-}
-
-//_____________________________________________________________________________
-void State::UpdateParticle(Particle* particle, const TGeoNavigator* navigator, const Double_t timeInterval, const GravField* gravField)
-{
-   // -- Take the particle and update its position, momentum, time and energy
-   // -- with the current properties stored in the Navigator
-   #ifdef VERBOSE_MODE
-      cout << "-------------------------------------------" << endl;
-      cout << "Time step: " << timeInterval << endl;
-		cout << "Update -- Initial X: " << particle->X() << "\t" << "Y: " << particle->Y();
-      cout << "\t" <<  "Z: " << particle->Z() << "\t" <<  "T: " << particle->T() << endl;
-      cout << "Update -- Initial PX: " << particle->Px() << "\t" << "PY: " << particle->Py();
-      cout << "\t" <<  "PZ: " << particle->Pz() << "\t";
-      cout <<  "E: " << particle->Energy()/Units::neV << endl;
-   #endif
-   
-   const Double_t* pos = navigator->GetCurrentPoint();
-   const Double_t* dir = navigator->GetCurrentDirection(); 
-   Double_t heightClimbed = 0.0;
-   Double_t gravPotentialEnergy = 0.0;
-   
-   if (gravField) {
-      // Determine the height of our particle in the global coordinate system of TOP.
-      // Take the dot product of the point vector with the field direction unit vector
-      // to get the height of this point in the gravitational field.
-      // This assumes a convention that 'height' is measured along an axis that INCREASES
-      // in the opposite direction to the field direction vector (which is usually 'downwards')
-      heightClimbed = -1.0*((pos[0] - particle->X())*gravField->Nx() + (pos[1] - particle->Y())*gravField->Ny() + (pos[2] - particle->Z())*gravField->Nz());
-      gravPotentialEnergy = Neutron::mass_eV_c2*gravField->GravAcceleration()*heightClimbed;
-   }
-   
-   // Determine current Kinetic energy of particle given the height climbed in graviational field
-   Double_t kineticEnergy = particle->Energy() - gravPotentialEnergy;
-   
-   // Detemine current momentum
-   Double_t momentum = TMath::Sqrt(2.0*Neutron::mass_eV*kineticEnergy);
-   Double_t mom[3] = {momentum*dir[0], momentum*dir[1], momentum*dir[2]};
-   
-   // Update particle
-   particle->SetVertex(pos[0], pos[1], pos[2], particle->T() + timeInterval);
-   particle->SetMomentum(mom[0], mom[1], mom[2], kineticEnergy);
-   particle->IncreaseDistance(navigator->GetStep()); // Increase the distance travelled
-   
-   #ifdef VERBOSE_MODE
-      cout << "Update -- Height climbed: " << heightClimbed << "\t";
-      cout << "Kinetic Energy Gained(Lost): " << -gravPotentialEnergy/Units::neV << endl;
-      cout << "Update -- Final X: " << particle->X() << "\t" << "Y: " << particle->Y();
-      cout << "\t" <<  "Z: " << particle->Z() << "\t" <<  "T: " << particle->T() << endl;
-      cout << "Update -- Final PX: " << particle->Px() << "\t" << "PY: " << particle->Py();
-      cout << "\t" <<  "PZ: " << particle->Pz() << "\t";
-      cout <<  "E: " << particle->Energy()/Units::neV << endl;
-      cout << "-------------------------------------------" << endl;
-   #endif
 }
 
 //_____________________________________________________________________________
@@ -243,45 +189,38 @@ Bool_t Propagating::SaveState(Run* run, Particle* particle)
 }
 
 //_____________________________________________________________________________
-Bool_t Propagating::Propagate(Particle* particle, Run* run, TGeoNavigator* navigator, FieldManager* fieldManager)
+Bool_t Propagating::Propagate(Particle* particle, Run* run)
 {
-   // Propagate track through geometry until it is either stopped or the runTime has been reached
-   // Track passed MUST REFERENCE A PARTICLE as its particle type. 
-   // UNITS:: runTime, stepTime in Seconds
-
-   ///////////////////////////////////////////////////////////////////////////////////////	
-   // -- 1. Initialise Track
-   // Initialise track - Sets navigator's current point/direction/node to that of the particle
-   navigator->InitTrack(particle->X(), particle->Y(), particle->Z(), particle->Nx(), particle->Ny(), particle->Nz());
-   
+   // -- Propagate particle through geometry until it is either stopped by some decay process
+   // -- or the runTime defined int he RunConfig has been reached
    #ifdef VERBOSE_MODE
       cout << "Propagate - Starting Run - Max time (seconds): " <<  run->RunTime() << endl;
    #endif
-   
-   // -- Check that Particle has not been initialised inside a boundary or detector
-//   Material* material = static_cast<Material*>(
-//                                 navigator->GetCurrentVolume()->GetMaterial());
-//   if (material->IsTrackingMaterial() == kFALSE) {
-//      cout << "Particle: " << particle->Id() << " initialised inside boundary of ";
-//      cout << navigator->GetCurrentVolume()->GetName() << endl;
-//      return kFALSE;
-//   }
-   
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- 2. Propagation Loop
-   Int_t stepNumber;
-   for (stepNumber = 1 ; ; stepNumber++) {
+   // -- Initialise TGeoNavigator
+   // InitTrack sets navigator's current point/direction/node to that of the particle
+   run->GetNavigator()->InitTrack(particle->X(), particle->Y(), particle->Z(), particle->Nx(), particle->Ny(), particle->Nz());
+   // -- Check that Particle has not been initialised inside a boundary or detector
+   const Volume* vol = dynamic_cast<const Volume*>(run->GetNavigator()->GetCurrentVolume());
+   if (vol->IsTrackingVolume() == kFALSE) {
+      cout << "Particle: " << particle->Id() << " initialised inside boundary of ";
+      cout << run->GetNavigator()->GetCurrentVolume()->GetName() << endl;
+      return kFALSE;
+   }   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Propagation Loop
+   for (Int_t stepNumber = 1 ; ; stepNumber++) {
       #ifdef VERBOSE_MODE
          cout << endl << "-------------------------------------------------------" << endl;
          cout << "STEP " << stepNumber << "\t" << particle->T() << " s" << "\t";
-         cout << navigator->GetCurrentNode()->GetName() << endl;	
+         cout << run->GetNavigator()->GetCurrentNode()->GetName() << endl;	
       #endif
       // -- Calculate the Next StepTime (i.e: are there any factors that reduce the maximum
       // -- step size before we work out boundary distance)
       Double_t stepTime = this->DetermineNextStepTime(particle, run->MaxStepTime(), run->RunTime());
 
       // -- Make a step
-      if (this->MakeStep(stepTime, particle, navigator, fieldManager) == kFALSE) {
+      if (this->MakeStep(stepTime, particle, run) == kFALSE) {
          // -- Particle has reached a final state (decay,detected)
          break; // -- End Propagation Loop
       }
@@ -296,27 +235,27 @@ Bool_t Propagating::Propagate(Particle* particle, Run* run, TGeoNavigator* navig
 }
 
 //_____________________________________________________________________________
-Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, TGeoNavigator* navigator, FieldManager* fieldManager)
+Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
 {
    // -- Find time to reach next boundary and step along parabola
    
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Step 1 - Get the initial parameters
+   // -- Get the initial parameters
    ///////////////////////////////////////////////////////////////////////////////////////
+   TGeoNavigator* navigator = run->GetNavigator();
+   FieldManager* fieldManager = run->GetFieldManager();
    const GravField* const gravField = fieldManager->GetGravField();
       
-   // -- Store the Initial Node and Initial Matrix
+   // -- Store the initial particle's position
+   const TVector3 initialPosition(particle->X(), particle->Y(), particle->Z());
+   // -- Save initial node and its name
    const TGeoNode* initialNode = navigator->GetCurrentNode();
+   const string initialVolumeName = initialNode->GetVolume()->GetName();
+   // -- Save Initial node's matrix
    TGeoHMatrix initMatrix = *(navigator->GetCurrentMatrix()); // Copy the initial matrix here
-   TGeoMatrix* initialMatrix = &initMatrix; // Hold pointer to the stored matrix
-   
-   // -- Determine the current local coordinates
-   Double_t* currentGlobalPoint = 0;
-   Double_t initialLocalPoint[3] = {0.,0.,0.};
-   
-   currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
-   initialMatrix->MasterToLocal(currentGlobalPoint,&initialLocalPoint[0]);
-   
+   const TGeoMatrix* initialMatrix = &initMatrix; // Hold pointer to the stored matrix
+   // -- Save Path to current node - we will want to return to this in the event we make a bounce
+   const char* initialPath = navigator->GetPath();
    #ifdef VERBOSE_MODE
       cout << endl << "------------------- START OF STEP ----------------------" << endl;
       particle->Print(); // Print state
@@ -330,17 +269,11 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, TGeoNavigato
       cout << "Is Step Entering?  " << fIsStepEntering << endl;
       cout << "Is Step Exiting?  " << fIsStepExiting << endl;
       cout << "-----------------------------" << endl << endl;
-   #endif
-     
-   // -- We now should be sure we have begun in the current volume. 	
-   // -- Save Path to current node - we will want to return to this in the event we make a bounce
-   const char* initialPath = navigator->GetPath();
-   #ifdef VERBOSE_MODE	
       cout << "Current PATH: " << initialPath << endl;
    #endif
    
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- STEP 2 - Find Next Boundary
+   // -- Find Next Boundary
    ///////////////////////////////////////////////////////////////////////////////////////      
    // Store pointer to boundary node - i.e: the node which contains the boundary we just crossed
    // This will sometimes be different from the final node, such as when we cross from a daughter
@@ -375,21 +308,10 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, TGeoNavigato
    }
    
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Step 3 - Sample Magnetic Field if there is one
+   // -- Move Particle to next position.
+   // -- Along the way, if a MagField is present, precess the spin
    ///////////////////////////////////////////////////////////////////////////////////////
-   // Navigator's state now corresponds to the next position of the particle. Before we move the
-   // particle to this position, calculate the motion of the spin vector along this trajectory
-   const TVector3 initialPosition(particle->X(), particle->Y(), particle->Z());
-   const string initialVolumeName = initialNode->GetVolume()->GetName();
-   const MagField* const magField = fieldManager->GetMagField(initialPosition, initialVolumeName);
-   if (magField != NULL) {
-      magField->Interact(*particle, stepTime);
-   }
-   
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Step 4 - Update Particle to final position
-   ///////////////////////////////////////////////////////////////////////////////////////
-   this->UpdateParticle(particle, navigator, stepTime, gravField);
+   particle->Move(stepTime, run);
    #ifdef VERBOSE_MODE	
       cout << endl << "------------------- AFTER STEP ----------------------" << endl;
       particle->Print(); // Print verbose
@@ -403,7 +325,7 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, TGeoNavigato
    #endif
    
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- STEP 5 - Now we need to determine where we have ended up, and to examine whether
+   // -- Now we need to determine where we have ended up, and to examine whether
    // -- the current volume is the point's true container
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Attempt to locate particle within the current node
@@ -418,7 +340,7 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, TGeoNavigato
    // -- We should now have propagated our point by some stepsize and be inside the correct volume 
    
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Step 6 - Determine whether we collided with a wall, decayed, or any other
+   // -- Determine whether we collided with a wall, decayed, or any other
    // -- state change occured
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Check whether particle has decayed in the last step
@@ -445,7 +367,7 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, TGeoNavigato
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Notify Observers of Step Completion
-   particle->NotifyObservers(Context::Step);
+   particle->NotifyObservers(particle, Context::Step);
    // End of MakeStep.
    return kTRUE;
 }
@@ -1049,7 +971,7 @@ Bool_t Propagating::LocateInGeometry(Particle* particle, TGeoNavigator* navigato
       Bool_t locatedParticle = this->AttemptRelocationIntoCurrentNode(navigator, initialNode, initialMatrix, crossedNode);
       
       // Update particle after attempted relocation
-      this->UpdateParticle(particle, navigator);
+      particle->UpdateCoordinates(navigator);
       
       // Check whether shift has helped to locate particle in correct volume
       if (locatedParticle == kFALSE) {

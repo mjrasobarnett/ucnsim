@@ -53,39 +53,39 @@ RunConfig::RunConfig(const string& runConfigFileName)
    
    fRunTime = runConfigFile.GetFloat("RunTime(s)","Properties");
    fMaxStepTime = runConfigFile.GetFloat("MaxStepTime(s)","Properties");
+   fSpinStepTime = runConfigFile.GetFloat("SpinStepTime(s)","Properties");
    
-   fObsPolarisation = runConfigFile.GetBool("Polarisation","Observables");
-   double obsMeasAxisX = runConfigFile.GetFloat("MeasureAxisX","Observables");
-   double obsMeasAxisY = runConfigFile.GetFloat("MeasureAxisY","Observables");
-   double obsMeasAxisZ = runConfigFile.GetFloat("MeasureAxisZ","Observables");
-   fObsMeasAxis.SetXYZ(obsMeasAxisX, obsMeasAxisY, obsMeasAxisZ);
-   fObsBounces = runConfigFile.GetBool("Bounces","Observables");
+   fObsPolarisation = runConfigFile.GetBool("RecordPolarisation","Observables");
+   fObsBounces = runConfigFile.GetBool("RecordBounces","Observables");
    fObsTracks = runConfigFile.GetBool("RecordTracks","Observables");
+   fObsField = runConfigFile.GetBool("RecordField","Observables");
    
    this->Print();
 }
 
 //__________________________________________________________________________
 RunConfig::RunConfig(const RunConfig& other)
-          :fRunName(other.fRunName),
-            fGeomFile(other.fGeomFile),
-            fGeomVisFile(other.fGeomVisFile),
-            fInputDataFile(other.fInputDataFile),
-            fOutputDataFile(other.fOutputDataFile),
-            fFieldsFile(other.fFieldsFile),
-            fInputRunName(other.fInputRunName),
-            fParticlesToLoad(other.fParticlesToLoad),
-            fLoadAllParticles(other.fLoadAllParticles),
-            fRestartParticles(other.fRestartParticles),
-            fGravFieldOn(other.fGravFieldOn),
-            fMagFieldOn(other.fMagFieldOn),
-            fWallLossesOn(other.fWallLossesOn),
-            fRunTime(other.fRunTime),
-            fMaxStepTime(other.fMaxStepTime),
-            fObsPolarisation(other.fObsPolarisation),
-            fObsMeasAxis(other.fObsMeasAxis),
-            fObsBounces(other.fObsBounces),
-            fObsTracks(other.fObsTracks)
+              :TObject(other),
+               fRunName(other.fRunName),
+               fGeomFile(other.fGeomFile),
+               fGeomVisFile(other.fGeomVisFile),
+               fInputDataFile(other.fInputDataFile),
+               fOutputDataFile(other.fOutputDataFile),
+               fFieldsFile(other.fFieldsFile),
+               fInputRunName(other.fInputRunName),
+               fParticlesToLoad(other.fParticlesToLoad),
+               fLoadAllParticles(other.fLoadAllParticles),
+               fRestartParticles(other.fRestartParticles),
+               fGravFieldOn(other.fGravFieldOn),
+               fMagFieldOn(other.fMagFieldOn),
+               fWallLossesOn(other.fWallLossesOn),
+               fRunTime(other.fRunTime),
+               fMaxStepTime(other.fMaxStepTime),
+               fSpinStepTime(other.fSpinStepTime),
+               fObsPolarisation(other.fObsPolarisation),
+               fObsBounces(other.fObsBounces),
+               fObsTracks(other.fObsTracks),
+               fObsField(other.fObsField)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Copy Constructor" << endl;
@@ -111,10 +111,11 @@ RunConfig& RunConfig::operator=(const RunConfig& other)
       fWallLossesOn=other.fWallLossesOn;
       fRunTime=other.fRunTime;
       fMaxStepTime=other.fMaxStepTime;
+      fSpinStepTime=other.fSpinStepTime;
       fObsPolarisation=other.fObsPolarisation;
-      fObsMeasAxis=other.fObsMeasAxis;
       fObsBounces=other.fObsBounces;
       fObsTracks=other.fObsTracks;
+      fObsField=other.fObsField;
    }
    return *this;
 }
@@ -147,10 +148,10 @@ void RunConfig::Print(Option_t* /*option*/) const
    cout << "WallLossesOn: " << fWallLossesOn << endl;
    cout << "RunTime: " << fRunTime << " s"<< endl;
    cout << "MaxStepTime: " << fMaxStepTime << " s"<< endl;
+   cout << "SpinStepTime: " << fSpinStepTime << " s"<< endl;
    cout << "Observe Polarisation: " << fObsPolarisation << endl;
-   cout << "Polrisation Axis: " << fObsMeasAxis.X() << "\t" << fObsMeasAxis.Y();
-   cout << "\t" << fObsMeasAxis.Z() << endl;
    cout << "Observe Bounces: " << fObsBounces << endl;
    cout << "Observe Tracks: " << fObsTracks << endl;
+   cout << "Observe Field: " << fObsField << endl;
    cout << "-------------------------------------------" << endl;
 }

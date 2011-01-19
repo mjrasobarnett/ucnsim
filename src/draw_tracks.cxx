@@ -10,6 +10,7 @@
 #include "TCanvas.h"
 #include "TPolyMarker3D.h"
 #include "TPointSet3D.h"
+#include "TPolyLine3D.h"
 #include "TFile.h"
 #include "TMath.h"
 #include "TLegend.h"
@@ -161,8 +162,8 @@ Int_t main(Int_t argc,Char_t **argv)
       geoManager->SetVisOption(0);
       
       vector<Double_t> trackpoints = Plot::track->OutputPointsArray();
-      cout << "Number of Points: " << Plot::track->TotalVertices() << endl;
-      TPolyLine3D* line = new TPolyLine3D(Plot::track->TotalVertices(),&trackpoints[0]);
+      cout << "Number of Points: " << Plot::track->TotalPoints() << endl;
+      TPolyLine3D* line = new TPolyLine3D(Plot::track->TotalPoints(),&trackpoints[0]);
       line->SetLineColor(kRed);
       line->Draw();
       
@@ -173,15 +174,15 @@ Int_t main(Int_t argc,Char_t **argv)
       startMarker->SetMarkerColor(kBlue);
       // End is GREEN
       endMarker->SetMarkerColor(kGreen-3);
-      const Vertex& startVertex = Plot::track->GetVertex(0);
-      const Vertex& endVertex = Plot::track->GetVertex(Plot::track->TotalVertices());
-      startMarker->SetPoint(0, startVertex.X(), startVertex.Y(), startVertex.Z());
-      endMarker->SetPoint(0, endVertex.X(), endVertex.Y(), endVertex.Z());
+      const Point& startPoint = Plot::track->GetPoint(0);
+      const Point& endPoint = Plot::track->GetPoint(Plot::track->TotalPoints());
+      startMarker->SetPoint(0, startPoint.X(), startPoint.Y(), startPoint.Z());
+      endMarker->SetPoint(0, endPoint.X(), endPoint.Y(), endPoint.Z());
       startMarker->Draw();
       endMarker->Draw();
-      cout << "Start: " << startVertex.X() << "\t" << startVertex.Y() << "\t";
-      cout << startVertex.Z() << endl; 
-      cout << "End: " << endVertex.X() << "\t" << endVertex.Y() << "\t" << endVertex.Z() << endl;       
+      cout << "Start: " << startPoint.X() << "\t" << startPoint.Y() << "\t";
+      cout << startPoint.Z() << endl; 
+      cout << "End: " << endPoint.X() << "\t" << endPoint.Y() << "\t" << endPoint.Z() << endl;       
       
       // -- Get the GLViewer so we can manipulate the camera
       TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
