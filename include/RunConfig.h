@@ -31,6 +31,7 @@ private:
    
    Double_t fRunTime;
    Double_t fMaxStepTime;
+   Double_t fSpinStepTime;
    
    Bool_t fObsPolarisation;   
    Bool_t fObsBounces;
@@ -58,6 +59,7 @@ public:
    Bool_t RestartFromBeginning() const {return fRestartParticles;}
    Double_t RunTime() const {return fRunTime;}
    Double_t MaxStepTime() const {return fMaxStepTime;}
+   Double_t SpinStepTime() const {return fSpinStepTime;}
    Bool_t GravFieldOn() const {return fGravFieldOn;}
    Bool_t MagFieldOn() const {return fMagFieldOn;}
    Bool_t WallLossesOn() const {return fWallLossesOn;}
