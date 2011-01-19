@@ -307,22 +307,16 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
    FieldManager* fieldManager = run->GetFieldManager();
    const GravField* const gravField = fieldManager->GetGravField();
       
-   // -- Store the Initial coordinates, volume, matrix
+   // -- Store the initial particle's position
    const TVector3 initialPosition(particle->X(), particle->Y(), particle->Z());
+   // -- Save initial node and its name
    const TGeoNode* initialNode = navigator->GetCurrentNode();
    const string initialVolumeName = initialNode->GetVolume()->GetName();
+   // -- Save Initial node's matrix
    TGeoHMatrix initMatrix = *(navigator->GetCurrentMatrix()); // Copy the initial matrix here
    const TGeoMatrix* initialMatrix = &initMatrix; // Hold pointer to the stored matrix
    // -- Save Path to current node - we will want to return to this in the event we make a bounce
    const char* initialPath = navigator->GetPath();
-   
-   
-   // -- Determine the current local coordinates
-   Double_t* currentGlobalPoint = 0;
-   Double_t initialLocalPoint[3] = {0.,0.,0.};
-   currentGlobalPoint = const_cast<Double_t*>(navigator->GetCurrentPoint());
-   initialMatrix->MasterToLocal(currentGlobalPoint,&initialLocalPoint[0]);
-   
    #ifdef VERBOSE_MODE
       cout << endl << "------------------- START OF STEP ----------------------" << endl;
       particle->Print(); // Print state
