@@ -245,32 +245,25 @@ Bool_t Propagating::SaveState(Run* run, Particle* particle)
 //_____________________________________________________________________________
 Bool_t Propagating::Propagate(Particle* particle, Run* run)
 {
-   // Propagate track through geometry until it is either stopped or the runTime has been reached
-   // Track passed MUST REFERENCE A PARTICLE as its particle type. 
-   // UNITS:: runTime, stepTime in Seconds
-
-   ///////////////////////////////////////////////////////////////////////////////////////	
-   // -- 1. Initialise Track
-   // Initialise track - Sets navigator's current point/direction/node to that of the particle
-   run->GetNavigator()->InitTrack(particle->X(), particle->Y(), particle->Z(), particle->Nx(), particle->Ny(), particle->Nz());
-   
+   // -- Propagate particle through geometry until it is either stopped by some decay process
+   // -- or the runTime defined int he RunConfig has been reached
    #ifdef VERBOSE_MODE
       cout << "Propagate - Starting Run - Max time (seconds): " <<  run->RunTime() << endl;
    #endif
-   
-   // -- Check that Particle has not been initialised inside a boundary or detector
-//   Material* material = static_cast<Material*>(
-//                                 navigator->GetCurrentVolume()->GetMaterial());
-//   if (material->IsTrackingMaterial() == kFALSE) {
-//      cout << "Particle: " << particle->Id() << " initialised inside boundary of ";
-//      cout << navigator->GetCurrentVolume()->GetName() << endl;
-//      return kFALSE;
-//   }
-   
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- 2. Propagation Loop
-   Int_t stepNumber;
-   for (stepNumber = 1 ; ; stepNumber++) {
+   // -- Initialise TGeoNavigator
+   // InitTrack sets navigator's current point/direction/node to that of the particle
+   run->GetNavigator()->InitTrack(particle->X(), particle->Y(), particle->Z(), particle->Nx(), particle->Ny(), particle->Nz());
+   // -- Check that Particle has not been initialised inside a boundary or detector
+   const Volume* vol = dynamic_cast<const Volume*>(run->GetNavigator()->GetCurrentVolume());
+   if (vol->IsTrackingVolume() == kFALSE) {
+      cout << "Particle: " << particle->Id() << " initialised inside boundary of ";
+      cout << run->GetNavigator()->GetCurrentVolume()->GetName() << endl;
+      return kFALSE;
+   }   
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Propagation Loop
+   for (Int_t stepNumber = 1 ; ; stepNumber++) {
       #ifdef VERBOSE_MODE
          cout << endl << "-------------------------------------------------------" << endl;
          cout << "STEP " << stepNumber << "\t" << particle->T() << " s" << "\t";
