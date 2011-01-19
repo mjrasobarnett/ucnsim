@@ -54,7 +54,6 @@ namespace Plot {
    TH1F* pzHist = NULL;
    
    TH1F* timeHist = NULL;
-   TH1F* distHist = NULL;
    
    TH1F* bounceHist = NULL;
    TH1F* specHist = NULL;
@@ -226,10 +225,6 @@ void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, cons
    Plot::timeHist = new TH1F(histname,"Time: Units of s", nbins, 0.0, runTime+10);
    Plot::timeHist->SetXTitle("Time (s)");
    Plot::timeHist->SetYTitle("Neutrons");
-   sprintf(histname,"%s:Dist",stateDir->GetName());
-   Plot::distHist = new TH1F(histname,"Distance: Units of m", nbins, 0.0, maximumDistance);
-   Plot::distHist->SetXTitle("Distance (m)");
-   Plot::distHist->SetYTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into the State's folder
    stateDir->cd();
@@ -265,7 +260,6 @@ void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, cons
                Plot::pyHist->Fill(particle->Py()/Units::eV);
                Plot::pzHist->Fill(particle->Pz()/Units::eV);
                Plot::timeHist->Fill(particle->T()/Units::s);
-               Plot::distHist->Fill(particle->Distance()/Units::m);
                delete particle;
             }
          }
@@ -298,8 +292,6 @@ void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, cons
    momcanvas->cd(4);
    Plot::pzHist->Draw();
    momcanvas->cd(5);
-   Plot::distHist->Draw();
-   momcanvas->cd(6);
    Plot::timeHist->Draw();
    // Fit Final Time to Exponential - determine emptying time
 /*   Char_t linename[40];

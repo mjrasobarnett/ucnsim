@@ -35,7 +35,7 @@ public:
    virtual ~MagField();
    
    virtual Bool_t Contains(const TVector3& point) const;
-   virtual Bool_t Interact(Particle& particle, const Run& run, const Double_t stepTime) const = 0;
+   virtual const TVector3 GetField(const TVector3& position) const = 0;
    
    ClassDef(MagField, 1)              // Abstract base Mag field class
 };

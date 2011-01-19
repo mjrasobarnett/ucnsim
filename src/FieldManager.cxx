@@ -141,7 +141,7 @@ GravField* FieldManager::AddGravField()
 }
 
 //______________________________________________________________________________
-const MagField* const FieldManager::GetMagField(const TVector3& position, const string& volume) const
+const MagField* const FieldManager::GetMagField(const TVector3& position, const string volume) const
 {
    if (fMagFieldManager != NULL) {
       return fMagFieldManager->GetMagField(position, volume);

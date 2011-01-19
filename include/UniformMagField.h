@@ -22,8 +22,6 @@ private:
    // Magnetic field vector
    TVector3 fField;
    
-   const TVector3& GetFieldVector(const TVector3& pos) const;
-   
 public:
    UniformMagField();
    UniformMagField(const std::string& name, const TVector3& field, const TGeoShape* fieldShape, const TGeoMatrix* fieldPosition);
@@ -31,7 +29,7 @@ public:
    UniformMagField& operator=(const UniformMagField&);
    virtual ~UniformMagField();
    
-   virtual Bool_t Interact(Particle& particle, const Run& run, const Double_t stepTime) const;
+   virtual const TVector3 GetField(const TVector3& position) const;
    
    ClassDef(UniformMagField, 1)              // uniform mag field class
 };

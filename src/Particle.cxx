@@ -31,8 +31,8 @@ ClassImp(Particle)
 //______________________________________________________________________________
 Particle::Particle()
              :TObject(), Observable(),
-              fId(0), fPos(), fMom(), fE(0.),
-              fDistance(0.), fRandomSeed(0), fState(NULL), fSpin()
+              fId(0), fPos(), fVel(), fE(0.),
+              fRandomSeed(0), fState(NULL), fSpin()
 {
    // -- Default constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -44,8 +44,8 @@ Particle::Particle()
 //______________________________________________________________________________
 Particle::Particle(Int_t id, Point& pos, TVector3& mom, Double_t energy)
              :TObject(), Observable(),
-              fId(id), fPos(pos), fMom(mom), fE(energy),
-              fDistance(0.), fRandomSeed(0), fSpin()
+              fId(id), fPos(pos), fVel(mom), fE(energy),
+              fRandomSeed(0), fSpin()
 {
    // -- Constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -57,7 +57,7 @@ Particle::Particle(Int_t id, Point& pos, TVector3& mom, Double_t energy)
 //_____________________________________________________________________________
 Particle::Particle(const Particle& p)
              :TObject(p), Observable(p),
-              fId(p.fId), fPos(p.fPos), fMom(p.fMom), fE(p.fE), fDistance(p.fDistance),
+              fId(p.fId), fPos(p.fPos), fVel(p.fVel), fE(p.fE),
               fRandomSeed(p.fRandomSeed), fState(p.fState), fSpin(p.fSpin)
 {
    // -- Copy Constructor
@@ -99,11 +99,11 @@ void Particle::SetPosition(const Double_t x, const Double_t y, const Double_t z,
 }
 
 //______________________________________________________________________________
-void Particle::SetMomentum(const Double_t px, const Double_t py, const Double_t pz,
-                                    const Double_t energy)
+void Particle::SetVelocity(const Double_t vx, const Double_t vy, const Double_t vz)
 {
-   // Set current momentum to given coords
-   fMom.SetXYZ(px,py,pz); fE = energy;
+   // Set current velocity and energy to given coords
+   fVel.SetXYZ(vx,vy,vz);
+   fE = TMath::Power(this->P(), 2.0) / (2.0*Neutron::mass_eV);
 }
 
 //_____________________________________________________________________________
@@ -130,9 +130,95 @@ Bool_t Particle::Propagate(Run* run)
 }
 
 //_____________________________________________________________________________
-Bool_t Particle::LocateInGeometry(Particle* particle, TGeoNavigator* navigator, const TGeoNode* initialNode, const TGeoMatrix* initialMatrix, const TGeoNode* crossedNode)
+void Particle::Move(const Double_t stepTime, const Run* run)
 {
-   return fState->LocateInGeometry(particle, navigator, initialNode, initialMatrix, crossedNode);
+   // -- Move Particle by specified steptime and interact with any fields 
+   // -- that may be present
+   Double_t interval = run->GetRunConfig().SpinStepTime();
+   // Check if the spin step time is larger than the geometric step time.
+   if (interval >= stepTime || interval <= 0.0) {
+      interval = stepTime;
+   }
+   // Fetch the Gravitational Field if it exists, and store field's components
+   const GravField* const gravity = run->GetFieldManager()->GetGravField();
+   TVector3 gravField(0.,0.,0.);
+   if (gravity != NULL) {
+      gravField.SetXYZ(gravity->Gx(), gravity->Gy(), gravity->Gz());
+   }
+   // Make multiple small steps, of size 'interval', until we have made
+   // one step of size 'stepTime'
+   const Double_t end = this->T() + stepTime;
+   while (this->T() < end) {
+      #ifdef VERBOSE_MODE
+         cout << "-------------------------------------------" << endl;
+         cout << "Move -- Interval: " << interval << "\t" << "StepTime: " << stepTime << endl;
+         cout << "Move -- Initial X: " << this->X() << "\t" << "Y: " << this->Y();
+         cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
+         cout << "Move -- Initial Vx: " << this->Vx() << "\t" << "Vy: " << this->Py();
+         cout << "\t" <<  "Vz: " << this->Pz() << "\t";
+         cout <<  "E: " << this->Energy()/Units::neV << endl;
+      #endif
+      // Check if we will reach the end of stepTime within the next small step
+      if (this->T() + interval > end) {interval = end - this->T();} 
+      // Get current positions
+      TVector3 pos(this->X(), this->Y(), this->Z());
+      TVector3 vel(this->Vx(), this->Vy(), this->Vz());
+      // Calculate next coordinates
+      for (int i=0;i<3;i++) {
+         pos[i] += vel[i]*interval + 0.5*gravField[i]*interval*interval;
+         vel[i] += gravField[i]*interval;
+      }
+      // Update particle
+      this->SetPosition(pos[0],pos[1],pos[2],this->T()+interval);
+      this->SetVelocity(vel[0],vel[1],vel[2]);
+      // Get magfield at this position and precess spin
+      const MagField* magfield = run->GetFieldManager()->GetMagField(pos);
+      if (magfield != NULL) {this->PrecessSpin(magfield->GetField(pos), interval);}
+      #ifdef VERBOSE_MODE
+         cout << "-------------------------------------------" << endl;
+         cout << "Move -- Final X: " << this->X() << "\t" << "Y: " << this->Y();
+         cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
+         cout << "Move -- Final Vx: " << this->Vx() << "\t" << "Vy: " << this->Py();
+         cout << "\t" <<  "Vz: " << this->Pz() << "\t";
+         cout <<  "E: " << this->Energy()/Units::neV << endl;
+      #endif
+   }
+}
+
+//_____________________________________________________________________________
+void Particle::UpdateCoordinates(const TGeoNavigator* navigator)
+{
+   // Take the Navigator's internal state (position, direction) and set particle's to this
+   #ifdef VERBOSE_MODE
+      cout << "-------------------------------------------" << endl;
+      cout << "Update -- Initial X: " << this->X() << "\t" << "Y: " << this->Y();
+      cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
+      cout << "Update -- Initial Vx: " << this->Vx() << "\t" << "Vy: " << this->Py();
+      cout << "\t" <<  "Vz: " << this->Pz() << "\t";
+      cout <<  "E: " << this->Energy()/Units::neV << endl;
+   #endif
+   const Double_t* pos = navigator->GetCurrentPoint();
+   const Double_t* dir = navigator->GetCurrentDirection();
+   const Double_t  vel = this->V();
+   // Update particle
+   this->SetPosition(pos[0], pos[1], pos[2], this->T());
+   this->SetVelocity(vel*dir[0], vel*dir[1], vel*dir[2]);
+   #ifdef VERBOSE_MODE
+      cout << "Update -- Final X: " << this->X() << "\t" << "Y: " << this->Y();
+      cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
+      cout << "Update -- Final Vx: " << this->Vx() << "\t" << "Vy: " << this->Py();
+      cout << "\t" <<  "Vz: " << this->Pz() << "\t";
+      cout <<  "E: " << this->Energy()/Units::neV << endl;
+      cout << "-------------------------------------------" << endl;
+   #endif
+}
+
+//______________________________________________________________________________
+Bool_t Particle::LocateInGeometry(TGeoNavigator* navigator,
+                        const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
+                        const TGeoNode* crossedNode)
+{
+   return fState->LocateInGeometry(this,navigator,initialNode,initialMatrix,crossedNode);
 }
 
 //______________________________________________________________________________

@@ -50,7 +50,7 @@ public:
    MagFieldMap(const MagFieldMap&);
    virtual ~MagFieldMap();
    
-   virtual Bool_t Interact(Particle& particle, const Run& run, const Double_t stepTime) const;
+   virtual const TVector3 GetField(const TVector3& position) const;
    virtual Bool_t BuildMap(const std::string& filename);
    
    TVector3 Interpolate(const TVector3& position, const Int_t numInterpolatePoints) const;

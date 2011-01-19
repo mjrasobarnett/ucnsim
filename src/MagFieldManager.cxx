@@ -70,7 +70,7 @@ void MagFieldManager::AddField(MagField* field)
 }
 
 //_____________________________________________________________________________
-const MagField* const MagFieldManager::GetMagField(const TVector3& point, const string& /*volume*/) const
+const MagField* const MagFieldManager::GetMagField(const TVector3& point, const string /*volume*/) const
 {
    // -- Determine which field contains the current particle
    FieldContainer::const_iterator fieldIter;

@@ -215,8 +215,8 @@ Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
    Double_t omegaZ = Neutron::gyromag_ratio*avgMagField.Z();
    // Precession frequency
    Double_t omega = TMath::Sqrt(omegaX*omegaX + omegaY*omegaY + omegaZ*omegaZ);
-   Double_t precessAngle = (omega*precessTime)/2.0;
    if (omega == 0.0) return kFALSE;
+   Double_t precessAngle = (omega*precessTime)/2.0;
    
    // Spin Up Real Part
    const Double_t newUpRe = fUpRe*TMath::Cos(precessAngle) + (fUpIm*(omegaZ/omega) - fDownIm*(omegaX/omega) - fDownRe*(omegaY/omega))*TMath::Sin(precessAngle);

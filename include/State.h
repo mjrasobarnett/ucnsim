@@ -41,8 +41,6 @@ public:
    virtual Bool_t    LocateInGeometry(Particle* particle, TGeoNavigator* navigator,
                            const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
                            const TGeoNode* crossedNode);
-   virtual void      UpdateParticle(Particle* particle, const TGeoNavigator* navigator,
-                        const Double_t timeInterval=0., const GravField* gravField=0);
    virtual Bool_t    SaveState(Run* run, Particle* particle) = 0;
    virtual void      IsDetected(Particle* particle);
    virtual void      IsDecayed(Particle* particle);

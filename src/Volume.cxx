@@ -270,7 +270,7 @@ Bool_t Boundary::Interact(Particle* particle, Double_t* normal, TGeoNavigator* n
       throw runtime_error("Unable to cd to initial node");
    }
    // Attempt to locate particle within the current node
-   Bool_t locatedParticle = particle->LocateInGeometry(particle, navigator, boundaryNode, boundaryMatrix, crossedNode);
+   Bool_t locatedParticle = particle->LocateInGeometry(navigator, boundaryNode, boundaryMatrix, crossedNode);
    if (locatedParticle == kFALSE) {
       #ifdef VERBOSE_MODE
          cout << "Error - After Bounce - Unable to locate particle correctly in Geometry"<< endl;
@@ -368,7 +368,7 @@ Bool_t Boundary::SpecularBounce(Particle* particle, TGeoNavigator* navigator, co
       cout << "AFTER - nx: " << dir[0] <<"\t"<< "ny: " << dir[1] <<"\t"<< "nz: " << dir[2] << endl;
    #endif
    // Update Particle direction   
-   particle->SetMomentum(particle->P()*dir[0], particle->P()*dir[1], particle->P()*dir[2], particle->Energy());
+   particle->SetVelocity(particle->V()*dir[0], particle->V()*dir[1], particle->V()*dir[2]);
    // Update navigator
    navigator->SetCurrentDirection(dir[0], dir[1], dir[2]);
    return kTRUE;
@@ -476,7 +476,7 @@ Bool_t Boundary::DiffuseBounce(Particle* particle, TGeoNavigator* navigator, con
    #endif
    
    // Update Particle Direction
-   particle->SetMomentum(particle->P()*dir[0], particle->P()*dir[1], particle->P()*dir[2], particle->Energy());
+   particle->SetVelocity(particle->V()*dir[0], particle->V()*dir[1], particle->V()*dir[2]);
    // Update navigator
    navigator->SetCurrentDirection(dir[0], dir[1], dir[2]);
    return kTRUE;

@@ -48,19 +48,11 @@ UniformMagField::~UniformMagField()
 {
 // Destructor.
    Info("UniformMagField", "Destructor");
-}   
-
-//_____________________________________________________________________________
-const TVector3& UniformMagField::GetFieldVector(const TVector3& /*pos*/) const
-{
-   // No position dependence for a Uniform field so return field vector
-   return fField;
 }
 
 //______________________________________________________________________________
-Bool_t UniformMagField::Interact(Particle& particle, const Run& /*run*/, const Double_t stepTime) const
+const TVector3 UniformMagField::GetField(const TVector3& /*position*/) const
 {
-   // -- Precess spin vector of particle over period of time defined by stepTime
-   particle.PrecessSpin(/*this->GetFieldVector()*/ fField, stepTime);
-   return kTRUE;
+   // No position dependence for a Uniform field so return field vector
+   return fField;
 }
