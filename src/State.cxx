@@ -364,10 +364,6 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
       // Particle reached a final state
       return kFALSE;
    }
-   
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Notify Observers of Step Completion
-   particle->NotifyObservers(particle, Context::Step);
    // End of MakeStep.
    return kTRUE;
 }

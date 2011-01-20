@@ -184,6 +184,9 @@ void Particle::Move(const Double_t stepTime, const Run* run)
          cout <<  "E: " << this->Energy()/Units::neV << endl;
       #endif
    }
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Notify Observers of Step Completion
+   this->NotifyObservers(this, Context::Step);
 }
 
 //_____________________________________________________________________________
