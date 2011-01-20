@@ -98,7 +98,7 @@ Double_t Volume::LossFactor() const
 }
 
 //_____________________________________________________________________________
-Bool_t Volume::Interact(Particle* /*particle*/, Double_t* /*normal*/, TGeoNavigator* /*navigator*/, TGeoNode* /*crossedNode*/, const char* /*initialPath*/)
+Bool_t Volume::Interact(Particle* /*particle*/, const Double_t* /*normal*/, TGeoNavigator* /*navigator*/, TGeoNode* /*crossedNode*/, const char* /*initialPath*/)
 {
    // Default, no interaction
    return kTRUE;
@@ -163,7 +163,7 @@ TrackingVolume::~TrackingVolume()
 }
 
 //_____________________________________________________________________________
-Bool_t TrackingVolume::Interact(Particle* /*particle*/, Double_t* /*normal*/, TGeoNavigator* /*navigator*/, TGeoNode* /*crossedNode*/, const char* /*initialPath*/)
+Bool_t TrackingVolume::Interact(Particle* /*particle*/, const Double_t* /*normal*/, TGeoNavigator* /*navigator*/, TGeoNode* /*crossedNode*/, const char* /*initialPath*/)
 {
    // Default, no interaction
    return kTRUE;
@@ -232,7 +232,7 @@ Boundary::~Boundary()
 }
 
 //_____________________________________________________________________________
-Bool_t Boundary::Interact(Particle* particle, Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath)
+Bool_t Boundary::Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath)
 {
 // -- Interaction of particle with the boundary material
    // -- Is Track on the surface of a boundary?
@@ -253,45 +253,15 @@ Bool_t Boundary::Interact(Particle* particle, Double_t* normal, TGeoNavigator* n
    
    //------------------------------------------------------
    // 2. -- Reflect particle
-   #ifdef VERBOSE_MODE
-      cout << "------------------- BOUNCE ----------------------" << endl;
-      cout << "Boundary Node: " << navigator->GetCurrentNode()->GetName() << endl;
-   #endif
-   TGeoNode* boundaryNode = navigator->GetCurrentNode();
-   TGeoMatrix* boundaryMatrix = navigator->GetCurrentMatrix();
-   // Reflect
-   if (this->ReflectParticle(particle, navigator, normal) == kFALSE) {
+   if (particle->Reflect(normal, navigator, crossedNode, initialPath) == kFALSE) {
       Error("Interact","Reflect particle failed");
       throw runtime_error("Reflection of particle failed");
-   }
-   // Change navigator state back to the initial node after bounce
-   if (navigator->cd(initialPath) == kFALSE) {
-      Error("MakeStep","Unable to cd to initial node after bounce!");
-      throw runtime_error("Unable to cd to initial node");
-   }
-   // Attempt to locate particle within the current node
-   Bool_t locatedParticle = particle->LocateInGeometry(navigator, boundaryNode, boundaryMatrix, crossedNode);
-   if (locatedParticle == kFALSE) {
-      #ifdef VERBOSE_MODE
-         cout << "Error - After Bounce - Unable to locate particle correctly in Geometry"<< endl;
-      #endif
-      // Change state
-      particle->IsAnomalous();
-      throw runtime_error("Unable to locate particle uniquely in correct volume");
-   }
-   #ifdef VERBOSE_MODE
-      cout << "-------------------------------------------------" << endl;
-      cout << "Final Node: " << navigator->GetCurrentNode()->GetName() << endl;
-      cout << "-------------------------------------------------" << endl << endl;
-   #endif
-   // End of Bounce. We should have returned to the original node, 
-   // and guarenteed that the current point is located within it.
-   
+   }  
    return kTRUE;
 }
 
 //_____________________________________________________________________________
-Bool_t Boundary::AbsorbParticle(Particle* particle, Double_t* normal)
+Bool_t Boundary::AbsorbParticle(Particle* particle, const Double_t* normal)
 {
 // -- Calculate whether particle will be absorbed/upscattered/lost to the wall
    // 1. Check the perpendicular energy
@@ -316,184 +286,6 @@ Bool_t Boundary::AbsorbParticle(Particle* particle, Double_t* normal)
    // Particle not absorbed or lost
    return kFALSE;
 }
-
-//_____________________________________________________________________________
-Bool_t Boundary::ReflectParticle(Particle* particle, TGeoNavigator* navigator, Double_t* normal)
-{
-// -- Particle reflects from boundary
-   // -- Normal Vector
-   // Check if the normal vector is actually pointing in the wrong direction  
-   // (wrong means pointing along the direction of the track, rather than in the opposite direction)
-   // This will actually be the case nearly all (if not all) of the time,
-   // because of the way ROOT calculates the normal
-   Double_t norm[3] = {normal[0], normal[1], normal[2]};
-   Double_t dotProduct = particle->Nx()*norm[0] + particle->Ny()*norm[1] + particle->Nz()*norm[2];
-   if (dotProduct > 0.) {
-      // If so, reflect the normal to get the correct direction
-      for (Int_t i=0; i<3; i++) {norm[i] = -norm[i];}
-   }
-   
-   // -- Calculate Probability of diffuse reflection
-   Double_t diffuseProbability = this->DiffuseProbability(particle, norm);
-   
-   // Determine Reflection Type 
-   if (gRandom->Uniform(0.0,1.0) <= diffuseProbability) {
-      // -- Diffuse Bounce
-      if (this->DiffuseBounce(particle, navigator, norm) == kFALSE) {return kFALSE;}
-      particle->NotifyObservers(particle, Context::DiffBounce);
-   } else {
-      // -- Specular Bounce
-      if (this->SpecularBounce(particle, navigator, norm) == kFALSE) {return kFALSE;}
-      particle->NotifyObservers(particle, Context::SpecBounce);
-   
-   }
-   return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t Boundary::SpecularBounce(Particle* particle, TGeoNavigator* navigator, const Double_t* norm)
-{
-   #ifdef VERBOSE_MODE
-      cout << "----------------------------" << endl;
-      cout << "Specular Bounce" << endl;
-      cout << "BEFORE - nx: " << particle->Nx() <<"\t"<< "ny: " << particle->Ny();
-      cout << "\t" << "nz: " << particle->Nz() << endl;
-      cout << "normx: " << norm[0] <<"\t"<<"normy: "<< norm[1] <<"\t"<<"normz: "<< norm[2] << endl;
-   #endif
-   Double_t dir[3] = {particle->Nx(), particle->Ny(), particle->Nz()};
-   Double_t dotProduct = dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2];	
-   // Reflection Law for Specular Reflection
-   for (Int_t i=0; i<3; i++) {dir[i] = dir[i] - 2.0*dotProduct*norm[i];}
-   #ifdef VERBOSE_MODE
-      cout << "AFTER - nx: " << dir[0] <<"\t"<< "ny: " << dir[1] <<"\t"<< "nz: " << dir[2] << endl;
-   #endif
-   // Update Particle direction   
-   particle->SetVelocity(particle->V()*dir[0], particle->V()*dir[1], particle->V()*dir[2]);
-   // Update navigator
-   navigator->SetCurrentDirection(dir[0], dir[1], dir[2]);
-   return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t Boundary::DiffuseBounce(Particle* particle, TGeoNavigator* navigator, const Double_t* norm)
-{
-   #ifdef VERBOSE_MODE
-      cout << "----------------------------" << endl;
-      cout << "Diffuse Bounce" << endl;
-      cout << "BEFORE - nx: " << particle->Nx() <<"\t"<< "ny: " << particle->Ny();
-      cout << "\t" << "nz: " << particle->Ny() << endl;
-      cout << "normx: "<< norm[0] <<"\t"<<"normy: "<< norm[1] <<"\t"<<"normz: "<< norm[2] << endl;
-   #endif
-   
-   // First we need to pick random angles to choose the orientation of our diffuse direction vector. 
-   // Correct method for UCN physics though is to weight these angles towards the poles by adding
-   // an extra cos(theta). Derivation of how to pick these angles is in notes
-   // Overall solid angle used is dOmega = cos(theta)sin(theta) dtheta dphi
-   Double_t phi = gRandom->Uniform(0.0, 1.0)*2*TMath::Pi();
-   // We do not want the full range of theta from 0 to pi/2 however.
-   // An angle of pi/2 would imply moving off the boundary exactly parallel to
-   // the current surface.Therefore we should restrict theta to a slightly smaller
-   // proportion of angles - letting u be between 0 and 0.499, ensures theta
-   // is between 0 and ~89 degrees. 
-   Double_t u = gRandom->Uniform(0.0, 0.499);
-   // We ignore the negative sqrt term when selecting theta,
-   // since we are only interested in theta between 0 and pi/2 
-   // (negative root provides the pi/2 to pi branch) 
-   Double_t theta = TMath::ACos(TMath::Sqrt(1.0 - 2*u)); 
-   
-   // Calculate local normal vector	
-   Double_t lnorm[3] = {0.,0.,0.};
-   navigator->MasterToLocalVect(norm, lnorm);
-   TVector3 localNorm(lnorm[0], lnorm[1], lnorm[2]);
-   assert(TMath::Abs(localNorm.Mag() - 1.0) < TGeoShape::Tolerance());
-   
-   // ------------------------------------------------------------------
-   // -- FIND A SINGLE ARBITRARY VECTOR PERPENDICULAR TO THE LOCAL NORMAL
-   // Define a preferred direction in our coordinate system - usually the z-direction
-   // - that we want to be perpendicular to the normal vector of our surface
-   TVector3 upAxis(0.,0.,1.);
-   
-   // Here we check to make sure that the upAxis we chose is not parallel to the normal vector.
-   // If it is, we try another one, x. 
-   if (TMath::Abs(upAxis.Dot(localNorm)) > TGeoShape::Tolerance()) {
-      upAxis.SetXYZ(1.,0.,0.);
-      if (TMath::Abs(upAxis.Dot(localNorm)) > TGeoShape::Tolerance()) {
-         // In the (hopefully) unlikely case that localNorm has components in the x and z
-         // directions. This has been observed when including the bend geometry. This suggests
-         // that in the local coordinate system in this instance, the z-axis is not along the
-         // vertical as we usually assume. Thus including this check covers our backs. 
-         upAxis.SetXYZ(0.,1.,0.);
-         if (TMath::Abs(upAxis.Dot(localNorm)) > TGeoShape::Tolerance()) {
-            cout << "Axis X: " << upAxis.X() << "\t" <<  "Y: " << upAxis.Y() << "\t";
-            cout <<   "Z: " << upAxis.Z() << endl;
-            cout << "LocalNorm X: " << localNorm.X() << "\t" <<  "Y: " << localNorm.Y() << "\t";
-            cout <<   "Z: " << localNorm.Z() << endl;
-            Error("DiffuseBounce","Could not find an axis perpendicular to normal.");
-            return kFALSE;
-         }
-      }
-   }
-   // Calculate the cross product of the 'up' vector with our normal vector to get a vector
-   // guaranteed to be perpendicular to the normal. 
-   // This is the vector we will want to rotate around initially. 
-   TVector3 perpAxis = localNorm.Cross(upAxis); 
-   assert(TMath::Abs(perpAxis.Mag() - 1.0) < TGeoShape::Tolerance());
-   // ------------------------------------------------------------------
-   
-   // Rotate normal vector about perpendicular axis by angle theta. 
-   // Using Rodrigues' formula derived in notes. 
-   TVector3 rotatedNorm(0.,0.,0.);
-   {
-      // name term2 and term3 just refer to the terms as they appear in the Rodrigues' formula
-      TVector3 term2 = localNorm - (localNorm.Dot(perpAxis))*perpAxis; 
-      TVector3 term3 = perpAxis.Cross(localNorm);
-      rotatedNorm = localNorm + (TMath::Cos(theta) - 1.0)*term2 + TMath::Sin(theta)*term3;
-   }
-   assert(TMath::Abs(rotatedNorm.Mag() - 1.0) < TGeoShape::Tolerance());
-   
-   // Rotate the newly rotated Normal vector, rotatedNorm, by angle phi, this time
-   // rotating about the original normal vector, norm.
-   TVector3 direction(0.,0.,0.);
-   {
-      TVector3 term3 = localNorm.Cross(rotatedNorm);
-      TVector3 term2 = rotatedNorm - (rotatedNorm.Dot(localNorm))*localNorm;
-      direction = rotatedNorm + (TMath::Cos(phi) - 1.0)*term2 + TMath::Sin(phi)*term3;
-   }
-   assert(TMath::Abs(direction.Mag() - 1.0) < TGeoShape::Tolerance()); 
-   
-   // Convert the direction vector back to the global frame
-   Double_t ldir[3] = {direction.X(), direction.Y(), direction.Z()};
-   Double_t dir[3];
-   navigator->LocalToMasterVect(ldir, dir);
-   
-   assert(TMath::Abs(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2] - 1.0) < TGeoShape::Tolerance());
-   // Assert that our final direction is not perpendicular to the normal.
-   // This could result in escaping the boundary
-   assert(TMath::Abs(dir[0]*norm[0] + dir[1]*norm[1] + dir[2]*norm[2]) > TGeoShape::Tolerance()); 
-   
-   #ifdef VERBOSE_MODE	
-      cout << "AFTER - nx: " << dir[0] <<"\t"<< "nx: " << dir[1] <<"\t"<< "nx: " << dir[2] << endl;
-   #endif
-   
-   // Update Particle Direction
-   particle->SetVelocity(particle->V()*dir[0], particle->V()*dir[1], particle->V()*dir[2]);
-   // Update navigator
-   navigator->SetCurrentDirection(dir[0], dir[1], dir[2]);
-   return kTRUE;
-}
-
-//______________________________________________________________________________
-Double_t Boundary::DiffuseProbability(const Particle* particle, const Double_t* normal) const
-{
-   // Calculate the probability of making a diffuse bounce
-   Double_t cosTheta = TMath::Abs(particle->Nx()*normal[0] + particle->Ny()*normal[1] + particle->Nz()*normal[2]);
-   Double_t energyPerp = particle->Energy()*cosTheta*cosTheta;
-   Double_t diffProb = fRoughness*energyPerp/this->FermiPotential();
-   assert(diffProb <= 1.0 && diffProb >= 0.0);
-   //return diffProb;
-   return diffProb;
-}
-
 
 //_____________________________________________________________________________
 //_____________________________________________________________________________
@@ -557,7 +349,7 @@ Detector::~Detector()
 }
 
 //_____________________________________________________________________________
-Bool_t Detector::Interact(Particle* particle, Double_t* normal, TGeoNavigator* navigator, TGeoNode* /*crossedNode*/, const char* /*initialPath*/)
+Bool_t Detector::Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath)
 {   
 // -- Was particle detected?
    if (gRandom->Uniform(0.0,1.0) <= fDetectionEfficiency) {
@@ -567,7 +359,7 @@ Bool_t Detector::Interact(Particle* particle, Double_t* normal, TGeoNavigator* n
    }
    
    // If not detected, reflect particle.
-   if (this->ReflectParticle(particle, navigator, normal) == kFALSE) {
+   if (particle->Reflect(normal, navigator, crossedNode, initialPath) == kFALSE) {
       Error("Interact","Reflect particle failed");
       throw runtime_error("Reflect particle failed");
    }
@@ -633,7 +425,7 @@ BlackHole::~BlackHole()
 }
 
 //_____________________________________________________________________________
-Bool_t BlackHole::Interact(Particle* particle, Double_t* /*normal*/, TGeoNavigator* /*navigator*/, TGeoNode* /*crossedNode*/, const char* /*initialPath*/)
+Bool_t BlackHole::Interact(Particle* particle, const Double_t* /*normal*/, TGeoNavigator* /*navigator*/, TGeoNode* /*crossedNode*/, const char* /*initialPath*/)
 {
 // -- Particle is Lost if it finds itself in BlackHole
    particle->IsLost();

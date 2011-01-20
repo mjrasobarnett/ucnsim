@@ -36,6 +36,7 @@
 class FieldManager;
 class GravField;
 class Run;
+class Boundary;
 
 class TGeoNode;
 class TGeoMatrix;
@@ -62,7 +63,12 @@ private:
    Spin         fSpin;
    
    // State Change
-   void             ChangeState(State* state);
+   void     ChangeState(State* state);
+   
+   // Reflection
+   void   SpecularBounce(TGeoNavigator* navigator, const Double_t* norm);
+   void   DiffuseBounce(TGeoNavigator* navigator, const Double_t* norm);
+   Double_t DiffuseProbability(const Boundary* boundary, const Double_t* normal) const;
    
 public:
    // -- Constructors
@@ -110,10 +116,10 @@ public:
    void                 SetRandomSeed(const Int_t seed)        {fRandomSeed = seed;}
    Int_t                GetRandomSeed() const                  {return fRandomSeed;}
    
-   // State
+   // -- State
    State*               GetState()     {return fState;}
    
-   // Spin
+   // -- Spin
    const Spin&          GetSpin() const {return fSpin;}
    void                 Polarise(const TVector3& axis, const Bool_t up);
    void                 PrecessSpin(const TVector3& field, const Double_t precessTime);
@@ -127,7 +133,7 @@ public:
    Bool_t               LocateInGeometry(TGeoNavigator* navigator,
                            const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
                            const TGeoNode* crossedNode);
-   
+   Bool_t               Reflect(const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath);
    void                 IsDetected();
    void                 IsLost();
    void                 IsAbsorbed();
