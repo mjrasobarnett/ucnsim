@@ -38,6 +38,8 @@ private:
    bool fObsTracks;
    bool fObsField;
    
+   double fSpinMeasFreq;
+   
 public:
    // Constructors
    RunConfig();
@@ -67,6 +69,7 @@ public:
    bool ObserveBounces() const {return fObsBounces;}
    bool ObserveTracks() const {return fObsTracks;}
    bool ObserveField() const {return fObsField;}
+   double SpinMeasurementFreq() const {return fSpinMeasFreq;}
    
    virtual void Print(Option_t* option = "") const;
 };
