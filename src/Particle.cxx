@@ -341,9 +341,11 @@ Bool_t Particle::Reflect(const Double_t* normal, TGeoNavigator* navigator, TGeoN
       this->NotifyObservers(this, Context::DiffBounce);
    } else {
       // -- Specular Bounce
-      this->SpecularBounce(navigator, norm);
+      this->SpecularBounce(norm);
       this->NotifyObservers(this, Context::SpecBounce);
    }
+   // Update Navigator
+   navigator->SetCurrentDirection(this->Nx(), this->Ny(), this->Nz());
    //------------------------------------------------------
    // Change navigator state back to the initial node after bounce
    if (navigator->cd(initialPath) == kFALSE) {
@@ -371,7 +373,7 @@ Bool_t Particle::Reflect(const Double_t* normal, TGeoNavigator* navigator, TGeoN
 }
 
 //_____________________________________________________________________________
-void Particle::SpecularBounce(TGeoNavigator* navigator, const Double_t* norm)
+void Particle::SpecularBounce(const Double_t* norm)
 {
    #ifdef VERBOSE_MODE
       cout << "----------------------------" << endl;
@@ -390,8 +392,6 @@ void Particle::SpecularBounce(TGeoNavigator* navigator, const Double_t* norm)
    #endif
    // Update Particle direction   
    this->SetVelocity(vel*dir[0], vel*dir[1], vel*dir[2]);
-   // Update navigator
-   navigator->SetCurrentDirection(dir[0], dir[1], dir[2]);
 }
 
 //_____________________________________________________________________________
@@ -497,8 +497,6 @@ void Particle::DiffuseBounce(TGeoNavigator* navigator, const Double_t* norm)
    
    // Update Particle Direction
    this->SetVelocity(this->V()*dir[0], this->V()*dir[1], this->V()*dir[2]);
-   // Update navigator
-   navigator->SetCurrentDirection(dir[0], dir[1], dir[2]);
 }
 
 //______________________________________________________________________________

@@ -65,9 +65,11 @@ private:
    // State Change
    void     ChangeState(State* state);
    
+   // Stepping
+   
    // Reflection
-   void   SpecularBounce(TGeoNavigator* navigator, const Double_t* norm);
-   void   DiffuseBounce(TGeoNavigator* navigator, const Double_t* norm);
+   void     SpecularBounce(const Double_t* norm);
+   void     DiffuseBounce(TGeoNavigator* navigator, const Double_t* norm);
    Double_t DiffuseProbability(const Boundary* boundary, const Double_t* normal) const;
    
 public:
