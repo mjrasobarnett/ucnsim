@@ -119,7 +119,7 @@ public:
    Int_t                GetRandomSeed() const                  {return fRandomSeed;}
    
    // -- State
-   State*               GetState()     {return fState;}
+   const State*         GetState()     {return fState;}
    
    // -- Spin
    const Spin&          GetSpin() const {return fSpin;}
@@ -131,11 +131,10 @@ public:
    Bool_t               Propagate(Run* run);
    void                 Move(const Double_t stepTime, const Run* run);
    void                 UpdateCoordinates(const TGeoNavigator* navigator);
-   Bool_t               WillDecay(const Double_t timeInterval);
-   Bool_t               LocateInGeometry(TGeoNavigator* navigator,
-                           const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
-                           const TGeoNode* crossedNode);
    Bool_t               Reflect(const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath);
+   
+   Bool_t               WillDecay(const Double_t timeInterval);
+   
    void                 IsDetected();
    void                 IsLost();
    void                 IsAbsorbed();

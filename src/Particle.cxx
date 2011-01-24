@@ -218,14 +218,6 @@ void Particle::UpdateCoordinates(const TGeoNavigator* navigator)
 }
 
 //______________________________________________________________________________
-Bool_t Particle::LocateInGeometry(TGeoNavigator* navigator,
-                        const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
-                        const TGeoNode* crossedNode)
-{
-   return fState->LocateInGeometry(this,navigator,initialNode,initialMatrix,crossedNode);
-}
-
-//______________________________________________________________________________
 Bool_t Particle::WillDecay(const Double_t timeInterval)
 {
    // Calculate probability particle will decay within timeInterval, and then roll the dice!
@@ -353,7 +345,7 @@ Bool_t Particle::Reflect(const Double_t* normal, TGeoNavigator* navigator, TGeoN
       throw runtime_error("Unable to cd to initial node");
    }
    // Attempt to locate particle within the current node
-   Bool_t located = this->LocateInGeometry(navigator, boundaryNode, boundaryMatrix, crossedNode);
+   Bool_t located = fState->LocateInGeometry(this, navigator, boundaryNode, boundaryMatrix, crossedNode);
    if (located == kFALSE) {
       #ifdef VERBOSE_MODE
          cout << "Error - After Bounce - Unable to locate particle correctly in Geometry"<< endl;
@@ -510,4 +502,5 @@ Double_t Particle::DiffuseProbability(const Boundary* boundary, const Double_t* 
    //return diffProb;
    return diffProb;
 }
+
 
