@@ -10,6 +10,7 @@
 #include "TRandom.h"
 
 #include "Run.h"
+#include "RunConfig.h"
 #include "Volume.h"
 #include "FieldManager.h"
 #include "GravField.h"
@@ -217,7 +218,7 @@ Bool_t Propagating::Propagate(Particle* particle, Run* run)
       #endif
       // -- Calculate the Next StepTime (i.e: are there any factors that reduce the maximum
       // -- step size before we work out boundary distance)
-      Double_t stepTime = this->DetermineNextStepTime(particle, run->MaxStepTime(), run->RunTime());
+      Double_t stepTime = this->DetermineNextStepTime(*particle, run->GetRunConfig());
 
       // -- Make a step
       if (this->MakeStep(stepTime, particle, run) == kFALSE) {
@@ -369,20 +370,17 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
 }
 
 //_____________________________________________________________________________
-Double_t Propagating::DetermineNextStepTime(Particle* particle, const Double_t maxStepTime, const Double_t runTime)
+Double_t Propagating::DetermineNextStepTime(const Particle& particle, const RunConfig& runConfig)
 {
-   // Placeholder for method to calculate the next step time depending on 
-   // electric/magnetic field environment
-   // Start with the maximum stepTime 
-   
+   // -- Calculate the maximum size of the next geometric step of the particle, according to
+   // -- the specified run parameters
+   if (runConfig.RunTime() == 0.0) {return 0.0;}
    // Check if we will reach the maximum runtime of the track. If so propagate only until this time.
-   if (runTime == 0.0) {
-      return 0.0;
-   } else if (particle->T() > (runTime - maxStepTime)) {
-      return ((runTime - particle->T()) + TGeoShape::Tolerance());
-   } else {
-      return maxStepTime;
+   if (particle.T() > (runConfig.RunTime() - runConfig.MaxStepTime())) {
+      return ((runConfig.RunTime() - particle.T()) + 1.E-10);
    }
+   // Else return the predefined max step time
+   return runConfig.MaxStepTime();
 }
 
 //_____________________________________________________________________________

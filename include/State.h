@@ -57,6 +57,7 @@ public:
 //    Propagating -                                                    //
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
+class RunConfig;
 
 class Propagating : public State
 {
@@ -66,8 +67,7 @@ protected:
    Bool_t      fIsOnBoundary;     //! flag that current point is on some boundary
    
    // Step Time calculation
-   virtual Double_t  DetermineNextStepTime(Particle* particle, const Double_t maxStepTime,
-                                          const Double_t runTime=0.);
+   virtual Double_t  DetermineNextStepTime(const Particle& particle, const RunConfig& runConfig);
    // Propagation
    virtual Bool_t    MakeStep(Double_t stepTime, Particle* particle, Run* run);
    
