@@ -33,12 +33,13 @@ private:
    double fMaxStepTime;
    double fSpinStepTime;
    
-   bool fObsPolarisation;   
+   bool fObsSpin;   
    bool fObsBounces;
    bool fObsTracks;
    bool fObsField;
    
    double fSpinMeasFreq;
+   double fFieldMeasFreq;
    
 public:
    // Constructors
@@ -65,11 +66,12 @@ public:
    bool GravFieldOn() const {return fGravFieldOn;}
    bool MagFieldOn() const {return fMagFieldOn;}
    bool WallLossesOn() const {return fWallLossesOn;}
-   bool ObservePolarisation() const {return fObsPolarisation;}
+   bool ObserveSpin() const {return fObsSpin;}
    bool ObserveBounces() const {return fObsBounces;}
    bool ObserveTracks() const {return fObsTracks;}
    bool ObserveField() const {return fObsField;}
    double SpinMeasurementFreq() const {return fSpinMeasFreq;}
+   double FieldMeasurementFreq() const {return fFieldMeasFreq;}
    
    virtual void Print(Option_t* option = "") const;
 };

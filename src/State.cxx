@@ -19,6 +19,7 @@
 #include "Parabola.h"
 #include "MagField.h"
 #include "Observer.h"
+#include "Clock.h"
 
 #include "TGeoManager.h"
 #include "TGeoNavigator.h"
@@ -216,18 +217,13 @@ Bool_t Propagating::Propagate(Particle* particle, Run* run)
          cout << "STEP " << stepNumber << "\t" << particle->T() << " s" << "\t";
          cout << run->GetNavigator()->GetCurrentNode()->GetName() << endl;	
       #endif
-      // -- Calculate the Next StepTime (i.e: are there any factors that reduce the maximum
-      // -- step size before we work out boundary distance)
-      Double_t stepTime = this->DetermineNextStepTime(*particle, run->GetRunConfig());
-
+      // Check clock for time to the next event. Set this as the maximum step time
+      Double_t stepTime = Clock::Instance()->GetTimeToNextEvent();
+      // -- Check if run has ended
+      if (stepTime == 0.0) break;
       // -- Make a step
       if (this->MakeStep(stepTime, particle, run) == kFALSE) {
          // -- Particle has reached a final state (decay,detected)
-         break; // -- End Propagation Loop
-      }
-      
-      // -- Check whether we reached the runtime
-      if (particle->T() >= run->RunTime()) {
          break; // -- End Propagation Loop
       }
    }

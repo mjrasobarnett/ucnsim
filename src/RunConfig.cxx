@@ -18,8 +18,8 @@ RunConfig::RunConfig()
            fOutputDataFile(""), fFieldsFile(""), fInputRunName(""),
            fParticlesToLoad(""), fLoadAllParticles(true), fRestartParticles(false),
            fGravFieldOn(true), fMagFieldOn(false), fWallLossesOn(true), fRunTime(0.),
-           fMaxStepTime(0.), fSpinStepTime(0.), fObsPolarisation(false), fObsBounces(false),
-           fObsTracks(false), fObsField(false), fSpinMeasFreq(0.)
+           fMaxStepTime(0.), fSpinStepTime(0.), fObsSpin(false), fObsBounces(false),
+           fObsTracks(false), fObsField(false), fSpinMeasFreq(0.), fFieldMeasFreq(0.)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Default Constructor" << endl;
@@ -53,13 +53,13 @@ RunConfig::RunConfig(const string& runConfigFileName)
    fMaxStepTime = runConfigFile.GetFloat("MaxStepTime(s)","Properties");
    fSpinStepTime = runConfigFile.GetFloat("SpinStepTime(s)","Properties");
    
-   fObsPolarisation = runConfigFile.GetBool("RecordPolarisation","Observables");
+   fObsSpin = runConfigFile.GetBool("RecordSpin","Observables");
    fObsBounces = runConfigFile.GetBool("RecordBounces","Observables");
    fObsTracks = runConfigFile.GetBool("RecordTracks","Observables");
    fObsField = runConfigFile.GetBool("RecordField","Observables");
    
    fSpinMeasFreq = runConfigFile.GetFloat("SpinMeasurementFrequency(s)","Observables");
-   
+   fFieldMeasFreq = runConfigFile.GetFloat("FieldMeasurementFrequency(s)","Observables");
    this->Print();
 }
 
@@ -81,11 +81,12 @@ RunConfig::RunConfig(const RunConfig& other)
                fRunTime(other.fRunTime),
                fMaxStepTime(other.fMaxStepTime),
                fSpinStepTime(other.fSpinStepTime),
-               fObsPolarisation(other.fObsPolarisation),
+               fObsSpin(other.fObsSpin),
                fObsBounces(other.fObsBounces),
                fObsTracks(other.fObsTracks),
                fObsField(other.fObsField),
-               fSpinMeasFreq(other.fSpinMeasFreq)
+               fSpinMeasFreq(other.fSpinMeasFreq),
+               fFieldMeasFreq(other.fFieldMeasFreq)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Copy Constructor" << endl;
@@ -112,11 +113,12 @@ RunConfig& RunConfig::operator=(const RunConfig& other)
       fRunTime=other.fRunTime;
       fMaxStepTime=other.fMaxStepTime;
       fSpinStepTime=other.fSpinStepTime;
-      fObsPolarisation=other.fObsPolarisation;
+      fObsSpin=other.fObsSpin;
       fObsBounces=other.fObsBounces;
       fObsTracks=other.fObsTracks;
       fObsField=other.fObsField;
       fSpinMeasFreq=other.fSpinMeasFreq;
+      fFieldMeasFreq=other.fFieldMeasFreq;
    }
    return *this;
 }
@@ -150,10 +152,11 @@ void RunConfig::Print(Option_t* /*option*/) const
    cout << "RunTime: " << fRunTime << " s"<< endl;
    cout << "MaxStepTime: " << fMaxStepTime << " s"<< endl;
    cout << "SpinStepTime: " << fSpinStepTime << " s"<< endl;
-   cout << "Observe Polarisation: " << fObsPolarisation << endl;
+   cout << "Observe Spin: " << fObsSpin << endl;
    cout << "Observe Bounces: " << fObsBounces << endl;
    cout << "Observe Tracks: " << fObsTracks << endl;
    cout << "Observe Field: " << fObsField << endl;
    cout << "Spin Measurement Frequency: " << fSpinMeasFreq << endl;
+   cout << "Field Measurement Frequency: " << fFieldMeasFreq << endl;
    cout << "-------------------------------------------" << endl;
 }

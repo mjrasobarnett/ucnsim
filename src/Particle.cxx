@@ -11,6 +11,7 @@
 #include "Run.h"
 #include "Observer.h"
 #include "Volume.h"
+#include "Clock.h"
 
 #include "TMath.h"
 #include "TRandom.h"
@@ -169,7 +170,9 @@ void Particle::Move(const Double_t stepTime, const Run* run)
          pos[i] += vel[i]*interval + 0.5*gravField[i]*interval*interval;
          vel[i] += gravField[i]*interval;
       }
-      // Update particle
+      // Update Clock
+      Clock::Instance()->Tick(interval);
+      // Update Particle
       this->SetPosition(pos[0],pos[1],pos[2],this->T()+interval);
       this->SetVelocity(vel[0],vel[1],vel[2]);
       // Get magfield at this position and precess spin

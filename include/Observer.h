@@ -72,12 +72,13 @@ class SpinObserver : public Observer
 {
 private:
    SpinData *fSpinData;
+   double fMeasFreq;
+   double fLastMeasurementTime;
    
 public:
    // -- Constructors
-   SpinObserver();
+   SpinObserver(double measureFreq);
    SpinObserver(const SpinObserver&);
-   SpinObserver& operator=(const SpinObserver&);
    virtual ~SpinObserver();
    
    virtual void RecordEvent(const TObject* subject, const std::string& context);
@@ -150,12 +151,13 @@ class FieldObserver : public Observer
 {
 private:
    FieldData *fFieldData;
+   double fMeasFreq;
+   double fLastMeasurementTime;
    
 public:
    // -- Constructors
-   FieldObserver();
+   FieldObserver(double measureFreq);
    FieldObserver(const FieldObserver&);
-   FieldObserver& operator=(const FieldObserver&);
    virtual ~FieldObserver();
    
    virtual void RecordEvent(const TObject* subject, const std::string& context);

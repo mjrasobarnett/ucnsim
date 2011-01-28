@@ -12,6 +12,7 @@
 #include "FieldManager.h"
 #include "Particle.h"
 #include "Data.h"
+#include "Clock.h"
 
 #include "TFile.h"
 #include "TRandom.h"
@@ -97,6 +98,12 @@ Bool_t Run::Initialise()
    cout << "Initialising: " << this->GetName() << endl;
    cout << "-------------------------------------------" << endl;
    ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Setup the Clock
+   Clock::Instance()->SetEndOfRun(this->GetRunConfig().RunTime());
+   Clock::Instance()->SetMaxStepInterval(this->GetRunConfig().MaxStepTime());
+   Clock::Instance()->SetSpinMeasureFreq(this->GetRunConfig().SpinMeasurementFreq());
+   Clock::Instance()->SetFieldMeasureFreq(this->GetRunConfig().FieldMeasurementFreq());
+   ///////////////////////////////////////////////////////////////////////////////////////
    // -- Build Geometry
    ///////////////////////////////////////////////////////////////////////////////////////
    if (this->GetExperiment()->Initialise(this->GetRunConfig()) == kFALSE) {
@@ -152,6 +159,8 @@ Bool_t Run::Start()
    for (Int_t index = 0; index < totalParticles; index++) {
       // Get Particle from list
       Particle* particle = this->GetData()->RetrieveParticle();
+      // Reset the clock
+      Clock::Instance()->Reset();
       // Determine whether we are restoring to the start of a previously propagated track.
       // If so we want to set the Random Generator's seed back to what it was at the start of this
       // particle's propagation. This seed is stored (currently) in the particle itself. Otherwise

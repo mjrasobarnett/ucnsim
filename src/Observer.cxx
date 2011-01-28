@@ -9,6 +9,7 @@
 #include "Particle.h"
 #include "RunConfig.h"
 #include "Data.h"
+#include "Clock.h"
 
 #include "TKey.h"
 
@@ -31,9 +32,11 @@ ClassImp(Observer)
 ClassImp(SpinObserver)
 
 //_____________________________________________________________________________
-SpinObserver::SpinObserver()
+SpinObserver::SpinObserver(double measureFreq)
              :Observer(),
-              fSpinData(NULL)
+              fSpinData(NULL),
+              fMeasFreq(measureFreq),
+              fLastMeasurementTime(Clock::Instance()->GetTime())
 {
    // Constructor
    Info("SpinObserver","Default Constructor");
@@ -42,22 +45,12 @@ SpinObserver::SpinObserver()
 //_____________________________________________________________________________
 SpinObserver::SpinObserver(const SpinObserver& other)
                  :Observer(other),
-                  fSpinData(other.fSpinData)
+                  fSpinData(other.fSpinData),
+                  fMeasFreq(other.fMeasFreq),
+                  fLastMeasurementTime(other.fLastMeasurementTime)
 {
    // Copy Constructor
    Info("SpinObserver","Copy Constructor");
-}
-
-//_____________________________________________________________________________
-SpinObserver& SpinObserver::operator=(const SpinObserver& other)
-{
-   // Assignment
-   Info("SpinObserver","Assignment");
-   if(this!=&other) {
-      Observer::operator=(other);
-      fSpinData = other.fSpinData;
-   }
-   return *this;
 }
 
 //_____________________________________________________________________________
@@ -73,11 +66,17 @@ void SpinObserver::RecordEvent(const TObject* subject, const string& context)
 {
    // -- Record the current spin state
    if (subject == fSubject && context == Context::Spin) {
-      const Particle* particle = dynamic_cast<const Particle*>(subject);
-      // Make a copy of the current spin state
-      const Spin* spin = new Spin(particle->GetSpin());
-      // Insert copy into data structure
-      fSpinData->insert(pair<Double_t,const Spin*>(particle->T(), spin));
+      // Check whether it is time to make a Spin measurement
+      double currentTime = Clock::Instance()->GetTime();
+      if (TMath::Abs(currentTime - (fLastMeasurementTime + fMeasFreq)) < 1.E-10) {
+         const Particle* particle = dynamic_cast<const Particle*>(subject);
+         // Make a copy of the current spin state
+         const Spin* spin = new Spin(particle->GetSpin());
+         // Insert copy into data structure
+         fSpinData->insert(pair<Double_t,const Spin*>(particle->T(), spin));
+         // Update stored value of last measurement
+         fLastMeasurementTime = currentTime;
+      }
    }
 }
 
@@ -85,6 +84,7 @@ void SpinObserver::RecordEvent(const TObject* subject, const string& context)
 void SpinObserver::ResetData()
 {
    // -- Delete current observables and create a new version in its place
+   fLastMeasurementTime = 0.0;
    if (fSpinData != NULL) delete fSpinData; fSpinData = NULL;
    fSpinData = new SpinData();
 }
@@ -315,9 +315,11 @@ void TrackObserver::WriteToFile(TDirectory* const particleDir)
 ClassImp(FieldObserver)
 
 //_____________________________________________________________________________
-FieldObserver::FieldObserver()
+FieldObserver::FieldObserver(double measureFreq)
               :Observer(),
-               fFieldData(NULL)
+               fFieldData(NULL),
+               fMeasFreq(measureFreq),
+               fLastMeasurementTime(Clock::Instance()->GetTime())
 {
    // Constructor
    Info("FieldObserver","Default Constructor");
@@ -326,22 +328,12 @@ FieldObserver::FieldObserver()
 //_____________________________________________________________________________
 FieldObserver::FieldObserver(const FieldObserver& other)
               :Observer(other),
-               fFieldData(other.fFieldData)
+               fFieldData(other.fFieldData),
+               fMeasFreq(other.fMeasFreq),
+               fLastMeasurementTime(other.fLastMeasurementTime)
 {
    // Copy Constructor
    Info("FieldObserver","Copy Constructor");
-}
-
-//_____________________________________________________________________________
-FieldObserver& FieldObserver::operator=(const FieldObserver& other)
-{
-   // Assignment
-   Info("FieldObserver","Assignment");
-   if(this!=&other) {
-      Observer::operator=(other);
-      fFieldData = other.fFieldData;
-   }
-   return *this;
 }
 
 //_____________________________________________________________________________
@@ -357,9 +349,15 @@ void FieldObserver::RecordEvent(const TObject* subject, const string& context)
 {
    // -- Record the current Field 
    if (context == Context::MeasureField) {
-      const FieldVertex* vertex = dynamic_cast<const FieldVertex*>(subject);
-      const FieldVertex* copy = new FieldVertex(*vertex);
-      fFieldData->push_back(copy);
+      // Calculate whether it is time to make a field measurement
+      double currentTime = Clock::Instance()->GetTime();
+      if (TMath::Abs(currentTime - (fLastMeasurementTime + fMeasFreq)) < 1.E-10) {
+         const FieldVertex* vertex = dynamic_cast<const FieldVertex*>(subject);
+         const FieldVertex* copy = new FieldVertex(*vertex);
+         fFieldData->push_back(copy);
+         // Update stored value of last measurement
+         fLastMeasurementTime = currentTime;
+      }
    }
 }
 
@@ -367,6 +365,7 @@ void FieldObserver::RecordEvent(const TObject* subject, const string& context)
 void FieldObserver::ResetData()
 {
    // -- Delete current observables and create a new version in its place
+   fLastMeasurementTime = 0.0;
    if (fFieldData != NULL) delete fFieldData; fFieldData = NULL;
    fFieldData = new FieldData();
 }
