@@ -243,6 +243,9 @@ Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
       this->Print();
       cout << "-----------------------------------------------" << endl;
    #endif
+   this->CalculateProbSpinUp(TVector3(1.,0.,0.));
+   this->CalculateProbSpinUp(TVector3(0.,1.,0.));
+   this->CalculateProbSpinUp(TVector3(0.,0.,1.));
    return kTRUE;
 }
 
@@ -277,7 +280,6 @@ Double_t Spinor::CalculateProbSpinUp(const TVector3& axis) const
       cout << "Probability: " << prob << endl;
       cout << "-----------------------------------------------" << endl;
    #endif
-   
-//   assert(prob >= 0.0 && prob <= 1.0);
+   assert(prob >= 0.0 && prob <= 1.0);
    return prob;
 }
