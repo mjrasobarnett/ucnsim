@@ -147,7 +147,7 @@ Int_t main(Int_t argc,Char_t **argv)
    PlotFinalStates(histDir, stateDir, initialConfig, runConfig, geoManager);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Polarisation
-   if (runConfig.ObservePolarisation() == kTRUE) {
+   if (runConfig.ObserveSpin() == kTRUE) {
       PlotSpinPolarisation(histDir, stateDir, runConfig);
    }
    //////////////////////////////////////////////////////////////////////////////////////
@@ -345,35 +345,36 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    // -- Define Histograms
    Char_t histname[40];
    const Double_t runTime = runConfig.RunTime();
+   const Double_t spinMeasFreq = runConfig.SpinMeasurementFreq();
+   const Int_t nbins = runTime/spinMeasFreq;
    const TVector3 xAxis(1.0,0.0,0.0);
    const TVector3 yAxis(0.0,1.0,0.0);
    const TVector3 zAxis(0.0,0.0,1.0);
-   const int nbins = 500;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- X Axis Spin Polarisation
    sprintf(histname,"%s:SpinUp AlongX",stateDir->GetName());
    Plot::spinUpAlongXHist = new TH1F(histname,"SpinUp AlongX", nbins, 0.0, runTime);      
    Plot::spinUpAlongXHist->SetXTitle("Time (s)");
    Plot::spinUpAlongXHist->SetYTitle("Spin Up Neutrons");
-   //spinUpAlongXHist->SetLineColor(kBlue);
    Plot::spinUpAlongXHist->SetFillStyle(1001);
    Plot::spinUpAlongXHist->SetFillColor(kBlue-7);
+   Plot::spinUpAlongXHist->SetLineColor(kBlue-7);
 
    sprintf(histname,"%s:SpinDown AlongX",stateDir->GetName());
    Plot::spinDownAlongXHist = new TH1F(histname,"SpinDown AlongX", nbins, 0.0, runTime);      
    Plot::spinDownAlongXHist->SetXTitle("Time (s)");
    Plot::spinDownAlongXHist->SetYTitle("Spin Down Neutrons");
-   //spinDownAlongXHist->SetLineColor(kRed);
    Plot::spinDownAlongXHist->SetFillStyle(3001);
    Plot::spinDownAlongXHist->SetFillColor(kRed-7);
+   Plot::spinDownAlongXHist->SetLineColor(kRed-7);
    
    sprintf(histname,"%s:SpinUp+Down Along X",stateDir->GetName());
    Plot::spinUpDownAlongXHist  = new TH1F(histname,"SpinUp+Down Along X", nbins, 0.0, runTime);   
    Plot::spinUpDownAlongXHist->SetXTitle("Time (s)");
    Plot::spinUpDownAlongXHist->SetYTitle("Spin Up+Down Neutrons");
-   //spinDownHist->SetLineColor(kRed);
    Plot::spinUpDownAlongXHist->SetFillStyle(3001);
    Plot::spinUpDownAlongXHist->SetFillColor(kBlack);
+   Plot::spinUpDownAlongXHist->SetLineColor(kBlack);
    
    sprintf(histname,"%s:Polarisation Along X",stateDir->GetName());
    Plot::spinAlphaX = new TGraph(nbins);
@@ -384,7 +385,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    Plot::spinUpAlongYHist = new TH1F(histname,"SpinUp Along Y", nbins, 0.0, runTime);      
    Plot::spinUpAlongYHist->SetXTitle("Time (s)");
    Plot::spinUpAlongYHist->SetYTitle("Spin Up Neutrons");
-   //spinUpAlongYHist->SetLineColor(kBlue);
+   Plot::spinUpAlongYHist->SetLineColor(kBlue-7);
    Plot::spinUpAlongYHist->SetFillStyle(1001);
    Plot::spinUpAlongYHist->SetFillColor(kBlue-7);
 
@@ -392,7 +393,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    Plot::spinDownAlongYHist = new TH1F(histname,"SpinDown Along Y", nbins, 0.0, runTime);      
    Plot::spinDownAlongYHist->SetXTitle("Time (s)");
    Plot::spinDownAlongYHist->SetYTitle("Spin Down Neutrons");
-   //spinDownAlongYHist->SetLineColor(kRed);
+   Plot::spinDownAlongYHist->SetLineColor(kRed-7);
    Plot::spinDownAlongYHist->SetFillStyle(3001);
    Plot::spinDownAlongYHist->SetFillColor(kRed-7);
    
@@ -400,7 +401,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    Plot::spinUpDownAlongYHist  = new TH1F(histname,"SpinUp+Down Along Y", nbins, 0.0, runTime);   
    Plot::spinUpDownAlongYHist->SetXTitle("Time (s)");
    Plot::spinUpDownAlongYHist->SetYTitle("Spin Up+Down Neutrons");
-   //spinDownHist->SetLineColor(kRed);
+   Plot::spinUpDownAlongYHist->SetLineColor(kBlack);
    Plot::spinUpDownAlongYHist->SetFillStyle(3001);
    Plot::spinUpDownAlongYHist->SetFillColor(kBlack);
    
@@ -413,7 +414,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    Plot::spinUpAlongZHist = new TH1F(histname,"SpinUp Along Z", nbins, 0.0, runTime);      
    Plot::spinUpAlongZHist->SetXTitle("Time (s)");
    Plot::spinUpAlongZHist->SetYTitle("Spin Up Neutrons");
-   //spinUpAlongZHist->SetLineColor(kBlue);
+   Plot::spinUpAlongZHist->SetLineColor(kBlue-7);
    Plot::spinUpAlongZHist->SetFillStyle(1001);
    Plot::spinUpAlongZHist->SetFillColor(kBlue-7);
 
@@ -421,7 +422,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    Plot::spinDownAlongZHist = new TH1F(histname,"SpinDown Along Z", nbins, 0.0, runTime);      
    Plot::spinDownAlongZHist->SetXTitle("Time (s)");
    Plot::spinDownAlongZHist->SetYTitle("Spin Down Neutrons");
-   //spinDownAlongZHist->SetLineColor(kRed);
+   Plot::spinDownAlongZHist->SetLineColor(kRed-7);
    Plot::spinDownAlongZHist->SetFillStyle(3001);
    Plot::spinDownAlongZHist->SetFillColor(kRed-7);
    
@@ -429,7 +430,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    Plot::spinUpDownAlongZHist  = new TH1F(histname,"SpinUp+Down Along Z", nbins, 0.0, runTime);   
    Plot::spinUpDownAlongZHist->SetXTitle("Time (s)");
    Plot::spinUpDownAlongZHist->SetYTitle("Spin Up+Down Neutrons");
-   //spinDownHist->SetLineColor(kRed);
+   Plot::spinUpDownAlongZHist->SetLineColor(kBlack);
    Plot::spinUpDownAlongZHist->SetFillStyle(3001);
    Plot::spinUpDownAlongZHist->SetFillColor(kBlack);
    
@@ -553,7 +554,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    // Calculate polarisation
    assert(Plot::spinUpAlongXHist->GetNbinsX() == nbins);
    for (int i = 0; i < Plot::spinUpAlongXHist->GetNbinsX(); i++) {
-      Double_t binCentre = Plot::spinUpAlongXHist->GetBinCenter(i);
+      Double_t binCentre = Plot::spinUpAlongXHist->GetBinLowEdge(i);
       Double_t upCounts = Plot::spinUpAlongXHist->GetBinContent(i);
       Double_t downCounts = Plot::spinDownAlongXHist->GetBinContent(i);
       Double_t totalCounts = upCounts + downCounts;
@@ -563,7 +564,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
       Plot::spinAlphaX->SetPoint(i, binCentre, alpha);
    }
    Plot::spinAlphaX->SetMarkerStyle(7);
-   Plot::spinAlphaX->Draw("ALP");
+   Plot::spinAlphaX->Draw("AP");
    Plot::spinAlphaX->GetXaxis()->SetTitle("Time (s)");
    Plot::spinAlphaX->GetXaxis()->SetRangeUser(0.0,runTime);
    Plot::spinAlphaX->GetYaxis()->SetTitle("Alpha");
@@ -582,7 +583,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    // Calculate polarisation
    assert(Plot::spinUpAlongYHist->GetNbinsX() == nbins);
    for (int i = 0; i < Plot::spinUpAlongYHist->GetNbinsX(); i++) {
-      Double_t binCentre = Plot::spinUpAlongYHist->GetBinCenter(i);
+      Double_t binCentre = Plot::spinUpAlongYHist->GetBinLowEdge(i);
       Double_t upCounts = Plot::spinUpAlongYHist->GetBinContent(i);
       Double_t downCounts = Plot::spinDownAlongYHist->GetBinContent(i);
       Double_t totalCounts = upCounts + downCounts;
@@ -592,7 +593,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
       Plot::spinAlphaY->SetPoint(i, binCentre, alpha);
    }
    Plot::spinAlphaY->SetMarkerStyle(7);
-   Plot::spinAlphaY->Draw("ALP");
+   Plot::spinAlphaY->Draw("AP");
    Plot::spinAlphaY->GetXaxis()->SetTitle("Time (s)");
    Plot::spinAlphaY->GetXaxis()->SetRangeUser(0.0,runTime);
    Plot::spinAlphaY->GetYaxis()->SetTitle("Alpha");
@@ -611,7 +612,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    // Calculate polarisation
    assert(Plot::spinUpAlongZHist->GetNbinsX() == nbins);
    for (int i = 0; i < Plot::spinUpAlongZHist->GetNbinsX(); i++) {
-      Double_t binCentre = Plot::spinUpAlongZHist->GetBinCenter(i);
+      Double_t binCentre = Plot::spinUpAlongZHist->GetBinLowEdge(i);
       Double_t upCounts = Plot::spinUpAlongZHist->GetBinContent(i);
       Double_t downCounts = Plot::spinDownAlongZHist->GetBinContent(i);
       Double_t totalCounts = upCounts + downCounts;
@@ -621,7 +622,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
       Plot::spinAlphaZ->SetPoint(i, binCentre, alpha);
    }
    Plot::spinAlphaZ->SetMarkerStyle(7);
-   Plot::spinAlphaZ->Draw("ALP");
+   Plot::spinAlphaZ->Draw("AP");
    Plot::spinAlphaZ->GetXaxis()->SetTitle("Time (s)");
    Plot::spinAlphaZ->GetXaxis()->SetRangeUser(0.0,runTime);
    Plot::spinAlphaZ->GetYaxis()->SetTitle("Alpha");
@@ -711,19 +712,19 @@ void PlotField(TDirectory* const histDir, TDirectory* const stateDir, const RunC
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bx
    sprintf(histname,"%s:Field Bx",stateDir->GetName());
-   Plot::bxHist = new TH2F(histname,"Bx", 500, -0.1*Units::uT, 0.1*Units::uT, 500, 0.0, runTime);
+   Plot::bxHist = new TH2F(histname,"Bx", 500, -0.05*Units::uT, 0.05*Units::uT, 500, 0.0, runTime);
    Plot::bxHist->SetXTitle("Field measured (T)");
    Plot::bxHist->SetYTitle("Time (s)");
    Plot::bxHist->SetZTitle("Neutrons");
    // -- Bz
    sprintf(histname,"%s:Field By",stateDir->GetName());
-   Plot::byHist = new TH2F(histname,"By", 500, -0.1*Units::uT, 0.1*Units::uT, 500, 0.0, runTime);
+   Plot::byHist = new TH2F(histname,"By", 500, -0.05*Units::uT, 0.05*Units::uT, 500, 0.0, runTime);
    Plot::byHist->SetXTitle("Field measured (T)");
    Plot::byHist->SetYTitle("Time (s)");
    Plot::byHist->SetZTitle("Neutrons");
    // -- Bx
    sprintf(histname,"%s:Field Bz",stateDir->GetName());
-   Plot::bzHist = new TH2F(histname,"Bz", 500, -5.0*Units::uT, 5.2*Units::uT, 500, 0.0, runTime);
+   Plot::bzHist = new TH2F(histname,"Bz", 500, -0.05*Units::uT, 0.05*Units::uT, 500, 0.0, runTime);
    Plot::bzHist->SetXTitle("Field measured (T)");
    Plot::bzHist->SetYTitle("Time (s)");
    Plot::bzHist->SetZTitle("Neutrons");
