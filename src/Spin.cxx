@@ -219,14 +219,15 @@ Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
    Double_t precessAngle = (omega*precessTime)/2.0;
    
    // Spin Up Real Part
-   const Double_t newUpRe = fUpRe*TMath::Cos(precessAngle) + (fUpIm*(omegaZ/omega) - fDownIm*(omegaX/omega) - fDownRe*(omegaY/omega))*TMath::Sin(precessAngle);
+   const Double_t newUpRe = fUpRe*TMath::Cos(precessAngle) + (fUpIm*(omegaZ/omega) + fDownIm*(omegaX/omega) - fDownRe*(omegaY/omega))*TMath::Sin(precessAngle);
+
    // Spin Up Imaginary Part
-   const Double_t newUpIm = fUpIm*TMath::Cos(precessAngle) + (fDownRe*(omegaX/omega) - fUpRe*(omegaZ/omega) - fDownIm*(omegaY/omega))*TMath::Sin(precessAngle);
+   const Double_t newUpIm = fUpIm*TMath::Cos(precessAngle) - (fDownRe*(omegaX/omega) + fUpRe*(omegaZ/omega) + fDownIm*(omegaY/omega))*TMath::Sin(precessAngle);
    
    // Spin Down Real Part
    const Double_t newDownRe = fDownRe*TMath::Cos(precessAngle) + (fUpIm*(omegaX/omega) - fDownIm*(omegaZ/omega) + fUpRe*(omegaY/omega))*TMath::Sin(precessAngle);
    // Spin Down Imaginary Part
-   const Double_t newDownIm = fDownIm*TMath::Cos(precessAngle) + (fDownRe*(omegaZ/omega) - fUpRe*(omegaX/omega) + fUpIm*(omegaY/omega))*TMath::Sin(precessAngle);
+   const Double_t newDownIm = fDownIm*TMath::Cos(precessAngle) + (fDownRe*(omegaX/omega) - fUpRe*(omegaZ/omega) + fUpIm*(omegaY/omega))*TMath::Sin(precessAngle);
    
    // Update spinor
    fUpRe = newUpRe;
