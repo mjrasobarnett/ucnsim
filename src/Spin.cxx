@@ -265,8 +265,8 @@ Double_t Spinor::CalculateProbSpinUp(const TVector3& axis) const
    // Calculate the numerator components -- all equations are in notebook
    Double_t numer1 = (uz + 1.0)*(uz + 1.0)*(fUpRe*fUpRe + fUpIm*fUpIm);
    Double_t numer2 = (ux*ux + uy*uy)*(fDownRe*fDownRe + fDownIm*fDownIm);
-   Double_t numer3 = (uz + 1.0)*(ux*(fUpRe*fDownRe + fUpIm*fDownIm) + uy*(fUpRe*fDownIm - fUpIm*fDownRe));
-   Double_t numer4 = (uz + 1.0)*(ux*(fDownRe*fUpRe + fDownIm*fUpIm) - uy*(fDownRe*fUpIm - fDownIm*fUpRe));
+   Double_t numer3 = 2.0*(uz + 1.0)*ux*(fUpRe*fDownRe + fUpIm*fDownIm);
+   Double_t numer4 = 2.0*(uz + 1.0)*uy*(fDownIm*fUpRe - fDownRe*fUpIm);
    
    // Calculate probability
    Double_t prob = (numer1 + numer2 + numer3 + numer4)/denominator;
