@@ -210,24 +210,30 @@ Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
       cout << "Precess Spinor:" << endl;
       this->Print();
    #endif
-   Double_t omegaX = Neutron::gyromag_ratio*avgMagField.X();
-   Double_t omegaY = Neutron::gyromag_ratio*avgMagField.Y();
-   Double_t omegaZ = Neutron::gyromag_ratio*avgMagField.Z();
+   const Double_t omegaX = Neutron::gyromag_ratio*avgMagField.X();
+   const Double_t omegaY = Neutron::gyromag_ratio*avgMagField.Y();
+   const Double_t omegaZ = Neutron::gyromag_ratio*avgMagField.Z();
    // Precession frequency
-   Double_t omega = TMath::Sqrt(omegaX*omegaX + omegaY*omegaY + omegaZ*omegaZ);
+   const Double_t omega = TMath::Sqrt(omegaX*omegaX + omegaY*omegaY + omegaZ*omegaZ);
    if (omega == 0.0) return kFALSE;
-   Double_t precessAngle = (omega*precessTime)/2.0;
+   
+   const Double_t precessAngle = (omega*precessTime)/2.0;
+   const Double_t costheta = TMath::Cos(precessAngle);
+   const Double_t sintheta = TMath::Sin(precessAngle);
+   const Double_t omX = omegaX/omega;
+   const Double_t omY = omegaY/omega;
+   const Double_t omZ = omegaZ/omega;
+   
    
    // Spin Up Real Part
-   const Double_t newUpRe = fUpRe*TMath::Cos(precessAngle) + (fUpIm*(omegaZ/omega) + fDownIm*(omegaX/omega) - fDownRe*(omegaY/omega))*TMath::Sin(precessAngle);
-
+   const Double_t newUpRe = fUpRe*costheta + (fUpIm*omZ + fDownIm*omX - fDownRe*omY)*sintheta;
    // Spin Up Imaginary Part
-   const Double_t newUpIm = fUpIm*TMath::Cos(precessAngle) - (fDownRe*(omegaX/omega) + fUpRe*(omegaZ/omega) + fDownIm*(omegaY/omega))*TMath::Sin(precessAngle);
+   const Double_t newUpIm = fUpIm*costheta - (fDownRe*omX + fUpRe*omZ + fDownIm*omY)*sintheta;
    
    // Spin Down Real Part
-   const Double_t newDownRe = fDownRe*TMath::Cos(precessAngle) + (fUpIm*(omegaX/omega) - fDownIm*(omegaZ/omega) + fUpRe*(omegaY/omega))*TMath::Sin(precessAngle);
+   const Double_t newDownRe = fDownRe*costheta + (fUpIm*omX - fDownIm*omZ + fUpRe*omY)*sintheta;
    // Spin Down Imaginary Part
-   const Double_t newDownIm = fDownIm*TMath::Cos(precessAngle) + (fDownRe*(omegaX/omega) - fUpRe*(omegaZ/omega) + fUpIm*(omegaY/omega))*TMath::Sin(precessAngle);
+   const Double_t newDownIm = fDownIm*costheta + (fDownRe*omX - fUpRe*omZ + fUpIm*omY)*sintheta;
    
    // Update spinor
    fUpRe = newUpRe;
