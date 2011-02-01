@@ -241,7 +241,7 @@ Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
    // Spin Down Real Part
    const Double_t newDownRe = fDownRe*costheta + ((fUpIm*omX + fUpRe*omY) - fDownIm*omZ)*sintheta;
    // Spin Down Imaginary Part
-   const Double_t newDownIm = fDownIm*costheta + ((fDownRe*omX + fUpIm*omY) - fUpRe*omZ)*sintheta;
+   const Double_t newDownIm = fDownIm*costheta + ((fDownRe*omZ + fUpIm*omY) - fUpRe*omX)*sintheta;
    
    // Update spinor
    fUpRe = newUpRe;
