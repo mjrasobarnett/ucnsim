@@ -165,7 +165,13 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       // Get current positions
       TVector3 pos(this->X(), this->Y(), this->Z());
       TVector3 vel(this->Vx(), this->Vy(), this->Vz());
-      // Calculate next coordinates
+      // Calculate position halfway along step
+      const Double_t halfInterval = interval*0.5;
+      TVector3 halfPos(pos);
+      for (int i=0;i<3;i++) {
+         halfPos[i] += vel[i]*halfInterval + 0.5*gravField[i]*halfInterval*halfInterval;
+      }
+      // Calculate final position
       for (int i=0;i<3;i++) {
          pos[i] += vel[i]*interval + 0.5*gravField[i]*interval*interval;
          vel[i] += gravField[i]*interval;
@@ -175,8 +181,8 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       // Update Particle
       this->SetPosition(pos[0],pos[1],pos[2],this->T()+interval);
       this->SetVelocity(vel[0],vel[1],vel[2]);
-      // Get magfield at this position and precess spin
-      this->PrecessSpin(run->GetFieldManager()->GetMagField(pos), interval);
+      // Precess spin at the halfway position
+      this->PrecessSpin(run->GetFieldManager()->GetMagField(halfPos), interval);
       #ifdef VERBOSE_MODE
          cout << "-------------------------------------------" << endl;
          cout << "Move -- Final X: " << this->X() << "\t" << "Y: " << this->Y();
