@@ -176,8 +176,7 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       this->SetPosition(pos[0],pos[1],pos[2],this->T()+interval);
       this->SetVelocity(vel[0],vel[1],vel[2]);
       // Get magfield at this position and precess spin
-      const MagField* magfield = run->GetFieldManager()->GetMagField(pos);
-      if (magfield != NULL) {this->PrecessSpin(magfield->GetField(pos), interval);}
+      this->PrecessSpin(run->GetFieldManager()->GetMagField(pos), interval);
       #ifdef VERBOSE_MODE
          cout << "-------------------------------------------" << endl;
          cout << "Move -- Final X: " << this->X() << "\t" << "Y: " << this->Y();

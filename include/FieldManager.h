@@ -41,7 +41,7 @@ public:
    const GravField* const GetGravField() const {return fGravField;}
    
    // Mag Fields
-   const MagField* const GetMagField(const TVector3&, const string = "") const;
+   const TVector3 GetMagField(const TVector3& position, const string volume = "") const;
    
    ClassDef(FieldManager,1)
 };

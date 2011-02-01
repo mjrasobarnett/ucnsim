@@ -102,11 +102,11 @@ bool TestFieldMap()
    cout << sizeof(*magFieldManager) << endl;
    
    TVector3 point(0.005,-0.005,0.001);
-   const MagField* magfield = magFieldManager->GetMagField(point," ");
-   const MagFieldMap* map = dynamic_cast<const MagFieldMap*>(magfield);
+//   const MagField* magfield = magFieldManager->GetMagField(point," ");
+//   const MagFieldMap* map = dynamic_cast<const MagFieldMap*>(magfield);
    
-   TVector3 avgField = map->Interpolate(point, 6);
-   cout << "Final Field (T): " << avgField.X() << "\t" << avgField.Y() << "\t" << avgField.Z() << endl;
+//   TVector3 avgField = map->Interpolate(point, 6);
+//   cout << "Final Field (T): " << avgField.X() << "\t" << avgField.Y() << "\t" << avgField.Z() << endl;
    return kTRUE;
 }
 
