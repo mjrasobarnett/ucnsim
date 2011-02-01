@@ -98,8 +98,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    cout << "--------------------------------" << endl;
    cout << "Initialising Magnetic fields" << endl;
    cout << "--------------------------------" << endl;
-   BuildUniformField(hvCellMat);
-//   BuildFieldMap(hvCellMat);
+//   BuildUniformField(hvCellMat);
+   BuildFieldMap(hvCellMat);
    cout << "--------------------------------" << endl;   
    // -------------------------------------
    return kTRUE;
