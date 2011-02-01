@@ -712,19 +712,19 @@ void PlotField(TDirectory* const histDir, TDirectory* const stateDir, const RunC
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bx
    sprintf(histname,"%s:Field Bx",stateDir->GetName());
-   Plot::bxHist = new TH2F(histname,"Bx", 500, -0.05*Units::uT, 0.05*Units::uT, 500, 0.0, runTime);
+   Plot::bxHist = new TH2F(histname,"Bx", 500, -5.5*Units::uT, 5.5*Units::uT, 500, 0.0, runTime);
    Plot::bxHist->SetXTitle("Field measured (T)");
    Plot::bxHist->SetYTitle("Time (s)");
    Plot::bxHist->SetZTitle("Neutrons");
-   // -- Bz
+   // -- By
    sprintf(histname,"%s:Field By",stateDir->GetName());
-   Plot::byHist = new TH2F(histname,"By", 500, -0.05*Units::uT, 0.05*Units::uT, 500, 0.0, runTime);
+   Plot::byHist = new TH2F(histname,"By", 500, -5.5*Units::uT, 5.5*Units::uT, 500, 0.0, runTime);
    Plot::byHist->SetXTitle("Field measured (T)");
    Plot::byHist->SetYTitle("Time (s)");
    Plot::byHist->SetZTitle("Neutrons");
-   // -- Bx
+   // -- B`
    sprintf(histname,"%s:Field Bz",stateDir->GetName());
-   Plot::bzHist = new TH2F(histname,"Bz", 500, -0.05*Units::uT, 0.05*Units::uT, 500, 0.0, runTime);
+   Plot::bzHist = new TH2F(histname,"Bz", 500, -5.5*Units::uT, 5.5*Units::uT, 500, 0.0, runTime);
    Plot::bzHist->SetXTitle("Field measured (T)");
    Plot::bzHist->SetYTitle("Time (s)");
    Plot::bzHist->SetZTitle("Neutrons");

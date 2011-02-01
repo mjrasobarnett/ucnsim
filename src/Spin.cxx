@@ -17,7 +17,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 //#define PRINT_CONSTRUCTORS 
-//#define VERBOSE
+#define VERBOSE
 
 using namespace std;
 
@@ -199,7 +199,7 @@ void Spinor::PolariseDown(const TVector3& axis)
 void Spinor::Print(Option_t* /*option*/) const
 {
    cout << "Spin Up: " << fUpRe << " + i" << fUpIm << endl;
-   cout << "Spin Down: " << fDownRe << "+ i" << fDownIm << endl;
+   cout << "Spin Down: " << fDownRe << " + i" << fDownIm << endl;
 }
 
 //_____________________________________________________________________________
@@ -215,6 +215,15 @@ Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
    const Double_t omegaZ = Neutron::gyromag_ratio*avgMagField.Z();
    // Precession frequency
    const Double_t omega = TMath::Sqrt(omegaX*omegaX + omegaY*omegaY + omegaZ*omegaZ);
+   if (TMath::Abs(avgMagField.Mag() - 5.0E-6) > 1.E-10){
+      cout.precision(15);
+      cout << avgMagField.X() << "\t";
+      cout << avgMagField.Y() << "\t";
+      cout << avgMagField.Z() << "\t";
+      cout << TMath::Abs(avgMagField.Mag() - 5.0E-6) << endl;
+      assert(TMath::Abs(avgMagField.Mag() - 5.0E-6) < 1.E-10);
+   }
+   
    if (omega == 0.0) return kFALSE;
    
    const Double_t precessAngle = (omega*precessTime)/2.0;
@@ -223,7 +232,6 @@ Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
    const Double_t omX = omegaX/omega;
    const Double_t omY = omegaY/omega;
    const Double_t omZ = omegaZ/omega;
-   
    
    // Spin Up Real Part
    const Double_t newUpRe = fUpRe*costheta + (fUpIm*omZ + fDownIm*omX - fDownRe*omY)*sintheta;
@@ -240,6 +248,7 @@ Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
    fUpIm = newUpIm;
    fDownRe = newDownRe;
    fDownIm = newDownIm;
+   
    #ifdef VERBOSE
       cout << "Precess Time: " << precessTime << endl;
       cout << "Mag Field - Bx: " << avgMagField.X() << "\t";
@@ -250,6 +259,16 @@ Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
       this->Print();
       cout << "-----------------------------------------------" << endl;
    #endif
+   
+   #ifdef VERBOSE
+      cout << "costheta: " << costheta << endl;
+      cout << "sintheta: " << sintheta << endl;
+      cout << "omX: " << omX << endl;
+      cout << "omY: " << omY << endl;
+      cout << "omZ: " << omZ << endl;
+      cout << "-----------------------------------------------" << endl;
+   #endif
+   
    this->CalculateProbSpinUp(TVector3(1.,0.,0.));
    this->CalculateProbSpinUp(TVector3(0.,1.,0.));
    this->CalculateProbSpinUp(TVector3(0.,0.,1.));

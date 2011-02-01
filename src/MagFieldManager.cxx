@@ -79,5 +79,7 @@ const TVector3 MagFieldManager::GetMagField(const TVector3& point, const string 
          return fieldIter->second->GetField(point);
       }
    }
+   cout << "NO FIELD FOUND!" << endl;
+   point.Print();
    return TVector3(0.,0.,0.);
 }

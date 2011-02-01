@@ -25,7 +25,7 @@
 
 using namespace std;
 
-//#define VERBOSE_MODE
+#define VERBOSE_MODE
 //#define PRINT_CONSTRUCTORS
 
 ClassImp(Particle)
