@@ -4,6 +4,7 @@
 #include <cassert>
 #include <stdexcept>
 
+#include "Algorithms.h"
 #include "Constants.h"
 #include "Units.h"
 
@@ -17,7 +18,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 //#define PRINT_CONSTRUCTORS 
-#define VERBOSE
+//#define VERBOSE
 
 using namespace std;
 
@@ -215,16 +216,9 @@ Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
    const Double_t omegaZ = Neutron::gyromag_ratio*avgMagField.Z();
    // Precession frequency
    const Double_t omega = TMath::Sqrt(omegaX*omegaX + omegaY*omegaY + omegaZ*omegaZ);
-   if (TMath::Abs(avgMagField.Mag() - 5.0E-6) > 1.E-10){
-      cout.precision(15);
-      cout << avgMagField.X() << "\t";
-      cout << avgMagField.Y() << "\t";
-      cout << avgMagField.Z() << "\t";
-      cout << TMath::Abs(avgMagField.Mag() - 5.0E-6) << endl;
-      assert(TMath::Abs(avgMagField.Mag() - 5.0E-6) < 1.E-10);
-   }
-   
-   if (omega == 0.0) return kFALSE;
+   assert(Precision::IsEqual(avgMagField.Mag(), 5.0E-6));
+   // If no field exists, no precession is made
+   if (Precision::IsEqual(omega, 0.0)) return kFALSE;
    
    const Double_t precessAngle = (omega*precessTime)/2.0;
    const Double_t costheta = TMath::Cos(precessAngle);
@@ -306,6 +300,6 @@ Double_t Spinor::CalculateProbSpinUp(const TVector3& axis) const
       cout << "Probability: " << prob << endl;
       cout << "-----------------------------------------------" << endl;
    #endif
-   assert(prob >= 0.0 && prob <= 1.0);
+   assert(Precision::IsGreaterOrEqual(prob,0.0) && Precision::IsLessOrEqual(prob,1.0));
    return prob;
 }
