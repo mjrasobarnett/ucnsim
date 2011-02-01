@@ -129,11 +129,6 @@ Bool_t Run::Initialise()
       Error("Initialise","No maxsteptime set!"); 
       return kFALSE; 
    }
-   // Determine if we will have any wall losses
-   if (this->GetRunConfig().WallLossesOn() == kFALSE) { 
-      Error("Initialise","Wall Losses Off has not been Implemented yet."); 
-      return kFALSE; 
-   }
    ///////////////////////////////////////////////////////////////////////////////////////
    cout << "-------------------------------------------" << endl;
    cout << "Run successfully initialised" << endl;

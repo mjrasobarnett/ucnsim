@@ -345,7 +345,6 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
       this->IsDecayed(particle);
       return kFALSE;
    }
-   
    // -- Get the normal vector to the boundary
    Double_t normal[3] = {0.,0.,0.};
    if (gravField) {
@@ -354,10 +353,9 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
       throw runtime_error("Need to sort out behaviour of normals in particle");
       //normal = navigator->FindNormal();
    }
-   
    // -- Interact with Boundary
    Volume* currentVolume = static_cast<Volume*>(navigator->GetCurrentVolume());
-   if (currentVolume->Interact(particle, normal, navigator, crossedNode, initialPath) == kFALSE) {
+   if (currentVolume->Interact(particle, normal, navigator, crossedNode, initialPath, run->GetRunConfig()) == kFALSE) {
       // Particle reached a final state
       return kFALSE;
    }

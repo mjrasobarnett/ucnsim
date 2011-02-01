@@ -17,6 +17,7 @@ class Material;
 class TGeoNavigator;
 class TGeoShape;
 class TGeoMedium;
+class RunConfig;
 
 class Volume : public TGeoVolume
 {   
@@ -32,7 +33,7 @@ public:
    virtual ~Volume();
    
    // -- methods
-   virtual Bool_t  Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath);
+   virtual Bool_t  Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath, const RunConfig& runconfig);
    
    virtual Double_t FermiPotential() const;
    virtual Double_t WPotential() const;
@@ -65,7 +66,7 @@ public:
    // -- destructor
    virtual ~TrackingVolume();
    
-   virtual Bool_t Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath);
+   virtual Bool_t Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath, const RunConfig& runconfig);
    virtual Bool_t IsTrackingVolume() const {return kTRUE;}
    
    ClassDef(TrackingVolume, 1)
@@ -95,7 +96,7 @@ public:
    // -- destructor
    virtual ~Boundary();
    
-   virtual Bool_t Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath);
+   virtual Bool_t Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath, const RunConfig& runconfig);
    
    Double_t GetRoughness() const {return fRoughness;}
    
@@ -125,7 +126,7 @@ public:
    // -- destructor
    virtual ~Detector();
    
-   virtual Bool_t Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath);
+   virtual Bool_t Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath, const RunConfig& runconfig);
    
    ClassDef(Detector, 1)
 };
@@ -154,7 +155,7 @@ public:
    // -- destructor
    virtual ~BlackHole();
    
-   virtual Bool_t Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath);
+   virtual Bool_t Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath, const RunConfig& runconfig);
    
    ClassDef(BlackHole, 1)
 };

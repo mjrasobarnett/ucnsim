@@ -17,6 +17,7 @@
 #include "Particle.h"
 #include "Material.h"
 #include "Observer.h"
+#include "RunConfig.h"
 
 #include "Units.h"
 #include "Constants.h"
@@ -98,7 +99,7 @@ Double_t Volume::LossFactor() const
 }
 
 //_____________________________________________________________________________
-Bool_t Volume::Interact(Particle* /*particle*/, const Double_t* /*normal*/, TGeoNavigator* /*navigator*/, TGeoNode* /*crossedNode*/, const char* /*initialPath*/)
+Bool_t Volume::Interact(Particle* /*particle*/, const Double_t* /*normal*/, TGeoNavigator* /*navigator*/, TGeoNode* /*crossedNode*/, const char* /*initialPath*/, const RunConfig& /*runconfig*/)
 {
    // Default, no interaction
    return kTRUE;
@@ -163,7 +164,7 @@ TrackingVolume::~TrackingVolume()
 }
 
 //_____________________________________________________________________________
-Bool_t TrackingVolume::Interact(Particle* /*particle*/, const Double_t* /*normal*/, TGeoNavigator* /*navigator*/, TGeoNode* /*crossedNode*/, const char* /*initialPath*/)
+Bool_t TrackingVolume::Interact(Particle* /*particle*/, const Double_t* /*normal*/, TGeoNavigator* /*navigator*/, TGeoNode* /*crossedNode*/, const char* /*initialPath*/, const RunConfig& /*runconfig*/)
 {
    // Default, no interaction
    return kTRUE;
@@ -232,7 +233,7 @@ Boundary::~Boundary()
 }
 
 //_____________________________________________________________________________
-Bool_t Boundary::Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath)
+Bool_t Boundary::Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath, const RunConfig& runConfig)
 {
 // -- Interaction of particle with the boundary material
    // -- Is Track on the surface of a boundary?
@@ -242,15 +243,17 @@ Bool_t Boundary::Interact(Particle* particle, const Double_t* normal, TGeoNaviga
          
    //------------------------------------------------------
    // 1. -- Calculate whether particle is absorbed/upscatteed by wall nuclei
-   if (this->AbsorbParticle(particle, normal) == kTRUE) {
-      // Particle was absorbed
-      #ifdef VERBOSE_MODE
-         cout << "Particle absorbed by boundary" << endl;
-      #endif
-      particle->IsAbsorbed();
-      return kFALSE;
+   if (runConfig.WallLossesOn() == kTRUE) {
+      // Check if wall losses are turned on
+      if (this->AbsorbParticle(particle, normal) == kTRUE) {
+         // Particle was absorbed
+         #ifdef VERBOSE_MODE
+            cout << "Particle absorbed by boundary" << endl;
+         #endif
+         particle->IsAbsorbed();
+         return kFALSE;
+      }
    }
-   
    //------------------------------------------------------
    // 2. -- Reflect particle
    if (particle->Reflect(normal, navigator, crossedNode, initialPath) == kFALSE) {
@@ -349,7 +352,7 @@ Detector::~Detector()
 }
 
 //_____________________________________________________________________________
-Bool_t Detector::Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath)
+Bool_t Detector::Interact(Particle* particle, const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath, const RunConfig& /*runconfig*/)
 {   
 // -- Was particle detected?
    if (gRandom->Uniform(0.0,1.0) <= fDetectionEfficiency) {
@@ -425,7 +428,7 @@ BlackHole::~BlackHole()
 }
 
 //_____________________________________________________________________________
-Bool_t BlackHole::Interact(Particle* particle, const Double_t* /*normal*/, TGeoNavigator* /*navigator*/, TGeoNode* /*crossedNode*/, const char* /*initialPath*/)
+Bool_t BlackHole::Interact(Particle* particle, const Double_t* /*normal*/, TGeoNavigator* /*navigator*/, TGeoNode* /*crossedNode*/, const char* /*initialPath*/, const RunConfig& /*runconfig*/)
 {
 // -- Particle is Lost if it finds itself in BlackHole
    particle->IsLost();
