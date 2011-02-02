@@ -21,7 +21,7 @@ class FileParser {
       FileParser();
       virtual ~FileParser();
       
-      bool ExtractFieldVertices(std::string filename, std::vector<const FieldVertex*>& vertices) const;
+      bool ExtractFieldVertices(std::string filename, std::vector<FieldVertex*>& vertices) const;
       
 };
 

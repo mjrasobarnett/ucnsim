@@ -101,13 +101,23 @@ Bool_t MagFieldMap::BuildMap(const std::string& filename)
    cout << "Building MagFieldMap from file: " << filename << endl;
    FileParser parser;
    // Get flat list of Field vertices from provided file using the parser
-   vector<const FieldVertex*> vertices;
+   vector<FieldVertex*> vertices;
    if (parser.ExtractFieldVertices(filename, vertices) == false) {
       Error("BuildMap","Failed to extract field vertices from: %s", filename.c_str());
       return false;
    }
+   // For each vertex, convert coordinates to the global coordinate system
+   vector<const FieldVertex*> global_vertices;
+   vector<FieldVertex*>::const_iterator iter;
+   for (iter = vertices.begin(); iter != vertices.end(); iter++) {
+      FieldVertex global = this->ConvertToGlobalFrame((**iter));
+      global_vertices.push_back(new FieldVertex(global));
+   }
    // Build Tree structure of FieldVertices
-   fTree = new KDTree(vertices);
+   fTree = new KDTree(global_vertices);
+   // Delete original local points
+   for (iter = vertices.begin(); iter != vertices.end(); iter++) {if (*iter) delete *iter;}
+   cout << "Successfully created MagFieldMap from " << global_vertices.size() << " points." << endl;
    return true;
 }
 

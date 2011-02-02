@@ -36,7 +36,7 @@ FileParser::~FileParser()
 }
 
 //______________________________________________________________________________
-bool FileParser::ExtractFieldVertices(std::string filename, std::vector<const FieldVertex*>& vertices) const
+bool FileParser::ExtractFieldVertices(std::string filename, std::vector<FieldVertex*>& vertices) const
 {
    // -- Open and read in supplied file, extract and return list of field vertices
    ifstream in(filename.c_str());
