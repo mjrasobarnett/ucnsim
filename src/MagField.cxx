@@ -2,6 +2,7 @@
 // Author: Matthew Raso-Barnett  30/09/2009
 
 #include "MagField.h"
+#include "FieldVertex.h"
 
 //______________________________________________________________________________
 // MagField - ABC for magnetic field.
@@ -62,13 +63,33 @@ Bool_t MagField::Contains(const TVector3& point) const
 }
 
 //______________________________________________________________________________
-TVector3& MagField::ConvertToLocalFrame(const TVector3& point) const
+FieldVertex MagField::ConvertToGlobalFrame(const FieldVertex& point) const
 {
-   // -- Convert supplied point to local frame
-   Double_t masterPoint[3] = {point[0], point[1], point[2]};
-   Double_t localPoint[3] = {0.,0.,0.};
-   fFieldMatrix->MasterToLocal(masterPoint, localPoint);
-   TVector3* localpoint = new TVector3(localPoint[0],localPoint[1],localPoint[2]);
-   return *localpoint;
+   // -- Convert supplied point to global frame
+   FieldVertex globalPoint;
+   Double_t localPoint[3] = {point.X(), point.Y(), point.Z()};
+   Double_t masterPoint[3] = {0.,0.,0.};
+   Double_t localField[3] = {point.Bx(), point.By(), point.Bz()};
+   Double_t masterField[3] = {0.,0.,0.};
+   fFieldMatrix->LocalToMaster(localPoint, masterPoint);
+   fFieldMatrix->LocalToMaster(localField, masterField);
+   globalPoint.SetPosition(masterPoint[0],masterPoint[1],masterPoint[2]);
+   globalPoint.SetField(masterField[0],masterField[1],masterField[2]);
+   return globalPoint;
 }
 
+//______________________________________________________________________________
+FieldVertex MagField::ConvertToLocalFrame(const FieldVertex& point) const
+{
+   // -- Convert supplied point to local, Field's frame
+   FieldVertex globalPoint;
+   Double_t localPoint[3] = {0.,0.,0.};
+   Double_t masterPoint[3] = {point.X(), point.Y(), point.Z()};
+   Double_t localField[3] = {0.,0.,0.};
+   Double_t masterField[3] = {point.Bx(), point.By(), point.Bz()};
+   fFieldMatrix->MasterToLocal(masterPoint, localPoint);
+   fFieldMatrix->MasterToLocal(masterField, localField);
+   globalPoint.SetPosition(localPoint[0],localPoint[1],localPoint[2]);
+   globalPoint.SetField(localField[0],localField[1],localField[2]);
+   return globalPoint;
+}

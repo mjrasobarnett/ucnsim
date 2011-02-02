@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////
 class Particle;
 class Run;
+class FieldVertex;
 
 class MagField : public TNamed {
 private:
@@ -26,7 +27,8 @@ private:
    const TGeoMatrix* fFieldMatrix;
    
 protected:
-   TVector3& ConvertToLocalFrame(const TVector3& point) const; 
+   FieldVertex ConvertToGlobalFrame(const FieldVertex& point) const;
+   FieldVertex ConvertToLocalFrame(const FieldVertex& point) const;
    
 public:
    MagField();

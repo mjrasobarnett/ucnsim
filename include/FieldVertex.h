@@ -33,6 +33,8 @@ class FieldVertex : public TObject {
       const TVector3& FieldVector() const {return fBField;}
       
       // setters
+      void SetPosition(double x, double y, double z) {fPoint.SetPoint(x,y,z,fPoint.T());}
+      void SetField(double bx, double by, double bz) {fBField.SetXYZ(bx,by,bz);}
       void SetT(double t) {fPoint.SetT(t);}
 
       std::string ToString() const;
