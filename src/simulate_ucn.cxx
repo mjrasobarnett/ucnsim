@@ -48,37 +48,33 @@ Int_t main(Int_t argc,Char_t **argv)
    ///////////////////////////////////////////////////////////////////////////////////////
    for (Int_t runNumber = 1; runNumber <= numberOfRuns; runNumber++) {
       // Read in the Run Configuration
-      Char_t runID[20];
-      sprintf(runID,"Run%d",runNumber);
-      const string runConfigFile = configFile.GetString("Config",runID);
-      RunConfig runConfig(runConfigFile);
+      RunConfig runConfig(configFile, runNumber);
       // Create the Run
       cout << "-------------------------------------------" << endl;
-      cout << "Creating RunID: " << runID << "\t" << "from: " << runConfigFile << endl;
+      cout << "Creating Run" << runNumber << endl;
       Run run(runConfig);
-      
       ///////////////////////////////////////////////////////////////////////////////////////
       // -- Initialise Run
       ///////////////////////////////////////////////////////////////////////////////////////
       if (!(run.Initialise())) {
-         cerr << runID << " failed to initialise successfully. Program aborting." << endl;
+         cerr << "Run" << runNumber << " failed to initialise successfully." << endl;
          return EXIT_FAILURE;
       }
       ///////////////////////////////////////////////////////////////////////////////////////
       // -- Run Simulation
       ///////////////////////////////////////////////////////////////////////////////////////
       if (!(run.Start())) {
-         cerr << runID << " failed to proceed successfully. Program aborting." << endl;
+         cerr << "Run" << runNumber << " failed to proceed successfully." << endl;
          return EXIT_FAILURE;
       }
       ///////////////////////////////////////////////////////////////////////////////////////
       // -- Export to File
       ///////////////////////////////////////////////////////////////////////////////////////
       if (!(run.Finish())) {
-         cerr << runID << " failed to finish successfully. Program aborting." << endl;
+         cerr << "Run" << runNumber << " failed to finish successfully." << endl;
          return EXIT_FAILURE;
       }
-      cout << runID << " successfully completed." << endl;
+      cout << "Run" << runNumber << " successfully completed." << endl;
       cout << "-------------------------------------------" << endl;
    }
    ///////////////////////////////////////////////////////////////////////////////////////

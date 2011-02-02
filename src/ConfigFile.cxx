@@ -178,9 +178,9 @@ bool ConfigFile::ReadKeyPair(const string &section, const string &line)
 }
 
 //_____________________________________________________________________________
-string ConfigFile::GetString(string key, string section, string defaultval)
+string ConfigFile::GetString(string key, string section, string defaultval) const
 {
-  string value = fStore[section][key];
+  string value = fStore.find(section)->second.find(key)->second;
 
   if (value.size() == 0)
     return defaultval;
@@ -189,9 +189,9 @@ string ConfigFile::GetString(string key, string section, string defaultval)
 }
 
 //_____________________________________________________________________________
-int ConfigFile::GetInt(string key, string section, int defaultval)
+int ConfigFile::GetInt(string key, string section, int defaultval) const
 {
-  string value = fStore[section][key];
+  string value = fStore.find(section)->second.find(key)->second;
   if (value.size() == 0) return defaultval;
   
   // Attempt to read an integer out of this stream
@@ -210,9 +210,9 @@ int ConfigFile::GetInt(string key, string section, int defaultval)
 }
 
 //_____________________________________________________________________________
-double ConfigFile::GetFloat(string key, string section, double defaultval)
+double ConfigFile::GetFloat(string key, string section, double defaultval) const
 {
-  string value = fStore[section][key];
+  string value = fStore.find(section)->second.find(key)->second;
   if (value.size() == 0) return defaultval;
   
   // Attempt to read an integer out of this stream
@@ -231,9 +231,9 @@ double ConfigFile::GetFloat(string key, string section, double defaultval)
 }
 
 //_____________________________________________________________________________
-bool ConfigFile::GetBool(string key, string section, bool defaultval)
+bool ConfigFile::GetBool(string key, string section, bool defaultval) const
 {
-   string value = fStore[section][key];
+   string value = fStore.find(section)->second.find(key)->second;
    if (value.size() == 0) return defaultval;
 
    // Now try to work out what it is

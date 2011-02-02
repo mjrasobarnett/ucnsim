@@ -17,10 +17,10 @@ public:
    // Destructor
    virtual ~ConfigFile();
    
-   std::string  GetString(std::string key, std::string section = "", std::string defaultval = "");
-   int     GetInt(std::string key, std::string section = "", int defaultval = 0);
-   double  GetFloat(std::string key, std::string section = "", double defaultval = 0.0);
-   bool    GetBool(std::string key, std::string section = "", bool defaultval = false);
+   std::string  GetString(std::string key, std::string section = "", std::string defaultval = "") const;
+   int     GetInt(std::string key, std::string section = "", int defaultval = 0) const;
+   double  GetFloat(std::string key, std::string section = "", double defaultval = 0.0) const;
+   bool    GetBool(std::string key, std::string section = "", bool defaultval = false) const;
    
 private:
    /// The storage for the group/key-value from the file

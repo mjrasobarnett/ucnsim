@@ -28,17 +28,25 @@ InitialConfig::InitialConfig()
 }
 
 //__________________________________________________________________________
-InitialConfig::InitialConfig(const string& initialConfigFileName)
+InitialConfig::InitialConfig(const ConfigFile& masterConfig)
 {
    // -- Take Batch config file, open the Initial config file and read in all parameters
    #ifdef PRINT_CONSTRUCTORS
       cout << "InitialConfig::Constructor" << endl;
    #endif
-   ConfigFile initialConfigFile(initialConfigFileName);
+   const string folderpath = masterConfig.GetString("Path","Folder");
+   const string initialConfigName = folderpath + masterConfig.GetString("Config","Initialisation");
+   if (initialConfigName.empty() == kTRUE) {
+      cout << "Unable to read in Initialisation Configuration file name" << endl;
+      throw runtime_error("Error fetching name of Initial Config file");
+   }
+   
+   ConfigFile initialConfigFile(initialConfigName);
    fRunName = initialConfigFile.GetString("RunName","Name");
-   fGeomFile = initialConfigFile.GetString("GeomFile","Files");
-   fGeomVisFile = initialConfigFile.GetString("GeomVisFile","Files");
-   fOutputDataFile = initialConfigFile.GetString("OutputDataFile","Files");
+   
+   fGeomFile = folderpath + initialConfigFile.GetString("GeomFile","Files");
+   fGeomVisFile = folderpath + initialConfigFile.GetString("GeomVisFile","Files");
+   fOutputDataFile = folderpath + initialConfigFile.GetString("OutputDataFile","Files");
    
    fBeamShape = initialConfigFile.GetString("Shape","Beam");
    fBeamRadius = initialConfigFile.GetFloat("Radius","Beam");

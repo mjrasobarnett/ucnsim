@@ -8,7 +8,7 @@
 #include "TObject.h"
 #include <string>
 #include "TVector3.h"
-
+class ConfigFile;
 class RunConfig {
 private:
    std::string fRunName;
@@ -44,7 +44,7 @@ private:
 public:
    // Constructors
    RunConfig();
-   RunConfig(const std::string& runConfigFileName);
+   RunConfig(const ConfigFile& masterConfig, int runNumber);
    RunConfig(const RunConfig&); 
    RunConfig& operator=(const RunConfig&);
    virtual ~RunConfig();

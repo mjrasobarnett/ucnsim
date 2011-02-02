@@ -8,6 +8,8 @@
 #include "TVector3.h"
 #include <string>
 
+class ConfigFile;
+
 class InitialConfig {
 private:
    std::string fRunName;
@@ -40,7 +42,7 @@ private:
 public:
    // Constructors
    InitialConfig();
-   InitialConfig(const std::string& initialConfigFileName);
+   InitialConfig(const ConfigFile& masterConfig);
    InitialConfig(const InitialConfig&); 
    InitialConfig& operator=(const InitialConfig&);
    virtual ~InitialConfig();

@@ -100,14 +100,11 @@ Int_t main(Int_t argc,Char_t **argv)
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////
-   const char* runName="Run1";   
    ConfigFile configFile(configFileName.Data());
-   const string initialConfigFileName = configFile.GetString("Config","Initialisation");
-   const string runConfigFile = configFile.GetString("Config",runName);
    ///////////////////////////////////////////////////////////////////////////////////////
    // Read in Initial Configuration from file.
-   InitialConfig initialConfig(initialConfigFileName);
-   RunConfig runConfig(runConfigFile);
+   InitialConfig initialConfig(configFile);
+   RunConfig runConfig(configFile,1);
    // Read the outputfile name
    TString dataFileName = runConfig.OutputFileName();
    //////////////////////////////////////////////////////////////////////////////////////

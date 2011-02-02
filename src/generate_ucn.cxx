@@ -71,15 +71,10 @@ Int_t main(Int_t argc,Char_t **argv)
    TRint *theApp = new TRint("FittingApp", &argc, argv);
    // Read in Batch Configuration file to find the Initial Configuration File
    ConfigFile configFile(configFileName);
-   const string initialConfigFileName = configFile.GetString("Config","Initialisation");
-   if (initialConfigFileName.empty() == kTRUE) {
-      cout << "Unable to read in Initialisation Configuration file name" << endl;
-      return -1;
-   }
    ///////////////////////////////////////////////////////////////////////////////////////
    // Read in Initial Configuration from file.
-   InitialConfig initialConfig(initialConfigFileName);   
-   GenerateBeam(initialConfigFileName);
+   InitialConfig initialConfig(configFile);   
+   GenerateBeam(initialConfig);
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Output up benchmark
    benchmark.Stop("UCNSIM");

@@ -49,8 +49,6 @@ Int_t main(Int_t argc,Char_t **argv)
       cerr << "draw_tracks <configfile.cfg> <treename>" << endl;
       return -1;
    }
-   const char* runName="Run1";
-   
    // Start 'the app' -- this is so we are able to enter into a ROOT session
    // after the program has run, instead of just quitting.
    TRint *theApp = new TRint("FittingApp", &argc, argv);
@@ -59,12 +57,10 @@ Int_t main(Int_t argc,Char_t **argv)
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////
    ConfigFile configFile(configFileName.Data());
-   const string initialConfigFileName = configFile.GetString("Config","Initialisation");
-   const string runConfigFile = configFile.GetString("Config",runName);
    ///////////////////////////////////////////////////////////////////////////////////////
    // Read in Initial Configuration from file.
-   InitialConfig initialConfig(initialConfigFileName);
-   RunConfig runConfig(runConfigFile);
+   InitialConfig initialConfig(configFile);
+   RunConfig runConfig(configFile,1);
    // Read the outputfile name
    TString dataFileName = runConfig.OutputFileName();
    ///////////////////////////////////////////////////////////////////////////////////////

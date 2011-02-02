@@ -27,18 +27,28 @@ RunConfig::RunConfig()
 }
 
 //__________________________________________________________________________
-RunConfig::RunConfig(const string& runConfigFileName)
+RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Constructor" << endl;
    #endif
+   const string folderpath = masterConfig.GetString("Path","Folder");
+   Char_t runID[6];
+   sprintf(runID,"Run%d",runNumber);
+   string runConfigFileName = folderpath + masterConfig.GetString("Config", runID);
+   if (runConfigFileName.empty() == kTRUE) {
+      cout << "Unable to read in Run Configuration file name" << endl;
+      throw runtime_error("Error fetching name of Run Config file");
+   }
+
    ConfigFile runConfigFile(runConfigFileName);
    fRunName = runConfigFile.GetString("RunName","Name");
-   fGeomFile = runConfigFile.GetString("GeomFile","Files");
-   fGeomVisFile = runConfigFile.GetString("GeomVisFile","Files");
-   fInputDataFile = runConfigFile.GetString("InputDataFile","Files");
-   fOutputDataFile = runConfigFile.GetString("OutputDataFile","Files");
-   fFieldsFile = runConfigFile.GetString("FieldsFile","Files");
+   
+   fGeomFile = folderpath + runConfigFile.GetString("GeomFile","Files");
+   fGeomVisFile = folderpath + runConfigFile.GetString("GeomVisFile","Files");
+   fInputDataFile = folderpath + runConfigFile.GetString("InputDataFile","Files");
+   fOutputDataFile = folderpath + runConfigFile.GetString("OutputDataFile","Files");
+   fFieldsFile = folderpath + runConfigFile.GetString("FieldsFile","Files");
    
    fInputRunName = runConfigFile.GetString("InputRunName","Particles");
    fParticlesToLoad = runConfigFile.GetString("WhichParticles","Particles");
