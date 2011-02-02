@@ -17,6 +17,7 @@
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
 #include "TGraph.h"
+#include "TRandom.h"
 
 #include "Particle.h"
 #include "ConfigFile.h"
@@ -34,6 +35,7 @@ using namespace std;
 
 void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, const InitialConfig& initialConfig, const RunConfig& runConfig, TGeoManager* geoManager);
 void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
+void PlotT2(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
 void PlotBounceCounters(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
 void PlotField(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
 void PlotParticleHistories(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig, TGeoManager* geoManager);
@@ -72,6 +74,8 @@ namespace Plot {
    TGraph* spinAlphaX = NULL;
    TGraph* spinAlphaY = NULL;
    TGraph* spinAlphaZ = NULL;
+   
+   TGraph* alphaT2 = NULL;
    
    TH2F* bxHist = NULL;
    TH2F* byHist = NULL;
@@ -149,7 +153,9 @@ Int_t main(Int_t argc,Char_t **argv)
    // -- Polarisation
    if (runConfig.ObserveSpin() == kTRUE) {
       PlotSpinPolarisation(histDir, stateDir, runConfig);
+      PlotT2(histDir, stateDir, runConfig);
    }
+   
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounce Data
    if (runConfig.ObserveBounces() == kTRUE) {
@@ -629,6 +635,120 @@ void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir,
    Plot::spinAlphaZ->GetYaxis()->SetRangeUser(-1.0,1.0);
    Plot::spinAlphaZ->SetTitle("Polarisation along Z");
    
+   return;
+}
+
+//_____________________________________________________________________________
+void PlotT2(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig)
+{
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- cd into Histogram's dir
+   histDir->cd();
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Define Histograms
+   const Double_t runTime = runConfig.RunTime();
+   const Double_t spinMeasFreq = runConfig.SpinMeasurementFreq();
+   const Int_t nbins = runTime/spinMeasFreq;
+   const TVector3 xAxis(1.0,0.0,0.0);
+   const TVector3 yAxis(0.0,1.0,0.0);
+   const TVector3 zAxis(0.0,0.0,1.0);
+   //////////////////////////////////////////////////////////////////////////////////////
+   TH1F time_data("T2 Time Data","T2 Time Data", nbins, 0.0, runTime);
+   vector<vector<double> > phase_data;
+   Plot::alphaT2 = new TGraph(nbins);      
+ 
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- cd into the State's folder
+   stateDir->cd();
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Loop over all particle folders in the current state's folder
+   TKey *folderKey;
+   TIter folderIter(stateDir->GetListOfKeys());
+   while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
+      const char *classname = folderKey->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TDirectory")) {
+         // Loop over all objects in particle dir
+         stateDir->cd(folderKey->GetName());
+         TDirectory* particleDir = gDirectory;
+         TKey *objKey;
+         TIter objIter(particleDir->GetListOfKeys());
+         while ((objKey = static_cast<TKey*>(objIter.Next()))) {
+            // For Each object in the particle's directory, check its class name and what it
+            // inherits from to determine what to do.
+            classname = objKey->GetClassName();
+            cl = gROOT->GetClass(classname);
+            if (!cl) continue;
+            if (cl->InheritsFrom("SpinData")) {
+               // -- Extract Spin Observer Data if recorded
+               const SpinData* data = dynamic_cast<const SpinData*>(objKey->ReadObj());
+               // Create storage for this particle's phase information
+               vector<double> phases;
+               // Loop over spin data recorded for particle
+               SpinData::const_iterator dataIter;
+               for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
+                  // Bin the time in the histogram 
+                  time_data.Fill(dataIter->first);
+                  // -- For a holding Field aligned along the X-Axis, we want to find the
+                  // -- phase of the spin in the Y-Z plane. 
+                  const Spin* spin = dataIter->second;
+                  // Calculate probability of spin up along Y axis
+                  Double_t ycoord = spin->CalculateProbSpinUp(yAxis);
+                  // Calculate probability of spin up along Z axis
+                  Double_t zcoord = spin->CalculateProbSpinUp(zAxis);
+                  // Calculate theta (the phase)
+                  Double_t theta = TMath::ATan2(zcoord, ycoord);
+                  // Add each phase to list
+                  phases.push_back(theta);
+               }
+               // Store particle's phases
+               phase_data.push_back(phases);
+               delete data;
+            }
+         }
+      }
+   }
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- cd back into Histogram's dir
+   histDir->cd();
+   TCanvas *alphaT2canvas = new TCanvas("Alpha T2","Alpha T2",60,0,1200,800);
+   alphaT2canvas->cd();
+   // Calculate T2 polarisation
+   for (int timeIndex = 0; timeIndex < time_data.GetNbinsX(); timeIndex++) {
+      // Calculate mean phase for each time
+      Double_t sumPhases = 0.;
+      for (UInt_t particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
+         assert(phase_data[particleIndex].size() == time_data.GetNbinsX());
+         sumPhases += phase_data[particleIndex][timeIndex];
+      }
+      Double_t meanPhase = sumPhases/phase_data.size();
+      // Calculate the number spin up and down based on phase difference
+      Int_t numSpinUp = 0, numSpinDown = 0;
+      for (unsigned int particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
+         // Calculate the angle between each particle's phase and the mean phase
+         Double_t phasediff = TMath::Abs(phase_data[particleIndex][timeIndex] - meanPhase);
+         Double_t probSpinDown = TMath::Power(TMath::Cos(phasediff),2.0);
+         if (gRandom->Uniform(0.,1.0) < probSpinDown) {
+            numSpinDown++;
+         } else {
+            numSpinUp++;
+         }
+      }
+      // Calculate polarisation at this time
+      Double_t alpha = TMath::Abs((numSpinUp - numSpinDown)/(numSpinUp + numSpinDown));
+      Double_t timebin = time_data.GetBinLowEdge(timeIndex);
+      // Add point to graph
+      Plot::alphaT2->SetPoint(timeIndex, timebin, alpha);
+   }
+   // Draw graph
+   Plot::alphaT2->SetMarkerStyle(7);
+   Plot::alphaT2->Draw("AP");
+   Plot::alphaT2->GetXaxis()->SetTitle("Time (s)");
+   Plot::alphaT2->GetXaxis()->SetRangeUser(0.0,runTime);
+   Plot::alphaT2->GetYaxis()->SetTitle("Alpha");
+   Plot::alphaT2->GetYaxis()->SetRangeUser(-1.0,1.0);
+   Plot::alphaT2->SetTitle("T2 Polarisation");
    return;
 }
 
