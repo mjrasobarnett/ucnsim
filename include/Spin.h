@@ -53,8 +53,6 @@ class Spin : public TObject
 private:
    Spinor fSpinor;
    
-   Double_t CalculateProbSpinUp(const TVector3& axis) const;
-   
 public:
    // -- Constructors
    Spin();
@@ -65,6 +63,7 @@ public:
    // -- Methods
    Bool_t Precess(const TVector3& avgMagField, const Double_t precessTime);
    Bool_t IsSpinUp(const TVector3& axis) const;
+   Double_t CalculateProbSpinUp(const TVector3& axis) const;
    
    // -- Set initial polarisation
    Bool_t Polarise(const TVector3& axis, const Bool_t up);
