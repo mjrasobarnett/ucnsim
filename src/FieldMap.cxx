@@ -146,6 +146,8 @@ TVector3 MagFieldMap::Interpolate(const TVector3& position, const Int_t numInter
       avgField += weight*(vertex->FieldVector());
    }
    avgField = avgField*(1.0/sumWeights);
+   // Delete nearest neighbours now that we are finished with it
+   delete neighbours;
    return avgField;
 }
 
