@@ -65,6 +65,8 @@ elif [[ `uname -n` == "feynman" ]] ; then
 		export PATH=${ROOTSYS}/bin:${PATH}
 		export MANPATH=${ROOTSYS}/man:${MANPATH}
 	fi
+	# Define path to GSL installation
+	export GSL=${HOME}/gsl/gsl
 fi
 #------------------------------------------------------------------------------
 # ROOT & UCN_DIR PATHS
