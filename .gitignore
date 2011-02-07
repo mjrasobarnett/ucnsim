@@ -11,3 +11,5 @@ UCNDict.*
 .DS_Store
 temp/*
 *.root
+*.png
+

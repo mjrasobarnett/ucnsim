@@ -4,10 +4,10 @@
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
 
-#include "../include/Units.h"
-#include "../include/Constants.h"
-#include "../include/Materials.h"
-#include "../include/GeomParameters.h"
+#include "include/Units.h"
+#include "include/Constants.h"
+#include "include/Materials.h"
+#include "include/GeomParameters.h"
 
 #include <string>
 
@@ -182,7 +182,7 @@ Bool_t BuildUniformField(const TGeoHMatrix& matrix)
 Bool_t BuildFieldMap(const TGeoHMatrix& matrix)
 {
    // Create a Uniform Magnetic field and write it to file
-   string filename = "runs/ramseycell/fieldmap/fieldmap_raw.txt";
+   string filename = "runs/ramseycell/fieldmap/scv/corrected/fieldmap_config3_offset.txt";
    // Define shape of field
    TGeoShape* fieldShape = new Tube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
    // Define transformation that locates field in geometry
