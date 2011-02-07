@@ -695,7 +695,7 @@ void PlotT2(TDirectory* const histDir, TDirectory* const stateDir, const RunConf
                   // Calculate probability of spin up along Z axis
                   Double_t zcoord = spin->CalculateProbSpinUp(zAxis);
                   // Calculate theta (the phase)
-                  Double_t theta = TMath::ATan2(zcoord, ycoord);
+                  Double_t theta = TMath::ATan2((2.0*zcoord - 1.0), (2.0*ycoord - 1.0));
                   // Add each phase to list
                   phases.push_back(theta);
                }
@@ -733,7 +733,7 @@ void PlotT2(TDirectory* const histDir, TDirectory* const stateDir, const RunConf
          }
       }
       // Calculate polarisation at this time
-      Double_t alpha = TMath::Abs((numSpinUp - numSpinDown)/(numSpinUp + numSpinDown));
+      Double_t alpha = TMath::Abs(((double)(numSpinUp - numSpinDown)) / ((double)(numSpinUp + numSpinDown)));
       Double_t timebin = time_data.GetBinLowEdge(timeIndex);
       // Add point to graph
       Plot::alphaT2->SetPoint(timeIndex, timebin, alpha);
