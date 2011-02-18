@@ -725,7 +725,7 @@ void PlotT2(TDirectory* const histDir, TDirectory* const stateDir, const RunConf
       for (unsigned int particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
          // Calculate the angle between each particle's phase and the mean phase
          Double_t phasediff = TMath::Abs(phase_data[particleIndex][timeIndex] - meanPhase);
-         Double_t probSpinDown = TMath::Power(TMath::Cos(phasediff),2.0);
+         Double_t probSpinDown = TMath::Cos(phasediff);
          if (gRandom->Uniform(0.,1.0) < probSpinDown) {
             numSpinDown++;
          } else {
@@ -829,7 +829,7 @@ void PlotField(TDirectory* const histDir, TDirectory* const stateDir, const RunC
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bx
    sprintf(histname,"%s:Field Bx",stateDir->GetName());
-   Plot::bxHist = new TH2F(histname,"Bx", 500, -5.5*Units::uT, 5.5*Units::uT, 500, 0.0, runTime);
+   Plot::bxHist = new TH2F(histname,"Bx", 500, 4.998*Units::uT, 5.002*Units::uT, 500, 0.0, runTime);
    Plot::bxHist->SetXTitle("Field measured (T)");
    Plot::bxHist->SetYTitle("Time (s)");
    Plot::bxHist->SetZTitle("Neutrons");
