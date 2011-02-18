@@ -58,8 +58,11 @@ export ROOTLOGON=${UCN_DIR}/config/ucn_rootlogon.C
 export ROOTLOGOFF=${UCN_DIR}/config/ucn_rootlogoff.C
 
 #------------------------------------------------------------------------------
-echo "UCN   : " $UCN_DIR
 echo "ROOT  : " $ROOTSYS
 echo "GSL   : " $GSL
+echo "------------------------------------------------------------------------"
+echo "UCN_DIR  : " $UCN_DIR
+echo "UCN_GEOM : " $UCN_GEOM
+echo "UCN_RUNS : " $UCN_RUNS
 echo "------------------------------------------------------------------------"
 #------------------------------------------------------------------------------
