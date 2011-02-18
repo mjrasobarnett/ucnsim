@@ -7,20 +7,14 @@
 #include <string>
 #include <map>
 #include <stdexcept>
+#include <stdlib.h>
 
 #include "ConfigFile.h"
 
+//#define VERBOSE
+//#define PRINT_CONSTRUCTORS
+
 using namespace std;
-
-ClassImp(ConfigFile)
-
-//_____________________________________________________________________________
-ConfigFile::ConfigFile()
-{
-   #ifdef PRINT_CONSTRUCTORS
-      cout << "ConfigFile::Dummy Constructor");
-   #endif
-}
 
 //_____________________________________________________________________________
 ConfigFile::ConfigFile(string filename)
@@ -255,4 +249,70 @@ bool ConfigFile::GetBool(string key, string section, bool defaultval) const
    cout << "GetBool::Failed to read [ " << section << " ]. " << key;
    cout << " = " << value << " as bool." << endl;
    return defaultval;
+}
+
+//_____________________________________________________________________________
+string ConfigFile::ExpandFilePath(const string path) const
+{
+   // -- Take string, search for a shell variable inside the path '*/$VAR/*' and expand
+   // -- it out to its literal value. Returns empty string if expansion fails
+   if (path.empty()) return path;
+   string fullpath = path;
+   // Locate a shell variable in string
+   size_t start_pos = fullpath.find_first_of("$");
+   while (start_pos != string::npos) {
+      size_t end_pos = fullpath.find_first_of("/", start_pos);
+      size_t length = end_pos - start_pos;
+      // Extract shell variable
+      string shell_var = fullpath.substr(start_pos, length);
+      #ifdef VERBOSE
+         cout << "Start: " << start_pos << "\t" << "End: " << end_pos << endl;
+         cout << "Shellvar: " << shell_var << endl;
+      #endif
+      // Expand shell variable
+      string var_expansion = ExpandShellVar(shell_var);
+      if (var_expansion.empty()) {
+         cout << "Failed to expand shell variable: " << shell_var << endl;
+         // Return empty string
+         fullpath.clear();
+         return fullpath;
+      }
+      // Insert expansion back into path
+      fullpath.replace(start_pos, length, var_expansion);
+      // Check fullpath for any more shell variables to expand
+      start_pos = fullpath.find_first_of("$");
+   }
+   #ifdef VERBOSE
+      cout << "Full path: " << fullpath << endl;
+   #endif
+   return fullpath;
+}
+
+//_____________________________________________________________________________
+string ConfigFile::ExpandShellVar(const string var) const
+{
+   // -- Take shell variable and expand it using the OS
+   char* p_val;
+   #ifdef VERBOSE
+      cout << "ExpandShellVar: " << var << "\t";
+   #endif
+   // Remove $ from front of shell var
+   string var_name = var;
+   var_name.erase(0,1); 
+   // Use cstdlib function to get environment variable
+   p_val = getenv(var_name.c_str());
+   // Check pointer
+   if (p_val!=NULL) {
+      string value(p_val);
+      #ifdef VERBOSE
+         cout << "Result: " << value << endl;
+      #endif
+      return value;
+   }
+   // Return empty string
+   #ifdef VERBOSE
+      cout << "Expansion Failed!" << endl;
+   #endif
+   string empty_str;
+   return empty_str;
 }

@@ -9,7 +9,6 @@
 class ConfigFile {
 public:
    // Constructors
-   ConfigFile();
    ConfigFile(std::string filename);
    ConfigFile(ConfigFile& other);
    ConfigFile& operator=(const ConfigFile&);
@@ -17,10 +16,11 @@ public:
    // Destructor
    virtual ~ConfigFile();
    
-   std::string  GetString(std::string key, std::string section = "", std::string defaultval = "") const;
+   std::string GetString(std::string key, std::string section="", std::string defaultval="") const;
    int     GetInt(std::string key, std::string section = "", int defaultval = 0) const;
    double  GetFloat(std::string key, std::string section = "", double defaultval = 0.0) const;
    bool    GetBool(std::string key, std::string section = "", bool defaultval = false) const;
+   std::string ExpandFilePath(std::string path) const;
    
 private:
    /// The storage for the group/key-value from the file
@@ -43,7 +43,9 @@ private:
    /// Reads a key-pair out of a line
    bool ReadKeyPair(const std::string &section, const std::string &line);
    
-   ClassDef(ConfigFile, 0) // 
+   /// Expand shell variable
+   std::string ExpandShellVar(const std::string var) const;
+   
 };
 
 #endif /* CONFIGFILE_H */
