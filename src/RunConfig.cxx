@@ -32,7 +32,10 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Constructor" << endl;
    #endif
-   const string folderpath = masterConfig.GetString("Path","Folder");
+   // Extract full path to config files 
+   const string compressedfolderpath = masterConfig.GetString("Path","Folder");
+   const string folderpath = masterConfig.ExpandFilePath(compressedfolderpath);
+   // Use full folder path to fetch the run config file
    Char_t runID[6];
    sprintf(runID,"Run%d",runNumber);
    string runConfigFileName = folderpath + masterConfig.GetString("Config", runID);

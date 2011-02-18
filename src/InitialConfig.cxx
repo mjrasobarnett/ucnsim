@@ -34,7 +34,10 @@ InitialConfig::InitialConfig(const ConfigFile& masterConfig)
    #ifdef PRINT_CONSTRUCTORS
       cout << "InitialConfig::Constructor" << endl;
    #endif
-   const string folderpath = masterConfig.GetString("Path","Folder");
+   // Extract full path to config files 
+   const string compressedfolderpath = masterConfig.GetString("Path","Folder");
+   const string folderpath = masterConfig.ExpandFilePath(compressedfolderpath);
+   // Use full folder path to fetch the initial config file
    const string initialConfigName = folderpath + masterConfig.GetString("Config","Initialisation");
    if (initialConfigName.empty() == kTRUE) {
       cout << "Unable to read in Initialisation Configuration file name" << endl;
