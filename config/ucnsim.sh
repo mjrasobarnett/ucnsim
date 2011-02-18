@@ -10,6 +10,7 @@ if [[ `uname -n` == "MJRasoBarnett.local" ]] ; then
 	echo "Configuring for Matt's local machine"
 	export UCN_DIR=${HOME}/Projects/ucnsim/source
 	export UCN_GEOM=${UCN_DIR}/geom
+	export UCN_RUNS=${UCN_DIR}/runs
 	export PATH=${UCN_DIR}/bin:${PATH}
 	# Define path to ROOT installation
 	if [[ -z "${ROOTSYS}" ]] ; then
@@ -19,46 +20,12 @@ if [[ `uname -n` == "MJRasoBarnett.local" ]] ; then
 	fi
 	# Define path to GSL installation
 	export GSL=${HOME}/Apps/GSL/gsl
-elif [[ `uname -n` == "simon-mbp.pact.cpes.susx.ac.uk" ]] ; then # Need Simon's local hostname
-	# Test if we are running on simon's machine
-	echo "Configuring for Simon's local machine"
-	export UCN_DIR=${HOME}/Software/ucnsim # Simon to fill in here where he stores the code	
-	export UCN_GEOM=${UCN_DIR}/geom
-	export PATH=${UCN_DIR}/bin:${PATH}
-	if [[ -z "${ROOTSYS}" ]] ; then
-		export ROOTSYS=${HOME}Software/ROOT/v5.24.00 # Simon to fill in where he keeps his root
-		export PATH=${ROOTSYS}/bin:${PATH}
-		export MANPATH=${ROOTSYS}/man:${MANPATH}
-	fi
-elif [[ `uname -n` == "neutrino.pact.cpes.susx.ac.uk" ]] ; then 
-	# Test if we are running on neutrino
-	echo "Configuring for neutrino remote machine"
-	export UCN_DIR=/export/eppcode/ucnsim
-	export UCN_GEOM=${UCN_DIR}/geom
-	export PATH=${UCN_DIR}/bin:${PATH}
-	export default="default"
-   if [[ "${ROOTSYS:-default}" == "default" ]] ; then
-		export ROOTSYS=/export/eppcode/ROOT/v5.24.00b
-		export PATH=${ROOTSYS}/bin:${PATH}
-		export MANPATH=${ROOTSYS}/man:${MANPATH}
-	fi
-	# Add more machines here as necessary
-elif [[ `uname -n` == "ubuntu" ]] ; then 
-	# Test if we are running on matt's linux virtual machine
-	echo "Configuring for Matt's linux virtual machine"
-	export UCN_DIR=${HOME}/code/git/ucnsim
-	export UCN_GEOM=${UCN_DIR}/geom
-	export PATH=${UCN_DIR}/bin:${PATH}
-	if [[ -z "${ROOTSYS}" ]] ; then
-		export ROOTSYS=${HOME}/code/root
-		export PATH=${ROOTSYS}/bin:${PATH}
-		export MANPATH=${ROOTSYS}/man:${MANPATH}
-	fi
 elif [[ `uname -n` == "feynman" ]] ; then 
 	# Test if we are running on matt's linux virtual machine
 	echo "Configuring for Feynman remote machine"
 	export UCN_DIR=${HOME}/projects/ucnsim
 	export UCN_GEOM=${UCN_DIR}/geom
+	export UCN_RUNS=/epp/scratch/nedm/mb325/ucnsim/runs
 	export PATH=${UCN_DIR}/bin:${PATH}
 	if [[ -z "${ROOTSYS}" ]] ; then
 		export ROOTSYS=${HOME}/root/root
