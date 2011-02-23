@@ -1,5 +1,9 @@
 #include <iostream>
 #include <sstream>
+#include <iterator>
+#include <algorithm>
+#include <vector>
+#include <string>
 
 #include "TGeoManager.h"
 #include "TH1F.h"
@@ -44,6 +48,9 @@ vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoMa
 Double_t ExponentialDecay(Double_t *x, Double_t *par);
 Double_t SpinPrecession(Double_t *x, Double_t *par);
 
+bool ValidateRootFile(const string filename);
+bool ValidateStateNames(const vector<string>& statenames);
+
 namespace Plot {
    TPolyMarker3D* points = NULL;
    
@@ -82,20 +89,38 @@ namespace Plot {
    TH2F* bzHist = NULL;
 }
 
-Int_t main(Int_t argc,Char_t **argv)
+//_____________________________________________________________________________
+Int_t main(int argc, char **argv)
 {
    ///////////////////////////////////////////////////////////////////////////////////////
-   TString configFileName, statename;
-   if (argc == 3) {
-      configFileName = argv[1];
-      statename = argv[2];
-   } else {
+   // Plot data needs a minimum of 2 arguments - a data file, and the name of the particle
+   // 'state' you wish to include in your histograms.
+   if (argc < 3) {
       cerr << "Usage:" << endl;
-      cerr << "plot_data <configfile.cfg> <treename>" << endl;
-      return -1;
+      cerr << "plot_data <data.root> <statename>" << endl;
+      return EXIT_FAILURE;
+   } 
+   // Read in Filename and check that it is a .root file
+   string filename = argv[1];
+   if (ValidateRootFile(filename) == false) {
+      cerr << "Error: filename, " << filename << " does not have a .root extension" << endl;
+      return EXIT_FAILURE;
    }
-   // Start 'the app' -- this is so we are able to enter into a ROOT session
-   // after the program has run, instead of just quitting.
+   // Read in list of states to be included in histogram and check that they are
+   // valid state names
+   vector<string> statenames;
+   for (int i = 2; i < argc; i++) {statenames.push_back(argv[i]);}
+   if (ValidateStateNames(statenames) == false) {
+      cerr << "Error: statenames supplied are not valid" << endl;
+      return EXIT_FAILURE;
+   }
+   cout << "-------------------------------------------" << endl;
+   cout << "Loading Data File: " << filename << endl;
+   cout << "Loading Particles from states: ";
+   copy(statenames.begin(),statenames.end(),ostream_iterator<string>(cout,", "));
+   cout << endl;
+   /*
+   // Start an interactive root session so we can view the plots as they are made
    TRint *theApp = new TRint("FittingApp", &argc, argv);
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
@@ -173,6 +198,7 @@ Int_t main(Int_t argc,Char_t **argv)
    cout << "Finished" << endl;
    theApp->Run();
    return 0;
+   */
 }
 
 //_____________________________________________________________________________
@@ -1061,3 +1087,43 @@ Double_t SpinPrecession(Double_t *x, Double_t *par)
    Double_t f = par[0]*TMath::Sin((par[1]*t + par[2]*(TMath::Pi()/2.0)))*TMath::Sin((par[1]*t + par[2]*(TMath::Pi()/2.0)));
    return f;
 }
+
+//_____________________________________________________________________________
+bool ValidateRootFile(const string filename)
+{
+   // -- Check that the filename supplied has a .root extension
+   size_t found = filename.find_last_of(".");
+   if (found == string::npos) return false;
+   if (filename.substr(found) == ".root") return true;
+   return false;
+}
+
+//_____________________________________________________________________________
+bool ValidateStateNames(const vector<string>& statenames)
+{
+   // -- Check that each statename in list is a valid state as defined in DataFileHierarchy lvl 3
+   // -- and is unique
+   vector<string>::const_iterator iter;
+   for (iter = statenames.begin(); iter != statenames.end(); iter++) {
+      // Check state-name
+      if (*iter != Folders::propagating &&
+          *iter != Folders::absorbed &&
+          *iter != Folders::lost &&
+          *iter != Folders::decayed &&
+          *iter != Folders::detected &&
+          *iter != Folders::anomalous) {
+         cerr << "Argument, " << *iter << " is not a valid statename" << endl;
+         return false;
+      }
+      // Check for duplicates
+      vector<string>::const_iterator second_iter;
+      for (second_iter = iter+1; second_iter != statenames.end(); second_iter++) {
+         if (*second_iter == *iter) {
+            cerr << "Duplicate statenames given: " << *iter << endl;
+            return false;
+         }
+      }
+   }
+   return true;
+}
+
