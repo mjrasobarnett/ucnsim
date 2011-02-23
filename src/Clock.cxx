@@ -59,6 +59,8 @@ double Clock::GetTimeToNextEvent()
    if (fTime + nextInterval >= fRunEnd) {nextInterval = fRunEnd - fTime;}
    // Update LastSpin Measurement time if we reached it
    if (fTime >= fLastSpinMeas + fSpinMeasFreq) {fLastSpinMeas += fSpinMeasFreq;}
+   // Check if we are measuring spin at all
+   if (fSpinMeasFreq == 0.0) return nextInterval;
    // Check if we will make a spin measurement in this time
    const double nextSpinMeasureTime = fLastSpinMeas + fSpinMeasFreq;
    if (fTime + nextInterval >= nextSpinMeasureTime) {nextInterval = nextSpinMeasureTime - fTime;}
