@@ -201,7 +201,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       initialTHist->Fill(particle->T());
       positions->SetPoint(particle->Id(), particle->X(), particle->Y(), particle->Z());
       // -- Add particle to data file
-      data->SaveParticle(particle, Folders::initialstates);
+      data->SaveParticle(particle, Folders::initial);
       if (particle) delete particle;
       // -- Update progress bar
       ProgressBar::PrintProgress(i,particles,1);

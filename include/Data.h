@@ -16,8 +16,8 @@ private:
    // -- Data Files
    TFile *fOutputFile;
    
+   TDirectory *fParticleStatesFolder;
    TDirectory *fInitialStatesFolder;
-   TDirectory *fFinalStatesFolder;
    
    TIter *fCurrentParticleDir;
    
@@ -39,7 +39,6 @@ public:
    // -- Constructors
    Data();
    Data(const Data& other);
-   Data& operator=(const Data& other); 
    virtual ~Data(void);
    
    Bool_t               Initialise(const InitialConfig& initialConfig);

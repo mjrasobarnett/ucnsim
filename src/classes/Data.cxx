@@ -28,8 +28,8 @@ Data::Data()
    Info("Data","Default Constructor");
    // -- Create the Trees
    fOutputFile = NULL;
+   fParticleStatesFolder = NULL;
    fInitialStatesFolder = NULL;
-   fFinalStatesFolder = NULL;
    fCurrentParticleDir = NULL;
 }
 
@@ -37,40 +37,13 @@ Data::Data()
 Data::Data(const Data& other)
          :TNamed(other), 
           fOutputFile(other.fOutputFile),
+          fParticleStatesFolder(other.fParticleStatesFolder),
           fInitialStatesFolder(other.fInitialStatesFolder),
-          fFinalStatesFolder(other.fFinalStatesFolder),
           fCurrentParticleDir(other.fCurrentParticleDir),
           fObservers(other.fObservers)
 {
    // Copy Constructor
    Info("Data","Copy Constructor");
-}
-
-//_____________________________________________________________________________
-Data& Data::operator=(const Data& other)
-{
-// --assignment operator
-   Info("Data","Assignment");
-   if(this!=&other) {
-      TNamed::operator=(other);
-      // Clean up File before assignment
-      if (fOutputFile) {
-         fOutputFile->Close();
-         delete fOutputFile;
-         fOutputFile = NULL;
-         fInitialStatesFolder = NULL;
-         fFinalStatesFolder = NULL;
-         fCurrentParticleDir = NULL;
-      }
-      fOutputFile = other.fOutputFile;
-      fInitialStatesFolder = other.fInitialStatesFolder;
-      fFinalStatesFolder = other.fFinalStatesFolder;
-      fCurrentParticleDir = other.fCurrentParticleDir;
-      // Clear list of observers before assignment
-      PurgeObservers();
-      fObservers = other.fObservers;
-   }
-   return *this;
 }
 
 //_____________________________________________________________________________
@@ -80,8 +53,8 @@ Data::~Data()
    Info("Data","Destructor");
    if (fOutputFile) fOutputFile->Close(); delete fOutputFile;
    fOutputFile = NULL;
+   fParticleStatesFolder = NULL;
    fInitialStatesFolder = NULL;
-   fFinalStatesFolder = NULL;
    fCurrentParticleDir = NULL;
    PurgeObservers();
 }
@@ -105,14 +78,12 @@ Bool_t Data::Initialise(const InitialConfig& initialConfig)
    }
    fOutputFile = file;
    // Set up basic folder structure
-   // ___.root:/particles/initialstates  ___.root:/particles/finalstates
    fOutputFile->cd();
    TDirectory* topDir = gDirectory;
    // Need to create particles directory structure
-   TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str());
-   // Create the initial and final states folders
-   fInitialStatesFolder = particlesDir->mkdir(Folders::initialstates.c_str());
-   fFinalStatesFolder = particlesDir->mkdir(Folders::finalstates.c_str());
+   fParticleStatesFolder = topDir->mkdir(Folders::particles.c_str());
+   // Create the initial states folder
+   fInitialStatesFolder = fParticleStatesFolder->mkdir(Folders::initial.c_str());
    return kTRUE;
 }
 
@@ -136,7 +107,6 @@ Bool_t Data::Initialise(const RunConfig& runConfig)
    }
    fOutputFile = outputfile;
    // Set up basic folder structure
-   // ___.root:/particles/initialstates  ___.root:/particles/finalstates
    fOutputFile->cd();
    TDirectory* topDir = gDirectory;
    // Create a config directory and write copy of RunConfig to it
@@ -145,17 +115,16 @@ Bool_t Data::Initialise(const RunConfig& runConfig)
    runConfig.Write("RunConfig",TObject::kOverwrite);
    topDir->cd();
    // Create a particles directory structure
-   TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str());
-   // Create the initial and final states folders
-   fInitialStatesFolder = particlesDir->mkdir(Folders::initialstates.c_str());
-   fFinalStatesFolder = particlesDir->mkdir(Folders::finalstates.c_str());
+   fParticleStatesFolder = topDir->mkdir(Folders::particles.c_str());
+   // Create the initial states folder
+   fInitialStatesFolder = fParticleStatesFolder->mkdir(Folders::initial.c_str());
    // Create the typical subfolders of final states
-   fFinalStatesFolder->mkdir(Folders::propagating.c_str());
-   fFinalStatesFolder->mkdir(Folders::absorbed.c_str());
-   fFinalStatesFolder->mkdir(Folders::detected.c_str());
-   fFinalStatesFolder->mkdir(Folders::decayed.c_str());
-   fFinalStatesFolder->mkdir(Folders::lost.c_str());
-   fFinalStatesFolder->mkdir(Folders::anomalous.c_str());
+   fParticleStatesFolder->mkdir(Folders::propagating.c_str());
+   fParticleStatesFolder->mkdir(Folders::absorbed.c_str());
+   fParticleStatesFolder->mkdir(Folders::detected.c_str());
+   fParticleStatesFolder->mkdir(Folders::decayed.c_str());
+   fParticleStatesFolder->mkdir(Folders::lost.c_str());
+   fParticleStatesFolder->mkdir(Folders::anomalous.c_str());
    // Load initial particles into output file
    if (this->LoadParticles(runConfig) == kFALSE) {
       Error("Initialise","Cannot Load Particles");
@@ -170,7 +139,7 @@ Bool_t Data::Initialise(const RunConfig& runConfig)
 Bool_t Data::LoadParticles(const RunConfig& runConfig)
 {
    // -- Locate particles designated as 'initial' in the run config. Copy all of these
-   // -- particles into the initialstates folder inside the output file.
+   // -- particles into the initial states folder inside the output file.
    cout << "-------------------------------------------" << endl;
    cout << "Loading the Particles" << endl;
    cout << "-------------------------------------------" << endl;
@@ -204,22 +173,11 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
       whichParticles[i] = tolower(whichParticles[i],loc);
    }
    // Navigate to the folder containing the input particle states 
-   if (whichParticles != Folders::initialstates) {
-      partDir->cd(Folders::finalstates.c_str());
-      TDirectory* finalStatesDir = gDirectory;
-      Bool_t correctFolder = finalStatesDir->cd(whichParticles.c_str());
-      // check that we ended up in the correct folder
-      if (correctFolder == kFALSE) {
-         Error("LoadParticles","Cannot find folder: ", whichParticles.c_str());
-         return kFALSE;
-      }
-   } else {
-      Bool_t correctFolder = partDir->cd(Folders::initialstates.c_str());
-      // check that we ended up in the correct folder
-      if (correctFolder == kFALSE) {
-         Error("LoadParticles","Cannot find folder: ", Folders::initialstates.c_str());
-         return kFALSE;
-      }
+   Bool_t correctFolder = partDir->cd(whichParticles.c_str());
+   // check that we ended up in the correct folder
+   if (correctFolder == kFALSE) {
+      Error("LoadParticles","Cannot find folder: ", whichParticles.c_str());
+      return kFALSE;
    }
    TDirectory * const sourceDir = gDirectory;
    TDirectory * const outputDir = fInitialStatesFolder; 
@@ -227,7 +185,7 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    // - Check Config for whether we will re-start the particles specified above from their initial
    // - states. This will only be done for particles that are not in their initial states already.
    Bool_t fromBeginning = runConfig.RestartFromBeginning();
-   if (fromBeginning == kTRUE && sourceDir->GetName() != Folders::initialstates) {
+   if (fromBeginning == kTRUE && sourceDir->GetName() != Folders::initial) {
       cout << "Resetting particles in the state: " << sourceDir->GetName();
       cout << ", to their initial state as the input to current Run " << endl;
       // Loop on all entries of source directory, which will be a set of folders containing
@@ -240,8 +198,8 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
          if (!cl) continue;
          if (cl->InheritsFrom("TDirectory")) {
             // For each particle-folder in the current directory, find its corresponding
-            // initialstates folder in the input file, and make a copy of it in the output file
-            partDir->cd(Folders::initialstates.c_str());
+            // initial states folder in the input file, and make a copy of it in the output file
+            partDir->cd(Folders::initial.c_str());
             TDirectory * const initialDir = gDirectory;
             this->CopyDirectory(initialDir, outputDir);
          }
@@ -250,7 +208,7 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
       // Otherwise we just propagate the particles from where they left off
       cout << "Loading particles in the state: " << sourceDir->GetName();
       cout << ", as the input to current Run, to continue their propagation" << endl;
-      // Copy particles from the source directory into the initialstates directory of the run
+      // Copy particles from the source directory into the initial states directory of the run
       this->CopyDirectoryContents(sourceDir, outputDir);
    }
    // Clean up
@@ -411,19 +369,10 @@ Bool_t Data::SaveParticle(Particle* particle, const std::string& state)
 {
    // -- Navigate to folder "state" in the particles/finalstates directory of the output data
    // -- file. If folder "state" doesn't yet exist, then create it and set as the current directory
-   if (state == Folders::initialstates) {
-      Bool_t foundFolder = fInitialStatesFolder->cd();
-      if (foundFolder == kFALSE) {
-         Error("SaveParticle","Unable to open folder: %s", state.c_str());
-         return kFALSE;
-      }
-   } else {
-      Bool_t foundFolder = fFinalStatesFolder->cd(state.c_str());
-      if (foundFolder == kFALSE) {
-         // If we failed to find a folder in the final states directory with name 'state'
-         // create a new folder for this type of particle
-         fFinalStatesFolder->mkdir(state.c_str());
-      }
+   Bool_t foundFolder = fParticleStatesFolder->cd(state.c_str());
+   if (foundFolder == kFALSE) {
+      Error("SaveParticle","Unable to open folder: %s", state.c_str());
+      return kFALSE;
    }
    // We should now be in the correct folder for our particle
    TDirectory* stateDir = gDirectory;
@@ -517,7 +466,7 @@ Int_t Data::InitialParticles() const
 //_____________________________________________________________________________
 Int_t Data::PropagatingParticles() const
 {
-   if (fFinalStatesFolder->cd(Folders::propagating.c_str()) == kFALSE) {
+   if (fParticleStatesFolder->cd(Folders::propagating.c_str()) == kFALSE) {
       return 0;
    } else {
       return gDirectory->GetNkeys();
@@ -527,7 +476,7 @@ Int_t Data::PropagatingParticles() const
 //_____________________________________________________________________________
 Int_t Data::DetectedParticles() const
 {
-   if (fFinalStatesFolder->cd(Folders::detected.c_str()) == kFALSE) {
+   if (fParticleStatesFolder->cd(Folders::detected.c_str()) == kFALSE) {
       return 0;
    } else {
       return gDirectory->GetNkeys();
@@ -537,7 +486,7 @@ Int_t Data::DetectedParticles() const
 //_____________________________________________________________________________
 Int_t Data::DecayedParticles() const
 {
-   if (fFinalStatesFolder->cd(Folders::decayed.c_str()) == kFALSE) {
+   if (fParticleStatesFolder->cd(Folders::decayed.c_str()) == kFALSE) {
       return 0;
    } else {
       return gDirectory->GetNkeys();
@@ -547,7 +496,7 @@ Int_t Data::DecayedParticles() const
 //_____________________________________________________________________________
 Int_t Data::AbsorbedParticles() const
 {
-   if (fFinalStatesFolder->cd(Folders::absorbed.c_str()) == kFALSE) {
+   if (fParticleStatesFolder->cd(Folders::absorbed.c_str()) == kFALSE) {
       return 0;
    } else {
       return gDirectory->GetNkeys();
@@ -557,7 +506,7 @@ Int_t Data::AbsorbedParticles() const
 //_____________________________________________________________________________
 Int_t Data::LostParticles() const
 {
-   if (fFinalStatesFolder->cd(Folders::lost.c_str()) == kFALSE) {
+   if (fParticleStatesFolder->cd(Folders::lost.c_str()) == kFALSE) {
       return 0;
    } else {
       return gDirectory->GetNkeys();
@@ -567,7 +516,7 @@ Int_t Data::LostParticles() const
 //_____________________________________________________________________________
 Int_t Data::AnomalousParticles() const
 {
-   if (fFinalStatesFolder->cd(Folders::anomalous.c_str()) == kFALSE) {
+   if (fParticleStatesFolder->cd(Folders::anomalous.c_str()) == kFALSE) {
       return 0;
    } else {
       return gDirectory->GetNkeys();
