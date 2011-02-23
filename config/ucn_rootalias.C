@@ -1,10 +1,10 @@
 void set_my_style(void) 
 { 
 	cerr <<"------------------------------------------------------------"<< endl;
-	cerr <<"- Setting matt's style -" << endl;
+	cerr <<"-- Setting Default Style --" << endl;
 	cerr <<"------------------------------------------------------------"<< endl;
 	gROOT->SetStyle("Plain");
-	gStyle->SetOptStat(1);
+	gStyle->SetOptStat(0);
 	gStyle->SetOptFit(111);
 //	gStyle->SetStatW(0.15);
 //	gStyle->SetStatH(0.15);

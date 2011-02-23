@@ -8,6 +8,8 @@ namespace Folders
    // Level 1
    const std::string particles = "particles";
    const std::string config = "config";
+   const std::string histograms = "histograms";
+   const std::string geometry = "geometry";
    // Level 2 -- Sub dirs of particles
    const std::string initial = "initial";
    const std::string propagating = "propagating";

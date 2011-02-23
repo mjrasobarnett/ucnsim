@@ -48,7 +48,7 @@ public:
    Bool_t               SaveParticle(Particle* particle, const std::string& state);
    
    // Get a Particle
-   Particle* const  RetrieveParticle();
+   Particle* const      RetrieveParticle();
    
    // Particle Counters
    Bool_t               ChecksOut() const;
