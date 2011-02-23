@@ -4,25 +4,21 @@ void set_my_style(void)
 	cerr <<"- Setting matt's style -" << endl;
 	cerr <<"------------------------------------------------------------"<< endl;
 	gROOT->SetStyle("Plain");
-//	gStyle->SetOptStat(0);
-//	gStyle->SetOptTitle(0);
+	gStyle->SetOptStat(1);
 	gStyle->SetOptFit(111);
-	gStyle->SetStatW(0.15);
-	gStyle->SetStatH(0.15);
-	gStyle->SetPadLeftMargin  (0.15);
-	gStyle->SetPadRightMargin (0.10);
-	gStyle->SetPadBottomMargin(0.15);
-	gStyle->SetPadTopMargin   (0.10);
+//	gStyle->SetStatW(0.15);
+//	gStyle->SetStatH(0.15);
+//	gStyle->SetPadLeftMargin  (0.15);
+//	gStyle->SetPadRightMargin (0.10);
+//	gStyle->SetPadBottomMargin(0.15);
+//	gStyle->SetPadTopMargin   (0.10);
 	gStyle->SetPadGridX(1);
-	gStyle->SetPadGridY(1);
-	gStyle->SetPaperSize(10.,10.);
+	gStyle->SetPadGridY(1);	
 	gStyle->SetPalette(1,0);
-	gStyle->SetTitleSize  (0.03,"XYZ");
-	gStyle->SetLabelOffset(0.02,"XYZ");
-	gStyle->SetLabelSize  (0.03,"XYZ");
-	gStyle->SetTitleOffset(2.00,  "X");
-	gStyle->SetTitleOffset(2.00,  "Y");
-	gStyle->SetNdivisions(505,"XY");
+	gStyle->SetLabelOffset(0.01,"XYZ"); // Axis numbers
+	gStyle->SetLabelSize  (0.03,"XYZ"); // Axis numbers
+	gStyle->SetTitleSize  (0.04,"XYZ"); // Axis Titles
+   gStyle->SetTitleOffset(1.0,"XYZ");	
 }
 
 void load_library(TString name)
