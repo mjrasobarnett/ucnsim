@@ -20,7 +20,14 @@ namespace GeomParameters {
    const Double_t sourceSegRMax = 31.5*Units::mm;
    const Double_t sourceSegHalfLength = 125.*Units::mm;
    const Double_t sourceSegAngle = 90.0;
-   const Double_t sourceSegYDisplacement = 125.*Units::mm;
+   const Double_t sourceSegYDisplacement = sourceSegHalfLength;
+   
+   // -- SourceTube Gap
+   const Double_t sourceSegGapRMin = 31.5*Units::mm; 
+   const Double_t sourceSegGapRMax = 60*Units::mm;
+   const Double_t sourceSegGapHalfLength = 1.0*Units::mm;
+   const Double_t sourceSegGapAngle = 90.0;
+   const Double_t sourceSegGapYDisplacement = sourceSegGapHalfLength;
    
    // -- Neutron Beam Area
    const Double_t neutronBeamAreaRMin = 0.;

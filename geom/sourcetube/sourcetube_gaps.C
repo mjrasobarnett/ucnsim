@@ -15,7 +15,7 @@ Bool_t Draw_Geom(const TGeoManager* geoManager);
 using namespace GeomParameters;
 
 //__________________________________________________________________________
-Int_t sourcetube_geom()
+Int_t sourcetube_gaps()
 {
    // Create the geoManager
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
@@ -31,8 +31,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
 {
    // -------------------------------------
    // BUILDING GEOMETRY
-   // Materials - Define the materials used. Leave the neutron properties to be defined on a run-by-run basis
-   
+   // Materials - Define the materials used. Leave the neutron properties 
+   // to be defined on a run-by-run basis
    Materials::BuildMaterials(geoManager);
    TGeoMedium* beryllium = geoManager->GetMedium("Beryllium");
    TGeoMedium* blackhole = geoManager->GetMedium("BlackHole");
@@ -59,30 +59,57 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- SOURCE TUBE
-   // -- Source tube has 13 segments, all of which are identical (except one which has a hole in the top)
-   
-   // -- Make a SourceTube Segment
-   Tube *sourceSegShape = new Tube("SourceSeg", sourceSegRMin, sourceSegRMax, sourceSegHalfLength);
-   TrackingVolume* sourceSeg = new TrackingVolume("SourceSeg", sourceSegShape, heliumII);
-   sourceSeg->SetLineColor(kAzure-4);
-   sourceSeg->SetLineWidth(1);
-   sourceSeg->SetVisibility(kTRUE);
-   sourceSeg->SetTransparency(20);
-   
+   // -- Source tube has 13 segments, all of which are identical 
+   // -- (except one which has a hole in the top)
    Double_t segmentYPosition = sourceSegHalfLength;
    for (Int_t segNum = 1; segNum <= 13; segNum++) {
+      // -- Make a SourceTube Segment
+      Char_t sourceMatrixName[20], sourceSegName[20], sourceGapMatrixName[20];
+      sprintf(sourceSegName, "SourceSeg%d", segNum); 
+      Tube *sourceSegShape = new Tube(sourceSegName, sourceSegRMin, sourceSegRMax, sourceSegHalfLength);
+      TrackingVolume* sourceSeg = new TrackingVolume(sourceSegName, sourceSegShape, heliumII);
+      sourceSeg->SetLineColor(kAzure-4);
+      sourceSeg->SetLineWidth(1);
+      sourceSeg->SetVisibility(kTRUE);
+      sourceSeg->SetTransparency(20);
       // -- Define SourceTube matrix
-      // Rotation seems to be applied before translation so bear that in mind when choosing which
-      // coordinate to transform in translation
       TGeoRotation segmentRot("SegmentRot",0,sourceSegAngle,0); // phi, theta, psi
       TGeoTranslation segmentTra("SegmentTra",0.,segmentYPosition,0.); // x, y, z
       TGeoCombiTrans segmentCom(segmentTra,segmentRot);
       TGeoHMatrix segmentMat = segmentCom;
-      Char_t sourceMatrixName[20];
       sprintf(sourceMatrixName, "SourceMatrix%d", segNum); 
       segmentMat.SetName(sourceMatrixName);
+      // Add SourceTube segment to geometry
       chamber->AddNode(sourceSeg, segNum, new TGeoHMatrix(segmentMat));
-      segmentYPosition += 2.*sourceSegHalfLength; // Shift next segment along by length of segment 
+      // Shift next segment along by length of segment
+      segmentYPosition += 2.0*sourceSegHalfLength;
+   }
+   
+   // -------------------------------------
+   // -- SOURCE TUBE GAPS
+   // -- Create 12 gaps between each source tube segment 
+   Double_t gapYPosition = 2.0*sourceSegHalfLength;
+   for (Int_t segNum = 1; segNum <= 13; segNum++) {
+      // -- Make a Gap between Segments
+      Char_t sourceGapMatrixName[20], sourceSegGapName[20];
+      sprintf(sourceSegGapName, "SourceSegGap%d", segNum); 
+      Tube *sourceSegGapShape = new Tube(sourceSegGapName, sourceSegGapRMin, sourceSegGapRMax, sourceSegGapHalfLength);
+      BlackHole* sourceSegGap = new BlackHole(sourceSegGapName, sourceSegGapShape, blackhole);
+      sourceSegGap->SetLineColor(kRed-1);
+      sourceSegGap->SetLineWidth(1);
+      sourceSegGap->SetVisibility(kTRUE);
+      sourceSegGap->SetTransparency(20);
+      // -- Define SourceTube matrix
+      TGeoRotation segmentGapRot("SegmentGapRot",0,sourceSegGapAngle,0); // phi, theta, psi
+      TGeoTranslation segmentGapTra("SegmentGapTra",0.,gapYPosition,0.); // x, y, z
+      TGeoCombiTrans segmentGapCom(segmentGapTra,segmentGapRot);
+      TGeoHMatrix segmentGapMat = segmentGapCom;
+      sprintf(sourceGapMatrixName, "SourceGapMatrix%d", segNum); 
+      segmentGapMat.SetName(sourceGapMatrixName);
+      // Add SourceTube Gap segment to geometry
+      chamber->AddNode(sourceSegGap, segNum, new TGeoHMatrix(segmentGapMat));
+      // Shift next segment along by length of segment
+      gapYPosition += 2.0*sourceSegHalfLength;
    }
    
    // -------------------------------------
@@ -108,7 +135,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out geometry to file
-   const char *fileName = "$(UCN_GEOM)/sourcetube/sourcetube_geom.root";
+   const char *fileName = "$(UCN_GEOM)/sourcetube/sourcetube_gaps.root";
    cerr << "Simulation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    
