@@ -128,7 +128,7 @@ Bool_t Data::Initialise(const RunConfig& runConfig)
       Error("Initialise","No Output file path specified in run configuration");
       return kFALSE;
    }
-   // Open and store pointer tooutput File
+   // Open and store pointer to output File
    TFile *outputfile = TFile::Open(outputFileName.c_str(), "recreate");
    if (!outputfile || outputfile->IsZombie()) {
       Error("Initialise","Unable to open output file");
@@ -139,8 +139,13 @@ Bool_t Data::Initialise(const RunConfig& runConfig)
    // ___.root:/particles/initialstates  ___.root:/particles/finalstates
    fOutputFile->cd();
    TDirectory* topDir = gDirectory;
-   // Need to create particles directory structure
-   TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str(),"");
+   // Create a config directory and write copy of RunConfig to it
+   TDirectory* configDir = topDir->mkdir(Folders::config.c_str());
+   configDir->cd();
+   runConfig.Write("RunConfig",TObject::kOverwrite);
+   topDir->cd();
+   // Create a particles directory structure
+   TDirectory* particlesDir = topDir->mkdir(Folders::particles.c_str());
    // Create the initial and final states folders
    fInitialStatesFolder = particlesDir->mkdir(Folders::initialstates.c_str());
    fFinalStatesFolder = particlesDir->mkdir(Folders::finalstates.c_str());

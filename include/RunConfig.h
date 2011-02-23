@@ -8,8 +8,10 @@
 #include "TObject.h"
 #include <string>
 #include "TVector3.h"
+
 class ConfigFile;
-class RunConfig {
+
+class RunConfig : public TObject {
 private:
    std::string fRunName;
    
@@ -46,7 +48,6 @@ public:
    RunConfig();
    RunConfig(const ConfigFile& masterConfig, int runNumber);
    RunConfig(const RunConfig&); 
-   RunConfig& operator=(const RunConfig&);
    virtual ~RunConfig();
    
    // Methods
@@ -74,5 +75,7 @@ public:
    double FieldMeasurementFreq() const {return fFieldMeasFreq;}
    
    virtual void Print(Option_t* option = "") const;
+
+   ClassDef(RunConfig,1);
 };
 #endif /*RUNCONFIG_H*/

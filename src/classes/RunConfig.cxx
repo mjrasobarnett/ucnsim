@@ -12,9 +12,11 @@
 
 using namespace std;
 
+ClassImp(RunConfig);
+
 //__________________________________________________________________________
 RunConfig::RunConfig()
-          :fRunName(""), fGeomFile(""), fGeomVisFile(""), fInputDataFile(""),
+          :TObject(), fRunName(""), fGeomFile(""), fGeomVisFile(""), fInputDataFile(""),
            fOutputDataFile(""), fFieldsFile(""), fInputRunName(""),
            fParticlesToLoad(""), fLoadAllParticles(true), fRestartParticles(false),
            fGravFieldOn(true), fMagFieldOn(false), fWallLossesOn(true), fRunTime(0.),
@@ -28,6 +30,7 @@ RunConfig::RunConfig()
 
 //__________________________________________________________________________
 RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
+          :TObject()
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Constructor" << endl;
@@ -94,7 +97,8 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
 
 //__________________________________________________________________________
 RunConfig::RunConfig(const RunConfig& other)
-              :fRunName(other.fRunName),
+              :TObject(other),
+               fRunName(other.fRunName),
                fGeomFile(other.fGeomFile),
                fGeomVisFile(other.fGeomVisFile),
                fInputDataFile(other.fInputDataFile),
@@ -120,36 +124,6 @@ RunConfig::RunConfig(const RunConfig& other)
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Copy Constructor" << endl;
    #endif
-}
-
-//__________________________________________________________________________
-RunConfig& RunConfig::operator=(const RunConfig& other)
-{
-   if(this!=&other) {
-      fRunName = other.fRunName;
-      fGeomFile=other.fGeomFile;
-      fGeomVisFile=other.fGeomVisFile;
-      fInputDataFile=other.fInputDataFile;
-      fOutputDataFile=other.fOutputDataFile;
-      fFieldsFile=other.fFieldsFile;
-      fInputRunName=other.fInputRunName;
-      fParticlesToLoad=other.fParticlesToLoad;
-      fLoadAllParticles=other.fLoadAllParticles;
-      fRestartParticles=other.fRestartParticles;
-      fGravFieldOn=other.fGravFieldOn;
-      fMagFieldOn=other.fMagFieldOn;
-      fWallLossesOn=other.fWallLossesOn;
-      fRunTime=other.fRunTime;
-      fMaxStepTime=other.fMaxStepTime;
-      fSpinStepTime=other.fSpinStepTime;
-      fObsSpin=other.fObsSpin;
-      fObsBounces=other.fObsBounces;
-      fObsTracks=other.fObsTracks;
-      fObsField=other.fObsField;
-      fSpinMeasFreq=other.fSpinMeasFreq;
-      fFieldMeasFreq=other.fFieldMeasFreq;
-   }
-   return *this;
 }
 
 //__________________________________________________________________________

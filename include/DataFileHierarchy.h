@@ -7,6 +7,7 @@ namespace Folders
 {
    // Level 1
    const std::string particles = "particles";
+   const std::string config = "config";
    // Level 2
    const std::string initialstates = "initialstates";
    const std::string finalstates = "finalstates";
