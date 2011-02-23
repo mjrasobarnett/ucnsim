@@ -104,7 +104,7 @@ Int_t main(Int_t argc,Char_t **argv)
    ///////////////////////////////////////////////////////////////////////////////////////
    // Read in Initial Configuration from file.
    InitialConfig initialConfig(configFile);
-   RunConfig runConfig(configFile,1);
+   RunConfig runConfig(configFile,2);
    // Read the outputfile name
    TString dataFileName = runConfig.OutputFileName();
    //////////////////////////////////////////////////////////////////////////////////////
@@ -224,7 +224,7 @@ void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, cons
    // -- Run Time
    const Double_t runTime = runConfig.RunTime();
    sprintf(histname,"%s:Time",stateDir->GetName());
-   Plot::timeHist = new TH1F(histname,"Time: Units of s", nbins, 0.0, runTime+10);
+   Plot::timeHist = new TH1F(histname,"Time: Units of s", 800, 0.0, runTime+10);
    Plot::timeHist->SetXTitle("Time (s)");
    Plot::timeHist->SetYTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////

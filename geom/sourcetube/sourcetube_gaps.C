@@ -95,7 +95,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
       sprintf(sourceSegGapName, "SourceSegGap%d", segNum); 
       Tube *sourceSegGapShape = new Tube(sourceSegGapName, sourceSegGapRMin, sourceSegGapRMax, sourceSegGapHalfLength);
       BlackHole* sourceSegGap = new BlackHole(sourceSegGapName, sourceSegGapShape, blackhole);
-      sourceSegGap->SetLineColor(kRed-1);
+      sourceSegGap->SetLineColor(kGray);
       sourceSegGap->SetLineWidth(1);
       sourceSegGap->SetVisibility(kTRUE);
       sourceSegGap->SetTransparency(20);
