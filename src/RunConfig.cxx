@@ -51,7 +51,6 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    fGeomVisFile = folderpath + runConfigFile.GetString("GeomVisFile","Files");
    fInputDataFile = folderpath + runConfigFile.GetString("InputDataFile","Files");
    fOutputDataFile = folderpath + runConfigFile.GetString("OutputDataFile","Files");
-   fFieldsFile = folderpath + runConfigFile.GetString("FieldsFile","Files");
    
    fInputRunName = runConfigFile.GetString("InputRunName","Particles");
    fParticlesToLoad = runConfigFile.GetString("WhichParticles","Particles");
@@ -59,20 +58,37 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    fRestartParticles = runConfigFile.GetBool("RunFromBeginning","Particles");
    
    fGravFieldOn = runConfigFile.GetBool("GravField","Properties");
-   fMagFieldOn = runConfigFile.GetBool("MagFields","Properties");
    fWallLossesOn = runConfigFile.GetBool("WallLosses","Properties");
    
    fRunTime = runConfigFile.GetFloat("RunTime(s)","Properties");
    fMaxStepTime = runConfigFile.GetFloat("MaxStepTime(s)","Properties");
-   fSpinStepTime = runConfigFile.GetFloat("SpinStepTime(s)","Properties");
    
-   fObsSpin = runConfigFile.GetBool("RecordSpin","Observables");
    fObsBounces = runConfigFile.GetBool("RecordBounces","Observables");
    fObsTracks = runConfigFile.GetBool("RecordTracks","Observables");
-   fObsField = runConfigFile.GetBool("RecordField","Observables");
    
+   fFieldsFile = folderpath + runConfigFile.GetString("FieldsFile","Files");
+   fMagFieldOn = runConfigFile.GetBool("MagFields","Properties");
+   fSpinStepTime = runConfigFile.GetFloat("SpinStepTime(s)","Properties");
+   fObsSpin = runConfigFile.GetBool("RecordSpin","Observables");
    fSpinMeasFreq = runConfigFile.GetFloat("SpinMeasurementFrequency(s)","Observables");
+   fObsField = runConfigFile.GetBool("RecordField","Observables");
    fFieldMeasFreq = runConfigFile.GetFloat("FieldMeasurementFrequency(s)","Observables");
+   // Check for inconsistencies in RunConfig File
+   if (fFieldsFile.empty() && fMagFieldOn == true) {
+      throw runtime_error("Incompatible options in RunConfig: Check FieldsFile and MagFieldOn");
+   } else if (fMagFieldOn == true && fSpinStepTime == 0.0) {
+      throw runtime_error("Incompatible options in RunConfig: Check MagFieldOn and SpinStepTime");
+   } else if (fObsSpin == true && fSpinMeasFreq == 0.0) {
+      throw runtime_error("Incompatible options in RunConfig: Check RecordSpin and SpinMeasFreq");
+   } else if (fObsField == true && fFieldMeasFreq == 0.0) {
+      throw runtime_error("Incompatible options in RunConfig: Check RecordField and FieldMeasFreq");
+   } else if (fMagFieldOn == false) {
+      fSpinStepTime = 0.0;
+      fObsSpin = false;
+      fObsField = false;
+      fSpinMeasFreq = 0.0;
+      fFieldMeasFreq = 0.0;
+   }
    this->Print();
 }
 
