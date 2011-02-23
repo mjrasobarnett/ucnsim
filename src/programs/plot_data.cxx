@@ -33,7 +33,7 @@
 
 using namespace std;
 
-void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, const InitialConfig& initialConfig, const RunConfig& runConfig, TGeoManager* geoManager);
+void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig, TGeoManager* geoManager);
 void PlotSpinPolarisation(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
 void PlotT2(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
 void PlotBounceCounters(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig);
@@ -102,8 +102,7 @@ Int_t main(Int_t argc,Char_t **argv)
    ///////////////////////////////////////////////////////////////////////////////////////
    ConfigFile configFile(configFileName.Data());
    ///////////////////////////////////////////////////////////////////////////////////////
-   // Read in Initial Configuration from file.
-   InitialConfig initialConfig(configFile);
+   // Read in Configuration from file.
    RunConfig runConfig(configFile,2);
    // Read the outputfile name
    TString dataFileName = runConfig.OutputFileName();
@@ -145,7 +144,7 @@ Int_t main(Int_t argc,Char_t **argv)
    TDirectory* const stateDir = gDirectory;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Particle final state
-   PlotFinalStates(histDir, stateDir, initialConfig, runConfig, geoManager);
+   PlotFinalStates(histDir, stateDir, runConfig, geoManager);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Polarisation
    if (runConfig.ObserveSpin() == kTRUE) {
@@ -177,7 +176,7 @@ Int_t main(Int_t argc,Char_t **argv)
 }
 
 //_____________________________________________________________________________
-void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, const InitialConfig& initialConfig, const RunConfig& runConfig, TGeoManager* geoManager)
+void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, const RunConfig& runConfig, TGeoManager* geoManager)
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into the Histogram's directory
@@ -187,7 +186,7 @@ void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, cons
    Char_t histname[40];
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Final Positions
-   const Int_t neutrons = initialConfig.InitialParticles();
+   const Int_t neutrons = stateDir->GetNkeys();
    Plot::points = new TPolyMarker3D(neutrons, 1); // 1 is marker style
    sprintf(histname,"%s:NeutronPositions",stateDir->GetName());
    Plot::points->SetName(histname);
@@ -201,7 +200,7 @@ void PlotFinalStates(TDirectory* const histDir, TDirectory* const stateDir, cons
    Plot::phiHist = new TH1F(histname,"Direction: Phi, Units of Pi", 50, -1.0, 1.0);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Energy/Momentum
-   const Double_t maximumVelocity = initialConfig.InitialMaxVelocity();
+   const Double_t maximumVelocity = 7.0;
    const Double_t maximumMomentum = 20*Units::eV;
    const Int_t nbins = 50;   
    sprintf(histname,"%s:Velocity",stateDir->GetName());
