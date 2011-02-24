@@ -46,7 +46,6 @@ void PlotField(TDirectory* const histDir, const vector<TDirectory*> stateDirs, c
 void PlotParticleHistories(TDirectory* const histDir, const vector<TDirectory*> stateDirs, TGeoManager* geoManager);
 vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoManager);
 
-Double_t ExponentialDecay(Double_t *x, Double_t *par);
 Double_t SpinPrecession(Double_t *x, Double_t *par);
 
 void CountParticles(TDirectory * const particleDir);
@@ -1187,14 +1186,6 @@ vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoMa
 }
 
 //_____________________________________________________________________________
-Double_t ExponentialDecay(Double_t *x, Double_t *par)
-{
-   Double_t t = x[0];
-   Double_t f = par[0]*TMath::Exp(-t/par[1]);
-   return f;
-}
-
-//_____________________________________________________________________________
 Double_t SpinPrecession(Double_t *x, Double_t *par)
 {
    Double_t t = x[0];
@@ -1269,18 +1260,3 @@ void CountParticles(TDirectory * const particleDir)
    cout << "Anomalous: " << anomalous << endl;
 }
 
-
-   // Fit Final Time to Exponential - determine emptying time
-/*   Char_t linename[40];
-   sprintf(linename,"%s:Expo",stateName.c_str());
-   TF1 *expo = new TF1(linename, ExponentialDecay, 100., runTime, 2);
-   expo->SetParameters(100.0,10.0);
-   expo->SetParNames("Initial Number","Emptying Time(s)");
-   timeHist->Fit(expo, "R");
-   Double_t decayConstant = expo->GetParameter(1);
-   Double_t decayConstantError = expo->GetParError(1);
-   cout << "DecayConstant: " << decayConstant << "\t" << "Error: " << decayConstantError << endl;
-   Double_t emptyingTime = 1.0/decayConstant;
-   Double_t emptyingTimeError = decayConstantError/(decayConstant*decayConstant);
-   cout << "EmptyingTime: " << emptyingTime << "\t" << "Error: " << emptyingTimeError << endl;
-*/
