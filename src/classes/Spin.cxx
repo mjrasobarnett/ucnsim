@@ -21,6 +21,7 @@
 //#define VERBOSE
 
 using namespace std;
+using namespace Algorithms;
 
 ClassImp(Spin)
 

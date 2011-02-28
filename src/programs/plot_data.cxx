@@ -36,6 +36,7 @@
 #include "Constants.h"
 #include "Units.h"
 #include "DataFileHierarchy.h"
+#include "Algorithms.h"
 
 using namespace std;
 
@@ -48,10 +49,6 @@ void PlotParticleHistories(TDirectory* const histDir, const vector<TDirectory*> 
 vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoManager);
 
 Double_t SpinPrecession(Double_t *x, Double_t *par);
-
-void CountParticles(TDirectory * const particleDir);
-bool ValidateRootFile(const string filename);
-bool ValidateStateNames(const vector<string>& statenames);
 
 //_____________________________________________________________________________
 Int_t main(int argc, char **argv)
@@ -66,7 +63,7 @@ Int_t main(int argc, char **argv)
    }
    // Read in Filename and check that it is a .root file
    string filename = argv[1];
-   if (ValidateRootFile(filename) == false) {
+   if (Algorithms::DataFile::ValidateRootFile(filename) == false) {
       cerr << "Error: filename, " << filename << " does not have a .root extension" << endl;
       return EXIT_FAILURE;
    }
@@ -74,7 +71,7 @@ Int_t main(int argc, char **argv)
    // valid state names
    vector<string> statenames;
    for (int i = 2; i < argc; i++) {statenames.push_back(argv[i]);}
-   if (ValidateStateNames(statenames) == false) {
+   if (Algorithms::DataFile::ValidateStateNames(statenames) == false) {
       cerr << "Error: statenames supplied are not valid" << endl;
       return EXIT_FAILURE;
    }
@@ -102,7 +99,7 @@ Int_t main(int argc, char **argv)
    cout << "Successfully Loaded Data File: " << filename << endl;
    cout << "-------------------------------------------" << endl;
    TDirectory * const particleDir = gDirectory;
-   CountParticles(particleDir);
+   Algorithms::DataFile::CountParticles(particleDir);
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////
@@ -1192,73 +1189,5 @@ Double_t SpinPrecession(Double_t *x, Double_t *par)
    Double_t t = x[0];
    Double_t f = par[0]*TMath::Sin((par[1]*t + par[2]*(TMath::Pi()/2.0)))*TMath::Sin((par[1]*t + par[2]*(TMath::Pi()/2.0)));
    return f;
-}
-
-//_____________________________________________________________________________
-bool ValidateRootFile(const string filename)
-{
-   // -- Check that the filename supplied has a .root extension
-   size_t found = filename.find_last_of(".");
-   if (found == string::npos) return false;
-   if (filename.substr(found) == ".root") return true;
-   return false;
-}
-
-//_____________________________________________________________________________
-bool ValidateStateNames(const vector<string>& statenames)
-{
-   // -- Check that each statename in list is a valid state as defined in DataFileHierarchy lvl 3
-   // -- and is unique
-   vector<string>::const_iterator iter;
-   for (iter = statenames.begin(); iter != statenames.end(); iter++) {
-      // Check state-name
-      if (*iter != Folders::initial &&
-          *iter != Folders::propagating &&
-          *iter != Folders::absorbed &&
-          *iter != Folders::lost &&
-          *iter != Folders::decayed &&
-          *iter != Folders::detected &&
-          *iter != Folders::anomalous) {
-         cerr << "Argument, " << *iter << " is not a valid statename" << endl;
-         return false;
-      }
-      // Check for duplicates
-      vector<string>::const_iterator second_iter;
-      for (second_iter = iter+1; second_iter != statenames.end(); second_iter++) {
-         if (*second_iter == *iter) {
-            cerr << "Duplicate statenames given: " << *iter << endl;
-            return false;
-         }
-      }
-   }
-   return true;
-}
-
-//_____________________________________________________________________________
-void CountParticles(TDirectory * const particleDir)
-{
-   // Given the particle state directory, count the number of particles in each state subfolder
-   if (particleDir->cd(Folders::initial.c_str()) == false) return;
-   Int_t initial = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::propagating.c_str()) == false) return;
-   Int_t propagating = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::absorbed.c_str()) == false) return;
-   Int_t absorbed = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::detected.c_str()) == false) return;
-   Int_t detected = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::decayed.c_str()) == false) return;
-   Int_t decayed = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::lost.c_str()) == false) return;
-   Int_t lost = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::anomalous.c_str()) == false) return;
-   Int_t anomalous = gDirectory->GetNkeys();
-   cout << "Initial Particles: " << initial << endl;
-   cout << "Total Particles: " << propagating+detected+absorbed+decayed+lost+anomalous << endl;
-   cout << "Propagating: " << propagating << endl;
-   cout << "Detected: " << detected << endl;
-   cout << "Absorbed: " << absorbed << endl;
-   cout << "Decayed: " << decayed << endl;
-   cout << "Lost: " << lost << endl;
-   cout << "Anomalous: " << anomalous << endl;
 }
 
