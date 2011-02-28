@@ -29,72 +29,109 @@
 #include "Constants.h"
 #include "Units.h"
 #include "DataFileHierarchy.h"
+#include "Algorithms.h"
 
 using namespace std;
 
-namespace Plot {
-   Track* track = NULL;
-   Double_t* trackpoints = NULL;
-}
-
+//_____________________________________________________________________________
 Int_t main(Int_t argc,Char_t **argv)
 {
    ///////////////////////////////////////////////////////////////////////////////////////
-   TString configFileName, statename;
-   if (argc == 3) {
-      configFileName = argv[1];
-      statename = argv[2];
-   } else {
+   // Draw tracks needs 2 arguments - a data file, and the name of the particle
+   // 'state' you wish to pick a particle from.
+   if (argc < 3) {
       cerr << "Usage:" << endl;
-      cerr << "draw_tracks <configfile.cfg> <treename>" << endl;
+      cerr << "plot_data <data.root> <statename>" << endl;
+      return EXIT_FAILURE;
+   }
+   // Read in Filename and check that it is a .root file
+   string filename = argv[1];
+   if (Algorithms::DataFile::ValidateRootFile(filename) == false) {
+      cerr << "Error: filename, " << filename << " does not have a .root extension" << endl;
+      return EXIT_FAILURE;
+   }
+   // Read in list of states to be included in histogram and check that they are
+   // valid state names
+   vector<string> statenames;
+   statenames.push_back(argv[2]);
+   if (Algorithms::DataFile::ValidateStateNames(statenames) == false) {
+      cerr << "Error: statenames supplied are not valid" << endl;
+      return EXIT_FAILURE;
+   }
+   cout << "-------------------------------------------" << endl;
+   cout << "Loading Data File: " << filename << endl;
+   cout << endl;
+   // Start an interactive root session so we can view the plots as they are made
+   TRint *theApp = new TRint("FittingApp", &argc, argv);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Open Data File
+   //////////////////////////////////////////////////////////////////////////////////////
+   TFile *file = 0;
+   file = TFile::Open(filename.c_str(), "UPDATE");
+   if (!file || file->IsZombie()) {
+      cerr << "Cannot open file: " << filename << endl;
       return -1;
    }
-   // Start 'the app' -- this is so we are able to enter into a ROOT session
-   // after the program has run, instead of just quitting.
-   TRint *theApp = new TRint("FittingApp", &argc, argv);
-   
+   file->cd();
+   TDirectory * const topDir = gDirectory;
+   if (topDir->cd(Folders::particles.c_str()) == false) {
+      cerr << "No Folder named: " << Folders::particles << " in data file" << endl;
+      return EXIT_FAILURE;
+   }
+   cout << "-------------------------------------------" << endl;
+   cout << "Successfully Loaded Data File: " << filename << endl;
+   cout << "-------------------------------------------" << endl;
+   TDirectory * const particleDir = gDirectory;
+   Algorithms::DataFile::CountParticles(particleDir);
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////
-   ConfigFile configFile(configFileName.Data());
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // Read in Initial Configuration from file.
-   InitialConfig initialConfig(configFile);
-   RunConfig runConfig(configFile,1);
-   // Read the outputfile name
-   TString dataFileName = runConfig.OutputFileName();
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Open Data File
-   TFile *file = 0;
-   file = TFile::Open(dataFileName, "update");
-   if (!file || file->IsZombie()) {
-      cerr << "Cannot open file: " << dataFileName << endl;
-      return 0;
+   // Navigate to Config Folder   
+   if (topDir->cd(Folders::config.c_str()) == false) {
+      cerr << "No Folder named: " << Folders::config << " in data file" << endl;
+      return EXIT_FAILURE;
    }
+   // -- Loop over all objects in folder and extract latest RunConfig
+   RunConfig* ptr_config = NULL;
+   TKey *configKey;
+   TIter configIter(gDirectory->GetListOfKeys());
+   while ((configKey = dynamic_cast<TKey*>(configIter.Next()))) {
+      const char *classname = configKey->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("RunConfig")) {
+         ptr_config = dynamic_cast<RunConfig*>(configKey->ReadObj());
+         break;
+      }
+   }
+   const RunConfig& runConfig = *ptr_config;
+   cout << "-------------------------------------------" << endl;
+   cout << "Successfully Loaded RunConfig" << endl;
+   cout << "-------------------------------------------" << endl;
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Load the Geometry
    TString geomFileName = runConfig.GeomVisFileName();
    if (geomFileName == "") { 
       cout << "No File holding the geometry can be found" << endl;
-      return kFALSE;
+      return -1;
    }
-   TGeoManager* geoManager = TGeoManager::Import(geomFileName); 
+   TGeoManager* geoManager = TGeoManager::Import(geomFileName);
+   if (geoManager == NULL) return EXIT_FAILURE;
+   cout << "-------------------------------------------" << endl;
+   cout << "Successfully Loaded Geometry" << endl;
+   cout << "-------------------------------------------" << endl;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Navigate to folder for selected state
    file->cd();
    gDirectory->cd(Folders::particles.c_str());
-   if (statename == Folders::initialstates) {
-      gDirectory->cd(statename);
-   } else {
-      gDirectory->cd(Folders::finalstates.c_str());
-      if (gDirectory->cd(statename) == kFALSE) {
-         cout << "State name provided is not found in the under /particles/finalstates" << endl;
-         return -1;
-      }
+   if (gDirectory->cd(statenames[0].c_str()) == kFALSE) {
+      cout << "State name provided is not found in the under /particles/finalstates" << endl;
+      return -1;
    }
    TDirectory* const stateDir = gDirectory;
    //////////////////////////////////////////////////////////////////////////////////////
    // Ask User to choose which Particle to draw
+   Track* track = NULL;
    cout << "Select which particle's track to draw: " << endl;
    cout << "Options: 'l' -- List all particles in directory" << endl;
    cout.width(9);
@@ -129,7 +166,7 @@ Int_t main(Int_t argc,Char_t **argv)
                TClass *cl = gROOT->GetClass(classname);
                if (!cl) continue;
                if (cl->InheritsFrom("Track")) {
-                  Plot::track = dynamic_cast<Track*>(objKey->ReadObj());
+                  track = dynamic_cast<Track*>(objKey->ReadObj());
                   break;
                }
             }
@@ -137,7 +174,7 @@ Int_t main(Int_t argc,Char_t **argv)
          }
       }
       // Check if we found a track for thi
-      if (Plot::track == NULL) {
+      if (track == NULL) {
          cout << endl;
          cout << "No track for this particle ID could be found.";
          cout << " Please try again, Or input 'q' to quit." << endl;
@@ -149,7 +186,7 @@ Int_t main(Int_t argc,Char_t **argv)
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Draw Track
    //////////////////////////////////////////////////////////////////////////////////////
-   if (Plot::track != NULL) {
+   if (track != NULL) {
       
       TCanvas *poscanvas = new TCanvas("Positions","Neutron Positions",60,30,400,400);
       poscanvas->cd();
@@ -157,9 +194,9 @@ Int_t main(Int_t argc,Char_t **argv)
       geoManager->SetVisLevel(4);
       geoManager->SetVisOption(0);
       
-      vector<Double_t> trackpoints = Plot::track->OutputPointsArray();
-      cout << "Number of Points: " << Plot::track->TotalPoints() << endl;
-      TPolyLine3D* line = new TPolyLine3D(Plot::track->TotalPoints(),&trackpoints[0]);
+      vector<Double_t> trackpoints = track->OutputPointsArray();
+      cout << "Number of Points: " << track->TotalPoints() << endl;
+      TPolyLine3D* line = new TPolyLine3D(track->TotalPoints(),&trackpoints[0]);
       line->SetLineColor(kRed);
       line->Draw();
       
@@ -170,8 +207,8 @@ Int_t main(Int_t argc,Char_t **argv)
       startMarker->SetMarkerColor(kBlue);
       // End is GREEN
       endMarker->SetMarkerColor(kGreen-3);
-      const Point& startPoint = Plot::track->GetPoint(0);
-      const Point& endPoint = Plot::track->GetPoint(Plot::track->TotalPoints());
+      const Point& startPoint = track->GetPoint(0);
+      const Point& endPoint = track->GetPoint(track->TotalPoints());
       startMarker->SetPoint(0, startPoint.X(), startPoint.Y(), startPoint.Z());
       endMarker->SetPoint(0, endPoint.X(), endPoint.Y(), endPoint.Z());
       startMarker->Draw();
