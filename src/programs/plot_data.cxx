@@ -23,6 +23,7 @@
 #include "TGraph.h"
 #include "TRandom.h"
 #include "TStyle.h"
+#include "TDirectory.h"
 
 #include "Particle.h"
 #include "ConfigFile.h"
@@ -139,9 +140,9 @@ Int_t main(int argc, char **argv)
    cout << "Successfully Loaded Geometry" << endl;
    cout << "-------------------------------------------" << endl;
    // -- Write copy of Geometry to data file
-   TDirectory* geomDir = topDir->mkdir(Folders::geometry);
+   TDirectory* geomDir = topDir->mkdir(Folders::geometry.c_str());
    if (geomDir == NULL) {
-      topDir->cd(Folders::geometry);
+      topDir->cd(Folders::geometry.c_str());
       geomDir = gDirectory;
    }
    geomDir->cd();

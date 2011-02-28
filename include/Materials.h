@@ -192,17 +192,17 @@ namespace Materials
       }
       //________________________________________
       // BOUNDARY MATERIALS      
-      cout.setf(ios::left, ios::adjustfield);
-      cout << setw(15) << "Added Material" << "\t";
-      cout << setw(15) << "Fermi (neV)" << "\t";
-      cout << setw(15) << "Eta" << endl;
+      cout.setf(std::ios::left, std::ios::adjustfield);
+      cout << std::setw(15) << "Added Material" << "\t";
+      cout << std::setw(15) << "Fermi (neV)" << "\t";
+      cout << std::setw(15) << "Eta" << endl;
       // - Hydrogen
       Element* elemHydrogen = new Element("H", "Hydrogen", Hydrogen::z, Hydrogen::a, Hydrogen::scatLength, Hydrogen::cohCrossSec, Hydrogen::incohCrossSec, Hydrogen::absCrossSec);
       Material* matHydrogen = new Material("Hydrogen", elemHydrogen, Densities::hydrogen);
       TGeoMedium* hydrogen = new TGeoMedium("Hydrogen", 1, matHydrogen);
-      cout << setw(15) << hydrogen->GetName() << "\t";
-      cout << setw(15) << matHydrogen->FermiPotential()/Units::neV << "\t";
-      cout << setw(15) << matHydrogen->LossFactor() << endl;
+      cout << std::setw(15) << hydrogen->GetName() << "\t";
+      cout << std::setw(15) << matHydrogen->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matHydrogen->LossFactor() << endl;
       /*
       cout << "---------------------------------" << endl;
       cout << "Density (kg/m^3): " << Densities::hydrogen << endl;
@@ -222,9 +222,9 @@ namespace Materials
       TGeoMedium* beryllium = new TGeoMedium("Beryllium", 1, matBeryllium);
       // Set Beryllium Loss factor to the experimentally determined value
       matBeryllium->LossFactor(LossFactor::beryllium);
-      cout << setw(15) << beryllium->GetName() << "\t";
-      cout << setw(15) << matBeryllium->FermiPotential()/Units::neV << "\t";
-      cout << setw(15) << matBeryllium->LossFactor() << endl;
+      cout << std::setw(15) << beryllium->GetName() << "\t";
+      cout << std::setw(15) << matBeryllium->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matBeryllium->LossFactor() << endl;
       
       /*
       cout << "---------------------------------" << endl;
@@ -243,9 +243,9 @@ namespace Materials
       Element* elemCopper = new Element("Cu", "Copper", Copper::z, Copper::a, Copper::scatLength, Copper::cohCrossSec, Copper::incohCrossSec, Copper::absCrossSec);
       Material* matCopper = new Material("Copper", elemCopper, Densities::copper);
       TGeoMedium* copper = new TGeoMedium("Copper", 1, matCopper);
-      cout << setw(15) << copper->GetName() << "\t";
-      cout << setw(15) << matCopper->FermiPotential()/Units::neV << "\t";
-      cout << setw(15) << matCopper->LossFactor() << endl;
+      cout << std::setw(15) << copper->GetName() << "\t";
+      cout << std::setw(15) << matCopper->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matCopper->LossFactor() << endl;
       
       /*
       cout << "---------------------------------" << endl;
@@ -264,9 +264,9 @@ namespace Materials
       Element* elemAluminium = new Element("Al", "Aluminium", Aluminium::z, Aluminium::a, Aluminium::scatLength, Aluminium::cohCrossSec, Aluminium::incohCrossSec, Aluminium::absCrossSec);
       Material* matAluminium = new Material("Aluminium", elemAluminium, Densities::aluminium);
       TGeoMedium* aluminium = new TGeoMedium("Aluminium", 1, matAluminium);
-      cout << setw(15) << aluminium->GetName() << "\t";
-      cout << setw(15) << matAluminium->FermiPotential()/Units::neV << "\t";
-      cout << setw(15) << matAluminium->LossFactor() << endl;
+      cout << std::setw(15) << aluminium->GetName() << "\t";
+      cout << std::setw(15) << matAluminium->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matAluminium->LossFactor() << endl;
       /*
       cout << "---------------------------------" << endl;
       cout << "Density (kg/m^3): " << Densities::aluminium << endl;
@@ -286,9 +286,9 @@ namespace Materials
       Element* elemHeliumII = new Element("He", "HeliumII", HeliumII::z, HeliumII::a, HeliumII::scatLength, HeliumII::cohCrossSec, HeliumII::incohCrossSec, HeliumII::absCrossSec);
       Material* matHeliumII = new Material("HeliumII", elemHeliumII, Densities::heliumII);
       TGeoMedium* heliumII = new TGeoMedium("HeliumII", 1, matHeliumII);
-      cout << setw(15) << heliumII->GetName() << "\t";
-      cout << setw(15) << matHeliumII->FermiPotential()/Units::neV << "\t";
-      cout << setw(15) << matHeliumII->LossFactor() << endl;
+      cout << std::setw(15) << heliumII->GetName() << "\t";
+      cout << std::setw(15) << matHeliumII->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matHeliumII->LossFactor() << endl;
       /*
       cout << "---------------------------------" << endl;
       cout << "Density (kg/m^3): " << Densities::heliumII << endl;
@@ -308,9 +308,9 @@ namespace Materials
       Element* elemVacuum = new Element("H", "Vacuum", Vacuum::z, Vacuum::a, Vacuum::scatLength, Vacuum::cohCrossSec, Vacuum::incohCrossSec, Vacuum::absCrossSec);
       Material* matVacuum = new Material("Vacuum", elemVacuum, Densities::vacuum);
       TGeoMedium* vacuum = new TGeoMedium("Vacuum", 1, matVacuum);
-      cout << setw(15) << vacuum->GetName() << "\t";
-      cout << setw(15) << matVacuum->FermiPotential()/Units::neV << "\t";
-      cout << setw(15) << matVacuum->LossFactor() << endl;
+      cout << std::setw(15) << vacuum->GetName() << "\t";
+      cout << std::setw(15) << matVacuum->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matVacuum->LossFactor() << endl;
       /*
       cout << "---------------------------------" << endl;
       cout << "Density (kg/m^3): " << Densities::vacuum << endl;
@@ -330,9 +330,9 @@ namespace Materials
       Element* elemLithium6 = new Element("H", "Lithium6", Lithium6::z, Lithium6::a, Lithium6::scatLength, Lithium6::cohCrossSec, Lithium6::incohCrossSec, Lithium6::absCrossSec);
       Material* matLithium6 = new Material("Lithium6", elemLithium6, Densities::lithium6);
       TGeoMedium* lithium6 = new TGeoMedium("Lithium6", 1, matLithium6);
-      cout << setw(15) << lithium6->GetName() << "\t";
-      cout << setw(15) << matLithium6->FermiPotential()/Units::neV << "\t";
-      cout << setw(15) << matLithium6->LossFactor() << endl;
+      cout << std::setw(15) << lithium6->GetName() << "\t";
+      cout << std::setw(15) << matLithium6->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matLithium6->LossFactor() << endl;
       /*
       cout << "---------------------------------" << endl;
       cout << "Density (kg/m^3): " << Densities::lithium6 << endl;
