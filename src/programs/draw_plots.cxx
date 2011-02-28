@@ -182,7 +182,7 @@ void DrawFinalStates(TDirectory* const histDir, TGeoManager* geoManager)
    if (timeHist == NULL || points == NULL || thetaHist == NULL || phiHist == NULL ||
        vHist == NULL || vxHist == NULL || vyHist == NULL || vzHist == NULL) {
       cout << "-------------------------------------------" << endl;
-      cout << "Could not extract Final States Histograms" << endl;
+      cout << "Error: Could not extract Final States Histograms" << endl;
       cout << "-------------------------------------------" << endl;
       return;
    }
@@ -239,6 +239,9 @@ void DrawFinalStates(TDirectory* const histDir, TGeoManager* geoManager)
    glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
    glViewer->UpdateScene();
    glViewer = 0;
+   cout << "-------------------------------------------" << endl;
+   cout << "Successfully Fetched Final State Histograms" << endl;
+   cout << "-------------------------------------------" << endl;
    return;
 }
 
@@ -318,7 +321,7 @@ void DrawSpinPolarisation(TDirectory* const histDir)
        spinUpDownAlongZHist == NULL ||
        spinAlphaZ == NULL) {
       cout << "-------------------------------------------" << endl;
-      cout << "Could not extract Spin Polarisation Histograms" << endl;
+      cout << "Error: Could not extract Spin Polarisation Histograms" << endl;
       cout << "-------------------------------------------" << endl;
       return;
    }
@@ -360,6 +363,9 @@ void DrawSpinPolarisation(TDirectory* const histDir)
    spinUpDownAlongZHist->Draw();
    spinZcanvas->cd(4);
    spinAlphaZ->Draw("AP");
+   cout << "-------------------------------------------" << endl;
+   cout << "Successfully Fetched Spin Histograms" << endl;
+   cout << "-------------------------------------------" << endl;
    return;
 }
 
@@ -397,7 +403,7 @@ void DrawBounceCounters(TDirectory* const histDir)
    
    if (bounceHist == NULL || specHist == NULL || diffHist == NULL) {
       cout << "-------------------------------------------" << endl;
-      cout << "Could not extract Bounce Histograms" << endl;
+      cout << "Error: Could not extract Bounce Histograms" << endl;
       cout << "-------------------------------------------" << endl;
       return;
    }
@@ -414,6 +420,9 @@ void DrawBounceCounters(TDirectory* const histDir)
    specHist->Draw();
    bouncecanvas->cd(3);
    diffHist->Draw();
+   cout << "-------------------------------------------" << endl;
+   cout << "Successfully Fetched Bounce Histograms" << endl;
+   cout << "-------------------------------------------" << endl;
    return;
 }
 
@@ -449,7 +458,7 @@ void DrawField(TDirectory* const histDir)
    }
    if (bxHist == NULL || byHist == NULL || bzHist == NULL) {
       cout << "-------------------------------------------" << endl;
-      cout << "Could not extract Field Histograms" << endl;
+      cout << "Error: Could not extract Field Histograms" << endl;
       cout << "-------------------------------------------" << endl;
       return;
    }
@@ -465,6 +474,9 @@ void DrawField(TDirectory* const histDir)
    TCanvas *bzcanvas = new TCanvas("BzFields","Bz (T)",60,0,1200,800);
    bzcanvas->cd();
    bzHist->Draw("COLZ");
+   cout << "-------------------------------------------" << endl;
+   cout << "Successfully Fetched Field Histograms" << endl;
+   cout << "-------------------------------------------" << endl;
    return;
 }
 
