@@ -411,16 +411,16 @@ void PlotSpinPolarisation(TDirectory* const histDir, const vector<TDirectory*> s
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- X Axis Spin Polarisation
-   sprintf(histname,"%s:SpinUp AlongX",stateName.c_str());
-   TH1F* spinUpAlongXHist = new TH1F(histname,"SpinUp AlongX", nbins, 0.0, runTime);      
+   sprintf(histname,"%s:SpinUp Along X",stateName.c_str());
+   TH1F* spinUpAlongXHist = new TH1F(histname,"SpinUp Along X", nbins, 0.0, runTime);      
    spinUpAlongXHist->SetXTitle("Time (s)");
    spinUpAlongXHist->SetYTitle("Spin Up Neutrons");
    spinUpAlongXHist->SetFillStyle(1001);
    spinUpAlongXHist->SetFillColor(kBlue-7);
    spinUpAlongXHist->SetLineColor(kBlue-7);
 
-   sprintf(histname,"%s:SpinDown AlongX",stateName.c_str());
-   TH1F* spinDownAlongXHist = new TH1F(histname,"SpinDown AlongX", nbins, 0.0, runTime);      
+   sprintf(histname,"%s:SpinDown Along X",stateName.c_str());
+   TH1F* spinDownAlongXHist = new TH1F(histname,"SpinDown Along X", nbins, 0.0, runTime);      
    spinDownAlongXHist->SetXTitle("Time (s)");
    spinDownAlongXHist->SetYTitle("Spin Down Neutrons");
    spinDownAlongXHist->SetFillStyle(3001);
@@ -916,7 +916,7 @@ void PlotBounceCounters(TDirectory* const histDir, const vector<TDirectory*> sta
    specHist->Write(specHist->GetName(),TObject::kOverwrite);
    bouncecanvas->cd(3);
    diffHist->Draw();
-   specHist->Write(specHist->GetName(),TObject::kOverwrite);
+   diffHist->Write(specHist->GetName(),TObject::kOverwrite);
    return;
 }
 

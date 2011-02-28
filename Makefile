@@ -17,18 +17,21 @@ SIMULATE_UCN = bin/simulate_ucn$(ExeSuf)
 GENERATE_UCNS = $(ProgPath)/generate_ucn.$(SrcSuf)
 GENERATE_UCNO = $(ProgPath)/generate_ucn.$(ObjSuf)
 GENERATE_UCN = bin/generate_ucn$(ExeSuf)
-SANDBOXS = $(ProgPath)/sandbox.$(SrcSuf)
-SANDBOXO = $(ProgPath)/sandbox.$(ObjSuf)
-SANDBOX = bin/sandbox$(ExeSuf)
-PLOT_DATAS = $(ProgPath)/plot_data.$(SrcSuf)
-PLOT_DATAO = $(ProgPath)/plot_data.$(ObjSuf)
-PLOT_DATA = bin/plot_data$(ExeSuf)
-PLOT_T2S = $(ProgPath)/plot_T2.$(SrcSuf)
-PLOT_T2O = $(ProgPath)/plot_T2.$(ObjSuf)
-PLOT_T2 = bin/plot_T2$(ExeSuf)
+MAKE_PLOTSS = $(ProgPath)/make_plots.$(SrcSuf)
+MAKE_PLOTSO = $(ProgPath)/make_plots.$(ObjSuf)
+MAKE_PLOTS = bin/make_plots$(ExeSuf)
+MAKE_T2PLOTS = $(ProgPath)/make_T2plot.$(SrcSuf)
+MAKE_T2PLOTO = $(ProgPath)/make_T2plot.$(ObjSuf)
+MAKE_T2PLOT = bin/make_T2plot$(ExeSuf)
 DRAW_TRACKSS = $(ProgPath)/draw_tracks.$(SrcSuf)
 DRAW_TRACKSO = $(ProgPath)/draw_tracks.$(ObjSuf)
 DRAW_TRACKS = bin/draw_tracks$(ExeSuf)
+DRAW_PLOTSS = $(ProgPath)/draw_plots.$(SrcSuf)
+DRAW_PLOTSO = $(ProgPath)/draw_plots.$(ObjSuf)
+DRAW_PLOTS = bin/draw_plots$(ExeSuf)
+SANDBOXS = $(ProgPath)/sandbox.$(SrcSuf)
+SANDBOXO = $(ProgPath)/sandbox.$(ObjSuf)
+SANDBOX = bin/sandbox$(ExeSuf)
 TEST_KDTREES = $(ProgPath)/test_kdtree.$(SrcSuf)
 TEST_KDTREEO = $(ProgPath)/test_kdtree.$(ObjSuf)
 TEST_KDTREE = bin/test_kdtree$(ExeSuf)
@@ -131,11 +134,11 @@ $(RUNCONFIGO) $(OBSERVERO) $(SPINDATAO) $(BOUNCEDATAO) $(FIELDDATAO) $(TRACKO) $
 $(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLEO) $(CLOCKO) \
 $(EVENTO)
 
-PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(PLOT_DATA) $(SANDBOX) \
-$(DRAW_TRACKS) $(TEST_KDTREE) $(PLOT_T2)
+PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(MAKE_PLOTS) $(SANDBOX) \
+$(DRAW_TRACKS) $(TEST_KDTREE) $(MAKE_T2PLOT) $(DRAW_PLOTS)
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
-.PHONY: simulate_ucn sandbox buildtest fitdata generate_ucn plot_data draw_tracks plot_T2
+.PHONY: simulate_ucn sandbox buildtest fitdata generate_ucn make_plots draw_tracks make_T2plot  draw_plots
 
 all: $(PROGRAMS)
 
@@ -164,22 +167,29 @@ $(SANDBOX):		$(SANDBOXO) $(UCNSO)
 					$(MT_EXE)
 					@echo "$@ done"
 
-plot_data:		$(PLOT_DATA)
-$(PLOT_DATA):	$(PLOT_DATAO) $(UCNSO)
+make_plots:		$(MAKE_PLOTS)
+$(MAKE_PLOTS):	$(MAKE_PLOTSO) $(UCNSO)
 					$(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)
 					@echo "$@ done"
 
-plot_T2:		   $(PLOT_T2)
-$(PLOT_T2):	   $(PLOT_T2O) $(UCNSO)
-					$(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
-					$(OutPutOpt)$@
-					$(MT_EXE)
-					@echo "$@ done"
+make_T2plot:	   $(MAKE_T2PLOT)
+$(MAKE_T2PLOT):   $(MAKE_T2PLOTO) $(UCNSO)
+					   $(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
+					   $(OutPutOpt)$@
+					   $(MT_EXE)
+					   @echo "$@ done"
 
 draw_tracks:	 $(DRAW_TRACKS)
 $(DRAW_TRACKS): $(DRAW_TRACKSO) $(UCNSO)
+					 $(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
+					 $(OutPutOpt)$@
+					 $(MT_EXE)
+					 @echo "$@ done"
+
+draw_plots: 	 $(DRAW_PLOTS)
+$(DRAW_PLOTS):  $(DRAW_PLOTSO) $(UCNSO)
 					 $(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
 					 $(OutPutOpt)$@
 					 $(MT_EXE)
