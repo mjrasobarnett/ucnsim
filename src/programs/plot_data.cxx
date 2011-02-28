@@ -133,6 +133,7 @@ Int_t main(int argc, char **argv)
       return -1;
    }
    TGeoManager* geoManager = TGeoManager::Import(geomFileName);
+   if (geoManager == NULL) return EXIT_FAILURE;
    cout << "-------------------------------------------" << endl;
    cout << "Successfully Loaded Geometry" << endl;
    cout << "-------------------------------------------" << endl;
