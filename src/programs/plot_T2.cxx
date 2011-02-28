@@ -140,7 +140,6 @@ Int_t main(int argc, char **argv) {
    PlotT2(histDir, stateDirs, runConfig);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
-   file->Close();
    cout << "Finished" << endl;
    theApp->Run();
    return EXIT_SUCCESS;
@@ -171,6 +170,9 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
    TH1F time_data("T2 Time Data","T2 Time Data", nbins, 0.0, runTime);
    vector<vector<double> > phase_data;
    TGraph* alphaT2 = new TGraph(nbins);
+   Char_t histname[40];
+   sprintf(histname,"%s:T2_Polarisation",stateName.c_str());
+   alphaT2->SetName(histname);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Loop over each state to be included in histogram
    for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
@@ -267,6 +269,7 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
    alphaT2->GetYaxis()->SetRangeUser(-1.0,1.0);
    alphaT2->SetTitle("T2 Polarisation");
    alphaT2->Write(alphaT2->GetName(),TObject::kOverwrite);
+   cout << "Written graph: " << alphaT2->GetName() << " to file" << endl;
    return;
 }
 

@@ -11,6 +11,7 @@
 #include <stdexcept>
 
 #include "TKey.h"
+#include "TGeoManager.h"
 
 #include "DataFileHierarchy.h"
 #include "ProgressBar.h"
@@ -529,3 +530,21 @@ Int_t Data::FinalParticles() const
    Int_t final = PropagatingParticles() + DetectedParticles() + AbsorbedParticles() + DecayedParticles() + LostParticles() + AnomalousParticles();
    return final;
 }
+
+//_____________________________________________________________________________
+void Data::SaveGeometry(TGeoManager* const geoManager)
+{
+   // -- Write copy of Geometry to data file
+   fOutputFile->cd();
+   TDirectory* topDir = gDirectory;
+   TDirectory* geomDir = topDir->mkdir(Folders::geometry.c_str());
+   if (geomDir == NULL) {
+      topDir->cd(Folders::geometry.c_str());
+      geomDir = gDirectory;
+   }
+   geomDir->cd();
+   geoManager->Write("GeoManager",TObject::kOverwrite);
+   topDir->cd();
+   return;
+}
+

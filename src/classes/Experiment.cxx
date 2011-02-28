@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <string>
 
 #include "Experiment.h"
 
@@ -108,3 +109,19 @@ Bool_t Experiment::Initialise(const RunConfig& runConfig)
    }
    return kTRUE;
 }
+
+//______________________________________________________________________________
+Bool_t Experiment::ExportGeometry(Run& run)
+{
+   // -- Write create the Visualisation Geometry and write it out to file if
+   // -- it exists. Else just export the usual Geometry
+   string geomFileName = run.GetRunConfig().GeomVisFileName();
+   if (geomFileName.empty() == false) {
+      fGeoManager = TGeoManager::Import(geomFileName.c_str());
+      if (fGeoManager == NULL) return kFALSE;
+   }
+   // Write Geomanger to file
+   run.GetData()->SaveGeometry(fGeoManager);
+   return kTRUE;
+}
+

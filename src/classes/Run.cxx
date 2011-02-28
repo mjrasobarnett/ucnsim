@@ -220,6 +220,8 @@ Bool_t Run::Finish()
       Error("Finish", "Number of initial states doesn't match final states.");
       return kFALSE;
    }
+   // Write the geometry out to file
+   this->GetExperiment()->ExportGeometry(*this);
    // Delete the experiment
    if (fExperiment) delete fExperiment; fExperiment = NULL;
    // Delete the Data

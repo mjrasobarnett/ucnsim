@@ -110,12 +110,20 @@ Int_t main(Int_t argc,Char_t **argv)
    cout << "-------------------------------------------" << endl;
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Load the Geometry
-   TString geomFileName = runConfig.GeomVisFileName();
-   if (geomFileName == "") { 
-      cout << "No File holding the geometry can be found" << endl;
-      return -1;
+   if (topDir->cd(Folders::geometry.c_str()) == false) {return EXIT_FAILURE;}
+   TDirectory* geomDir = gDirectory;
+   TKey *geomKey;
+   TIter geomIter(geomDir->GetListOfKeys());
+   while ((geomKey = dynamic_cast<TKey*>(geomIter.Next()))) {
+      const char *classname = geomKey->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TGeoManager")) {
+         gGeoManager = dynamic_cast<TGeoManager*>(geomKey->ReadObj());
+         break;
+      }
    }
-   TGeoManager* geoManager = TGeoManager::Import(geomFileName);
+   TGeoManager* geoManager = gGeoManager;
    if (geoManager == NULL) return EXIT_FAILURE;
    cout << "-------------------------------------------" << endl;
    cout << "Successfully Loaded Geometry" << endl;

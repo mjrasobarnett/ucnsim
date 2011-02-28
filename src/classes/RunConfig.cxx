@@ -51,7 +51,9 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    fRunName = runConfigFile.GetString("RunName","Name");
    
    fGeomFile = folderpath + runConfigFile.GetString("GeomFile","Files");
-   fGeomVisFile = folderpath + runConfigFile.GetString("GeomVisFile","Files");
+   string geomVisFileName = runConfigFile.GetString("GeomVisFile","Files");
+   if (geomVisFileName.empty() == false) {fGeomVisFile = folderpath + geomVisFileName;}
+   
    fInputDataFile = folderpath + runConfigFile.GetString("InputDataFile","Files");
    fOutputDataFile = folderpath + runConfigFile.GetString("OutputDataFile","Files");
    

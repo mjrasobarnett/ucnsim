@@ -13,6 +13,7 @@
 //    Experiment                                                      //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+class Run;
 class RunConfig;
 
 class Experiment : public TNamed 
@@ -35,6 +36,7 @@ public:
    
    // -- methods
    Bool_t               Initialise(const RunConfig& runConfig);
+   Bool_t               ExportGeometry(Run& run);
    
    // GeoManager
    void                 ClearManager() {fGeoManager = 0;}

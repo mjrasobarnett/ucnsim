@@ -11,6 +11,8 @@
 #include "InitialConfig.h"
 #include "RunConfig.h"
 
+class TGeoManager;
+
 class Data : public TNamed {
 private:
    // -- Data Files
@@ -60,6 +62,9 @@ public:
    Int_t                LostParticles() const;
    Int_t                AnomalousParticles() const;
    Int_t                FinalParticles() const;
+   
+   // Geometry
+   void                 SaveGeometry(TGeoManager* const geoManager);
    
    ClassDef(Data, 1) // UCN Data Object
 };

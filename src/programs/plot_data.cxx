@@ -126,24 +126,24 @@ Int_t main(int argc, char **argv)
    cout << "-------------------------------------------" << endl;
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Load the Geometry
-   TString geomFileName = runConfig.GeomVisFileName();
-   if (geomFileName == "") { 
-      cout << "No File holding the geometry can be found" << endl;
-      return -1;
+   if (topDir->cd(Folders::geometry.c_str()) == false) {return EXIT_FAILURE;}
+   TDirectory* geomDir = gDirectory;
+   TKey *geomKey;
+   TIter geomIter(geomDir->GetListOfKeys());
+   while ((geomKey = dynamic_cast<TKey*>(geomIter.Next()))) {
+      const char *classname = geomKey->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TGeoManager")) {
+         gGeoManager = dynamic_cast<TGeoManager*>(geomKey->ReadObj());
+         break;
+      }
    }
-   TGeoManager* geoManager = TGeoManager::Import(geomFileName);
+   TGeoManager* geoManager = gGeoManager;
    if (geoManager == NULL) return EXIT_FAILURE;
    cout << "-------------------------------------------" << endl;
    cout << "Successfully Loaded Geometry" << endl;
    cout << "-------------------------------------------" << endl;
-   // -- Write copy of Geometry to data file
-   TDirectory* geomDir = topDir->mkdir(Folders::geometry.c_str());
-   if (geomDir == NULL) {
-      topDir->cd(Folders::geometry.c_str());
-      geomDir = gDirectory;
-   }
-   geomDir->cd();
-   geoManager->Write("GeoManager",TObject::kOverwrite);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Create a Histogram Dir inside File
    TDirectory* histDir = topDir->mkdir(Folders::histograms.c_str());
@@ -197,7 +197,6 @@ Int_t main(int argc, char **argv)
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
-   file->Close();
    cout << "Finished" << endl;
    theApp->Run();
    return EXIT_SUCCESS;

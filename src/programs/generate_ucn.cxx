@@ -231,8 +231,10 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    
    TCanvas* canvas2 = new TCanvas("InitialPositions","Positions",60,0,100,100);
    canvas2->cd();
-   TString geomFileName = initialConfig.GeomVisFileName();
-   TGeoManager* geoManager = TGeoManager::Import(geomFileName);
+   string geomFileName = initialConfig.GeomVisFileName();
+   if (geomFileName.empty()) geomFileName = initialConfig.GeomFileName();
+   TGeoManager* geoManager = TGeoManager::Import(geomFileName.c_str());
+   if (geoManager == NULL) return EXIT_FAILURE;
    geoManager->GetTopVolume()->Draw("ogl");
    geoManager->SetVisLevel(4);
    geoManager->SetVisOption(0);
