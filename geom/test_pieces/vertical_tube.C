@@ -51,7 +51,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -- This is what we will be reflecting off all the time
    Double_t surfaceRoughness = 0.1;
    Box* chamberShape = new Box("Chamber",10,10,10);
-   Boundary* chamber = new Boundary("Chamber", chamberShape, aluminium, surfaceRoughness);
+   Boundary* chamber = new Boundary("Chamber", chamberShape, beryllium, surfaceRoughness);
    chamber->SetLineColor(kOrange-7);
    chamber->SetLineWidth(1);
    chamber->SetVisibility(kFALSE);
@@ -62,7 +62,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -------------------------------------
    // -- Vertical Tube   
    // -- Make a SourceTube Segment
-   Tube *tubeShape = new Tube("Tube", sourceSegRMin, sourceSegRMax, sourceSegHalfLength);
+   Tube *tubeShape = new Tube("Tube", 0.0, 0.235, 0.06);
    TrackingVolume* tube = new TrackingVolume("Tube", tubeShape, heliumII);
    tube->SetLineColor(kAzure-4);
    tube->SetLineWidth(1);

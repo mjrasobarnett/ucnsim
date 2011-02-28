@@ -4,7 +4,7 @@ void set_my_style(void)
 	cerr <<"-- Setting Default Style --" << endl;
 	cerr <<"------------------------------------------------------------"<< endl;
 	gROOT->SetStyle("Plain");
-	gStyle->SetOptStat(0);
+	gStyle->SetOptStat(1);
 	gStyle->SetOptFit(111);
 //	gStyle->SetStatW(0.15);
 //	gStyle->SetStatH(0.15);

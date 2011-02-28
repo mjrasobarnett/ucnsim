@@ -1212,7 +1212,8 @@ bool ValidateStateNames(const vector<string>& statenames)
    vector<string>::const_iterator iter;
    for (iter = statenames.begin(); iter != statenames.end(); iter++) {
       // Check state-name
-      if (*iter != Folders::propagating &&
+      if (*iter != Folders::initial &&
+          *iter != Folders::propagating &&
           *iter != Folders::absorbed &&
           *iter != Folders::lost &&
           *iter != Folders::decayed &&
