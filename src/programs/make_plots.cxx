@@ -197,6 +197,7 @@ Int_t main(int argc, char **argv)
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
+   file->ls();
    cout << "Finished" << endl;
    theApp->Run();
    return EXIT_SUCCESS;
@@ -437,6 +438,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, const vector<TDirectory*> s
    
    sprintf(histname,"%s:Polarisation Along X",stateName.c_str());
    TGraph* spinAlphaX = new TGraph(nbins);
+   spinAlphaX->SetName(histname);
    
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Y Axis Spin Polarisation
@@ -466,6 +468,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, const vector<TDirectory*> s
    
    sprintf(histname,"%s:Polarisation Along Y",stateName.c_str());
    TGraph* spinAlphaY = new TGraph(nbins);
+   spinAlphaY->SetName(histname);
    
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Z Axis Spin Polarisation
@@ -495,6 +498,7 @@ void PlotSpinPolarisation(TDirectory* const histDir, const vector<TDirectory*> s
    
    sprintf(histname,"%s:Polarisation Along Z",stateName.c_str());
    TGraph* spinAlphaZ = new TGraph(nbins);
+   spinAlphaZ->SetName(histname);
    
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Loop over each state to be included in histogram
@@ -916,7 +920,7 @@ void PlotBounceCounters(TDirectory* const histDir, const vector<TDirectory*> sta
    specHist->Write(specHist->GetName(),TObject::kOverwrite);
    bouncecanvas->cd(3);
    diffHist->Draw();
-   diffHist->Write(specHist->GetName(),TObject::kOverwrite);
+   diffHist->Write(diffHist->GetName(),TObject::kOverwrite);
    return;
 }
 
