@@ -23,6 +23,9 @@ SANDBOX = bin/sandbox$(ExeSuf)
 PLOT_DATAS = $(ProgPath)/plot_data.$(SrcSuf)
 PLOT_DATAO = $(ProgPath)/plot_data.$(ObjSuf)
 PLOT_DATA = bin/plot_data$(ExeSuf)
+PLOT_T2S = $(ProgPath)/plot_T2.$(SrcSuf)
+PLOT_T2O = $(ProgPath)/plot_T2.$(ObjSuf)
+PLOT_T2 = bin/plot_T2$(ExeSuf)
 DRAW_TRACKSS = $(ProgPath)/draw_tracks.$(SrcSuf)
 DRAW_TRACKSO = $(ProgPath)/draw_tracks.$(ObjSuf)
 DRAW_TRACKS = bin/draw_tracks$(ExeSuf)
@@ -129,10 +132,10 @@ $(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLE
 $(EVENTO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(PLOT_DATA) $(SANDBOX) \
-$(DRAW_TRACKS) $(TEST_KDTREE)
+$(DRAW_TRACKS) $(TEST_KDTREE) $(PLOT_T2)
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
-.PHONY: simulate_ucn sandbox buildtest fitdata generate_ucn plot_data draw_tracks
+.PHONY: simulate_ucn sandbox buildtest fitdata generate_ucn plot_data draw_tracks plot_T2
 
 all: $(PROGRAMS)
 
@@ -163,6 +166,13 @@ $(SANDBOX):		$(SANDBOXO) $(UCNSO)
 
 plot_data:		$(PLOT_DATA)
 $(PLOT_DATA):	$(PLOT_DATAO) $(UCNSO)
+					$(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
+					$(OutPutOpt)$@
+					$(MT_EXE)
+					@echo "$@ done"
+
+plot_T2:		   $(PLOT_T2)
+$(PLOT_T2):	   $(PLOT_T2O) $(UCNSO)
 					$(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
 					$(OutPutOpt)$@
 					$(MT_EXE)

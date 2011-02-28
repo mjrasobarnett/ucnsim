@@ -42,7 +42,6 @@ using namespace std;
 
 void PlotFinalStates(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig, TGeoManager* geoManager);
 void PlotSpinPolarisation(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig);
-void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig);
 void PlotBounceCounters(TDirectory* const histDir, const vector<TDirectory*> stateDirs);
 void PlotField(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig);
 void PlotParticleHistories(TDirectory* const histDir, const vector<TDirectory*> stateDirs, TGeoManager* geoManager);
@@ -180,7 +179,6 @@ Int_t main(int argc, char **argv)
    // -- Polarisation
    if (runConfig.ObserveSpin() == kTRUE) {
       PlotSpinPolarisation(histDir, stateDirs, runConfig);
-      PlotT2(histDir, stateDirs, runConfig);
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounce Data
@@ -199,7 +197,7 @@ Int_t main(int argc, char **argv)
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
-//   file->Close();
+   file->Close();
    cout << "Finished" << endl;
    theApp->Run();
    return EXIT_SUCCESS;
