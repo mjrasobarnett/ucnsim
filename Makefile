@@ -118,6 +118,8 @@ CLOCKO = $(ClassPath)/Clock.$(ObjSuf) UCNDict.$(ObjSuf)
 CLOCKS = $(ClassPath)/Clock.$(SrcSuf) UCNDict.$(SrcSuf)
 EVENTO = $(ClassPath)/Event.$(ObjSuf) UCNDict.$(ObjSuf)
 EVENTS = $(ClassPath)/Event.$(SrcSuf) UCNDict.$(SrcSuf)
+ALGORITHMSO = src/Algorithms.$(ObjSuf) UCNDict.$(ObjSuf)
+ALGORITHMSS = src/Algorithms.$(SrcSuf) UCNDict.$(SrcSuf)
 
 #------------------------------------------------------------------------------
 # my library with my classes
@@ -132,7 +134,7 @@ $(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFI
 $(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) $(INITIALCONFIGO) \
 $(RUNCONFIGO) $(OBSERVERO) $(SPINDATAO) $(BOUNCEDATAO) $(FIELDDATAO) $(TRACKO) $(FIELDMAPO) \
 $(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLEO) $(CLOCKO) \
-$(EVENTO)
+$(EVENTO) $(ALGORITHMSO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(MAKE_PLOTS) $(SANDBOX) \
 $(DRAW_TRACKS) $(TEST_KDTREE) $(MAKE_T2PLOT) $(DRAW_PLOTS)
@@ -268,6 +270,7 @@ POINTO:						include/Point.h
 OBSERVABLEO:				include/Observable.h
 CLOCKO:						include/Clock.h
 EVENTO:						include/Event.h
+ALGORITHMSO:				include/Algorithms.h
 
 UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/Material.h include/GravField.h include/Particle.h \
@@ -282,7 +285,7 @@ UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/Observables.h include/Track.h include/FieldMap.h \
 								include/KDTree.h include/KDTreeNode.h include/FieldVertex.h \
 								include/VertexStack.h include/Point.h include/Observable.h \
-								include/Clock.h include/Event.h $(LINKDEF)
+								include/Clock.h include/Event.h include/Algorithms.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 
