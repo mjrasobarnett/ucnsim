@@ -217,7 +217,6 @@ Bool_t Spinor::Precess(const TVector3& avgMagField, const Double_t precessTime)
    const Double_t omegaZ = Neutron::gyromag_ratio*avgMagField.Z();
    // Precession frequency
    const Double_t omega = TMath::Sqrt(omegaX*omegaX + omegaY*omegaY + omegaZ*omegaZ);
-   assert(Precision::IsEqual(avgMagField.Mag(), 5.0E-6));
    // If no field exists, no precession is made
    if (Precision::IsEqual(omega, 0.0)) return kFALSE;
    
