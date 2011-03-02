@@ -1,9 +1,45 @@
+#include <math.h>
+
 #include "Algorithms.h"
 
 #include "TDirectory.h"
 #include "DataFileHierarchy.h"
 
 using namespace Algorithms;
+
+//_____________________________________________________________________________
+bool Precision::IsEqual(double left, double right, double precision) {
+   return fabs(left - right) < precision ? true : false;;
+}
+//_____________________________________________________________________________
+bool Precision::IsNotEqual(double left, double right, double precision) {
+   return fabs(left - right) < precision ? false : true;
+}
+//_____________________________________________________________________________
+bool Precision::IsGreaterOrEqual(double left, double right, double precision) {
+   if (fabs(left - right) < precision) {
+      // Check equality
+      return true;
+   } else if (left > right) {
+      // Check if greater
+      return true;
+   } else {
+      return false;
+   }
+}
+//_____________________________________________________________________________
+bool Precision::IsLessOrEqual(double left, double right, double precision) {
+   if (fabs(left - right) < precision) {
+      // Check equality
+      return true;
+   } else if (left < right) {
+      // Check if less than
+      return true;
+   } else {
+      return false;
+   }
+}
+
 
 //_____________________________________________________________________________
 bool DataFile::ValidateRootFile(const std::string filename)

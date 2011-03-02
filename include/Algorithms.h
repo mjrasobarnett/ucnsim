@@ -7,7 +7,6 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <cmath>
 
 class TDirectory;
 
@@ -18,37 +17,13 @@ namespace Algorithms {
    namespace Precision 
    {
       //_____________________________________________________________________________
-      inline bool IsEqual(double left, double right, double precision = 1.E-10) {
-         return abs(left - right) < precision ? true : false;
-      }
+      bool IsEqual(double left, double right, double precision = 1.E-10);
       //_____________________________________________________________________________
-      inline bool IsNotEqual(double left, double right, double precision = 1.E-10) {
-         return abs(left - right) < precision ? false : true;
-      }
+      bool IsNotEqual(double left, double right, double precision = 1.E-10);
       //_____________________________________________________________________________
-      inline bool IsGreaterOrEqual(double left, double right, double precision = 1.E-10) {
-         if (abs(left - right) < precision) {
-            // Check equality
-            return true;
-         } else if (left > right) {
-            // Check if greater
-            return true;
-         } else {
-            return false;
-         }
-      }
+      bool IsGreaterOrEqual(double left, double right, double precision = 1.E-10);
       //_____________________________________________________________________________
-      inline bool IsLessOrEqual(double left, double right, double precision = 1.E-10) {
-         if (abs(left - right) < precision) {
-            // Check equality
-            return true;
-         } else if (left < right) {
-            // Check if less than
-            return true;
-         } else {
-            return false;
-         }
-      }
+      bool IsLessOrEqual(double left, double right, double precision = 1.E-10);
    }
    //_____________________________________________________________________________
    // Namespace holding functions relevant to datafile structure
