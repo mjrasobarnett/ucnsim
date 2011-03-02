@@ -71,18 +71,36 @@ double Clock::GetTimeToNextEvent()
    double nextInterval = fMaxStepInterval;
    // Check if we will reach end of run in this time and adjust
    if (fTime + nextInterval >= fRunEnd) {nextInterval = fRunEnd - fTime;}
-   // Update LastSpin Measurement time if we reached it
-   if (fTime >= fLastSpinMeas + fSpinMeasInterval) {fLastSpinMeas += fSpinMeasInterval;}
-   // Check if we are measuring spin at all
-   if (fSpinMeasInterval == 0.0) return nextInterval;
-   // Check if we will make a spin measurement in this time
-   const double nextSpinMeasureTime = fLastSpinMeas + fSpinMeasInterval;
-   if (fTime + nextInterval >= nextSpinMeasureTime) {nextInterval = nextSpinMeasureTime - fTime;}
-   // Update LastField Measurement time if we reached it
-   if (fTime >= fLastFieldMeas + fFieldMeasInterval) {fLastFieldMeas += fFieldMeasInterval;}
-   // Check if we will make a field measurement in this time
-   const double nextFieldMeasureTime = fLastFieldMeas + fFieldMeasInterval;
-   if (fTime + nextInterval >= nextFieldMeasureTime) {nextInterval = nextFieldMeasureTime - fTime;}
+   // Check if we are measuring spin at a specific frequency
+   if (fSpinMeasInterval > 0.0) {
+      // Update LastSpin Measurement time if we reached it
+      if (fTime >= fLastSpinMeas + fSpinMeasInterval) {fLastSpinMeas += fSpinMeasInterval;}
+      // Check if we will make a spin measurement in this time
+      const double nextSpinMeasureTime = fLastSpinMeas + fSpinMeasInterval;
+      if (fTime + nextInterval >= nextSpinMeasureTime) {
+         nextInterval = nextSpinMeasureTime - fTime;
+      }
+   }
+   // Check if we are measuring field at a specific frequency
+   if (fFieldMeasInterval > 0.0) {
+      // Update LastField Measurement time if we reached it
+      if (fTime >= fLastFieldMeas + fFieldMeasInterval) {fLastFieldMeas += fFieldMeasInterval;}
+      // Check if we will make a field measurement in this time
+      const double nextFieldMeasureTime = fLastFieldMeas + fFieldMeasInterval;
+      if (fTime + nextInterval >= nextFieldMeasureTime) {
+         nextInterval = nextFieldMeasureTime - fTime;
+      }
+   }
+   // Check if we are measuring track at a specific frequency
+   if (fTrackMeasInterval > 0.0) {
+      // Update LastField Measurement time if we reached it
+      if (fTime >= fLastTrackMeas + fTrackMeasInterval) {fLastTrackMeas += fTrackMeasInterval;}
+      // Check if we will make a field measurement in this time
+      const double nextTrackMeasureTime = fLastTrackMeas + fTrackMeasInterval;
+      if (fTime + nextInterval >= nextTrackMeasureTime) {
+         nextInterval = nextTrackMeasureTime - fTime;
+      }
+   }
    return nextInterval;
 }
 

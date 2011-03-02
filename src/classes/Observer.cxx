@@ -258,14 +258,20 @@ void TrackObserver::RecordEvent(const TObject* subject, const string& context)
 {
    // -- Record the current polarisation
    if (subject == fSubject && context == Context::Step) {
-      // Calculate whether it is time to make a field measurement
- //     double currentTime = Clock::Instance()->GetTime();
-//      if (Precision::IsEqual(currentTime, (fLastMeasurementTime + fMeasInterval))) {
+      double currentTime = Clock::Instance()->GetTime();
+      // If no measurement interval is set, we record every step
+      if (fMeasInterval == 0.0) {
+         const Particle* particle = dynamic_cast<const Particle*>(subject);
+         fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
+      } else if (Precision::IsEqual(currentTime, (fLastMeasurementTime + fMeasInterval))) {
+         // Calculate whether it is time to make a field measurement
          const Particle* particle = dynamic_cast<const Particle*>(subject);
          fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
          // Update stored value of last measurement
-//         fLastMeasurementTime = currentTime;
-//      }
+         fLastMeasurementTime = currentTime;
+      } else {
+         // Do nothing
+      }
    }
 }
 
