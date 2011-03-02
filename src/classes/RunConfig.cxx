@@ -21,7 +21,8 @@ RunConfig::RunConfig()
            fParticlesToLoad(""), fLoadAllParticles(true), fRestartParticles(false),
            fGravFieldOn(true), fMagFieldOn(false), fWallLossesOn(true), fRunTime(0.),
            fMaxStepTime(0.), fSpinStepTime(0.), fObsSpin(false), fObsBounces(false),
-           fObsTracks(false), fObsField(false), fSpinMeasFreq(0.), fFieldMeasFreq(0.)
+           fObsTracks(false), fObsField(false), fTrackMeasInterval(0.), fSpinMeasInterval(0.),
+           fFieldMeasInterval(0.)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Default Constructor" << endl;
@@ -70,29 +71,36 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    
    fObsBounces = runConfigFile.GetBool("RecordBounces","Observables");
    fObsTracks = runConfigFile.GetBool("RecordTracks","Observables");
+   double trackMeasFreq = runConfigFile.GetFloat("TrackMeasureFrequency(Hz)","Observables");
+   fTrackMeasInterval = (trackMeasFreq == 0.0 ? 0.0 : (1.0/trackMeasFreq)); 
    
    fFieldsFile = folderpath + runConfigFile.GetString("FieldsFile","Files");
    fMagFieldOn = runConfigFile.GetBool("MagFields","Properties");
    fSpinStepTime = runConfigFile.GetFloat("SpinStepTime(s)","Properties");
+   
    fObsSpin = runConfigFile.GetBool("RecordSpin","Observables");
-   fSpinMeasFreq = runConfigFile.GetFloat("SpinMeasurementFrequency(s)","Observables");
+   double spinMeasFreq = runConfigFile.GetFloat("SpinMeasureFrequency(Hz)","Observables");
+   fSpinMeasInterval = (spinMeasFreq == 0.0 ? 0.0 : (1.0/spinMeasFreq)); 
+   
    fObsField = runConfigFile.GetBool("RecordField","Observables");
-   fFieldMeasFreq = runConfigFile.GetFloat("FieldMeasurementFrequency(s)","Observables");
+   double fieldMeasFreq = runConfigFile.GetFloat("FieldMeasureFrequency(Hz)","Observables");
+   fFieldMeasInterval = (fieldMeasFreq == 0.0 ? 0.0 : (1.0/fieldMeasFreq)); 
+   
    // Check for inconsistencies in RunConfig File
    if (fFieldsFile.empty() && fMagFieldOn == true) {
       throw runtime_error("Incompatible options in RunConfig: Check FieldsFile and MagFieldOn");
    } else if (fMagFieldOn == true && fSpinStepTime == 0.0) {
       throw runtime_error("Incompatible options in RunConfig: Check MagFieldOn and SpinStepTime");
-   } else if (fObsSpin == true && fSpinMeasFreq == 0.0) {
+   } else if (fObsSpin == true && fSpinMeasInterval == 0.0) {
       throw runtime_error("Incompatible options in RunConfig: Check RecordSpin and SpinMeasFreq");
-   } else if (fObsField == true && fFieldMeasFreq == 0.0) {
+   } else if (fObsField == true && fFieldMeasInterval == 0.0) {
       throw runtime_error("Incompatible options in RunConfig: Check RecordField and FieldMeasFreq");
    } else if (fMagFieldOn == false) {
       fSpinStepTime = 0.0;
       fObsSpin = false;
       fObsField = false;
-      fSpinMeasFreq = 0.0;
-      fFieldMeasFreq = 0.0;
+      fSpinMeasInterval = 0.0;
+      fFieldMeasInterval = 0.0;
    }
    this->Print();
 }
@@ -120,8 +128,9 @@ RunConfig::RunConfig(const RunConfig& other)
                fObsBounces(other.fObsBounces),
                fObsTracks(other.fObsTracks),
                fObsField(other.fObsField),
-               fSpinMeasFreq(other.fSpinMeasFreq),
-               fFieldMeasFreq(other.fFieldMeasFreq)
+               fTrackMeasInterval(other.fTrackMeasInterval),
+               fSpinMeasInterval(other.fSpinMeasInterval),
+               fFieldMeasInterval(other.fFieldMeasInterval)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Copy Constructor" << endl;
@@ -161,7 +170,8 @@ void RunConfig::Print(Option_t* /*option*/) const
    cout << "Observe Bounces: " << fObsBounces << endl;
    cout << "Observe Tracks: " << fObsTracks << endl;
    cout << "Observe Field: " << fObsField << endl;
-   cout << "Spin Measurement Frequency: " << fSpinMeasFreq << endl;
-   cout << "Field Measurement Frequency: " << fFieldMeasFreq << endl;
+   cout << "Track Measurement Interval: " << fTrackMeasInterval << endl;
+   cout << "Spin Measurement Interval: " << fSpinMeasInterval << endl;
+   cout << "Field Measurement Interval: " << fFieldMeasInterval << endl;
    cout << "-------------------------------------------" << endl;
 }

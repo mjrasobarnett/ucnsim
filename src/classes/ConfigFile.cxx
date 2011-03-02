@@ -22,19 +22,19 @@ ConfigFile::ConfigFile(string filename)
    #ifdef PRINT_CONSTRUCTORS
       cout << "ConfigFile::Constructor" << endl;
    #endif
+   /// Check that we have a .cfg extension
+   size_t found = filename.find_last_of(".");
+   if (found == std::string::npos) throw runtime_error("Could not recognise file extension");
+   if (filename.substr(found) != ".cfg") throw runtime_error("No .cfg config file specified");
    /// Try opening the file
    ifstream cfg(filename.c_str());
-   if(cfg.is_open())
-   {
+   if(cfg.is_open()) {
     // All is well, read the file in!
     ReadFile(cfg); 
    } else {
     // Print an error message if we were trying to open a file
-    if (filename != "") {
-      throw runtime_error("Could not read configuration file.");
-    }
+    if (filename != "") {throw runtime_error("Could not read configuration file.");}
    }
-   
    /// Otherwise, we are blank! Nothing more needs to be done....
 }
 

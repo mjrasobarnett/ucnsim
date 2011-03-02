@@ -72,12 +72,12 @@ class SpinObserver : public Observer
 {
 private:
    SpinData *fSpinData;
-   double fMeasFreq;
+   double fMeasInterval;
    double fLastMeasurementTime;
    
 public:
    // -- Constructors
-   SpinObserver(double measureFreq);
+   SpinObserver(double measureInterval);
    SpinObserver(const SpinObserver&);
    virtual ~SpinObserver();
    
@@ -125,12 +125,13 @@ class TrackObserver : public Observer
 {
 private:
    Track *fTrack;
+   double fMeasInterval;
+   double fLastMeasurementTime;
    
 public:
    // -- Constructors
-   TrackObserver();
+   TrackObserver(double measureInterval);
    TrackObserver(const TrackObserver&);
-   TrackObserver& operator=(const TrackObserver&);
    virtual ~TrackObserver();
    
    virtual void RecordEvent(const TObject* subject, const std::string& context);
@@ -151,12 +152,12 @@ class FieldObserver : public Observer
 {
 private:
    FieldData *fFieldData;
-   double fMeasFreq;
+   double fMeasInterval;
    double fLastMeasurementTime;
    
 public:
    // -- Constructors
-   FieldObserver(double measureFreq);
+   FieldObserver(double measureInterval);
    FieldObserver(const FieldObserver&);
    virtual ~FieldObserver();
    

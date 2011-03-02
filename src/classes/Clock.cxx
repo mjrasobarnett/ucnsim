@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "Clock.h"
+#include "RunConfig.h"
 
 using namespace std;
 
@@ -16,10 +17,13 @@ Clock *Clock::fgClock = NULL;
 Clock::Clock()
       :fTime(0.),
        fRunEnd(0.),
-       fMaxStepInterval(0.),
-       fSpinMeasFreq(0.),
        fLastSpinMeas(0.),
-       fLastFieldMeas(0.)
+       fLastFieldMeas(0.),
+       fLastTrackMeas(0.),
+       fMaxStepInterval(0.),
+       fSpinMeasInterval(0.),
+       fFieldMeasInterval(0.),
+       fTrackMeasInterval(0.)
        
 {
    // -- Default constructor
@@ -47,6 +51,16 @@ Clock *Clock::Instance()
    return fgClock;
 }   
 
+//_____________________________________________________________________________
+bool Clock::Initialise(const RunConfig& runConfig)
+{
+   fRunEnd = runConfig.RunTime();
+   fMaxStepInterval = runConfig.MaxStepTime();
+   fSpinMeasInterval = runConfig.SpinMeasureInterval();
+   fFieldMeasInterval = runConfig.FieldMeasureInterval();
+   fTrackMeasInterval = runConfig.TrackMeasureInterval();
+   return true;
+}
 
 //______________________________________________________________________________
 double Clock::GetTimeToNextEvent()
@@ -58,16 +72,16 @@ double Clock::GetTimeToNextEvent()
    // Check if we will reach end of run in this time and adjust
    if (fTime + nextInterval >= fRunEnd) {nextInterval = fRunEnd - fTime;}
    // Update LastSpin Measurement time if we reached it
-   if (fTime >= fLastSpinMeas + fSpinMeasFreq) {fLastSpinMeas += fSpinMeasFreq;}
+   if (fTime >= fLastSpinMeas + fSpinMeasInterval) {fLastSpinMeas += fSpinMeasInterval;}
    // Check if we are measuring spin at all
-   if (fSpinMeasFreq == 0.0) return nextInterval;
+   if (fSpinMeasInterval == 0.0) return nextInterval;
    // Check if we will make a spin measurement in this time
-   const double nextSpinMeasureTime = fLastSpinMeas + fSpinMeasFreq;
+   const double nextSpinMeasureTime = fLastSpinMeas + fSpinMeasInterval;
    if (fTime + nextInterval >= nextSpinMeasureTime) {nextInterval = nextSpinMeasureTime - fTime;}
    // Update LastField Measurement time if we reached it
-   if (fTime >= fLastFieldMeas + fFieldMeasFreq) {fLastFieldMeas += fFieldMeasFreq;}
+   if (fTime >= fLastFieldMeas + fFieldMeasInterval) {fLastFieldMeas += fFieldMeasInterval;}
    // Check if we will make a field measurement in this time
-   const double nextFieldMeasureTime = fLastFieldMeas + fFieldMeasFreq;
+   const double nextFieldMeasureTime = fLastFieldMeas + fFieldMeasInterval;
    if (fTime + nextInterval >= nextFieldMeasureTime) {nextInterval = nextFieldMeasureTime - fTime;}
    return nextInterval;
 }
@@ -78,4 +92,5 @@ void Clock::Reset()
    fTime = 0.0;
    fLastSpinMeas = 0.0;
    fLastFieldMeas = 0.0;
+   fLastTrackMeas = 0.0;
 }

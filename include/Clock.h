@@ -4,44 +4,43 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
+class RunConfig;
+
 class Clock
 {
 private:
    // -- Members
    static Clock* fgClock;
    
+   // -- Times
    double fTime;
-      
    double fRunEnd;
-   double fMaxStepInterval;
-   double fSpinMeasFreq;
-   double fFieldMeasFreq;
    double fLastSpinMeas;
    double fLastFieldMeas;
+   double fLastTrackMeas;
+   
+   // -- Event intervals
+   double fMaxStepInterval;
+   double fSpinMeasInterval;
+   double fFieldMeasInterval;
+   double fTrackMeasInterval;
    
    // -- Hidden Constructor
    Clock();
-   
+      
 public:
    // -- Singleton
    static Clock* 	Instance();
-	
+   
    // -- Destructor
    virtual ~Clock();
    
    // -- Methods
-   void Tick(double interval) {fTime += interval;}
-   
-   void SetTime(double currTime) {fTime = currTime;}
-   void SetEndOfRun(double runTime) {fRunEnd = runTime;}
-   void SetMaxStepInterval(double maxStepTime) {fMaxStepInterval = maxStepTime;}
-   void SetSpinMeasureFreq(double freq) {fSpinMeasFreq = freq;}
-   void SetFieldMeasureFreq(double freq) {fFieldMeasFreq = freq;}
-   
-   double GetTime() const {return fTime;}
-   
-   double GetTimeToNextEvent();
-   void Reset();
+   bool     Initialise(const RunConfig& runConfig);
+   void     Tick(double interval) {fTime += interval;}
+   double   GetTimeToNextEvent();
+   double   GetTime() const {return fTime;}
+   void     Reset();
    
 };
 

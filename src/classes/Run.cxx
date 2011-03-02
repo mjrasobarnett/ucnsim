@@ -99,10 +99,10 @@ Bool_t Run::Initialise()
    cout << "-------------------------------------------" << endl;
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Setup the Clock
-   Clock::Instance()->SetEndOfRun(this->GetRunConfig().RunTime());
-   Clock::Instance()->SetMaxStepInterval(this->GetRunConfig().MaxStepTime());
-   Clock::Instance()->SetSpinMeasureFreq(this->GetRunConfig().SpinMeasurementFreq());
-   Clock::Instance()->SetFieldMeasureFreq(this->GetRunConfig().FieldMeasurementFreq());
+   if (Clock::Instance()->Initialise(this->GetRunConfig()) == kFALSE) {
+      Error("Initialise","Failed to initialise the Clock");
+      return kFALSE;
+   }
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Build Geometry
    ///////////////////////////////////////////////////////////////////////////////////////

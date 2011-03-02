@@ -32,7 +32,7 @@ public:
    
    // -- methods
    void           AddPoint(const Double_t x, const Double_t y, const Double_t z, const Double_t t);
-   const Point&  GetPoint(unsigned int i) const;
+   const Point&   GetPoint(unsigned int i) const;
    unsigned int   TotalPoints() const {return fPoints.size();}
    
    std::vector<Double_t> OutputPointsArray();

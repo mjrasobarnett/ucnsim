@@ -154,8 +154,8 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Define Histograms
    const Double_t runTime = runConfig.RunTime();
-   const Double_t spinMeasFreq = runConfig.SpinMeasurementFreq();
-   const Int_t nbins = runTime/spinMeasFreq;
+   const Double_t spinMeasInterval = runConfig.SpinMeasureInterval();
+   const Int_t nbins = runTime/spinMeasInterval;
    const TVector3 xAxis(1.0,0.0,0.0);
    const TVector3 yAxis(0.0,1.0,0.0);
    const TVector3 zAxis(0.0,0.0,1.0);

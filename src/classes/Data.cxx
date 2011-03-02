@@ -310,11 +310,13 @@ void Data::InitialiseObservers(const RunConfig& runConfig)
    cout << "-------------------------------------------" << endl;
    cout << "Setting up Observers" << endl;
    cout << "ObserveSpin: " << runConfig.ObserveSpin() << endl;
-   cout << "Spin Measurement Frequence: " << runConfig.SpinMeasurementFreq() << endl;
+   cout << "Spin Measurement Interval (s): " << runConfig.SpinMeasureInterval() << endl;
    cout << "ObserveField: " << runConfig.ObserveField() << endl;
-   cout << "Field Measurement Frequence: " << runConfig.FieldMeasurementFreq() << endl;
+   cout << "Field Measurement Interval (s): " << runConfig.FieldMeasureInterval() << endl;
    cout << "ObserveBounces: " << runConfig.ObserveBounces() << endl;
    cout << "ObserveTracks: " << runConfig.ObserveTracks() << endl;
+   cout << "Track Measurement Interval (s): " << runConfig.TrackMeasureInterval() << endl;
+   
    if (runConfig.ObserveBounces() == kTRUE) {
       // Create an observer to track UCN Bounces
       Observer* obs = new BounceObserver();
@@ -323,19 +325,19 @@ void Data::InitialiseObservers(const RunConfig& runConfig)
    }
    if (runConfig.ObserveTracks() == kTRUE) {
       // Create an observer to track UCN path
-      Observer* obs = new TrackObserver();
+      Observer* obs = new TrackObserver(runConfig.TrackMeasureInterval());
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }
    if (runConfig.ObserveSpin() == kTRUE) {
       // Create an observer to track UCN Spin polarisation
-      Observer* obs = new SpinObserver(runConfig.SpinMeasurementFreq());
+      Observer* obs = new SpinObserver(runConfig.SpinMeasureInterval());
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }
    if (runConfig.ObserveField() == kTRUE) {
       // Create an observer to record field seen by spin
-      Observer* obs = new FieldObserver(runConfig.FieldMeasurementFreq());
+      Observer* obs = new FieldObserver(runConfig.FieldMeasureInterval());
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }

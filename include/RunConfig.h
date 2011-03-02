@@ -40,8 +40,9 @@ private:
    bool fObsTracks;
    bool fObsField;
    
-   double fSpinMeasFreq;
-   double fFieldMeasFreq;
+   double fTrackMeasInterval;
+   double fSpinMeasInterval;
+   double fFieldMeasInterval;
    
 public:
    // Constructors
@@ -71,8 +72,9 @@ public:
    bool ObserveBounces() const {return fObsBounces;}
    bool ObserveTracks() const {return fObsTracks;}
    bool ObserveField() const {return fObsField;}
-   double SpinMeasurementFreq() const {return fSpinMeasFreq;}
-   double FieldMeasurementFreq() const {return fFieldMeasFreq;}
+   double TrackMeasureInterval() const {return fTrackMeasInterval;}
+   double SpinMeasureInterval() const {return fSpinMeasInterval;}
+   double FieldMeasureInterval() const {return fFieldMeasInterval;}
    
    virtual void Print(Option_t* option = "") const;
 

@@ -10,6 +10,7 @@
 #include "RunConfig.h"
 #include "Data.h"
 #include "Clock.h"
+#include "Algorithms.h"
 
 #include "TKey.h"
 
@@ -20,6 +21,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 using namespace std;
+using namespace Algorithms;
 
 ClassImp(Observer)
 
@@ -32,10 +34,10 @@ ClassImp(Observer)
 ClassImp(SpinObserver)
 
 //_____________________________________________________________________________
-SpinObserver::SpinObserver(double measureFreq)
+SpinObserver::SpinObserver(double measureInterval)
              :Observer(),
               fSpinData(NULL),
-              fMeasFreq(measureFreq),
+              fMeasInterval(measureInterval),
               fLastMeasurementTime(Clock::Instance()->GetTime())
 {
    // Constructor
@@ -46,7 +48,7 @@ SpinObserver::SpinObserver(double measureFreq)
 SpinObserver::SpinObserver(const SpinObserver& other)
                  :Observer(other),
                   fSpinData(other.fSpinData),
-                  fMeasFreq(other.fMeasFreq),
+                  fMeasInterval(other.fMeasInterval),
                   fLastMeasurementTime(other.fLastMeasurementTime)
 {
    // Copy Constructor
@@ -68,7 +70,7 @@ void SpinObserver::RecordEvent(const TObject* subject, const string& context)
    if (subject == fSubject && context == Context::Spin) {
       // Check whether it is time to make a Spin measurement
       double currentTime = Clock::Instance()->GetTime();
-      if (TMath::Abs(currentTime - (fLastMeasurementTime + fMeasFreq)) < 1.E-10) {
+      if (Precision::IsEqual(currentTime, (fLastMeasurementTime + fMeasInterval))) {
          const Particle* particle = dynamic_cast<const Particle*>(subject);
          // Make a copy of the current spin state
          const Spin* spin = new Spin(particle->GetSpin());
@@ -222,9 +224,11 @@ void BounceObserver::WriteToFile(TDirectory* const particleDir)
 ClassImp(TrackObserver)
 
 //_____________________________________________________________________________
-TrackObserver::TrackObserver()
+TrackObserver::TrackObserver(double measInterval)
                    :Observer(),
-                    fTrack(NULL)
+                    fTrack(NULL),
+                    fMeasInterval(measInterval),
+                    fLastMeasurementTime(0.0)
 {
    // Constructor
    Info("TrackObserver","Default Constructor");
@@ -233,22 +237,12 @@ TrackObserver::TrackObserver()
 //_____________________________________________________________________________
 TrackObserver::TrackObserver(const TrackObserver& other)
                  :Observer(other),
-                  fTrack(other.fTrack)
+                  fTrack(other.fTrack),
+                  fMeasInterval(other.fMeasInterval),
+                  fLastMeasurementTime(other.fLastMeasurementTime)
 {
    // Copy Constructor
    Info("TrackObserver","Copy Constructor");
-}
-
-//_____________________________________________________________________________
-TrackObserver& TrackObserver::operator=(const TrackObserver& other)
-{
-   // Assignment
-   Info("TrackObserver","Assignment");
-   if(this!=&other) {
-      Observer::operator=(other);
-      fTrack = other.fTrack;
-   }
-   return *this;
 }
 
 //_____________________________________________________________________________
@@ -264,8 +258,14 @@ void TrackObserver::RecordEvent(const TObject* subject, const string& context)
 {
    // -- Record the current polarisation
    if (subject == fSubject && context == Context::Step) {
-      const Particle* particle = dynamic_cast<const Particle*>(subject);
-      fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
+      // Calculate whether it is time to make a field measurement
+ //     double currentTime = Clock::Instance()->GetTime();
+//      if (Precision::IsEqual(currentTime, (fLastMeasurementTime + fMeasInterval))) {
+         const Particle* particle = dynamic_cast<const Particle*>(subject);
+         fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
+         // Update stored value of last measurement
+//         fLastMeasurementTime = currentTime;
+//      }
    }
 }
 
@@ -273,6 +273,7 @@ void TrackObserver::RecordEvent(const TObject* subject, const string& context)
 void TrackObserver::ResetData()
 {
    // -- Delete current observables and create a new version in its place
+   fLastMeasurementTime = 0.0;
    if (fTrack != NULL) delete fTrack; fTrack = NULL;
    fTrack = new Track();
 }
@@ -315,10 +316,10 @@ void TrackObserver::WriteToFile(TDirectory* const particleDir)
 ClassImp(FieldObserver)
 
 //_____________________________________________________________________________
-FieldObserver::FieldObserver(double measureFreq)
+FieldObserver::FieldObserver(double measureInterval)
               :Observer(),
                fFieldData(NULL),
-               fMeasFreq(measureFreq),
+               fMeasInterval(measureInterval),
                fLastMeasurementTime(Clock::Instance()->GetTime())
 {
    // Constructor
@@ -329,7 +330,7 @@ FieldObserver::FieldObserver(double measureFreq)
 FieldObserver::FieldObserver(const FieldObserver& other)
               :Observer(other),
                fFieldData(other.fFieldData),
-               fMeasFreq(other.fMeasFreq),
+               fMeasInterval(other.fMeasInterval),
                fLastMeasurementTime(other.fLastMeasurementTime)
 {
    // Copy Constructor
@@ -351,7 +352,7 @@ void FieldObserver::RecordEvent(const TObject* subject, const string& context)
    if (context == Context::MeasureField) {
       // Calculate whether it is time to make a field measurement
       double currentTime = Clock::Instance()->GetTime();
-      if (TMath::Abs(currentTime - (fLastMeasurementTime + fMeasFreq)) < 1.E-10) {
+      if (Precision::IsEqual(currentTime,(fLastMeasurementTime + fMeasInterval))) {
          const FieldVertex* vertex = dynamic_cast<const FieldVertex*>(subject);
          const FieldVertex* copy = new FieldVertex(*vertex);
          fFieldData->push_back(copy);
