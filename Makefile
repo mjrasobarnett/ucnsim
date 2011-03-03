@@ -282,7 +282,7 @@ UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/CompositeShape.h include/BoolNode.h \
 								include/Volume.h include/Element.h include/MagFieldManager.h \
 								include/InitialConfig.h include/RunConfig.h include/Observer.h \
-								include/Observables.h include/Track.h include/FieldMap.h \
+								include/Track.h include/FieldMap.h \
 								include/KDTree.h include/KDTreeNode.h include/FieldVertex.h \
 								include/VertexStack.h include/Point.h include/Observable.h \
 								include/Clock.h include/Event.h include/Algorithms.h $(LINKDEF)
