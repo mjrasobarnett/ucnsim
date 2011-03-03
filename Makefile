@@ -23,6 +23,9 @@ MAKE_PLOTS = bin/make_plots$(ExeSuf)
 MAKE_T2PLOTS = $(ProgPath)/make_T2plot.$(SrcSuf)
 MAKE_T2PLOTO = $(ProgPath)/make_T2plot.$(ObjSuf)
 MAKE_T2PLOT = bin/make_T2plot$(ExeSuf)
+MAKE_DENSITYS = $(ProgPath)/make_density_snapshots.$(SrcSuf)
+MAKE_DENSITYO = $(ProgPath)/make_density_snapshots.$(ObjSuf)
+MAKE_DENSITY = bin/make_density_snapshots$(ExeSuf)
 DRAW_TRACKSS = $(ProgPath)/draw_tracks.$(SrcSuf)
 DRAW_TRACKSO = $(ProgPath)/draw_tracks.$(ObjSuf)
 DRAW_TRACKS = bin/draw_tracks$(ExeSuf)
@@ -137,7 +140,7 @@ $(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLE
 $(EVENTO) $(ALGORITHMSO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(MAKE_PLOTS) $(SANDBOX) \
-$(DRAW_TRACKS) $(TEST_KDTREE) $(MAKE_T2PLOT) $(DRAW_PLOTS)
+$(DRAW_TRACKS) $(TEST_KDTREE) $(MAKE_T2PLOT) $(DRAW_PLOTS) $(MAKE_DENSITY)
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 .PHONY: simulate_ucn sandbox buildtest fitdata generate_ucn make_plots draw_tracks make_T2plot  draw_plots
@@ -182,6 +185,13 @@ $(MAKE_T2PLOT):   $(MAKE_T2PLOTO) $(UCNSO)
 					   $(OutPutOpt)$@
 					   $(MT_EXE)
 					   @echo "$@ done"
+
+make_density:		$(MAKE_DENSITY)
+$(MAKE_DENSITY):	$(MAKE_DENSITYO) $(UCNSO)
+						$(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
+						$(OutPutOpt)$@
+						$(MT_EXE)
+						@echo "$@ done"
 
 draw_tracks:	 $(DRAW_TRACKS)
 $(DRAW_TRACKS): $(DRAW_TRACKSO) $(UCNSO)
