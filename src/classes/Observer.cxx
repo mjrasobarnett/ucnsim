@@ -64,6 +64,19 @@ SpinObserver::~SpinObserver()
 }
 
 //_____________________________________________________________________________
+void SpinObserver::InitialReading(const TObject* subject)
+{
+   // -- Record the current spin state
+   if (subject == fSubject) {
+      const Particle* particle = dynamic_cast<const Particle*>(subject);
+      // Make a copy of the current spin state
+      const Spin* spin = new Spin(particle->GetSpin());
+      // Insert copy into data structure
+      fSpinData->insert(pair<Double_t,const Spin*>(particle->T(), spin));
+   }
+}
+
+//_____________________________________________________________________________
 void SpinObserver::RecordEvent(const TObject* subject, const string& context)
 {
    // -- Record the current spin state
@@ -166,6 +179,12 @@ BounceObserver::~BounceObserver()
 }
 
 //_____________________________________________________________________________
+void BounceObserver::InitialReading(const TObject* /*subject*/)
+{
+   // Do nothing
+}
+
+//_____________________________________________________________________________
 void BounceObserver::RecordEvent(const TObject* subject, const string& context)
 {
    // -- Record the current polarisation
@@ -254,6 +273,16 @@ TrackObserver::~TrackObserver()
 }
 
 //_____________________________________________________________________________
+void TrackObserver::InitialReading(const TObject* subject)
+{
+   // -- Record the current spin state
+   if (subject == fSubject) {
+      const Particle* particle = dynamic_cast<const Particle*>(subject);
+      fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
+   }
+}
+
+//_____________________________________________________________________________
 void TrackObserver::RecordEvent(const TObject* subject, const string& context)
 {
    // -- Record the current polarisation
@@ -264,7 +293,6 @@ void TrackObserver::RecordEvent(const TObject* subject, const string& context)
          const Particle* particle = dynamic_cast<const Particle*>(subject);
          fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
       } else if (Precision::IsEqual(currentTime, (fLastMeasurementTime + fMeasInterval))) {
-         // Calculate whether it is time to make a field measurement
          const Particle* particle = dynamic_cast<const Particle*>(subject);
          fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
          // Update stored value of last measurement
@@ -349,6 +377,17 @@ FieldObserver::~FieldObserver()
    // Destructor
    Info("FieldObserver","Destructor");
    if (fFieldData != NULL) delete fFieldData;
+}
+
+//_____________________________________________________________________________
+void FieldObserver::InitialReading(const TObject* subject)
+{
+   // -- Record the current spin state
+   if (subject == fSubject) {
+      const FieldVertex* vertex = dynamic_cast<const FieldVertex*>(subject);
+      const FieldVertex* copy = new FieldVertex(*vertex);
+      fFieldData->push_back(copy);
+   }
 }
 
 //_____________________________________________________________________________

@@ -363,6 +363,7 @@ void Data::RegisterObservers(Particle* particle)
       if (subject == "Particles") {
          observer->DefineSubject(particle);
          particle->Attach(observer);
+         observer->InitialReading(particle);
       }
    }
 }
@@ -455,6 +456,7 @@ Bool_t Data::ChecksOut() const
       return kFALSE;
    } 
    Info("ChecksOut","Initial particle states: %i. Number of Final States: %i.", initialParticles, finalParticles);
+   Info("ChecksOut","Output Data written to: %s",fOutputFile->GetName());
    return kTRUE;
 }
 
