@@ -6,6 +6,7 @@
 
 #include "Observer.h"
 
+#include "Experiment.h"
 #include "Particle.h"
 #include "RunConfig.h"
 #include "Data.h"
@@ -13,6 +14,7 @@
 #include "Algorithms.h"
 
 #include "TKey.h"
+#include "TClass.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -64,27 +66,15 @@ SpinObserver::~SpinObserver()
 }
 
 //_____________________________________________________________________________
-void SpinObserver::InitialReading(const TObject* subject)
+void SpinObserver::RecordEvent(const Point& /*point*/, const std::string& context)
 {
    // -- Record the current spin state
-   if (subject == fSubject) {
-      const Particle* particle = dynamic_cast<const Particle*>(subject);
-      // Make a copy of the current spin state
-      const Spin* spin = new Spin(particle->GetSpin());
-      // Insert copy into data structure
-      fSpinData->insert(pair<Double_t,const Spin*>(particle->T(), spin));
-   }
-}
-
-//_____________________________________________________________________________
-void SpinObserver::RecordEvent(const TObject* subject, const string& context)
-{
-   // -- Record the current spin state
-   if (subject == fSubject && context == Context::Spin) {
-      // Check whether it is time to make a Spin measurement
+   if (context == Context::Spin) {
+      // The Spin context means that spin state has just changed.
+      // First check whether it is time to make a Spin measurement
       double currentTime = Clock::Instance()->GetTime();
       if (Precision::IsEqual(currentTime, (fLastMeasurementTime + fMeasInterval))) {
-         const Particle* particle = dynamic_cast<const Particle*>(subject);
+         const Particle* particle = dynamic_cast<const Particle*>(fSubject);
          // Make a copy of the current spin state
          const Spin* spin = new Spin(particle->GetSpin());
          // Insert copy into data structure
@@ -92,6 +82,12 @@ void SpinObserver::RecordEvent(const TObject* subject, const string& context)
          // Update stored value of last measurement
          fLastMeasurementTime = currentTime;
       }
+   } else if (context == Context::Creation) {
+      // The creation context signifies that the particle has just been instantiated so we
+      // shall make a measurement of its initial state
+      const Particle* particle = dynamic_cast<const Particle*>(fSubject);
+      const Spin* spin = new Spin(particle->GetSpin());
+      fSpinData->insert(pair<Double_t,const Spin*>(particle->T(), spin));
    }
 }
 
@@ -179,21 +175,14 @@ BounceObserver::~BounceObserver()
 }
 
 //_____________________________________________________________________________
-void BounceObserver::InitialReading(const TObject* /*subject*/)
-{
-   // Do nothing
-}
+void BounceObserver::RecordEvent(const Point& /*point*/, const std::string& context)
 
-//_____________________________________________________________________________
-void BounceObserver::RecordEvent(const TObject* subject, const string& context)
 {
-   // -- Record the current polarisation
-   if (subject == fSubject) {
-      if (context == Context::SpecBounce) {
+   // -- If context indicates a bounce was made, increment counters.
+   if (context == Context::SpecBounce) {
          fBounceData->RecordSpecular();
-      } else if (context == Context::DiffBounce) {
+   } else if (context == Context::DiffBounce) {
          fBounceData->RecordDiffuse();
-      }
    }
 }
 
@@ -273,33 +262,28 @@ TrackObserver::~TrackObserver()
 }
 
 //_____________________________________________________________________________
-void TrackObserver::InitialReading(const TObject* subject)
-{
-   // -- Record the current spin state
-   if (subject == fSubject) {
-      const Particle* particle = dynamic_cast<const Particle*>(subject);
-      fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
-   }
-}
-
-//_____________________________________________________________________________
-void TrackObserver::RecordEvent(const TObject* subject, const string& context)
+void TrackObserver::RecordEvent(const Point& /*point*/, const std::string& context)
 {
    // -- Record the current polarisation
-   if (subject == fSubject && context == Context::Step) {
+   if (context == Context::Step) {
       double currentTime = Clock::Instance()->GetTime();
       // If no measurement interval is set, we record every step
       if (fMeasInterval == 0.0) {
-         const Particle* particle = dynamic_cast<const Particle*>(subject);
+         const Particle* particle = dynamic_cast<const Particle*>(fSubject);
          fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
       } else if (Precision::IsEqual(currentTime, (fLastMeasurementTime + fMeasInterval))) {
-         const Particle* particle = dynamic_cast<const Particle*>(subject);
+         const Particle* particle = dynamic_cast<const Particle*>(fSubject);
          fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
          // Update stored value of last measurement
          fLastMeasurementTime = currentTime;
       } else {
          // Do nothing
       }
+   }  else if (context == Context::Creation) {
+      // The creation context signifies that the particle has just been instantiated so we
+      // shall make a measurement of its initial state
+      const Particle* particle = dynamic_cast<const Particle*>(fSubject);
+      fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
    }
 }
 
@@ -380,30 +364,26 @@ FieldObserver::~FieldObserver()
 }
 
 //_____________________________________________________________________________
-void FieldObserver::InitialReading(const TObject* subject)
+void FieldObserver::RecordEvent(const Point& point, const std::string& context)
 {
-   // -- Record the current spin state
-   if (subject == fSubject) {
-      const FieldVertex* vertex = dynamic_cast<const FieldVertex*>(subject);
-      const FieldVertex* copy = new FieldVertex(*vertex);
-      fFieldData->push_back(copy);
-   }
-}
-
-//_____________________________________________________________________________
-void FieldObserver::RecordEvent(const TObject* subject, const string& context)
-{
-   // -- Record the current Field 
-   if (context == Context::MeasureField) {
+   // -- Record the current Field at the current point
+   if (context == Context::Spin) {
       // Calculate whether it is time to make a field measurement
       double currentTime = Clock::Instance()->GetTime();
       if (Precision::IsEqual(currentTime,(fLastMeasurementTime + fMeasInterval))) {
-         const FieldVertex* vertex = dynamic_cast<const FieldVertex*>(subject);
-         const FieldVertex* copy = new FieldVertex(*vertex);
-         fFieldData->push_back(copy);
+         // Make measurement
+         const TVector3 field = dynamic_cast<const Experiment*>(fSubject)->GetMagField(point);
+         const FieldVertex* fieldvertex = new FieldVertex(point, field);
+         fFieldData->push_back(fieldvertex);
          // Update stored value of last measurement
          fLastMeasurementTime = currentTime;
       }
+   }  else if (context == Context::Creation) {
+      // The creation context signifies that the particle has just been instantiated so we
+      // shall make a measurement of the initial state
+      const TVector3 field = dynamic_cast<const Experiment*>(fSubject)->GetMagField(point);
+      const FieldVertex* fieldvertex = new FieldVertex(point, field);
+      fFieldData->push_back(fieldvertex);
    }
 }
 

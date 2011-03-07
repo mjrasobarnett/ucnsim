@@ -27,11 +27,11 @@
 namespace Context {
    // Define List of contexts passed to observers to help them distinguish
    // whether the particle's state change is of interest to them
+   const std::string Creation = "creation";
+   const std::string Step = "step";
    const std::string Spin = "spin";
    const std::string SpecBounce = "specbounce";
    const std::string DiffBounce = "diffbounce";
-   const std::string Step = "step";
-   const std::string MeasureField = "measurefield";
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -39,6 +39,7 @@ namespace Context {
 //    Observer -  Abstract Interface                                   //
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
+class Point;
 
 class Observer : public TObject
 {
@@ -48,8 +49,7 @@ protected:
 public:
    
    virtual void DefineSubject(const TObject* subject) {fSubject = subject;}
-   virtual void InitialReading(const TObject* subject) = 0;
-   virtual void RecordEvent(const TObject* subject, const std::string& context) = 0;
+   virtual void RecordEvent(const Point& point, const std::string& context) = 0;
    virtual void ResetData() = 0;
    virtual void LoadExistingData(TDirectory* const particleDir) = 0;
    virtual void WriteToFile(TDirectory* particleDir) = 0;
@@ -76,8 +76,7 @@ public:
    SpinObserver(const SpinObserver&);
    virtual ~SpinObserver();
    
-   virtual void InitialReading(const TObject* subject);
-   virtual void RecordEvent(const TObject* subject, const std::string& context);
+   virtual void RecordEvent(const Point& point, const std::string& context);
    virtual void ResetData();
    virtual void LoadExistingData(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);
@@ -103,8 +102,7 @@ public:
    BounceObserver& operator=(const BounceObserver&);
    virtual ~BounceObserver();
    
-   virtual void InitialReading(const TObject* subject);
-   virtual void RecordEvent(const TObject* subject, const std::string& context);
+   virtual void RecordEvent(const Point& point, const std::string& context);
    virtual void ResetData();
    virtual void LoadExistingData(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);
@@ -131,8 +129,7 @@ public:
    TrackObserver(const TrackObserver&);
    virtual ~TrackObserver();
    
-   virtual void InitialReading(const TObject* subject);
-   virtual void RecordEvent(const TObject* subject, const std::string& context);
+   virtual void RecordEvent(const Point& point, const std::string& context);
    virtual void ResetData();
    virtual void LoadExistingData(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);
@@ -159,8 +156,7 @@ public:
    FieldObserver(const FieldObserver&);
    virtual ~FieldObserver();
    
-   virtual void InitialReading(const TObject* subject);
-   virtual void RecordEvent(const TObject* subject, const std::string& context);
+   virtual void RecordEvent(const Point& point, const std::string& context);
    virtual void ResetData();
    virtual void LoadExistingData(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);
