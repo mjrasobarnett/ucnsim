@@ -34,7 +34,7 @@ ClassImp(FieldManager)
 //_____________________________________________________________________________
 FieldManager::FieldManager()
                  :TNamed("FieldManager", "Default Field Manager"), fGravField(NULL),
-                  fMagFieldManager(NULL)
+                  fMagFieldArray(NULL)
 {
 // -- Default constructor
    Info("FieldManager", "Default Constructor");
@@ -43,7 +43,7 @@ FieldManager::FieldManager()
 //_____________________________________________________________________________
 FieldManager::FieldManager(const FieldManager& other)
                  :TNamed(other), fGravField(other.fGravField),
-                  fMagFieldManager(other.fMagFieldManager)
+                  fMagFieldArray(other.fMagFieldArray)
 {
 // -- Copy Constructor
    Info("FieldManager", "Copy Constructor");
@@ -56,7 +56,7 @@ FieldManager& FieldManager::operator=(const FieldManager& other)
    if(this!=&other) {
       TNamed::operator=(other);
       fGravField = other.fGravField;
-      fMagFieldManager = other.fMagFieldManager;
+      fMagFieldArray = other.fMagFieldArray;
    }
    return *this;
 }
@@ -67,7 +67,7 @@ FieldManager::~FieldManager()
 // -- Destructor
    Info("FieldManager", "Destructor");
    if (fGravField) delete fGravField;
-   if (fMagFieldManager) delete fMagFieldManager;
+   if (fMagFieldArray) delete fMagFieldArray;
 }
 
 // -- METHODS --
@@ -104,17 +104,17 @@ Bool_t FieldManager::Initialise(const RunConfig& runConfig)
       }
       f->ls();
       // Search for Magnetic Field Manager
-      TString magManagerName = "MagFieldManager";
-      MagFieldManager* importedMagFieldManager = 0;
-      f->GetObject(magManagerName,importedMagFieldManager);
-      if (importedMagFieldManager == NULL) {
-         Error("Initialise","Could not find MagFieldManager: %s in file", magManagerName.Data());
+      TString magManagerName = "MagFieldArray";
+      MagFieldArray* importedMagFieldArray = 0;
+      f->GetObject(magManagerName,importedMagFieldArray);
+      if (importedMagFieldArray == NULL) {
+         Error("Initialise","Could not find MagFieldArray: %s in file", magManagerName.Data());
          return kFALSE;
       }
       // Store MagField Manager
-      fMagFieldManager = importedMagFieldManager;
+      fMagFieldArray = importedMagFieldArray;
       // Clean up
-      importedMagFieldManager = 0;
+      importedMagFieldArray = 0;
       f->Close();
       delete f;
       f = 0;
@@ -145,8 +145,8 @@ GravField* FieldManager::AddGravField()
 //______________________________________________________________________________
 const TVector3 FieldManager::GetMagField(const Point& point, const string volume) const
 {
-   if (fMagFieldManager != NULL) {
-      return fMagFieldManager->GetMagField(point, volume);
+   if (fMagFieldArray != NULL) {
+      return fMagFieldArray->GetMagField(point, volume);
    } else {
       return TVector3(0.,0.,0.);
    }

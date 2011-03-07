@@ -40,7 +40,7 @@
 #pragma link C++ class Union+;
 #pragma link C++ class Subtraction+;
 #pragma link C++ class Intersection+;
-#pragma link C++ class MagFieldManager+;
+#pragma link C++ class MagFieldArray+;
 #pragma link C++ class InitialConfig+;
 #pragma link C++ class RunConfig+;
 #pragma link C++ class Observer+;

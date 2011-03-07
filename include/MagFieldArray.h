@@ -1,8 +1,8 @@
-// MagFieldManager
+// MagFieldArray
 // Author: Matthew Raso-Barnett  29/09/2010
 
-#ifndef ROOT_MagFieldManager
-#define ROOT_MagFieldManager
+#ifndef ROOT_MagFieldArray
+#define ROOT_MagFieldArray
 
 #include "TNamed.h"
 #include <string>
@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-//    MagFieldManager                                                 //
+//    MagFieldArray                                                 //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 using std::string;
@@ -25,7 +25,7 @@ using std::endl;
 
 class Point;
 
-class MagFieldManager : public TNamed, public Observable
+class MagFieldArray : public TNamed, public Observable
 {
 private:
    typedef map<string, MagField*> FieldContainer;
@@ -34,22 +34,22 @@ private:
    void PurgeFields();
    
    //** Don't allow copy construction - otherwise we run into problems with ownership of pointers
-   MagFieldManager(const MagFieldManager&);
+   MagFieldArray(const MagFieldArray&);
    
 public:
    // -- constructors
-   MagFieldManager();
+   MagFieldArray();
    
    void AddField(MagField* field);
    
    // -- destructor
-   virtual ~MagFieldManager();
+   virtual ~MagFieldArray();
 
    // -- methods
    const TVector3 GetMagField(const Point& point, const string = "") const;
    virtual void   NotifyObservers(const Point& point, const std::string& context);
    
-   ClassDef(MagFieldManager, 1)
+   ClassDef(MagFieldArray, 1)
 };
 
 #endif

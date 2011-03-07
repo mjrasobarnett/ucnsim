@@ -18,7 +18,7 @@
 #include "TVector3.h"
 #include "TGeoMatrix.h"
 #include "UniformMagField.h"
-#include "MagFieldManager.h"
+#include "MagFieldArray.h"
 #include "Data.h"
 #include "FieldMap.h"
 #include "FileParser.h"
@@ -77,8 +77,8 @@ bool TestFieldMap()
    }
    
    // Add field to magfield manager
-   MagFieldManager* magFieldManager = new MagFieldManager();
-   magFieldManager->AddField(field);
+   MagFieldArray* magFieldArray = new MagFieldArray();
+   magFieldArray->AddField(field);
    
    // -- Write magfieldmanager to geometry file
    const char *magFileName = "$(UCN_DIR)/geom/ramseycell_fields.root";
@@ -87,22 +87,22 @@ bool TestFieldMap()
      Error("BuildFieldMap","Cannot open file: %s", magFileName);
      return kFALSE;
    }
-   cout << sizeof(*magFieldManager) << endl;
-   magFieldManager->Write(magFieldManager->GetName());
+   cout << sizeof(*magFieldArray) << endl;
+   magFieldArray->Write(magFieldArray->GetName());
    f->ls();
    f->Close();
-   if (magFieldManager) delete magFieldManager;
-   magFieldManager = NULL;
+   if (magFieldArray) delete magFieldArray;
+   magFieldArray = NULL;
    f = NULL;
    
    f = TFile::Open(magFileName,"read");
-   f->GetObject("MagFieldManager",magFieldManager);
+   f->GetObject("MagFieldArray",magFieldArray);
    f->ls();
    f->Close();
-   cout << sizeof(*magFieldManager) << endl;
+   cout << sizeof(*magFieldArray) << endl;
    
    TVector3 point(0.005,-0.005,0.001);
-//   const MagField* magfield = magFieldManager->GetMagField(point," ");
+//   const MagField* magfield = magFieldArray->GetMagField(point," ");
 //   const MagFieldMap* map = dynamic_cast<const MagFieldMap*>(magfield);
    
 //   TVector3 avgField = map->Interpolate(point, 6);
@@ -113,14 +113,14 @@ bool TestFieldMap()
 //__________________________________________________________________________
 int TestFieldManager()
 {
-   // -- Simple function tests putting a magfield into MagFieldManager object, and then writing
+   // -- Simple function tests putting a magfield into MagFieldArray object, and then writing
    // the manager out to file and succesfully reading it back in. We should find that root makes a
    // new copy of the fields stored by the manager when this is read back in from file.
    TVector3 vec(0.,0.,0.);
    MagField* magfield1 = new UniformMagField("1", vec,0, 0);
    MagField* magfield2 = new UniformMagField("2", vec,0, 0);
    
-   MagFieldManager* manager1(new MagFieldManager());
+   MagFieldArray* manager1(new MagFieldArray());
    manager1->AddField(magfield1);
    manager1->AddField(magfield2);
    
@@ -146,8 +146,8 @@ int TestFieldManager()
    
    // -- Extract Object
    cout << "Fetching manaer" << endl;
-   MagFieldManager* manager2(new MagFieldManager());
-   f->GetObject("MagFieldManager", manager2);
+   MagFieldArray* manager2(new MagFieldArray());
+   f->GetObject("MagFieldArray", manager2);
    if (manager2 == NULL) {
       Error("Export","Cannot extract manager from file");
       return EXIT_FAILURE;

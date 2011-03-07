@@ -15,7 +15,7 @@
 #include "TGeoManager.h"
 
 #include "Experiment.h"
-#include "MagFieldManager.h"
+#include "MagFieldArray.h"
 #include "DataFileHierarchy.h"
 #include "ProgressBar.h"
 
@@ -342,10 +342,10 @@ void Data::CreateObservers(const RunConfig& runConfig, const Experiment& experim
       // Add observer to the list
       this->AddObserver("Fields", obs);
       // Define Observer's subject
-      MagFieldManager& magFieldManager = experiment.GetFieldManager().GetMagFieldManager();
-      obs->DefineSubject(&magFieldManager);
+      MagFieldArray& magFieldArray = experiment.GetFieldManager().GetMagFieldArray();
+      obs->DefineSubject(&magFieldArray);
       // Attach observer to its subject
-      magFieldManager.Attach(obs);
+      magFieldArray.Attach(obs);
    }
 }
 

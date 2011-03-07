@@ -1,11 +1,11 @@
-// MagFieldManager.cxx
+// MagFieldArray.cxx
 
 #include <iostream>
 #include <cassert>
 #include <stdexcept>
 
 #include "Point.h"
-#include "MagFieldManager.h"
+#include "MagFieldArray.h"
 
 #include "Units.h"
 #include "Constants.h"
@@ -14,37 +14,37 @@
 
 using namespace std;
 
-ClassImp(MagFieldManager)
+ClassImp(MagFieldArray)
 
 //_____________________________________________________________________________
-MagFieldManager::MagFieldManager()
-                :TNamed("MagFieldManager","Default Magnetic Field Manager"),
-                 Observable()
+MagFieldArray::MagFieldArray()
+              :TNamed("MagFieldArray","Default Magnetic Field Manager"),
+               Observable()
 {
    // Default constructor
-   Info("MagFieldManager", "Default Constructor");
+   Info("MagFieldArray", "Default Constructor");
 }
 
 //_____________________________________________________________________________
-MagFieldManager::MagFieldManager(const MagFieldManager& other)
-                :TNamed(other),
-                 Observable(other),
-                 fFieldList(other.fFieldList)
+MagFieldArray::MagFieldArray(const MagFieldArray& other)
+              :TNamed(other),
+               Observable(other),
+               fFieldList(other.fFieldList)
 {
    //copy constructor
-   Info("MagFieldManager", "Copy Constructor");
+   Info("MagFieldArray", "Copy Constructor");
 }
 
 //_____________________________________________________________________________
-MagFieldManager::~MagFieldManager()
+MagFieldArray::~MagFieldArray()
 {
    // Destructor
-   Info("MagFieldManager", "Destructor");
+   Info("MagFieldArray", "Destructor");
    this->PurgeFields();
 }
 
 //_____________________________________________________________________________
-void MagFieldManager::PurgeFields()
+void MagFieldArray::PurgeFields()
 {
    // -- Cleanup container of field pointers
    FieldContainer::iterator fieldIter;
@@ -55,14 +55,14 @@ void MagFieldManager::PurgeFields()
 }
 
 //_____________________________________________________________________________
-void MagFieldManager::AddField(MagField* field)
+void MagFieldArray::AddField(MagField* field)
 {
    // -- Add field to container
    fFieldList.insert(pair<string, MagField*>(field->GetName(), field));
 }
 
 //_____________________________________________________________________________
-const TVector3 MagFieldManager::GetMagField(const Point& point, const string /*volume*/) const
+const TVector3 MagFieldArray::GetMagField(const Point& point, const string /*volume*/) const
 {
    // -- Determine which field contains the current particle
    FieldContainer::const_iterator fieldIter;
@@ -77,7 +77,7 @@ const TVector3 MagFieldManager::GetMagField(const Point& point, const string /*v
 }
 
 //_____________________________________________________________________________
-void MagFieldManager::NotifyObservers(const Point& point, const std::string& context)
+void MagFieldArray::NotifyObservers(const Point& point, const std::string& context)
 {
    // -- Notify Observers of change
    for(int i = 0; i < this->CountObservers(); i++) {

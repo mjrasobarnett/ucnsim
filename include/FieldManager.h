@@ -8,7 +8,7 @@
 #include "TNamed.h"
 #include "TVector3.h"
 #include "GravField.h"
-#include "MagFieldManager.h"
+#include "MagFieldArray.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -22,7 +22,7 @@ class FieldManager : public TNamed
 {
 private:
    GravField*    fGravField;
-   MagFieldManager* fMagFieldManager;
+   MagFieldArray* fMagFieldArray;
    
    GravField* AddGravField();
    
@@ -42,7 +42,7 @@ public:
    const GravField* const GetGravField() const {return fGravField;}
    
    // Mag Fields
-   MagFieldManager& GetMagFieldManager() const {return *fMagFieldManager;}
+   MagFieldArray& GetMagFieldArray() const {return *fMagFieldArray;}
    const TVector3 GetMagField(const Point& point, const string volume = "") const;
    
    ClassDef(FieldManager,1)

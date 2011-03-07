@@ -87,8 +87,8 @@ ELEMENTO = $(ClassPath)/Element.$(ObjSuf) UCNDict.$(ObjSuf)
 ELEMENTS = $(ClassPath)/Element.$(SrcSuf) UCNDict.$(SrcSuf)
 VOLUMEO = $(ClassPath)/Volume.$(ObjSuf) UCNDict.$(ObjSuf)
 VOLUMES = $(ClassPath)/Volume.$(SrcSuf) UCNDict.$(SrcSuf)
-MAGFIELDMANAGERO = $(ClassPath)/MagFieldManager.$(ObjSuf) UCNDict.$(ObjSuf)
-MAGFIELDMANAGERS = $(ClassPath)/MagFieldManager.$(SrcSuf) UCNDict.$(SrcSuf)
+MAGFIELDARRAYO = $(ClassPath)/MagFieldArray.$(ObjSuf) UCNDict.$(ObjSuf)
+MAGFIELDARRAYS = $(ClassPath)/MagFieldArray.$(SrcSuf) UCNDict.$(SrcSuf)
 INITIALCONFIGO = $(ClassPath)/InitialConfig.$(ObjSuf) UCNDict.$(ObjSuf)
 INITIALCONFIGS = $(ClassPath)/InitialConfig.$(SrcSuf) UCNDict.$(SrcSuf)
 RUNCONFIGO = $(ClassPath)/RunConfig.$(ObjSuf) UCNDict.$(ObjSuf)
@@ -132,7 +132,7 @@ UCNLIB = -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -L$(GSL)/lib -lgsl -lgslcblas 
 OBJS = $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
 $(STATEO) $(SPINO) $(FILEPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
 $(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
-$(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDMANAGERO) $(INITIALCONFIGO) \
+$(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDARRAYO) $(INITIALCONFIGO) \
 $(RUNCONFIGO) $(OBSERVERO) $(SPINDATAO) $(BOUNCEDATAO) $(FIELDDATAO) $(TRACKO) $(FIELDMAPO) \
 $(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLEO) $(CLOCKO) \
 $(EVENTO) $(ALGORITHMSO)
@@ -261,7 +261,7 @@ COMPOSITESHAPEO: 			include/CompositeShape.h
 BOOLNODEO: 					include/BoolNode.h
 VOLUMEO: 					include/Volume.h
 ELEMENTO: 					include/Element.h
-MAGFIELDMANAGERO: 		include/MagFieldManager.h
+MAGFIELDARRAYO: 			include/MagFieldArray.h
 INITIALCONFIGO: 			include/InitialConfig.h
 RUNCONFIGO: 				include/RunConfig.h
 OBSERVERO:					include/Observer.h
@@ -287,7 +287,7 @@ UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/UniformMagField.h include/ParabolicMagField.h \
 								include/Run.h include/FieldManager.h include/ConfigFile.h \
 								include/CompositeShape.h include/BoolNode.h \
-								include/Volume.h include/Element.h include/MagFieldManager.h \
+								include/Volume.h include/Element.h include/MagFieldArray.h \
 								include/InitialConfig.h include/RunConfig.h include/Observer.h \
 								include/Track.h include/FieldMap.h \
 								include/KDTree.h include/KDTreeNode.h include/FieldVertex.h \

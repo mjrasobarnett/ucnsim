@@ -147,7 +147,7 @@ Bool_t BuildUniformField(const TGeoHMatrix& matrix)
 {
    // Create a Uniform Magnetic field and write it to file
    cout << "Building Uniform Mag Field" << endl;
-   MagFieldManager* magFieldManager = new MagFieldManager();
+   MagFieldArray* magFieldArray = new MagFieldArray();
    // -- Define solenoid field - uniform magnetic field
    // Define shape of field
    TGeoShape* fieldShape = new Tube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
@@ -161,7 +161,7 @@ Bool_t BuildUniformField(const TGeoHMatrix& matrix)
    // Define field object
    MagField* uniformField = new UniformMagField("SolenoidField", fieldStrength, fieldShape, fieldPosition);
    // Add field to magfield manager
-   magFieldManager->AddField(uniformField);
+   magFieldArray->AddField(uniformField);
    
    // -- Write magfieldmanager to geometry file
    const char *magFileName = "$(UCN_GEOM)/fields.root";
@@ -170,11 +170,11 @@ Bool_t BuildUniformField(const TGeoHMatrix& matrix)
      Error("Export","Cannot open file: %s", magFileName);
      return kFALSE;
    }
-   magFieldManager->Write(magFieldManager->GetName());
+   magFieldArray->Write(magFieldArray->GetName());
    f->ls();
    f->Close();
-   if (magFieldManager) delete magFieldManager;
-   magFieldManager = 0;
+   if (magFieldArray) delete magFieldArray;
+   magFieldArray = 0;
    return kTRUE;
 }
 
@@ -194,8 +194,8 @@ Bool_t BuildFieldMap(const TGeoHMatrix& matrix)
    }
    
    // Add field to magfield manager
-   MagFieldManager* magFieldManager = new MagFieldManager();
-   magFieldManager->AddField(field);
+   MagFieldArray* magFieldArray = new MagFieldArray();
+   magFieldArray->AddField(field);
    
    // -- Write magfieldmanager to geometry file
    const char *magFileName = "$(UCN_GEOM)/fields.root";
@@ -204,10 +204,10 @@ Bool_t BuildFieldMap(const TGeoHMatrix& matrix)
      Error("BuildFieldMap","Cannot open file: %s", magFileName);
      return kFALSE;
    }
-   magFieldManager->Write(magFieldManager->GetName());
+   magFieldArray->Write(magFieldArray->GetName());
    f->ls();
    f->Close();
-   if (magFieldManager) delete magFieldManager;
-   magFieldManager = 0;
+   if (magFieldArray) delete magFieldArray;
+   magFieldArray = 0;
    return kTRUE;
 }
