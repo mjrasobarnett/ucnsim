@@ -2,10 +2,10 @@
 // Author: Matthew Raso-Barnett  13/12/2010
 #include <list>
 #include <cmath>
+#include <iostream>
 
 #include "FieldMap.h"
 #include "FileParser.h"
-#include "FieldVertex.h"
 #include "VertexStack.h"
 #include "Particle.h"
 #include "Run.h"
@@ -89,9 +89,19 @@ MagFieldMap::~MagFieldMap()
 //______________________________________________________________________________
 const TVector3 MagFieldMap::GetField(const Point& point) const
 {
-   // Perform interpolation to get current field
+   // -- Perform interpolation to get current field
+   // If point requested was recently measured, return its value. Saves recomputing the value
+   static FieldVertex cachedReading(0.,0.,0.,0.,0.,0.,0.);
+   if (cachedReading.GetPoint() == point) {
+      cout << "Using Cache! Point: " << point.X() << "\t" << point.Y() << "\t" << point.Z() << endl;
+      return cachedReading.GetField();
+   }
+   // Number of interpolation points is currently an arbitrary number. Need to define this
+   // at runtime perhaps through another config variable.
    Int_t numInterpolatePoints = 6;
    const TVector3 field = this->Interpolate(point.GetPosition(), numInterpolatePoints);
+   // Update cached reading before return vale
+   cachedReading.SetField(field);
    return field;
 }
 
@@ -144,7 +154,7 @@ TVector3 MagFieldMap::Interpolate(const TVector3& position, const Int_t numInter
          cout << "Weight: " << weight << endl;
       #endif
       sumWeights += weight;
-      avgField += weight*(vertex->FieldVector());
+      avgField += weight*(vertex->GetField());
    }
    avgField = avgField*(1.0/sumWeights);
    // Delete nearest neighbours now that we are finished with it

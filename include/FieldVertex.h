@@ -30,10 +30,11 @@ class FieldVertex : public TObject {
       double By() const {return fBField.Y();}
       double Bz() const {return fBField.Z();}
       const Point& GetPoint() const {return fPoint;}
-      const TVector3& FieldVector() const {return fBField;}
+      const TVector3& GetField() const {return fBField;}
       
       // setters
       void SetPosition(double x, double y, double z) {fPoint.SetPoint(x,y,z,fPoint.T());}
+      void SetField(const TVector3& field) {fBField = field;}
       void SetField(double bx, double by, double bz) {fBField.SetXYZ(bx,by,bz);}
       void SetT(double t) {fPoint.SetT(t);}
 
