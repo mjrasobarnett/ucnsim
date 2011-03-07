@@ -13,6 +13,7 @@
 // Observable -                                                             //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
+class Point;
 
 class Observable {
 private:
@@ -31,7 +32,7 @@ public:
    Observer* GetObserver(int index) {return fObservers[index];}
    void      WriteObserversToFile(TDirectory* particleDir);
    
-   virtual void      NotifyObservers(const TObject* subject, const std::string& context) = 0;
+   virtual void      NotifyObservers(const Point& point, const std::string& context) = 0;
 
 };
 

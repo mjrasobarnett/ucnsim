@@ -104,7 +104,7 @@ public:
    Double_t             Theta()  const {return fVel.Theta();}
    Double_t             Phi()    const {return fVel.Phi();}
 
-   const Point&         GetPosition() const {return fPos;}
+   const Point&         GetPoint() const {return fPos;}
    
    void                 SetId(const Int_t id) {fId = id;}
    void                 SetPosition(const Double_t x, const Double_t y, const Double_t z, 
@@ -141,7 +141,7 @@ public:
    void                 IsAnomalous();
    
    // -- Observers
-   virtual void         NotifyObservers(const TObject* subject, const std::string& context);
+   virtual void         NotifyObservers(const Point& point, const std::string& context);
    
    // -- Output to file
    void                 SaveState(Run* run);
