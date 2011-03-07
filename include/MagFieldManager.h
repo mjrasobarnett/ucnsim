@@ -34,7 +34,6 @@ private:
    
    //** Don't allow copy construction - otherwise we run into problems with ownership of pointers
    MagFieldManager(const MagFieldManager&);
-   MagFieldManager& operator=(const MagFieldManager&);
    
 public:
    // -- constructors

@@ -29,19 +29,6 @@ MagFieldManager::MagFieldManager(const MagFieldManager& other)
                     :TNamed(other), fFieldList(other.fFieldList)
 {
    //copy constructor
-   Info("MagFieldManager", "Copy Constructor");  
-}
-
-//_____________________________________________________________________________
-MagFieldManager& MagFieldManager::operator=(const MagFieldManager& other) 
-{
-   //assignment operator
-   Info("MagFieldManager", "Assignment");
-   if(this!=&other) {
-      TNamed::operator=(other);
-      fFieldList = other.fFieldList;
-   }
-   return *this;
 }
 
 //_____________________________________________________________________________
