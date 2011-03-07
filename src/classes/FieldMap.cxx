@@ -92,10 +92,8 @@ const TVector3 MagFieldMap::GetField(const Point& point) const
    // -- Perform interpolation to get current field
    // If point requested was recently measured, return its value. Saves recomputing the value
    static FieldVertex cachedReading(0.,0.,0.,0.,0.,0.,0.);
-   if (cachedReading.GetPoint() == point) {
-      cout << "Using Cache! Point: " << point.X() << "\t" << point.Y() << "\t" << point.Z() << endl;
-      return cachedReading.GetField();
-   }
+   static FieldVertex cachedReading;
+   if (cachedReading.GetPoint() == point) {return cachedReading.GetField();}
    // Number of interpolation points is currently an arbitrary number. Need to define this
    // at runtime perhaps through another config variable.
    Int_t numInterpolatePoints = 6;
