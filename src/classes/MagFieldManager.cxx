@@ -18,7 +18,8 @@ ClassImp(MagFieldManager)
 
 //_____________________________________________________________________________
 MagFieldManager::MagFieldManager()
-                    :TNamed("MagFieldManager","Default Magnetic Field Manager")
+                :TNamed("MagFieldManager","Default Magnetic Field Manager"),
+                 Observable()
 {
    // Default constructor
    Info("MagFieldManager", "Default Constructor");
@@ -26,9 +27,12 @@ MagFieldManager::MagFieldManager()
 
 //_____________________________________________________________________________
 MagFieldManager::MagFieldManager(const MagFieldManager& other)
-                    :TNamed(other), fFieldList(other.fFieldList)
+                :TNamed(other),
+                 Observable(other),
+                 fFieldList(other.fFieldList)
 {
    //copy constructor
+   Info("MagFieldManager", "Copy Constructor");
 }
 
 //_____________________________________________________________________________
@@ -71,3 +75,15 @@ const TVector3 MagFieldManager::GetMagField(const Point& point, const string /*v
    point.GetPosition().Print();
    return TVector3(0.,0.,0.);
 }
+
+//_____________________________________________________________________________
+void MagFieldManager::NotifyObservers(const Point& point, const std::string& context)
+{
+   // -- Notify Observers of change
+   for(int i = 0; i < this->CountObservers(); i++) {
+      Observer* observer = this->GetObserver(i);
+      observer->RecordEvent(point, context);
+   }
+}
+
+

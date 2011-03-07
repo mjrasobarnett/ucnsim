@@ -11,6 +11,7 @@
 #include "TVector3.h"
 
 #include "MagField.h"
+#include "Observable.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -24,7 +25,7 @@ using std::endl;
 
 class Point;
 
-class MagFieldManager : public TNamed 
+class MagFieldManager : public TNamed, public Observable
 {
 private:
    typedef map<string, MagField*> FieldContainer;
@@ -46,6 +47,7 @@ public:
 
    // -- methods
    const TVector3 GetMagField(const Point& point, const string = "") const;
+   virtual void   NotifyObservers(const Point& point, const std::string& context);
    
    ClassDef(MagFieldManager, 1)
 };
