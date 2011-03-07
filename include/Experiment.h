@@ -5,6 +5,7 @@
 #define ROOT_Experiment
 
 #include "TNamed.h"
+#include "Observable.h"
 #include "TGeoManager.h"
 #include "FieldManager.h"
 
@@ -16,7 +17,7 @@
 class Run;
 class RunConfig;
 
-class Experiment : public TNamed 
+class Experiment : public TNamed, public Observable 
 {
 protected:
    FieldManager     fFieldManager;
