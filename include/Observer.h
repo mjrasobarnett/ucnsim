@@ -30,6 +30,7 @@ namespace Context {
    const std::string Creation = "creation";
    const std::string Step = "step";
    const std::string Spin = "spin";
+   const std::string MagField = "magfield";
    const std::string SpecBounce = "specbounce";
    const std::string DiffBounce = "diffbounce";
 }

@@ -367,7 +367,7 @@ FieldObserver::~FieldObserver()
 void FieldObserver::RecordEvent(const Point& point, const std::string& context)
 {
    // -- Record the current Field at the current point
-   if (context == Context::Spin) {
+   if (context == Context::MagField) {
       // Calculate whether it is time to make a field measurement
       double currentTime = Clock::Instance()->GetTime();
       if (Precision::IsEqual(currentTime,(fLastMeasurementTime + fMeasInterval))) {

@@ -184,8 +184,12 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       // Update Particle
       this->SetPosition(pos[0],pos[1],pos[2],finalTime);
       this->SetVelocity(vel[0],vel[1],vel[2]);
-      // Precess spin at the halfway position
-      this->PrecessSpin(run->GetExperiment().GetMagField(halfwayPoint), interval);
+      // Measure the magnetic field at the halfway point along step
+      const TVector3 field = run->GetExperiment().GetMagField(halfwayPoint);
+      // Notify observers of new field state
+      this->NotifyObservers(halfwayPoint, Context::MagField);
+      // Precess spin about measured magnetic field
+      this->PrecessSpin(field, interval);
       #ifdef VERBOSE_MODE
          cout << "-------------------------------------------" << endl;
          cout << "Move -- Final X: " << this->X() << "\t" << "Y: " << this->Y();
