@@ -119,8 +119,6 @@ OBSERVABLEO = $(ClassPath)/Observable.$(ObjSuf) UCNDict.$(ObjSuf)
 OBSERVABLES = $(ClassPath)/Observable.$(SrcSuf) UCNDict.$(SrcSuf)
 CLOCKO = $(ClassPath)/Clock.$(ObjSuf) UCNDict.$(ObjSuf)
 CLOCKS = $(ClassPath)/Clock.$(SrcSuf) UCNDict.$(SrcSuf)
-EVENTO = $(ClassPath)/Event.$(ObjSuf) UCNDict.$(ObjSuf)
-EVENTS = $(ClassPath)/Event.$(SrcSuf) UCNDict.$(SrcSuf)
 ALGORITHMSO = src/Algorithms.$(ObjSuf) UCNDict.$(ObjSuf)
 ALGORITHMSS = src/Algorithms.$(SrcSuf) UCNDict.$(SrcSuf)
 
@@ -279,7 +277,6 @@ VERTEXSTACKO:				include/VertexStack.h
 POINTO:						include/Point.h
 OBSERVABLEO:				include/Observable.h
 CLOCKO:						include/Clock.h
-EVENTO:						include/Event.h
 ALGORITHMSO:				include/Algorithms.h
 
 UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
@@ -295,7 +292,7 @@ UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/Track.h include/FieldMap.h \
 								include/KDTree.h include/KDTreeNode.h include/FieldVertex.h \
 								include/VertexStack.h include/Point.h include/Observable.h \
-								include/Clock.h include/Event.h include/Algorithms.h $(LINKDEF)
+								include/Clock.h include/Algorithms.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 
