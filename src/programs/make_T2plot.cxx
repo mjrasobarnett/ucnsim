@@ -30,6 +30,7 @@
 using namespace std;
 
 void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig);
+void PlotPhaseAngleSnapShots(vector<vector<double> >& phase_data, const unsigned int intervals);
 
 Double_t ExponentialDecay(Double_t *x, Double_t *par);
 
@@ -157,6 +158,7 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
    const Double_t runTime = runConfig.RunTime();
    const Double_t spinMeasInterval = runConfig.SpinMeasureInterval();
    const Int_t nbins = runTime/spinMeasInterval;
+   const UInt_t intervals = 1 + runTime/spinMeasInterval;
    const TVector3 xAxis(1.0,0.0,0.0);
    const TVector3 yAxis(0.0,1.0,0.0);
    const TVector3 zAxis(0.0,0.0,1.0);
@@ -230,7 +232,10 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
       }
    }
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd back into Histogram's dir
+   // -- Plot snapshots of the particles phase distribution over time
+   PlotPhaseAngleSnapShots(phase_data,intervals);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Calculate the polarisation, alpha, at each measurement interval
    histDir->cd();
    TCanvas *alphaT2canvas = new TCanvas("Alpha T2","Alpha T2",60,0,1200,800);
    alphaT2canvas->cd();
@@ -281,4 +286,39 @@ Double_t ExponentialDecay(Double_t *x, Double_t *par)
    Double_t f = par[0]*TMath::Exp(-t/par[1]);
    return f;
 }
+
+//_____________________________________________________________________________
+void PlotPhaseAngleSnapShots(vector<vector<double> >& phase_data, const unsigned int intervals)
+{
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Plot phase snapshots
+   for (unsigned int intervalNum = 0; intervalNum < intervals; intervalNum++) {
+      TCanvas *phaseCanvas = new TCanvas("Phase","Phase",60,0,1200,800);
+      phaseCanvas->cd();
+      Char_t histname[40];
+      sprintf(histname,"Total:Phase Distribution: %03i",intervalNum);
+      TH1F* nextHistogram = new TH1F(histname, "Phase Angle Distribution", 180, -180., 180.);
+      nextHistogram->SetXTitle("Phase Angle");
+      nextHistogram->SetYTitle("Neutrons");
+      nextHistogram->GetYaxis()->SetRangeUser(0,100);
+      nextHistogram->SetLineColor(kBlack);
+      nextHistogram->SetFillStyle(3001);
+      nextHistogram->SetFillColor(kBlack);
+      // Loop over all particles for each interval
+      vector<vector<double> >::iterator particleIter = phase_data.begin();
+      for ( ; particleIter != phase_data.end(); particleIter++) {
+         nextHistogram->Fill((*particleIter)[intervalNum]*180.0/TMath::Pi());
+      }
+      nextHistogram->Draw();
+      // Write histogram to file
+      string filepath = "images/";
+      string filename = filepath + nextHistogram->GetName();
+      filename += ".png";
+      phaseCanvas->Print(filename.c_str());
+      delete phaseCanvas;
+      delete nextHistogram;
+   }
+   return;
+}
+
 
