@@ -167,11 +167,14 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       TVector3 vel(this->Vx(), this->Vy(), this->Vz());
       // Calculate position halfway along step
       const Double_t halfInterval = interval*0.5;
-      TVector3 halfPos(pos);
+      TVector3 halfwayPos(pos);
       for (int i=0;i<3;i++) {
-         halfPos[i] += vel[i]*halfInterval + 0.5*gravField[i]*halfInterval*halfInterval;
+         halfwayPos[i] += vel[i]*halfInterval + 0.5*gravField[i]*halfInterval*halfInterval;
       }
+      const Double_t halfwayTime = this->T()+halfInterval;
+      Point halfwayPoint(halfwayPos,halfwayTime);
       // Calculate final position
+      const Double_t finalTime = this->T()+interval;
       for (int i=0;i<3;i++) {
          pos[i] += vel[i]*interval + 0.5*gravField[i]*interval*interval;
          vel[i] += gravField[i]*interval;
@@ -179,10 +182,10 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       // Update Clock
       Clock::Instance()->Tick(interval);
       // Update Particle
-      this->SetPosition(pos[0],pos[1],pos[2],this->T()+interval);
+      this->SetPosition(pos[0],pos[1],pos[2],finalTime);
       this->SetVelocity(vel[0],vel[1],vel[2]);
       // Precess spin at the halfway position
-      this->PrecessSpin(run->GetExperiment().GetMagField(halfPos), interval);
+      this->PrecessSpin(run->GetExperiment().GetMagField(halfwayPoint), interval);
       #ifdef VERBOSE_MODE
          cout << "-------------------------------------------" << endl;
          cout << "Move -- Final X: " << this->X() << "\t" << "Y: " << this->Y();
