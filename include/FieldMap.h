@@ -10,6 +10,7 @@
 #include "TVector3.h"
 #include "MagField.h"
 #include "KDTree.h"
+#include "FieldVertex.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -43,14 +44,13 @@ class MagFieldMap : public FieldMap, public MagField {
 private:
    KDTree* fTree;
    
-   
 public:
    MagFieldMap();
    MagFieldMap(const std::string& name, const TGeoShape* fieldShape, const TGeoMatrix* fieldPosition);
    MagFieldMap(const MagFieldMap&);
    virtual ~MagFieldMap();
    
-   virtual const TVector3 GetField(const TVector3& position) const;
+   virtual const TVector3 GetField(const Point& point) const;
    virtual Bool_t BuildMap(const std::string& filename);
    
    TVector3 Interpolate(const TVector3& position, const Int_t numInterpolatePoints) const;

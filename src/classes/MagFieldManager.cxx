@@ -4,6 +4,7 @@
 #include <cassert>
 #include <stdexcept>
 
+#include "Point.h"
 #include "MagFieldManager.h"
 
 #include "Units.h"
@@ -70,16 +71,16 @@ void MagFieldManager::AddField(MagField* field)
 }
 
 //_____________________________________________________________________________
-const TVector3 MagFieldManager::GetMagField(const TVector3& point, const string /*volume*/) const
+const TVector3 MagFieldManager::GetMagField(const Point& point, const string /*volume*/) const
 {
    // -- Determine which field contains the current particle
    FieldContainer::const_iterator fieldIter;
    for(fieldIter = fFieldList.begin(); fieldIter != fFieldList.end(); ++fieldIter) {
-      if (fieldIter->second->Contains(point) == kTRUE) {
+      if (fieldIter->second->Contains(point.GetPosition()) == kTRUE) {
          return fieldIter->second->GetField(point);
       }
    }
    cout << "NO FIELD FOUND!" << endl;
-   point.Print();
+   point.GetPosition().Print();
    return TVector3(0.,0.,0.);
 }

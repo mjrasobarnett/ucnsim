@@ -19,6 +19,7 @@
 class Particle;
 class Run;
 class FieldVertex;
+class Point;
 
 class MagField : public TNamed {
 private:
@@ -37,7 +38,7 @@ public:
    virtual ~MagField();
    
    virtual Bool_t Contains(const TVector3& point) const;
-   virtual const TVector3 GetField(const TVector3& position) const = 0;
+   virtual const TVector3 GetField(const Point& point) const = 0;
    
    ClassDef(MagField, 1)              // Abstract base Mag field class
 };

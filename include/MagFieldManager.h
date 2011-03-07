@@ -22,6 +22,8 @@ using std::map;
 using std::cout;
 using std::endl;
 
+class Point;
+
 class MagFieldManager : public TNamed 
 {
 private:
@@ -44,7 +46,7 @@ public:
    virtual ~MagFieldManager();
 
    // -- methods
-   const TVector3 GetMagField(const TVector3&, const string = "") const;
+   const TVector3 GetMagField(const Point& point, const string = "") const;
    
    ClassDef(MagFieldManager, 1)
 };

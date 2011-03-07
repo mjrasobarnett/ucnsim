@@ -8,12 +8,14 @@
 #include "TObjArray.h"
 #include "TFile.h"
 #include "TString.h"
+
 #include "ConfigFile.h"
 #include "Run.h"
 #include "GravField.h"
 #include "MagField.h"
 #include "UniformMagField.h"
 #include "ParabolicMagField.h"
+#include "Point.h"
 
 #include "FieldManager.h"
 
@@ -141,10 +143,10 @@ GravField* FieldManager::AddGravField()
 }
 
 //______________________________________________________________________________
-const TVector3 FieldManager::GetMagField(const TVector3& position, const string volume) const
+const TVector3 FieldManager::GetMagField(const Point& point, const string volume) const
 {
    if (fMagFieldManager != NULL) {
-      return fMagFieldManager->GetMagField(position, volume);
+      return fMagFieldManager->GetMagField(point, volume);
    } else {
       return TVector3(0.,0.,0.);
    }

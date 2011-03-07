@@ -64,7 +64,7 @@ UniformMagField::~UniformMagField()
 }
 
 //______________________________________________________________________________
-const TVector3 UniformMagField::GetField(const TVector3& /*position*/) const
+const TVector3 UniformMagField::GetField(const Point& /*point*/) const
 {
    // No position dependence for a Uniform field so return field vector
    return fField;

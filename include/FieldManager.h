@@ -4,11 +4,11 @@
 #ifndef ROOT_FieldManager
 #define ROOT_FieldManager
 
+#include <string>
 #include "TNamed.h"
+#include "TVector3.h"
 #include "GravField.h"
 #include "MagFieldManager.h"
-#include "TVector3.h"
-#include <string>
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -16,6 +16,7 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 class RunConfig;
+class Point;
 
 class FieldManager : public TNamed 
 {
@@ -41,7 +42,7 @@ public:
    const GravField* const GetGravField() const {return fGravField;}
    
    // Mag Fields
-   const TVector3 GetMagField(const TVector3& position, const string volume = "") const;
+   const TVector3 GetMagField(const Point& point, const string volume = "") const;
    
    ClassDef(FieldManager,1)
 };

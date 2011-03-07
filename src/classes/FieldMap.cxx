@@ -87,11 +87,12 @@ MagFieldMap::~MagFieldMap()
 }
 
 //______________________________________________________________________________
-const TVector3 MagFieldMap::GetField(const TVector3& position) const
+const TVector3 MagFieldMap::GetField(const Point& point) const
 {
    // Perform interpolation to get current field
    Int_t numInterpolatePoints = 6;
-   return this->Interpolate(position, numInterpolatePoints);
+   const TVector3 field = this->Interpolate(point.GetPosition(), numInterpolatePoints);
+   return field;
 }
 
 //______________________________________________________________________________

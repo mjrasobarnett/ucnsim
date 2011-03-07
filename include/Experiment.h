@@ -17,7 +17,7 @@
 class Run;
 class RunConfig;
 
-class Experiment : public TNamed, public Observable 
+class Experiment : public TNamed
 {
 protected:
    FieldManager     fFieldManager;
@@ -45,7 +45,7 @@ public:
    
    // FieldManager Interface
    const GravField* const  GetGravField() const {return fFieldManager.GetGravField();}
-   const TVector3          GetMagField(const TVector3& position, const string volume = "") const;
+   const TVector3          GetMagField(const Point& point, const string volume = "") const;
    
    ClassDef(Experiment, 1)
 };

@@ -29,7 +29,7 @@ public:
    UniformMagField& operator=(const UniformMagField&);
    virtual ~UniformMagField();
    
-   virtual const TVector3 GetField(const TVector3& position) const;
+   virtual const TVector3 GetField(const Point& point) const;
    
    ClassDef(UniformMagField, 1)              // uniform mag field class
 };
