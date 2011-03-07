@@ -38,19 +38,7 @@ Experiment::Experiment(const Experiment& other)
                 fGeoManager(other.fGeoManager)
 {
 // -- Copy Constructor
-	Info("Experiment", "Copy Constructor");
-}
-
-//_____________________________________________________________________________
-Experiment& Experiment::operator=(const Experiment& other)
-{
-// --assignment operator
-   if(this!=&other) {
-      TNamed::operator=(other);
-      fFieldManager = other.fFieldManager;
-      fGeoManager = other.fGeoManager;
-   }
-   return *this;
+   Info("Experiment", "Copy Constructor");
 }
 
 //______________________________________________________________________________

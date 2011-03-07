@@ -29,7 +29,6 @@ public:
    // -- constructors
    Experiment();
    Experiment(const Experiment&); 
-   Experiment& operator=(const Experiment&);
    
    // -- destructor
    virtual ~Experiment();
