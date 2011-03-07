@@ -282,12 +282,12 @@ void Data::CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * cons
          outputDir->cd();
          obj->Write();
          delete obj;
-     }
-     ++counter;
-     ProgressBar::PrintProgress(counter,sourceDir->GetNkeys(),1);
-  }
-  outputDir->SaveSelf(kTRUE);
-  outputDir->cd();
+      }
+      ++counter;
+      ProgressBar::PrintProgress(counter,sourceDir->GetNkeys(),1);
+   }
+   outputDir->SaveSelf(kTRUE);
+   outputDir->cd();
 }
 
 //_____________________________________________________________________________
