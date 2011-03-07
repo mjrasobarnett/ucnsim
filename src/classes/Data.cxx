@@ -131,8 +131,6 @@ Bool_t Data::Initialise(const RunConfig& runConfig)
       Error("Initialise","Cannot Load Particles");
       return kFALSE;
    }
-   // Initialise any observers selected by user
-   this->InitialiseObservers(runConfig);
    return kTRUE;
 }
 
@@ -304,11 +302,11 @@ void Data::PurgeObservers()
 }
 
 //_____________________________________________________________________________
-void Data::InitialiseObservers(const RunConfig& runConfig)
+void Data::CreateObservers(const RunConfig& runConfig)
 {
    // -- Check Run configuration for which properties are to be monitored with Observers 
    cout << "-------------------------------------------" << endl;
-   cout << "Setting up Observers" << endl;
+   cout << "Creating Observers" << endl;
    cout << "ObserveSpin: " << runConfig.ObserveSpin() << endl;
    cout << "Spin Measurement Interval (s): " << runConfig.SpinMeasureInterval() << endl;
    cout << "ObserveField: " << runConfig.ObserveField() << endl;

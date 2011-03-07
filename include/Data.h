@@ -27,7 +27,6 @@ private:
    std::multimap<std::string, Observer*> fObservers;
    
    void           PurgeObservers();
-   void           InitialiseObservers(const RunConfig& runConfig);
    void           AddObserver(std::string subject, Observer* observer);
    void           RegisterObservers(Particle* particle);
    
@@ -45,6 +44,7 @@ public:
    
    Bool_t               Initialise(const InitialConfig& initialConfig);
    Bool_t               Initialise(const RunConfig& runConfig);
+   void                 CreateObservers(const RunConfig& runConfig);
    
    // Add a Particle
    Bool_t               SaveParticle(Particle* particle, const std::string& state);
