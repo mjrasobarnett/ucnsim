@@ -233,6 +233,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    canvas2->cd();
    string geomFileName = initialConfig.GeomVisFileName();
    if (geomFileName.empty()) geomFileName = initialConfig.GeomFileName();
+   assert(!geomFileName.empty());
    TGeoManager* geoManager = TGeoManager::Import(geomFileName.c_str());
    if (geoManager == NULL) return EXIT_FAILURE;
    geoManager->GetTopVolume()->Draw("ogl");

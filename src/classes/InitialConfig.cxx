@@ -48,7 +48,9 @@ InitialConfig::InitialConfig(const ConfigFile& masterConfig)
    fRunName = initialConfigFile.GetString("RunName","Name");
    
    fGeomFile = folderpath + initialConfigFile.GetString("GeomFile","Files");
-   fGeomVisFile = folderpath + initialConfigFile.GetString("GeomVisFile","Files");
+   string geomVisFileName = initialConfigFile.GetString("GeomVisFile","Files");
+   if (geomVisFileName.empty() == false) {fGeomVisFile = folderpath + geomVisFileName;}
+   
    fOutputDataFile = folderpath + initialConfigFile.GetString("OutputDataFile","Files");
    
    fBeamShape = initialConfigFile.GetString("Shape","Beam");
