@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include "TDirectory.h"
+#include "TClass.h"
 #include "TGeoManager.h"
 #include "TH1F.h"
 #include "TF1.h"

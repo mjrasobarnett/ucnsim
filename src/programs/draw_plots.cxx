@@ -24,6 +24,7 @@
 #include "TRandom.h"
 #include "TStyle.h"
 #include "TDirectory.h"
+#include "TClass.h"
 
 #include "Particle.h"
 #include "ConfigFile.h"
