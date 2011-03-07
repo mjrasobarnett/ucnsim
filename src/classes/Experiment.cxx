@@ -23,12 +23,12 @@ ClassImp(Experiment)
 
 //_____________________________________________________________________________
 Experiment::Experiment()
-               :TNamed("Experiment", "The Experimental Geometry")
+           :TNamed("Experiment", "The Experimental Geometry"),
+            fFieldManager(),
+            fGeoManager(NULL)
 {
 // -- Default constructor
    Info("Experiment", "Default Constructor");
-   fFieldManager = 0;
-   fGeoManager = 0;
 } 
 
 //_____________________________________________________________________________
@@ -46,7 +46,6 @@ Experiment::~Experiment()
 { 
 // -- Destructor
    Info("Experiment", "Destructor");
-   if (fFieldManager) delete fFieldManager;
 //   Leave GeoManager to be cleaned up by ROOT, otherwise there are problems
 }
 
@@ -90,8 +89,7 @@ Bool_t Experiment::Initialise(const RunConfig& runConfig)
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Field Initialisation
    ///////////////////////////////////////////////////////////////////////////////////////
-   fFieldManager = new FieldManager();
-   if(!(fFieldManager->Initialise(runConfig))) {
+   if(!(fFieldManager.Initialise(runConfig))) {
       Error("Initialise","Failed in field initialisation.");
       return kFALSE;
    }

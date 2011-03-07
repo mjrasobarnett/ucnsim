@@ -19,7 +19,7 @@ class RunConfig;
 class Experiment : public TNamed 
 {
 protected:
-   FieldManager*    fFieldManager;
+   FieldManager     fFieldManager;
    TGeoManager*     fGeoManager;
    
    // Geometry Building
@@ -43,7 +43,7 @@ public:
    TGeoNavigator*       GetNavigator() const  {return fGeoManager->GetCurrentNavigator();}
    
    // FieldManager Interface
-   const GravField* const  GetGravField() const {return fFieldManager->GetGravField();}
+   const GravField* const  GetGravField() const {return fFieldManager.GetGravField();}
    const TVector3          GetMagField(const TVector3& position, const string volume = "") const;
    
    ClassDef(Experiment, 1)
