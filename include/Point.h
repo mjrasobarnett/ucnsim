@@ -4,6 +4,8 @@
 #ifndef POINT_H
 #define POINT_H
 
+#include "TVector3.h"
+
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
 //       Point                                                           //
@@ -12,12 +14,14 @@
 
 class Point {
 private:
-   double fX, fY, fZ, fT;
+   TVector3 fPos;
+   double fT;
    
 public:
    // -- constructors
    Point();
    Point(double x, double y, double z, double t);
+   Point(TVector3 pos, double t);
    Point(const Point&); 
    Point& operator=(const Point&);
    // -- destructor
@@ -27,13 +31,14 @@ public:
    bool operator!=(const Point& other) const {return !(*this==other);}
    
    // -- methods
-   double X() const {return fX;}
-   double Y() const {return fY;}
-   double Z() const {return fZ;}
+   double X() const {return fPos.X();}
+   double Y() const {return fPos.Y();}
+   double Z() const {return fPos.Z();}
    double T() const {return fT;}
+   const TVector3& GetPosition() const {return fPos;}
    
    void SetT(double t) {fT = t;}
-   void SetPoint(double x, double y, double z, double t) {fX=x; fY=y; fZ=z; fT=t;}
+   void SetPoint(double x, double y, double z, double t) {fPos.SetXYZ(x,y,z); fT=t;}
    
 };
 

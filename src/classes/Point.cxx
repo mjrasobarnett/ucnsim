@@ -11,7 +11,7 @@ using namespace std;
 
 //_____________________________________________________________________________
 Point::Point()
-      :fX(0.), fY(0.), fZ(0.), fT(0.)
+      :fPos(0.,0.,0.), fT(0.)
 {
 // -- Default constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -21,7 +21,18 @@ Point::Point()
 
 //_____________________________________________________________________________
 Point::Point(double x, double y, double z, double t)
-      :fX(x), fY(y), fZ(z), fT(t)
+      :fT(t)
+{
+// -- constructor
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "Point", "Constructor" << endl;
+   #endif
+   fPos.SetXYZ(x,y,z);
+}
+
+//_____________________________________________________________________________
+Point::Point(TVector3 pos, double t)
+      :fPos(pos), fT(t)
 {
 // -- constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -31,7 +42,7 @@ Point::Point(double x, double y, double z, double t)
 
 //_____________________________________________________________________________
 Point::Point(const Point& other)
-      :fX(other.fX), fY(other.fY), fZ(other.fZ), fT(other.fT)
+      :fPos(other.fPos), fT(other.fT)
 {
 // -- Copy Constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -44,9 +55,7 @@ Point& Point::operator=(const Point& other)
 {
 // --assignment operator
    if(this!=&other) {
-      fX = other.fX;
-      fY = other.fY;
-      fZ = other.fZ;
+      fPos = other.fPos;
       fT = other.fT;
    }
    return *this;
@@ -64,7 +73,7 @@ Point::~Point()
 //______________________________________________________________________________
 bool Point::operator==(const Point& other) const
 {
-   if (other.X() == fX && other.Y() == fY && other.Z() == fZ && other.T() == fT) {
+   if (fPos == other.GetPosition() && fT == other.T()) {
       return true;
    } else {
       return false;
