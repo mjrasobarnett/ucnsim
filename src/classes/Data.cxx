@@ -11,6 +11,7 @@
 #include <stdexcept>
 
 #include "TKey.h"
+#include "TClass.h"
 #include "TGeoManager.h"
 
 #include "DataFileHierarchy.h"
@@ -361,8 +362,9 @@ void Data::RegisterObservers(Particle* particle)
       if (subject == "Particles") {
          observer->DefineSubject(particle);
          particle->Attach(observer);
-         observer->InitialReading(particle);
       }
+      // Get observers to make a measurement of the initial state of their subjects
+      observer->RecordEvent(particle->GetPoint(), Context::Creation);
    }
 }
 
