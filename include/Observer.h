@@ -17,8 +17,6 @@
 #include <string>
 
 #include "TObject.h"
-#include "TVector3.h"
-#include "TTree.h"
 #include "TDirectory.h"
 
 #include "SpinData.h"
@@ -41,10 +39,6 @@ namespace Context {
 //    Observer -  Abstract Interface                                   //
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
-class Particle;
-class RunConfig;
-class Interest;
-class Data;
 
 class Observer : public TObject
 {
