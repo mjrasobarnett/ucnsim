@@ -12,6 +12,7 @@
 #include "RunConfig.h"
 
 class TGeoManager;
+class Experiment;
 
 class Data : public TNamed {
 private:
@@ -44,7 +45,7 @@ public:
    
    Bool_t               Initialise(const InitialConfig& initialConfig);
    Bool_t               Initialise(const RunConfig& runConfig);
-   void                 CreateObservers(const RunConfig& runConfig);
+   void                 CreateObservers(const RunConfig& runConfig, const Experiment& experiment);
    
    // Add a Particle
    Bool_t               SaveParticle(Particle* particle, const std::string& state);

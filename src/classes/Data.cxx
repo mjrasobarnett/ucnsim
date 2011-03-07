@@ -14,6 +14,8 @@
 #include "TClass.h"
 #include "TGeoManager.h"
 
+#include "Experiment.h"
+#include "MagFieldManager.h"
 #include "DataFileHierarchy.h"
 #include "ProgressBar.h"
 
@@ -303,7 +305,7 @@ void Data::PurgeObservers()
 }
 
 //_____________________________________________________________________________
-void Data::CreateObservers(const RunConfig& runConfig)
+void Data::CreateObservers(const RunConfig& runConfig, const Experiment& experiment)
 {
    // -- Check Run configuration for which properties are to be monitored with Observers 
    cout << "-------------------------------------------" << endl;
@@ -315,7 +317,6 @@ void Data::CreateObservers(const RunConfig& runConfig)
    cout << "ObserveBounces: " << runConfig.ObserveBounces() << endl;
    cout << "ObserveTracks: " << runConfig.ObserveTracks() << endl;
    cout << "Track Measurement Interval (s): " << runConfig.TrackMeasureInterval() << endl;
-   
    if (runConfig.ObserveBounces() == kTRUE) {
       // Create an observer to track UCN Bounces
       Observer* obs = new BounceObserver();
@@ -334,11 +335,17 @@ void Data::CreateObservers(const RunConfig& runConfig)
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }
+   // -- Attach observers to parts of the experiment
    if (runConfig.ObserveField() == kTRUE) {
       // Create an observer to record field seen by spin
       Observer* obs = new FieldObserver(runConfig.FieldMeasureInterval());
       // Add observer to the list
-      this->AddObserver("Particles", obs);
+      this->AddObserver("Fields", obs);
+      // Define Observer's subject
+      MagFieldManager& magFieldManager = experiment.GetFieldManager().GetMagFieldManager();
+      obs->DefineSubject(&magFieldManager);
+      // Attach observer to its subject
+      magFieldManager.Attach(obs);
    }
 }
 
