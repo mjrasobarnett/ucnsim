@@ -3,6 +3,7 @@
 #include <iterator>
 #include <string>
 #include <cassert>
+#include <stdexcept>
 
 #include "TH1F.h"
 #include "TF1.h"
@@ -157,8 +158,11 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
    // -- Define Histograms
    const Double_t runTime = runConfig.RunTime();
    const Double_t spinMeasInterval = runConfig.SpinMeasureInterval();
-   const Int_t nbins = runTime/spinMeasInterval;
+   if (spinMeasInterval == 0) {throw runtime_error("Spin Measure Interval set to zero in config");}
    const UInt_t intervals = 1 + runTime/spinMeasInterval;
+   cout << "Run Time: " << runTime << "\t";
+   cout << "Spin Measurement interval length: " << spinMeasInterval << endl;
+   cout << "Measurement intervals: " << intervals << endl;
    const TVector3 xAxis(1.0,0.0,0.0);
    const TVector3 yAxis(0.0,1.0,0.0);
    const TVector3 zAxis(0.0,0.0,1.0);
@@ -170,9 +174,9 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
       stateName += (*dirIter)->GetName();
    }
    //////////////////////////////////////////////////////////////////////////////////////
-   TH1F time_data("T2 Time Data","T2 Time Data", nbins, 0.0, runTime);
+   TH1F time_data("T2 Time Data","T2 Time Data", intervals, 0.0, runTime);
    vector<vector<double> > phase_data;
-   TGraph* alphaT2 = new TGraph(nbins);
+   TGraph* alphaT2 = new TGraph(intervals);
    Char_t histname[40];
    sprintf(histname,"%s:T2_Polarisation",stateName.c_str());
    alphaT2->SetName(histname);
@@ -204,6 +208,7 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
                if (cl->InheritsFrom("SpinData")) {
                   // -- Extract Spin Observer Data if recorded
                   const SpinData* data = dynamic_cast<const SpinData*>(objKey->ReadObj());
+                  assert(data->size() == intervals);
                   // Create storage for this particle's phase information
                   vector<double> phases;
                   // Loop over spin data recorded for particle
@@ -240,19 +245,19 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
    TCanvas *alphaT2canvas = new TCanvas("Alpha T2","Alpha T2",60,0,1200,800);
    alphaT2canvas->cd();
    // Calculate T2 polarisation
-   for (int timeIndex = 0; timeIndex < time_data.GetNbinsX(); timeIndex++) {
+   for (unsigned int intervalNum = 0; intervalNum < intervals; intervalNum++) {
       // Calculate mean phase for each time
       Double_t sumPhases = 0.;
       for (UInt_t particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
-         assert(phase_data[particleIndex].size() == (size_t)time_data.GetNbinsX());
-         sumPhases += phase_data[particleIndex][timeIndex];
+         assert(phase_data[particleIndex].size() == intervals);
+         sumPhases += phase_data[particleIndex][intervalNum];
       }
       Double_t meanPhase = sumPhases/phase_data.size();
       // Calculate the number spin up and down based on phase difference
       Int_t numSpinUp = 0, numSpinDown = 0;
       for (unsigned int particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
          // Calculate the angle between each particle's phase and the mean phase
-         Double_t phasediff = TMath::Abs(phase_data[particleIndex][timeIndex] - meanPhase);
+         Double_t phasediff = TMath::Abs(phase_data[particleIndex][intervalNum] - meanPhase);
          Double_t probSpinDown = TMath::Cos(phasediff);
          if (gRandom->Uniform(0.,1.0) < probSpinDown) {
             numSpinDown++;
@@ -262,9 +267,9 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
       }
       // Calculate polarisation at this time
       Double_t alpha = TMath::Abs(((double)(numSpinUp - numSpinDown)) / ((double)(numSpinUp + numSpinDown)));
-      Double_t timebin = time_data.GetBinLowEdge(timeIndex);
+      Double_t timebin = time_data.GetBinLowEdge(intervalNum);
       // Add point to graph
-      alphaT2->SetPoint(timeIndex, timebin, alpha);
+      alphaT2->SetPoint(intervalNum, timebin, alpha);
    }
    // Draw graph
    alphaT2->SetMarkerStyle(7);
