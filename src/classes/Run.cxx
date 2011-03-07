@@ -106,7 +106,7 @@ Bool_t Run::Initialise()
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Build Geometry
    ///////////////////////////////////////////////////////////////////////////////////////
-   if (this->GetExperiment()->Initialise(this->GetRunConfig()) == kFALSE) {
+   if (fExperiment->Initialise(this->GetRunConfig()) == kFALSE) {
       Error("Initialise","Failed to Build the Experiment");
       return kFALSE;
    }
@@ -223,7 +223,7 @@ Bool_t Run::Finish()
       return kFALSE;
    }
    // Write the geometry out to file
-   this->GetExperiment()->ExportGeometry(*this);
+   fExperiment->ExportGeometry(*this);
    // Delete the experiment
    if (fExperiment) delete fExperiment; fExperiment = NULL;
    // Delete the Data

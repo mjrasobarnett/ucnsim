@@ -142,7 +142,7 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       interval = stepTime;
    }
    // Fetch the Gravitational Field if it exists, and store field's components
-   const GravField* const gravity = run->GetFieldManager()->GetGravField();
+   const GravField* const gravity = run->GetExperiment().GetGravField();
    TVector3 gravField(0.,0.,0.);
    if (gravity != NULL) {
       gravField.SetXYZ(gravity->Gx(), gravity->Gy(), gravity->Gz());
@@ -182,7 +182,7 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       this->SetPosition(pos[0],pos[1],pos[2],this->T()+interval);
       this->SetVelocity(vel[0],vel[1],vel[2]);
       // Precess spin at the halfway position
-      this->PrecessSpin(run->GetFieldManager()->GetMagField(halfPos), interval);
+      this->PrecessSpin(run->GetExperiment().GetMagField(halfPos), interval);
       #ifdef VERBOSE_MODE
          cout << "-------------------------------------------" << endl;
          cout << "Move -- Final X: " << this->X() << "\t" << "Y: " << this->Y();

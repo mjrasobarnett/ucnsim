@@ -41,12 +41,8 @@ public:
    Double_t             RunTime() const         {return fRunConfig.RunTime();}
    Double_t             MaxStepTime() const     {return fRunConfig.MaxStepTime();}
    
-   TGeoManager*         GetGeoManager() const      {return fExperiment->GetGeoManager();}
-   TGeoNavigator*       GetNavigator() const       {return fExperiment->GetNavigator();}
-   FieldManager*        GetFieldManager() const    {return fExperiment->GetFieldManager();}
-   
    Data*                GetData()            {return fData;}
-   Experiment*          GetExperiment()      {return fExperiment;}
+   const Experiment&    GetExperiment() const {return *fExperiment;}
    const RunConfig&     GetRunConfig() const {return fRunConfig;}
    
    // Run Procedures

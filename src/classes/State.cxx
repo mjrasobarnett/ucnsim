@@ -201,12 +201,13 @@ Bool_t Propagating::Propagate(Particle* particle, Run* run)
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Initialise TGeoNavigator
    // InitTrack sets navigator's current point/direction/node to that of the particle
-   run->GetNavigator()->InitTrack(particle->X(), particle->Y(), particle->Z(), particle->Nx(), particle->Ny(), particle->Nz());
+   TGeoNavigator* const navigator = run->GetExperiment().GetNavigator();
+   navigator->InitTrack(particle->X(), particle->Y(), particle->Z(), particle->Nx(), particle->Ny(), particle->Nz());
    // -- Check that Particle has not been initialised inside a boundary or detector
-   const Volume* vol = dynamic_cast<const Volume*>(run->GetNavigator()->GetCurrentVolume());
+   const Volume* vol = dynamic_cast<const Volume*>(navigator->GetCurrentVolume());
    if (vol->IsTrackingVolume() == kFALSE) {
       cout << "Particle: " << particle->Id() << " initialised inside boundary of ";
-      cout << run->GetNavigator()->GetCurrentVolume()->GetName() << endl;
+      cout << navigator->GetCurrentVolume()->GetName() << endl;
       return kFALSE;
    }   
    ///////////////////////////////////////////////////////////////////////////////////////
@@ -215,7 +216,7 @@ Bool_t Propagating::Propagate(Particle* particle, Run* run)
       #ifdef VERBOSE_MODE
          cout << endl << "-------------------------------------------------------" << endl;
          cout << "STEP " << stepNumber << "\t" << particle->T() << " s" << "\t";
-         cout << run->GetNavigator()->GetCurrentNode()->GetName() << endl;	
+         cout << navigator->GetCurrentNode()->GetName() << endl;	
       #endif
       // Check clock for time to the next event. Set this as the maximum step time
       Double_t stepTime = Clock::Instance()->GetTimeToNextEvent();
@@ -239,9 +240,8 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Get the initial parameters
    ///////////////////////////////////////////////////////////////////////////////////////
-   TGeoNavigator* navigator = run->GetNavigator();
-   FieldManager* fieldManager = run->GetFieldManager();
-   const GravField* const gravField = fieldManager->GetGravField();
+   TGeoNavigator* navigator = run->GetExperiment().GetNavigator();
+   const GravField* const gravField = run->GetExperiment().GetGravField();
       
    // -- Store the initial particle's position
    const TVector3 initialPosition(particle->X(), particle->Y(), particle->Z());

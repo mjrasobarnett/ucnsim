@@ -103,7 +103,7 @@ Bool_t Experiment::Initialise(const RunConfig& runConfig)
    // -- Field Initialisation
    ///////////////////////////////////////////////////////////////////////////////////////
    fFieldManager = new FieldManager();
-   if(!(this->GetFieldManager()->Initialise(runConfig))) {
+   if(!(fFieldManager->Initialise(runConfig))) {
       Error("Initialise","Failed in field initialisation.");
       return kFALSE;
    }
