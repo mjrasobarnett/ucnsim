@@ -365,9 +365,13 @@ void Data::RegisterObservers(Particle* particle)
       string subject = obsIter->first;
       Observer* observer = obsIter->second;
       observer->ResetData();
-      // If observer's subject is particle, then attach it to the particle
       if (subject == "Particles") {
+         // If observer's subject is particle, then attach it to the particle
          observer->DefineSubject(particle);
+         particle->Attach(observer);
+      } else if (subject == "Fields") {
+         // If observer's subject is fields, also attach it to the particle but don't change its
+         // subject, as the particle is not subject, but it can issue notifications
          particle->Attach(observer);
       }
       // Get observers to make a measurement of the initial state of their subjects
