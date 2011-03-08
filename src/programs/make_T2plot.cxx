@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <iterator>
 #include <string>
@@ -30,8 +31,14 @@
 
 using namespace std;
 
+typedef struct {
+   double fCosTheta;
+   double fSinTheta;
+   double fTheta;
+} Coords;
+
 void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig);
-void PlotPhaseAngleSnapShots(vector<vector<double> >& phase_data, const unsigned int intervals);
+void PlotPhaseAngleSnapShots(vector<vector<Coords> >& phase_data, const unsigned int intervals);
 
 Double_t ExponentialDecay(Double_t *x, Double_t *par);
 
@@ -175,7 +182,7 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
    }
    //////////////////////////////////////////////////////////////////////////////////////
    TH1F time_data("T2 Time Data","T2 Time Data", intervals, 0.0, runTime);
-   vector<vector<double> > phase_data;
+   vector<vector<Coords> > phase_data;
    TGraph* alphaT2 = new TGraph(intervals);
    Char_t histname[40];
    sprintf(histname,"%s:T2_Polarisation",stateName.c_str());
@@ -210,7 +217,7 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
                   const SpinData* data = dynamic_cast<const SpinData*>(objKey->ReadObj());
                   assert(data->size() == intervals);
                   // Create storage for this particle's phase information
-                  vector<double> phases;
+                  vector<Coords> phases;
                   // Loop over spin data recorded for particle
                   SpinData::const_iterator dataIter;
                   for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
@@ -220,13 +227,21 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
                      // -- phase of the spin in the Y-Z plane. 
                      const Spin* spin = dataIter->second;
                      // Calculate probability of spin up along Y axis
-                     Double_t ycoord = spin->CalculateProbSpinUp(yAxis);
+                     Double_t yprob = spin->CalculateProbSpinUp(yAxis);
                      // Calculate probability of spin up along Z axis
-                     Double_t zcoord = spin->CalculateProbSpinUp(zAxis);
-                     // Calculate theta (the phase)
-                     Double_t theta = TMath::ATan2((2.0*zcoord - 1.0), (2.0*ycoord - 1.0));
-                     // Add each phase to list
-                     phases.push_back(theta);
+                     Double_t zprob = spin->CalculateProbSpinUp(zAxis);
+                     // Remap probabilities, [0,1] into a unit vector in the y-z plane [-1,1] 
+                     Double_t ycoord = (2.0*yprob - 1.0);
+                     Double_t zcoord = (2.0*zprob - 1.0);
+                     // Calculate theta
+                     Double_t theta = TMath::ATan2(zcoord,ycoord);
+                     // Store the current coordinates on the unit circle in the y-z plane
+                     Coords currentCoords;
+                     currentCoords.fSinTheta = ycoord;
+                     currentCoords.fCosTheta = zcoord;
+                     currentCoords.fTheta = theta;
+                     // Add set of y-z coords to list
+                     phases.push_back(currentCoords);
                   }
                   // Store particle's phases
                   phase_data.push_back(phases);
@@ -238,26 +253,38 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Plot snapshots of the particles phase distribution over time
-   PlotPhaseAngleSnapShots(phase_data,intervals);
+//   PlotPhaseAngleSnapShots(phase_data,intervals);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Calculate the polarisation, alpha, at each measurement interval
    histDir->cd();
    TCanvas *alphaT2canvas = new TCanvas("Alpha T2","Alpha T2",60,0,1200,800);
    alphaT2canvas->cd();
    // Calculate T2 polarisation
+   cout << setw(12) << "IntervalNum" << "\t" << setw(12) << "Alpha";
+   cout << setw(12) << "Mean Phase" << "\t" << "Old Mean Phase" << endl;
    for (unsigned int intervalNum = 0; intervalNum < intervals; intervalNum++) {
-      // Calculate mean phase for each time
-      Double_t sumPhases = 0.;
+      // -- Calculate the mean phase of the particles alpha.
+      // -- Because the angles are a circular quantity, distibuted usually from (-Pi, +Pi]
+      // -- we cannot just take the arithmetic mean of each particles angle. Instead to get a
+      // -- correct measure of the mean we first take the mean of the points on the unit-sphere
+      // -- eg: {cos(theta),sin(theta)}. Then the mean angle is just
+      // --          mean{theta} = atan2(mean{cos(theta)}/mean{sin(theta)})
+      Double_t sumCosTheta = 0., sumSinTheta = 0., sumTheta = 0.;
       for (UInt_t particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
          assert(phase_data[particleIndex].size() == intervals);
-         sumPhases += phase_data[particleIndex][intervalNum];
+         sumCosTheta += phase_data[particleIndex][intervalNum].fCosTheta;
+         sumSinTheta += phase_data[particleIndex][intervalNum].fSinTheta;
+         sumTheta += phase_data[particleIndex][intervalNum].fTheta;
       }
-      Double_t meanPhase = sumPhases/phase_data.size();
+      Double_t meanCosTheta = sumCosTheta/phase_data.size();
+      Double_t meanSinTheta = sumSinTheta/phase_data.size();
+      Double_t meanTheta = sumTheta/phase_data.size();
+      Double_t meanPhase = TMath::ATan2(meanCosTheta, meanSinTheta);
       // Calculate the number spin up and down based on phase difference
       Int_t numSpinUp = 0, numSpinDown = 0;
       for (unsigned int particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
          // Calculate the angle between each particle's phase and the mean phase
-         Double_t phasediff = TMath::Abs(phase_data[particleIndex][intervalNum] - meanPhase);
+         Double_t phasediff = TMath::Abs(phase_data[particleIndex][intervalNum].fTheta - meanPhase);
          Double_t probSpinDown = TMath::Cos(phasediff);
          if (gRandom->Uniform(0.,1.0) < probSpinDown) {
             numSpinDown++;
@@ -269,6 +296,12 @@ void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, cons
       Double_t alpha = TMath::Abs(((double)(numSpinUp - numSpinDown)) / ((double)(numSpinUp + numSpinDown)));
       Double_t timebin = time_data.GetBinLowEdge(intervalNum);
       // Add point to graph
+      cout << setw(12) << intervalNum << "\t";
+      cout << setw(12) << alpha << "\t";
+      cout << setw(12) <<  meanPhase*180.0/TMath::Pi() << "\t";
+      cout << setw(12) << meanTheta*180.0/TMath::Pi() << "\t";
+      cout << setw(12) << meanCosTheta << "\t";
+      cout << setw(12) << meanSinTheta << endl;
       alphaT2->SetPoint(intervalNum, timebin, alpha);
    }
    // Draw graph
@@ -293,7 +326,7 @@ Double_t ExponentialDecay(Double_t *x, Double_t *par)
 }
 
 //_____________________________________________________________________________
-void PlotPhaseAngleSnapShots(vector<vector<double> >& phase_data, const unsigned int intervals)
+void PlotPhaseAngleSnapShots(vector<vector<Coords> >& phase_data, const unsigned int intervals)
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Plot phase snapshots
@@ -302,7 +335,7 @@ void PlotPhaseAngleSnapShots(vector<vector<double> >& phase_data, const unsigned
       phaseCanvas->cd();
       Char_t histname[40];
       sprintf(histname,"Total:Phase Distribution: %03i",intervalNum);
-      TH1F* nextHistogram = new TH1F(histname, "Phase Angle Distribution", 180, -180., 180.);
+      TH1F* nextHistogram = new TH1F(histname, "Phase Angle Distribution",180,-180.,180.);
       nextHistogram->SetXTitle("Phase Angle");
       nextHistogram->SetYTitle("Neutrons");
       nextHistogram->GetYaxis()->SetRangeUser(0,100);
@@ -310,9 +343,10 @@ void PlotPhaseAngleSnapShots(vector<vector<double> >& phase_data, const unsigned
       nextHistogram->SetFillStyle(3001);
       nextHistogram->SetFillColor(kBlack);
       // Loop over all particles for each interval
-      vector<vector<double> >::iterator particleIter = phase_data.begin();
+      vector<vector<Coords> >::iterator particleIter = phase_data.begin();
       for ( ; particleIter != phase_data.end(); particleIter++) {
-         nextHistogram->Fill((*particleIter)[intervalNum]*180.0/TMath::Pi());
+         Double_t theta = (*particleIter)[intervalNum].fTheta;
+         nextHistogram->Fill(theta*180.0/TMath::Pi());
       }
       nextHistogram->Draw();
       // Write histogram to file
