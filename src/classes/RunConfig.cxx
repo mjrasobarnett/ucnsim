@@ -75,7 +75,7 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    // Name of Visualisation Geometry
    string geomVisFileName = runConfigFile.GetString("GeomVisFile","Files");
    if (geomVisFileName.empty() == true) {
-      throw runtime_error("No GeomVisFile specified in runconfig");
+      geomVisFileName = geomFileName;
    }
    fGeomVisFile = folderpath + geomVisFileName;
    // Name of Input particle data file 
