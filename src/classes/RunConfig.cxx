@@ -97,7 +97,7 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    // -----------------------------------
    // -- Input Particles options
    // Name of state folder to load particles from
-   fParticlesToLoad = runConfigFile.GetString("WhichParticles","Particles");
+   fParticlesToLoad = runConfigFile.GetString("InputParticleState","Particles");
    if (Algorithms::DataFile::ValidateStateNames(fParticlesToLoad) == false) {
       throw runtime_error("Invalid InputParticleState specified in runconfig");
    }
