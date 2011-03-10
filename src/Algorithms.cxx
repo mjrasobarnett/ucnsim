@@ -80,6 +80,24 @@ bool DataFile::ValidateStateNames(const std::vector<std::string>& statenames)
    return true;
 }
 //_____________________________________________________________________________
+bool DataFile::ValidateStateNames(const std::string statename)
+{
+   // -- Check that each statename in list is a valid state as defined
+   // -- in DataFileHierarchy lvl 3 and is unique
+   // Check state-name
+   if (statename != Folders::initial &&
+         statename != Folders::propagating &&
+         statename != Folders::absorbed &&
+         statename != Folders::lost &&
+         statename != Folders::decayed &&
+         statename != Folders::detected &&
+         statename != Folders::anomalous) {
+      std::cerr << "Argument, " << statename << " is not a valid statename" << std::endl;
+      return false;
+   }
+   return true;
+}
+//_____________________________________________________________________________
 void DataFile::CountParticles(TDirectory * const particleDir)
 {
    // -- Given the particle state directory, count the number of particles

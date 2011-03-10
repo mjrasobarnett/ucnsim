@@ -34,6 +34,7 @@ namespace Algorithms {
       bool ValidateRootFile(const std::string filename);
       //_____________________________________________________________________________
       bool ValidateStateNames(const std::vector<std::string>& statenames);
+      bool ValidateStateNames(const std::string statename);
       //_____________________________________________________________________________
       void CountParticles(TDirectory * const particleDir);
    }
