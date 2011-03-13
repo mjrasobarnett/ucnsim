@@ -316,3 +316,16 @@ string ConfigFile::ExpandShellVar(const string var) const
    string empty_str;
    return empty_str;
 }
+
+//_____________________________________________________________________________
+map<string, string> ConfigFile::GetSection(string section) const
+{
+   // -- Return a map of the requested ConfigFile section
+   map<string, map<string, string> >::const_iterator it = fStore.find(section);
+   if (it == fStore.end()) {
+      map<string, string> copy;
+      return copy;
+   }
+   return it->second;
+}
+

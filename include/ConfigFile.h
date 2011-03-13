@@ -21,6 +21,7 @@ public:
    double  GetFloat(std::string key, std::string section = "", double defaultval = 0.0) const;
    bool    GetBool(std::string key, std::string section = "", bool defaultval = false) const;
    std::string ExpandFilePath(std::string path) const;
+   std::map<std::string, std::string> GetSection(std::string section) const;
    
 private:
    /// The storage for the group/key-value from the file
