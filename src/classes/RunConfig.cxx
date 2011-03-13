@@ -1,6 +1,7 @@
 // Run configuration class
 // Author: Matthew Raso-Barnett  18/11/2010
 #include <iostream>
+#include <sstream>
 #include <cassert>
 #include <stdexcept>
 
@@ -37,9 +38,9 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    const string folderpath = masterConfig.ExpandFilePath(compressedfolderpath);
    //////////////////////////////////////////////////////////////////
    // -- Use full folder path to find and build the run-config file
-   Char_t runID[6];
-   sprintf(runID,"Run%d",runNumber);
-   string runConfigFileName = folderpath + masterConfig.GetString("Config", runID);
+   ostringstream runID;
+   runID << "Run" << runNumber; 
+   string runConfigFileName = folderpath + masterConfig.GetString("Config", runID.str());
    if (runConfigFileName.empty() == kTRUE) {
       cout << "Error: Run Configuration file name specified is either empty of invalid" << endl;
       throw runtime_error("Error fetching name of Run Config file");
