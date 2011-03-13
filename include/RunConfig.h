@@ -50,6 +50,8 @@ private:
    std::map<std::string, double> fParams;
 
    void ReadInRunConfig(const ConfigFile& runConfigFile, const std::string folderpath);
+   void CheckForOverrideParameters(const std::map<std::string, std::string> section);
+
 public:
    // Constructors
    RunConfig();

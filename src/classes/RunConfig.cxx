@@ -48,6 +48,10 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    ConfigFile runConfigFile(runConfigFileName);
    // -----------------------------------
    ReadInRunConfig(runConfigFile, folderpath);
+   // -- Check for Override parameters
+   // Get the section of the master config file containing this run's configfile and override params
+   map<string,string> section = masterConfig.GetSection(runID.str());
+   CheckForOverrideParameters(section);
    // -----------------------------------
    // Print properties
    this->Print();
@@ -196,7 +200,54 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
 }
 
 //__________________________________________________________________________
+void RunConfig::CheckForOverrideParameters(const std::map<std::string, std::string> section)
 {
+   // -- Look for any variables within the provided section from the master config file,
+   // -- and if any of these variables match the name of a variable in the run, replace its value
+   // -- with that from the master config
+   // Loop over all variables in this section
+   map<string,string>::const_iterator secIt;
+   for (secIt = section.begin(); secIt != section.end(); secIt++) {
+      // Check if variable's name matches a variable from the 'Names'
+      // section of the RunConfig file 
+      map<string,string>::iterator nameIt = fNames.find(secIt->first);
+      if (nameIt != fNames.end()) {
+         // If there is a match, override the runconfig value with that from the masterconfig
+         string new_value = secIt->second;
+         cout << "Overriding RunConfig Parameter: " << secIt->first;
+         cout << " from: " << nameIt->second << " to: " << new_value << endl;
+         nameIt->second = new_value;
+         continue;
+      }
+      // Check if variable's name matches a variable from the 'Options'
+      // section of the RunConfig file 
+      map<string,bool>::iterator optIt = fOptions.find(secIt->first);
+      if (optIt != fOptions.end()) {
+         // If there is a match, override the runconfig value with that from the masterconfig
+         string s_value = secIt->second;
+         bool new_value = false;
+         if (Algorithms::String::ConvertToBool(s_value, new_value) == true) {
+            cout << "Overriding RunConfig Parameter: " << secIt->first;
+            cout << " from: " << optIt->second << " to: " << new_value << endl;
+            optIt->second = new_value;
+         }
+         continue;
+      }
+      // Check if variable's name matches a variable from the 'Parameters'
+      // section of the RunConfig file 
+      map<string,double>::iterator parIt = fParams.find(secIt->first);
+      if (parIt != fParams.end()) {
+         // If there is a match, override the runconfig value with that from the masterconfig
+         string s_value = secIt->second;
+         double new_value = 0.;
+         if (Algorithms::String::ConvertToDouble(s_value, new_value) == true) {
+            cout << "Overriding RunConfig Parameter: " << secIt->first;
+            cout << " from: " << parIt->second << " to: " << new_value << endl;
+            parIt->second = new_value;
+         }
+         continue;
+      }
+   }
 }
 
 //__________________________________________________________________________
