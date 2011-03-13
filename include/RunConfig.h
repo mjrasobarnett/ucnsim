@@ -48,7 +48,8 @@ private:
    std::map<std::string, std::string> fNames;
    std::map<std::string, bool> fOptions;
    std::map<std::string, double> fParams;
-   
+
+   void ReadInRunConfig(const ConfigFile& runConfigFile, const std::string folderpath);
 public:
    // Constructors
    RunConfig();

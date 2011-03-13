@@ -46,6 +46,36 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
       throw runtime_error("Error fetching name of Run Config file");
    }
    ConfigFile runConfigFile(runConfigFileName);
+   // -----------------------------------
+   ReadInRunConfig(runConfigFile, folderpath);
+   // -----------------------------------
+   // Print properties
+   this->Print();
+}
+
+//__________________________________________________________________________
+RunConfig::RunConfig(const RunConfig& other)
+          :TObject(other),
+           fNames(other.fNames),
+           fOptions(other.fOptions),
+           fParams(other.fParams)
+{
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "RunConfig::Copy Constructor" << endl;
+   #endif
+}
+
+//__________________________________________________________________________
+RunConfig::~RunConfig()
+{
+   #ifdef PRINT_CONSTRUCTORS
+      cout << "RunConfig::Destructor" << endl;
+   #endif
+}
+
+//__________________________________________________________________________
+void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string folderpath)
+{
    //////////////////////////////////////////////////////////////////
    // -- Search the Run Config file for parameters
    // -----------------------------------
@@ -163,29 +193,10 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    if (recordField == true && fieldMeasInterval == 0.0) {
       throw runtime_error("Incompatible options in RunConfig: Check RecordField and FieldMeasFreq");
    }
-   // -----------------------------------
-   // Print properties
-   this->Print();
 }
 
 //__________________________________________________________________________
-RunConfig::RunConfig(const RunConfig& other)
-          :TObject(other),
-           fNames(other.fNames),
-           fOptions(other.fOptions),
-           fParams(other.fParams)
 {
-   #ifdef PRINT_CONSTRUCTORS
-      cout << "RunConfig::Copy Constructor" << endl;
-   #endif
-}
-
-//__________________________________________________________________________
-RunConfig::~RunConfig()
-{
-   #ifdef PRINT_CONSTRUCTORS
-      cout << "RunConfig::Destructor" << endl;
-   #endif
 }
 
 //__________________________________________________________________________
