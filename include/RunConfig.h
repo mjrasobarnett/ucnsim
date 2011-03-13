@@ -41,6 +41,7 @@ namespace RunParams {
 class ConfigFile;
 
 class RunConfig : public TObject {
+
 private:
    typedef std::pair<std::string, std::string> NamePair;
    typedef std::pair<std::string, bool> OptionPair;
