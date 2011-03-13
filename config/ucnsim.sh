@@ -36,6 +36,8 @@ elif [[ `uname -n` == "feynman" ]] ; then
 	fi
 	# Define path to GSL installation
 	export GSL=${HOME}/gsl/gsl
+	# Define path to BOOST installation
+	export BOOST=${HOME}/boost/boost
 fi
 #------------------------------------------------------------------------------
 # ROOT & UCN_DIR PATHS
