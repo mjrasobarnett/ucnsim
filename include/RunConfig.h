@@ -7,42 +7,47 @@
 
 #include "TObject.h"
 #include <string>
-#include "TVector3.h"
+#include <map>
+
+namespace RunParams {
+   // -- Names
+   static const std::string runName = "RunName";
+   static const std::string geomFile = "GeomFile";
+   static const std::string geomVisFile = "GeomVisFile";
+   static const std::string inputFile = "InputDataFile";
+   static const std::string outputFile = "OutputDataFile";
+   static const std::string fieldsFile = "FieldsFile";
+   static const std::string inputRunName = "InputRunName";
+   static const std::string inputParticleState = "InputParticleState";
+   // -- Options (Boolean or yes/no questions)
+   static const std::string loadAllParticles = "AllParticles";
+   static const std::string restartParticles = "RunFromBeginning";
+   static const std::string gravField = "GravField";
+   static const std::string magField = "MagFields";
+   static const std::string wallLosses = "WallLosses";
+   static const std::string recordSpin = "RecordSpin";
+   static const std::string recordBounces = "RecordBounces";
+   static const std::string recordTracks = "RecordTracks";
+   static const std::string recordField = "RecordField";
+   // -- Parameters (Allows values to be set by user)
+   static const std::string runTime = "RunTime(s)";
+   static const std::string maxStepTime = "MaxStepTime(s)";
+   static const std::string spinStepTime = "SpinStepTime(s)";
+   static const std::string trackMeasFreq = "TrackMeasureFrequency(Hz)";
+   static const std::string spinMeasFreq = "SpinMeasureFrequency(Hz)";
+   static const std::string fieldMeasFreq = "FieldMeasureFrequency(Hz)";
+}
 
 class ConfigFile;
 
 class RunConfig : public TObject {
 private:
-   std::string fRunName;
-   
-   std::string fGeomFile;
-   std::string fGeomVisFile;
-   std::string fInputDataFile;
-   std::string fOutputDataFile;
-   std::string fFieldsFile;
-   
-   std::string fInputRunName;
-   std::string fParticlesToLoad;
-   bool fLoadAllParticles;
-//   std::vector<Int_t> fParticleIDs;
-   bool fRestartParticles;
-   
-   bool fGravFieldOn;
-   bool fMagFieldOn;
-   bool fWallLossesOn;
-   
-   double fRunTime;
-   double fMaxStepTime;
-   double fSpinStepTime;
-   
-   bool fObsSpin;   
-   bool fObsBounces;
-   bool fObsTracks;
-   bool fObsField;
-   
-   double fTrackMeasInterval;
-   double fSpinMeasInterval;
-   double fFieldMeasInterval;
+   typedef std::pair<std::string, std::string> NamePair;
+   typedef std::pair<std::string, bool> OptionPair;
+   typedef std::pair<std::string, float> ParamPair;
+   std::map<std::string, std::string> fNames;
+   std::map<std::string, bool> fOptions;
+   std::map<std::string, double> fParams;
    
 public:
    // Constructors
@@ -52,29 +57,29 @@ public:
    virtual ~RunConfig();
    
    // Methods
-   std::string RunName() const {return fRunName;}
-   std::string GeomFileName() const {return fGeomFile;}
-   std::string GeomVisFileName() const {return fGeomVisFile;}
-   std::string FieldsFileName() const {return fFieldsFile;}
-   std::string InputFileName() const {return fInputDataFile;}
-   std::string OutputFileName() const {return fOutputDataFile;}
-   std::string InputRunName() const {return fInputRunName;}
-   std::string ParticlesToLoad() const {return fParticlesToLoad;}
-   bool LoadAllParticles() const {return fLoadAllParticles;}
-   bool RestartFromBeginning() const {return fRestartParticles;}
-   double RunTime() const {return fRunTime;}
-   double MaxStepTime() const {return fMaxStepTime;}
-   double SpinStepTime() const {return fSpinStepTime;}
-   bool GravFieldOn() const {return fGravFieldOn;}
-   bool MagFieldOn() const {return fMagFieldOn;}
-   bool WallLossesOn() const {return fWallLossesOn;}
-   bool ObserveSpin() const {return fObsSpin;}
-   bool ObserveBounces() const {return fObsBounces;}
-   bool ObserveTracks() const {return fObsTracks;}
-   bool ObserveField() const {return fObsField;}
-   double TrackMeasureInterval() const {return fTrackMeasInterval;}
-   double SpinMeasureInterval() const {return fSpinMeasInterval;}
-   double FieldMeasureInterval() const {return fFieldMeasInterval;}
+   std::string RunName() const;
+   std::string GeomFileName() const;
+   std::string GeomVisFileName() const;
+   std::string FieldsFileName() const;
+   std::string InputFileName() const;
+   std::string OutputFileName() const;
+   std::string InputRunName() const;
+   std::string ParticlesToLoad() const;
+   bool LoadAllParticles() const;
+   bool RestartFromBeginning() const;
+   double RunTime() const;
+   double MaxStepTime() const;
+   double SpinStepTime() const;
+   bool GravFieldOn() const;
+   bool MagFieldOn() const;
+   bool WallLossesOn() const;
+   bool ObserveSpin() const;
+   bool ObserveBounces() const;
+   bool ObserveTracks() const;
+   bool ObserveField() const;
+   double TrackMeasureInterval() const;
+   double SpinMeasureInterval() const;
+   double FieldMeasureInterval() const;;
    
    virtual void Print(Option_t* option = "") const;
 
