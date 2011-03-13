@@ -127,7 +127,7 @@ ALGORITHMSS = src/Algorithms.$(SrcSuf) UCNDict.$(SrcSuf)
 #------------------------------------------------------------------------------
 LINKDEF = UCNLinkDef.h
 UCNSO = lib/libUCN.$(DllSuf)
-UCNLIB = -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -L$(GSL)/lib -lgsl -lgslcblas -lGeom -lEG -lm -lMathMore -lGui -lRGL -lGed
+UCNLIB = -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -L$(GSL)/lib -lgsl -lgslcblas -lGeom -lEG -lm -lGui -lRGL -lGed
 #------------------------------------------------------------------------------
 OBJS = $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
 $(STATEO) $(SPINO) $(FILEPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
