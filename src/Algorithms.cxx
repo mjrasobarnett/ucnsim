@@ -1,4 +1,5 @@
 #include <math.h>
+#include <iostream>
 
 #include "Algorithms.h"
 
@@ -6,6 +7,7 @@
 #include "DataFileHierarchy.h"
 
 using namespace Algorithms;
+using namespace std;
 
 //_____________________________________________________________________________
 bool Precision::IsEqual(double left, double right, double precision) {
@@ -42,20 +44,20 @@ bool Precision::IsLessOrEqual(double left, double right, double precision) {
 
 
 //_____________________________________________________________________________
-bool DataFile::ValidateRootFile(const std::string filename)
+bool DataFile::ValidateRootFile(const string filename)
 {
    // -- Check that the filename supplied has a .root extension
    size_t found = filename.find_last_of(".");
-   if (found == std::string::npos) return false;
+   if (found == string::npos) return false;
    if (filename.substr(found) == ".root") return true;
    return false;
 }
 //_____________________________________________________________________________
-bool DataFile::ValidateStateNames(const std::vector<std::string>& statenames)
+bool DataFile::ValidateStateNames(const vector<string>& statenames)
 {
    // -- Check that each statename in list is a valid state as defined
    // -- in DataFileHierarchy lvl 3 and is unique
-   std::vector<std::string>::const_iterator iter;
+   vector<string>::const_iterator iter;
    for (iter = statenames.begin(); iter != statenames.end(); iter++) {
       // Check state-name
       if (*iter != Folders::initial &&
@@ -65,14 +67,14 @@ bool DataFile::ValidateStateNames(const std::vector<std::string>& statenames)
           *iter != Folders::decayed &&
           *iter != Folders::detected &&
           *iter != Folders::anomalous) {
-         std::cerr << "Argument, " << *iter << " is not a valid statename" << std::endl;
+         cerr << "Argument, " << *iter << " is not a valid statename" << endl;
          return false;
       }
       // Check for duplicates
-      std::vector<std::string>::const_iterator second_iter;
+      vector<string>::const_iterator second_iter;
       for (second_iter = iter+1; second_iter != statenames.end(); second_iter++) {
          if (*second_iter == *iter) {
-            std::cerr << "Duplicate statenames given: " << *iter << std::endl;
+            cerr << "Duplicate statenames given: " << *iter << endl;
             return false;
          }
       }
@@ -80,7 +82,7 @@ bool DataFile::ValidateStateNames(const std::vector<std::string>& statenames)
    return true;
 }
 //_____________________________________________________________________________
-bool DataFile::ValidateStateNames(const std::string statename)
+bool DataFile::ValidateStateNames(const string statename)
 {
    // -- Check that each statename in list is a valid state as defined
    // -- in DataFileHierarchy lvl 3 and is unique
@@ -92,7 +94,7 @@ bool DataFile::ValidateStateNames(const std::string statename)
          statename != Folders::decayed &&
          statename != Folders::detected &&
          statename != Folders::anomalous) {
-      std::cerr << "Argument, " << statename << " is not a valid statename" << std::endl;
+      cerr << "Argument, " << statename << " is not a valid statename" << endl;
       return false;
    }
    return true;
@@ -116,14 +118,14 @@ void DataFile::CountParticles(TDirectory * const particleDir)
    Int_t lost = gDirectory->GetNkeys();
    if (particleDir->cd(Folders::anomalous.c_str()) == false) return;
    Int_t anomalous = gDirectory->GetNkeys();
-   std::cout << "Initial Particles: " << initial << std::endl;
-   std::cout << "Final Total: ";
-   std::cout << propagating+detected+absorbed+decayed+lost+anomalous << std::endl;
-   std::cout << "Propagating: " << propagating << std::endl;
-   std::cout << "Detected: " << detected << std::endl;
-   std::cout << "Absorbed: " << absorbed << std::endl;
-   std::cout << "Decayed: " << decayed << std::endl;
-   std::cout << "Lost: " << lost << std::endl;
-   std::cout << "Anomalous: " << anomalous << std::endl;
+   cout << "Initial Particles: " << initial << endl;
+   cout << "Final Total: ";
+   cout << propagating+detected+absorbed+decayed+lost+anomalous << endl;
+   cout << "Propagating: " << propagating << endl;
+   cout << "Detected: " << detected << endl;
+   cout << "Absorbed: " << absorbed << endl;
+   cout << "Decayed: " << decayed << endl;
+   cout << "Lost: " << lost << endl;
+   cout << "Anomalous: " << anomalous << endl;
    return;
 }
