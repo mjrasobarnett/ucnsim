@@ -22,14 +22,13 @@ protected:
    Double_t    fIncohCrossSec; // Incoherent Scattering Cross-sec
    Double_t    fAbsCrossSec; // Absorption Cross-sec at R-T
    Double_t    fLossCrossSec; // Total loss cross-section
+   Element(const Element&);
    
 public:
    
    // -- constructors
    Element();
    Element(const char *name, const char *title, Int_t z, Double_t a, Double_t scatLength, Double_t cohCrossSec, Double_t incoCrossSec, Double_t absCrossSec);
-   Element(const Element&);
-   Element& operator=(const Element&);
    
    // -- destructor
    virtual ~Element();

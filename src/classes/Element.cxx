@@ -46,8 +46,7 @@ Element::Element(const char *name, const char *title, Int_t z, Double_t a, Doubl
 
 //_____________________________________________________________________________
 Element::Element(const Element& m)
-            :TGeoElement(m),
-             fScatLength(m.fScatLength),
+            :fScatLength(m.fScatLength),
              fCohCrossSec(m.fCohCrossSec),
              fIncohCrossSec(m.fIncohCrossSec),
              fAbsCrossSec(m.fAbsCrossSec),
@@ -57,24 +56,6 @@ Element::Element(const Element& m)
    #ifdef PRINT_CONSTRUCTORS
       Info("Element", "Copy Constructor");  
    #endif
-}
-
-//_____________________________________________________________________________
-Element& Element::operator=(const Element& m) 
-{
-   //assignment operator
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Element", "Assignment");
-   #endif
-   if(this!=&m) {
-      TGeoElement::operator=(m);
-      fScatLength = m.fScatLength;
-      fCohCrossSec = m.fCohCrossSec;
-      fIncohCrossSec = m.fIncohCrossSec;
-      fAbsCrossSec = m.fAbsCrossSec;
-      fLossCrossSec = m.fLossCrossSec;
-   }
-   return *this;
 }
 
 //_____________________________________________________________________________
