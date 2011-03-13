@@ -37,5 +37,18 @@ namespace Algorithms {
       //_____________________________________________________________________________
       void CountParticles(TDirectory * const particleDir);
    }
+   //_____________________________________________________________________________
+   // Namespace holding functions relevant to string transformations
+   //_____________________________________________________________________________
+   namespace String
+   {
+      //_____________________________________________________________________________
+      bool ConvertToInt(const std::string input, int& output);
+      //_____________________________________________________________________________
+      bool ConvertToBool(const std::string input, bool& output);
+      //_____________________________________________________________________________
+      bool ConvertToDouble(const std::string input, double& output);
+   }
+   
 }
 #endif

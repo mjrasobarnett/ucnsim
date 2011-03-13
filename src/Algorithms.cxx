@@ -1,5 +1,9 @@
 #include <math.h>
+#include <algorithm>
 #include <iostream>
+#include <sstream>
+
+#include <boost/algorithm/string.hpp>
 
 #include "Algorithms.h"
 
@@ -129,3 +133,54 @@ void DataFile::CountParticles(TDirectory * const particleDir)
    cout << "Anomalous: " << anomalous << endl;
    return;
 }
+
+//_____________________________________________________________________________
+bool String::ConvertToInt(const string input, int& output)
+{
+   // Attempt to read an integer out of this string
+   istringstream stream(input);
+   int value = 0;
+   stream >> value;
+   if (stream.fail()) {
+      cout << "ConvertToInt::Failed to read " << input;
+      cout << " = " << value << " as integer." << endl;
+      return false;
+   }
+   output = value;
+   return true;
+}
+
+//_____________________________________________________________________________
+bool String::ConvertToBool(const string input, bool& output)
+{
+   string l_input = boost::to_lower_copy(input);
+   // Attempt to read a boolean out of this string
+   if (l_input == "true" || l_input == "on" || l_input == "yes") {
+      // 
+      output = true;
+      return true;
+   } else if (l_input == "false" || l_input == "off" || l_input == "no" ) {
+      output = false;
+      return true;
+   } else {
+      cout << "ConvertToBool::Failed to read " << input << " as boolean." << endl;
+      return false;
+   }
+}
+
+//_____________________________________________________________________________
+bool String::ConvertToDouble(const string input, double& output)
+{
+   // Attempt to read a float out of this string
+   istringstream stream(input);
+   double value = 0.;
+   stream >> value;
+   if (stream.fail()) {
+      cout << "ConvertToDouble::Failed to read " << input;
+      cout << " = " << value << " as double." << endl;
+      return false;
+   }
+   output = value;
+   return true;
+}
+
