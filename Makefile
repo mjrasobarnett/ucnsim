@@ -297,4 +297,4 @@ UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								$(ROOTCINT) -f $@ -c $^
 
 .$(SrcSuf).$(ObjSuf):
-	$(CXX)  $(CXXFLAGS) -I$(UCN_DIR)/include -I$(GSL)/include -c $< -o $@
+	$(CXX)  $(CXXFLAGS) -I$(UCN_DIR)/include -I$(GSL)/include -I$(BOOST) -c $< -o $@

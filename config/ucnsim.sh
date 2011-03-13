@@ -20,6 +20,8 @@ if [[ `uname -n` == "MJRasoBarnett.local" ]] ; then
 	fi
 	# Define path to GSL installation
 	export GSL=${HOME}/Apps/GSL/gsl
+	# Define path to BOOST installation
+	export BOOST=${HOME}/Apps/Boost/boost
 elif [[ `uname -n` == "feynman" ]] ; then 
 	# Test if we are running on matt's linux virtual machine
 	echo "Configuring for Feynman remote machine"
@@ -60,6 +62,7 @@ export ROOTLOGOFF=${UCN_DIR}/config/ucn_rootlogoff.C
 #------------------------------------------------------------------------------
 echo "ROOT  : " $ROOTSYS
 echo "GSL   : " $GSL
+echo "BOOST : " $BOOST
 echo "------------------------------------------------------------------------"
 echo "UCN_DIR  : " $UCN_DIR
 echo "UCN_GEOM : " $UCN_GEOM
