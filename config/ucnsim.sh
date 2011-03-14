@@ -28,7 +28,7 @@ elif [[ `uname -n` == "feynman" ]] ; then
 	export UCN_DIR=${HOME}/projects/ucnsim
 	export UCN_GEOM=${UCN_DIR}/geom
 	export UCN_RUNS=/epp/scratch/nedm/mb325/ucnsim/runs
-	export PATH=${UCN_DIR}/bin:${PATH}
+	export PATH=${UCN_DIR}/bin:${UCN_DIR}/scripts:${PATH}
 	if [[ -z "${ROOTSYS}" ]] ; then
 		export ROOTSYS=${HOME}/root/root
 		export PATH=${ROOTSYS}/bin:${PATH}
