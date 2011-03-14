@@ -11,16 +11,16 @@
 #$ -S /bin/bash
 #$ -q short.q
 
-# -- Make sure that this script is exited if we try to use any uninitialised variable
 #
 # -- Fetch arguments from command line
 # -- $# stores the number of comman line arguments passed to shell script
 # -- Arguments accessed by $1, $2, $3...
-if [ "$#" -ne 1 ] ; then
+if [ "$#" -ne 2 ] ; then
    echo "Incorrect number of command line arguments: $@ passed to submit_job.sh"
    exit 1
 else
-   export RUN_NUM="$1"
+   export CONFIG_FILE="$1"
+   export RUN_NUM="$2"
 fi
 #
 # -- Setup the required environment variables on machine
@@ -48,10 +48,7 @@ echo "UCN_GEOM : $UCN_GEOM"
 echo "UCN_RUNS : $UCN_RUNS"
 echo "------------------------------------------------------------------------"
 #
-#
-# -- Set up Job name and location of master config.cfg
-export CONFIG_FILE="config.cfg"
-export JOB_NAME="run$RUN_NUM"
+# -- Start Job
 echo "Simulating Run No: $RUN_NUM"
 simulate_ucn $CONFIG_FILE $RUN_NUM
 #
