@@ -11,7 +11,6 @@ if [ "$#" -ne 2 ] ; then
 else
    export JOB_DIR="$1"
    export RUN_NUM="$2"
-   export JOB_NAME="run$RUN_NUM"
 fi
 #
 # -- Setup the required environment variables on machine
@@ -47,6 +46,10 @@ if [ "$PWD" -ne "$JOB_DIR" ] ; then
   exit 1
 fi
 #
+# -- Set up Job name and location of master config.cfg
+export JOB_NAME="run$RUN_NUM"
+export CONFIG_FILE="$JOB_DIR/config.cfg"
+#
 # -- QSUB options
 # When a single command in the array job is sent to a compute node,
 # its task number is stored in the variable SGE_TASK_ID, so we can
@@ -54,19 +57,21 @@ fi
 # that depend on the jobID number
 #
 # set your email address if you want notification
--M rasobarnettmatthew@gmail.com
+export JOB_EMAIL="rasobarnettmatthew@gmail.com"
+#$ -M $JOB_EMAIL
 # set the next line to the job title (optional)
--N $JOB_NAME
+#$ -N $JOB_NAME
 # -- Redirect standard output to scratch
--o $JOB_DIR
--e $JOB_DIR
+#$ -o $JOB_DIR
+#$ -e $JOB_DIR
 # -- Redirect standard err to scratch
 # -- specify queue (all.q is the default and needn't be specified)
--q short.q
+export JOB_QUEUE="short.q"
+#$ -q $JOB_QUEUE
 #
 # -- Execute Job
 echo "Simulating Run No: $RUN_NUM"
-simulate_ucn config.cfg $RUN_NUM
+simulate_ucn $CONFIG_FILE $RUN_NUM
 #
 echo 'Job Ended Here!'
 exit 0
