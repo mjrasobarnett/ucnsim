@@ -11,7 +11,7 @@
 R_DIRECTORY="$UCN_RUNS"
 ####
 # Local directory; Where we will copy from
-L_DIRECTORY="$UCN_DIR/runs"
+L_DIRECTORY="$UCN_DIR/runs/"
 #########################################
 # Program section
 #########################################
