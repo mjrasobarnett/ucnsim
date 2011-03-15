@@ -20,7 +20,6 @@ public:
    int     GetInt(std::string key, std::string section = "", int defaultval = 0) const;
    double  GetFloat(std::string key, std::string section = "", double defaultval = 0.0) const;
    bool    GetBool(std::string key, std::string section = "", bool defaultval = false) const;
-   std::string ExpandFilePath(std::string path) const;
    std::map<std::string, std::string> GetSection(std::string section) const;
    
 private:
@@ -43,9 +42,6 @@ private:
    
    /// Reads a key-pair out of a line
    bool ReadKeyPair(const std::string &section, const std::string &line);
-   
-   /// Expand shell variable
-   std::string ExpandShellVar(const std::string var) const;
    
 };
 

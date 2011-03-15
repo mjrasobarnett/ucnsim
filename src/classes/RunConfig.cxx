@@ -35,7 +35,7 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    //////////////////////////////////////////////////////////////////
    // -- Extract full path to directory containing configuration files 
    const string compressedfolderpath = masterConfig.GetString("Path","Folder");
-   const string folderpath = masterConfig.ExpandFilePath(compressedfolderpath);
+   const string folderpath = Algorithms::FileSystem::ExpandFilePath(compressedfolderpath);
    //////////////////////////////////////////////////////////////////
    // -- Use full folder path to find and build the run-config file
    ostringstream runID;

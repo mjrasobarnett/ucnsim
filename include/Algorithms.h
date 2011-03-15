@@ -49,6 +49,15 @@ namespace Algorithms {
       //_____________________________________________________________________________
       bool ConvertToDouble(const std::string input, double& output);
    }
-   
+   //_____________________________________________________________________________
+   // Namespace holding functions relevant to underlying filesystem
+   //_____________________________________________________________________________
+   namespace FileSystem
+   {
+      //_____________________________________________________________________________
+      std::string ExpandShellVar(const std::string var);
+      //_____________________________________________________________________________
+      std::string ExpandFilePath(const std::string path);
+   }
 }
 #endif
