@@ -2,6 +2,8 @@
 #include <string>
 #include <sstream>
 
+#include <boost/algorithm/string.hpp>
+
 #include "ConfigFile.h"
 #include "Algorithms.h"
 
@@ -14,14 +16,22 @@ Int_t main(Int_t argc, Char_t **argv)
    // -- batch_process takes a config file and submits each run inside it to the feynman cluster
    // -- as an individual job. It will only work if launched from the feynman cluster itself
    ///////////////////////////////////////////////////////////////////////////////////////
-   // Build the ConfigFile
-   string configFileName;
-   if (argc == 2) {
+   // Fetch the configfile name and queue name from commandline args
+   string configFileName, queueName;
+   if (argc == 3) {
       configFileName = argv[1];
+      queueName = argv[2];
    } else {
-      cerr << "Usage, batch_process <configFile.cfg>" << endl;
+      cerr << "Usage, batch_process <configFile.cfg> <queue name>" << endl;
       return EXIT_FAILURE;
    }
+   // Check formatting of queue name
+   boost::to_lower(queueName);
+   if (queueName != "short" && queueName != "general" && queueName != "long") {
+      cerr << "Queue name must be either: short, general, long" << endl;
+      return EXIT_FAILURE;
+   }
+   // Load config file
    ConfigFile configFile(configFileName);
    // Get number of runs from ConfigFile
    const int numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
@@ -46,9 +56,8 @@ Int_t main(Int_t argc, Char_t **argv)
       // Format a string that will specify the qsub command we wish to issue on feynman
       // that will submit a job
       string script = Algorithms::FileSystem::ExpandFilePath("$UCN_DIR/scripts/submit_job.sh");
-      string queue = "short.q";
       ostringstream command;
-      command << "qsub -q " << queue << " ";
+      command << "qsub -q " << queueName << ".q ";
       command << "-N " << runName.str() << " ";
       command << script << " ";
       command << configFileName << " ";
