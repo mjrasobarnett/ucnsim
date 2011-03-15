@@ -1,12 +1,7 @@
-// UCNData.cpp
-// Author: Simon JM Peeters
-// Created July 2009
-
 #include "Data.h"
 
 #include <iostream>
 #include <sstream>
-#include <locale>
 #include <cassert>
 #include <stdexcept>
 

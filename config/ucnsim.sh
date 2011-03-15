@@ -20,13 +20,16 @@ if [[ `uname -n` == "MJRasoBarnett.local" ]] ; then
 	fi
 	# Define path to GSL installation
 	export GSL=${HOME}/Apps/GSL/gsl
+	# Define path to BOOST installation
+	export BOOST=${HOME}/Apps/Boost/boost
 elif [[ `uname -n` == "feynman" ]] ; then 
 	# Test if we are running on matt's linux virtual machine
 	echo "Configuring for Feynman remote machine"
 	export UCN_DIR=${HOME}/projects/ucnsim
 	export UCN_GEOM=${UCN_DIR}/geom
-	export UCN_RUNS=/epp/scratch/nedm/mb325/ucnsim/runs
-	export PATH=${UCN_DIR}/bin:${PATH}
+	export SCRATCH=/epp/scratch/nedm/mb325
+	export UCN_RUNS=${SCRATCH}/runs
+	export PATH=${UCN_DIR}/bin:${UCN_DIR}/scripts:${PATH}
 	if [[ -z "${ROOTSYS}" ]] ; then
 		export ROOTSYS=${HOME}/root/root
 		export PATH=${ROOTSYS}/bin:${PATH}
@@ -34,6 +37,8 @@ elif [[ `uname -n` == "feynman" ]] ; then
 	fi
 	# Define path to GSL installation
 	export GSL=${HOME}/gsl/gsl
+	# Define path to BOOST installation
+	export BOOST=${HOME}/boost/boost
 fi
 #------------------------------------------------------------------------------
 # ROOT & UCN_DIR PATHS
@@ -60,6 +65,7 @@ export ROOTLOGOFF=${UCN_DIR}/config/ucn_rootlogoff.C
 #------------------------------------------------------------------------------
 echo "ROOT  : " $ROOTSYS
 echo "GSL   : " $GSL
+echo "BOOST : " $BOOST
 echo "------------------------------------------------------------------------"
 echo "UCN_DIR  : " $UCN_DIR
 echo "UCN_GEOM : " $UCN_GEOM

@@ -6,7 +6,6 @@
 
 #include <vector>
 #include <string>
-#include <iostream>
 
 class TDirectory;
 
@@ -34,8 +33,31 @@ namespace Algorithms {
       bool ValidateRootFile(const std::string filename);
       //_____________________________________________________________________________
       bool ValidateStateNames(const std::vector<std::string>& statenames);
+      bool ValidateStateNames(const std::string statename);
       //_____________________________________________________________________________
       void CountParticles(TDirectory * const particleDir);
+   }
+   //_____________________________________________________________________________
+   // Namespace holding functions relevant to string transformations
+   //_____________________________________________________________________________
+   namespace String
+   {
+      //_____________________________________________________________________________
+      bool ConvertToInt(const std::string input, int& output);
+      //_____________________________________________________________________________
+      bool ConvertToBool(const std::string input, bool& output);
+      //_____________________________________________________________________________
+      bool ConvertToDouble(const std::string input, double& output);
+   }
+   //_____________________________________________________________________________
+   // Namespace holding functions relevant to underlying filesystem
+   //_____________________________________________________________________________
+   namespace FileSystem
+   {
+      //_____________________________________________________________________________
+      std::string ExpandShellVar(const std::string var);
+      //_____________________________________________________________________________
+      std::string ExpandFilePath(const std::string path);
    }
 }
 #endif
