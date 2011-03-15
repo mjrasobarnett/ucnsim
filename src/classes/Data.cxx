@@ -6,7 +6,6 @@
 
 #include <iostream>
 #include <sstream>
-#include <locale>
 #include <cassert>
 #include <stdexcept>
 
