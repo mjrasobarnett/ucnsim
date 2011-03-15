@@ -27,7 +27,7 @@ elif [[ `uname -n` == "feynman" ]] ; then
 	echo "Configuring for Feynman remote machine"
 	export UCN_DIR=${HOME}/projects/ucnsim
 	export UCN_GEOM=${UCN_DIR}/geom
-	export SCRATCH=/epp/scratch/nedm/mb325/
+	export SCRATCH=/epp/scratch/nedm/mb325
 	export UCN_RUNS=${SCRATCH}/runs
 	export PATH=${UCN_DIR}/bin:${UCN_DIR}/scripts:${PATH}
 	if [[ -z "${ROOTSYS}" ]] ; then
