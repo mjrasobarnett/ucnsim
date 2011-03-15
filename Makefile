@@ -38,6 +38,10 @@ SANDBOX = bin/sandbox$(ExeSuf)
 TEST_KDTREES = $(ProgPath)/test_kdtree.$(SrcSuf)
 TEST_KDTREEO = $(ProgPath)/test_kdtree.$(ObjSuf)
 TEST_KDTREE = bin/test_kdtree$(ExeSuf)
+BATCH_SIMULATES = $(ProgPath)/batch_simulate.$(SrcSuf)
+BATCH_SIMULATEO = $(ProgPath)/batch_simulate.$(ObjSuf)
+BATCH_SIMULATE = bin/batch_simulate$(ExeSuf)
+
 
 #------------------------------------------------------------------------------
 # my classes
@@ -138,7 +142,7 @@ $(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLE
 $(EVENTO) $(ALGORITHMSO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(MAKE_PLOTS) $(SANDBOX) \
-$(DRAW_TRACKS) $(TEST_KDTREE) $(MAKE_T2PLOT) $(DRAW_PLOTS) $(MAKE_DENSITY)
+$(DRAW_TRACKS) $(TEST_KDTREE) $(MAKE_T2PLOT) $(DRAW_PLOTS) $(MAKE_DENSITY) $(BATCH_SIMULATE)
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 .PHONY: simulate_ucn sandbox buildtest fitdata generate_ucn make_plots draw_tracks make_T2plot  draw_plots
@@ -212,6 +216,12 @@ $(TEST_KDTREE): $(TEST_KDTREEO) $(UCNSO)
 					 $(MT_EXE)
 					 @echo "$@ done"
 
+batch_simulate:	 $(BATCH_SIMULATE)
+$(BATCH_SIMULATE): $(BATCH_SIMULATEO) $(UCNSO)
+					 $(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
+					 $(OutPutOpt)$@
+					 $(MT_EXE)
+					 @echo "$@ done"
 
 $(UCNSO):		$(OBJS)
 
