@@ -34,7 +34,7 @@ export HOME=/home/mb325
 echo "Configuring for Feynman remote machine"
 export UCN_DIR=${HOME}/projects/ucnsim
 export UCN_GEOM=${UCN_DIR}/geom
-export UCN_RUNS=/epp/scratch/nedm/mb325/ucnsim/runs
+export UCN_RUNS=/epp/scratch/nedm/mb325/runs
 export ROOTSYS=${HOME}/root/root
 export PATH=${UCN_DIR}/bin:${ROOTSYS}/bin:${PATH}
 export GSL=${HOME}/gsl/gsl
