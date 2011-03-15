@@ -40,7 +40,7 @@ Int_t main(Int_t argc, Char_t **argv)
       runName << "Run" << runNum;
       map<string,string> section = configFile.GetSection(runName.str());
       if (section.empty()) {
-         cout << "Error: Could not find Section - " << runName.str() << endl;
+         cerr << "Error: Could not find Section - " << runName.str() << endl;
          return EXIT_FAILURE;
       }
       // Format a string that will specify the qsub command we wish to issue on feynman

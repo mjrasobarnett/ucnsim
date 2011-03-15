@@ -16,7 +16,7 @@
 # -- $# stores the number of comman line arguments passed to shell script
 # -- Arguments accessed by $1, $2, $3...
 if [ "$#" -ne 2 ] ; then
-   echo "Incorrect number of command line arguments: $@ passed to submit_job.sh"
+   echo "Incorrect number of command line arguments: $@ passed to submit_job.sh" 1>&2
    exit 1
 else
    export CONFIG_FILE="$1"
