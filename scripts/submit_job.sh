@@ -12,6 +12,12 @@
 #$ -q short.q
 
 #
+# -- Before running anything, ensure that we are on Feynman
+if [[ "uname -n" != "feynman" ]] ; then
+   echo "Not on Feynman system!"
+   exit 1
+fi
+#
 # -- Fetch arguments from command line
 # -- $# stores the number of comman line arguments passed to shell script
 # -- Arguments accessed by $1, $2, $3...
