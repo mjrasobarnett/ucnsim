@@ -50,14 +50,13 @@ Int_t main(Int_t argc, Char_t **argv)
       return EXIT_FAILURE;
    }
    cout << "-------------------------------------------" << endl;
-   cout << "Initialising the Runs" << endl;
+   cout << "Initialising Run" << endl;
    cout << "-------------------------------------------" << endl;
    const int numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
    if (numberOfRuns < 1 || numberOfRuns < specifiedRunNumber) {
       cerr << "Cannot read valid number of runs from ConfigFile: " << numberOfRuns << endl;
       return EXIT_FAILURE;
    }
-   cout << "Number of Runs: " << numberOfRuns << endl;
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Create the Runs
    if (PerformSimulation(configFile, specifiedRunNumber) == false) {
