@@ -30,7 +30,11 @@ public:
    
    void OutputGraphViz(std::ostream& out) const;
    
+   void SetVisited(int v) {fVisited = v;}
+   int GetVisited() {return fVisited;}
+   
 private:
+   static int fVisited;
    unsigned int fDepth;
    const FieldVertex* fPoint;
    KDTreeNode *fParent;

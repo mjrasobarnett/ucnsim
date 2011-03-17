@@ -27,8 +27,10 @@ void InternetExample1(vector<const FieldVertex*>& points);
 int main(int /*argc*/, char ** /*argv*/) {
    ofstream out("temp/benchmark_data.txt");
    out << "Num Points" << "\t" << "Brute Force Time" << "\t" << "Tree Search Time" << "\t";
-   out << "Std Dev Brute Force" << "\t" << "Std Dev Tree Search" << endl;
-   const int repetitions = 10;
+   out << "Std Dev Brute Force" << "\t" << "Std Dev Tree Search" << "\t";
+   out << "Average Nodes Visited" << "\t" << "Std Dev" << "\t";
+   out << "Average Percent Visited" << "\t" << "Std Dev" << endl;
+   const int repetitions = 100;
    const int numNeighbours = 6;
    BenchMark(10, repetitions, numNeighbours, out);
    BenchMark(100, repetitions, numNeighbours, out);
@@ -83,8 +85,10 @@ void BenchMark(const int numPoints, const int repetitions, const int numNeighbou
    // Store all times in vector for averaging and std dev
    double totBruteForceTime = 0.;
    double totTreeSearchTime = 0.;
+   double totVisited = 0.;
    vector<double> bruteForceTimes;
    vector<double> treeSearchTimes;
+   vector<double> visited;
    for (int iter = 0; iter < repetitions; iter++) {
       FieldVertex searchPoint(gRandom->Rndm(),gRandom->Rndm(),gRandom->Rndm(),0,0,0,0);
       #ifdef VERBOSE
@@ -141,26 +145,41 @@ void BenchMark(const int numPoints, const int repetitions, const int numNeighbou
          }
          cout << "--------------------" << endl;
       #endif
+      double numvisited = tree.GetVisited();
+      //cout << "Visited: " << tree.GetVisited() << "\t Num Points: " << numPoints;
+      //cout << "\t Percent: " << numvisited << endl;
+      
       assert(*treeList == *bruteList);
       bruteForceTimes.push_back(bruteForceTime);
       treeSearchTimes.push_back(treeSearchTime);
+      visited.push_back(numvisited);
       totBruteForceTime += bruteForceTime;
       totTreeSearchTime += treeSearchTime;
+      totVisited += numvisited;
       delete treeList;
       delete bruteList;
    }
    // Calculate mean search times
-   double avgBruteForceTime = totBruteForceTime/repetitions;
-   double avgTreeSearchTime = totTreeSearchTime/repetitions;
+   double avgBruteForceTime = totBruteForceTime/((double)repetitions);
+   double avgTreeSearchTime = totTreeSearchTime/((double)repetitions);
+   double avgVisited = totVisited/((double)repetitions);
+   double totPercentVisited = 100.*(((double)totVisited)/((double)numPoints));
+   double avgPercentVisited = totPercentVisited/((double)repetitions);
    // Calculate Std Dev
    double sumBrute = 0.;
-   double sumTree = 0.;   
+   double sumTree = 0.;
+   double sumVisited = 0.;
+   double sumPercVisited = 0.;
    for (int iter = 0; iter < repetitions; iter++) {
       sumBrute += pow((bruteForceTimes[iter] - avgBruteForceTime), 2.0);
       sumTree += pow((treeSearchTimes[iter] - avgTreeSearchTime), 2.0);
+      sumVisited += pow((visited[iter] - avgPercentVisited), 2.0);
+      sumPercVisited += pow((100.*(((double)visited[iter])/((double)numPoints)) - avgPercentVisited), 2.0);
    }
-   double stdDevBrute = sqrt(sumBrute/(repetitions-1));
-   double stdDevTree = sqrt(sumTree/(repetitions-1));
+   double stdDevBrute = sqrt(sumBrute/((double)(repetitions-1)));
+   double stdDevTree = sqrt(sumTree/((double)(repetitions-1)));
+   double stdDevVisited = sqrt(sumVisited/((double)(repetitions-1)));
+   double stdDevPercVisited = sqrt(sumPercVisited/((double)(repetitions-1)));
    #ifdef VERBOSE
       cout << "--------------------" << endl;
       cout << "Average Time required for Brute force search: ";
@@ -173,7 +192,9 @@ void BenchMark(const int numPoints, const int repetitions, const int numNeighbou
       cout << "--------------------" << endl;
    #endif
    out << numPoints << "\t" << avgBruteForceTime << "\t" << avgTreeSearchTime << "\t";
-   out << stdDevBrute << "\t" << stdDevTree << endl;
+   out << stdDevBrute << "\t" << stdDevTree << "\t";
+   out << avgVisited << "\t" << stdDevVisited << "\t";
+   out << avgPercentVisited << "\t" << stdDevPercVisited << endl;
    return;
 }
 
