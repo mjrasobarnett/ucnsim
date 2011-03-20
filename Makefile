@@ -77,6 +77,8 @@ POLYNOMIALO = $(ClassPath)/Polynomial.$(ObjSuf) UCNDict.$(ObjSuf)
 POLYNOMIALS = $(ClassPath)/Polynomial.$(SrcSuf) UCNDict.$(SrcSuf)
 DATAO = $(ClassPath)/Data.$(ObjSuf) UCNDict.$(ObjSuf)
 DATAS = $(ClassPath)/Data.$(SrcSuf) UCNDict.$(SrcSuf)
+FIELDO = $(ClassPath)/Field.$(ObjSuf) UCNDict.$(ObjSuf)
+FIELDS = $(ClassPath)/Field.$(SrcSuf) UCNDict.$(SrcSuf)
 MAGFIELDO = $(ClassPath)/MagField.$(ObjSuf) UCNDict.$(ObjSuf)
 MAGFIELDS = $(ClassPath)/MagField.$(SrcSuf) UCNDict.$(SrcSuf)
 UNIFORMMAGFIELDO = $(ClassPath)/UniformMagField.$(ObjSuf) UCNDict.$(ObjSuf)
@@ -135,7 +137,7 @@ UCNLIB = -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -L$(GSL)/lib -lgsl -lgslcblas 
 #------------------------------------------------------------------------------
 OBJS = $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
 $(STATEO) $(SPINO) $(FILEPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
-$(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
+$(FIELDO) $(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
 $(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDARRAYO) $(INITIALCONFIGO) \
 $(RUNCONFIGO) $(OBSERVERO) $(SPINDATAO) $(BOUNCEDATAO) $(FIELDDATAO) $(TRACKO) $(FIELDMAPO) \
 $(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLEO) $(CLOCKO) \
@@ -261,6 +263,7 @@ PARABOLAO: 					include/Parabola.h
 POLYNOMIALO: 				include/Polynomial.h
 EXPERIMENTO: 				include/Experiment.h
 DATAO: 						include/Data.h
+FIELDO:						include/Field.h
 MAGFIELDO: 					include/MagField.h
 UNIFORMMAGFIELDO: 		include/UniformMagField.h
 RUNO: 						include/Run.h
@@ -293,7 +296,7 @@ UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/Material.h include/GravField.h include/Particle.h \
 								include/State.h include/Spin.h include/FileParser.h \
 								include/Polynomial.h include/Parabola.h \
-								include/Experiment.h include/Data.h include/MagField.h \
+								include/Experiment.h include/Data.h include/Field.h include/MagField.h \
 								include/UniformMagField.h include/ParabolicMagField.h \
 								include/Run.h include/FieldManager.h include/ConfigFile.h \
 								include/CompositeShape.h include/BoolNode.h \

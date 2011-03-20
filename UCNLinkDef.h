@@ -31,6 +31,7 @@
 #pragma link C++ class Parabola+;
 #pragma link C++ class Polynomial+;
 #pragma link C++ class Data+;
+#pragma link C++ class Field+;
 #pragma link C++ class MagField+;
 #pragma link C++ class UniformMagField+;
 //#pragma link C++ class ParabolicMagField+;
