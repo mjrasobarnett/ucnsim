@@ -153,7 +153,7 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    fParams.insert(ParamPair(RunParams::maxStepTime, maxStepTime));
    // Parameter to be set; Maximum spin step allowed in simulation
    double spinStepTime = runConfigFile.GetFloat(RunParams::spinStepTime,"Properties");
-   if (spinStepTime <= 0.) {throw runtime_error("Invalid SpinStepTime specified in runconfig");}
+   if (spinStepTime < 0.) {throw runtime_error("Invalid SpinStepTime specified in runconfig");}
    fParams.insert(ParamPair(RunParams::spinStepTime, spinStepTime));
    // -----------------------------------
    // -- Observer Options
