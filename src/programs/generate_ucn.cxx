@@ -199,7 +199,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       initialVZHist->Fill(particle->Vz());
       initialVHist->Fill(particle->V());
       initialTHist->Fill(particle->T());
-      positions->SetPoint(particle->Id(), particle->X(), particle->Y(), particle->Z());
+      positions->SetPoint(particle->Id()-1, particle->X(), particle->Y(), particle->Z());
       // -- Add particle to data file
       data->SaveParticle(particle, Folders::initial);
       if (particle) delete particle;
