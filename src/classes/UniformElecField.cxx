@@ -9,6 +9,7 @@
 #include "Algorithms.h"
 
 using namespace std;
+using namespace Algorithms;
 
 ClassImp(UniformElecField)
 
@@ -32,7 +33,7 @@ UniformElecField::UniformElecField(const string& name, const TVector3& field, co
    Double_t global[3], local[3] = {field[0],field[1],field[2]};
    matrix->LocalToMaster(local, global);
    // Zero out any rounding errors
-   for (int i=0; i<3; i++) {global[i] = Algorithms::IsEqual(global[i], 0.0) ? 0.0 : global[i];}
+   for (int i=0; i<3; i++) {global[i] = Precision::IsEqual(global[i], 0.0) ? 0.0 : global[i];}
    fField.SetXYZ(global[0],global[1],global[2]);
    cout << "Built Uniform Electric Field - ";
    cout << "Ex: " << fField[0] << "\t Ey: " << fField[1];
