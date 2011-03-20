@@ -28,7 +28,7 @@ Field::Field(const std::string& name, const TGeoShape* shape, const TGeoMatrix* 
        fFieldMatrix(matrix)
           
 {
-// Default constructor.
+   // Default constructor.
    Info("Field", "Constructor");
 }
 
@@ -46,8 +46,8 @@ Field::~Field()
 {
 // Destructor.
    Info("Field", "Destructor");
-   if(fFieldShape) delete fFieldShape;
-   if(fFieldMatrix) delete fFieldMatrix;
+   if(fFieldShape) {delete fFieldShape; fFieldShape = NULL;}
+   if(fFieldMatrix) {delete fFieldMatrix; fFieldMatrix = NULL;}
 }
 
 //______________________________________________________________________________
