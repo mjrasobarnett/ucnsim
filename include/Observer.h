@@ -17,6 +17,7 @@
 #include <string>
 
 #include "TObject.h"
+#include "TNamed.h"
 #include "TDirectory.h"
 
 #include "SpinData.h"
@@ -42,12 +43,16 @@ namespace Context {
 /////////////////////////////////////////////////////////////////////////////
 class Point;
 
-class Observer : public TObject
+class Observer : public TNamed
 {
 protected:
    const TObject* fSubject;
    
 public:
+   Observer();
+   Observer(const std::string name);
+   Observer(const Observer&);
+   virtual ~Observer();
    
    virtual void DefineSubject(const TObject* subject) {fSubject = subject;}
    virtual void RecordEvent(const Point& point, const std::string& context) = 0;
@@ -73,7 +78,7 @@ private:
    
 public:
    // -- Constructors
-   SpinObserver(double measureInterval);
+   SpinObserver(const std::string name, double measureInterval);
    SpinObserver(const SpinObserver&);
    virtual ~SpinObserver();
    
@@ -98,7 +103,7 @@ private:
    
 public:
    // -- Constructors
-   BounceObserver();
+   BounceObserver(const std::string name);
    BounceObserver(const BounceObserver&);
    BounceObserver& operator=(const BounceObserver&);
    virtual ~BounceObserver();
@@ -126,7 +131,7 @@ private:
    
 public:
    // -- Constructors
-   TrackObserver(double measureInterval);
+   TrackObserver(const std::string name, double measureInterval);
    TrackObserver(const TrackObserver&);
    virtual ~TrackObserver();
    
@@ -153,7 +158,7 @@ private:
    
 public:
    // -- Constructors
-   FieldObserver(double measureInterval);
+   FieldObserver(const std::string name, const double measureInterval);
    FieldObserver(const FieldObserver&);
    virtual ~FieldObserver();
    

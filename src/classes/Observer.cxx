@@ -25,7 +25,39 @@
 using namespace std;
 using namespace Algorithms;
 
-ClassImp(Observer)
+ClassImp(Observer);
+
+//_____________________________________________________________________________
+Observer::Observer()
+         :TNamed()
+{
+   // Constructor
+   Info("Observer","Default Constructor");
+}
+
+//_____________________________________________________________________________
+Observer::Observer(const string name)
+         :TNamed(name,name)
+{
+   // Constructor
+   Info("Observer","Default Constructor");
+}
+
+//_____________________________________________________________________________
+Observer::Observer(const Observer& other)
+         :TNamed(other)
+{
+   // Copy Constructor
+   Info("Observer","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+Observer::~Observer()
+{
+   // Destructor
+   Info("Observer","Destructor");
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -36,8 +68,8 @@ ClassImp(Observer)
 ClassImp(SpinObserver)
 
 //_____________________________________________________________________________
-SpinObserver::SpinObserver(double measureInterval)
-             :Observer(),
+SpinObserver::SpinObserver(const std::string name, double measureInterval)
+             :Observer(name),
               fSpinData(NULL),
               fMeasInterval(measureInterval),
               fLastMeasurementTime(Clock::Instance()->GetTime())
@@ -137,8 +169,8 @@ void SpinObserver::WriteToFile(TDirectory* const particleDir)
 ClassImp(BounceObserver)
 
 //_____________________________________________________________________________
-BounceObserver::BounceObserver()
-                   :Observer(),
+BounceObserver::BounceObserver(const std::string name)
+                   :Observer(name),
                     fBounceData(NULL)
 {
    // Constructor
@@ -232,8 +264,8 @@ void BounceObserver::WriteToFile(TDirectory* const particleDir)
 ClassImp(TrackObserver)
 
 //_____________________________________________________________________________
-TrackObserver::TrackObserver(double measInterval)
-                   :Observer(),
+TrackObserver::TrackObserver(const std::string name, double measInterval)
+                   :Observer(name),
                     fTrack(NULL),
                     fMeasInterval(measInterval),
                     fLastMeasurementTime(0.0)
@@ -334,8 +366,8 @@ void TrackObserver::WriteToFile(TDirectory* const particleDir)
 ClassImp(FieldObserver)
 
 //_____________________________________________________________________________
-FieldObserver::FieldObserver(double measureInterval)
-              :Observer(),
+FieldObserver::FieldObserver(const std::string name, const double measureInterval)
+              :Observer(name),
                fFieldData(NULL),
                fMeasInterval(measureInterval),
                fLastMeasurementTime(Clock::Instance()->GetTime())

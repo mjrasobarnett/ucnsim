@@ -314,33 +314,35 @@ void Data::CreateObservers(const RunConfig& runConfig, const Experiment& experim
    cout << "Track Measurement Interval (s): " << runConfig.TrackMeasureInterval() << endl;
    if (runConfig.ObserveBounces() == kTRUE) {
       // Create an observer to track UCN Bounces
-      Observer* obs = new BounceObserver();
+      Observer* obs = new BounceObserver("BounceObserver");
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }
    if (runConfig.ObserveTracks() == kTRUE) {
       // Create an observer to track UCN path
-      Observer* obs = new TrackObserver(runConfig.TrackMeasureInterval());
+      Observer* obs = new TrackObserver("TrackObserver", runConfig.TrackMeasureInterval());
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }
    if (runConfig.ObserveSpin() == kTRUE) {
       // Create an observer to track UCN Spin polarisation
-      Observer* obs = new SpinObserver(runConfig.SpinMeasureInterval());
+      Observer* obs = new SpinObserver("SpinObserver", runConfig.SpinMeasureInterval());
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }
    // -- Attach observers to parts of the experiment
    if (runConfig.ObserveField() == kTRUE) {
       // Create an observer to record field seen by spin
-      Observer* obs = new FieldObserver(runConfig.FieldMeasureInterval());
-      // Add observer to the list
-      this->AddObserver("Fields", obs);
-      // Define Observer's subject
-      MagFieldArray& magFieldArray = experiment.GetFieldManager().GetMagFieldArray();
-      obs->DefineSubject(&magFieldArray);
-      // Attach observer to its subject
-      magFieldArray.Attach(obs);
+      if (runConfig.MagFieldOn() == kTRUE) {
+         Observer* obs = new FieldObserver("MagFieldObserver", runConfig.FieldMeasureInterval());
+         // Add observer to the list
+         this->AddObserver("Fields", obs);
+         // Define Observer's subject
+         MagFieldArray& magFieldArray = experiment.GetFieldManager().GetMagFieldArray();
+         obs->DefineSubject(&magFieldArray);
+         // Attach observer to its subject
+         magFieldArray.Attach(obs);
+      }
    }
 }
 
