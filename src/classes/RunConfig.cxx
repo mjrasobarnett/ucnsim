@@ -419,28 +419,17 @@ void RunConfig::Print(Option_t* /*option*/) const
 {
    cout << "-------------------------------------------" << endl;
    cout << "Run Configuration Settings" << endl;
-   cout << "Name: " << RunName() << endl;
-   cout << "GeomFile: " << GeomFileName() << endl;
-   cout << "GeomVisFile: " << GeomVisFileName() << endl;
-   cout << "InputDataFile: " << InputFileName() << endl;
-   cout << "OutputDataFile: " << OutputFileName() << endl;
-   cout << "FieldsFile: " << FieldsFileName() << endl;
-   cout << "InputRunName: " << InputRunName() << endl;
-   cout << "ParticlesToLoad: " << ParticlesToLoad() << endl;
-   cout << "LoadAllParticles: " << LoadAllParticles() << endl;
-   cout << "RestartParticles: " << RestartFromBeginning() << endl;
-   cout << "GravFieldOn: " << GravFieldOn() << endl;
-   cout << "MagFieldOn: " << MagFieldOn() << endl;
-   cout << "WallLossesOn: " << WallLossesOn() << endl;
-   cout << "RunTime (s): " << RunTime() << endl;
-   cout << "MaxStepTime (s): " << MaxStepTime() << endl;
-   cout << "SpinStepTime (s): " << SpinStepTime() << endl;
-   cout << "Observe Spin: " << ObserveSpin() << endl;
-   cout << "Observe Bounces: " << ObserveBounces() << endl;
-   cout << "Observe Tracks: " << ObserveTracks() << endl;
-   cout << "Observe Field: " << ObserveField() << endl;
-   cout << "Track Measurement Interval: " << TrackMeasureInterval() << endl;
-   cout << "Spin Measurement Interval: " << SpinMeasureInterval() << endl;
-   cout << "Field Measurement Interval: " << FieldMeasureInterval() << endl;
+   map<string,string>::const_iterator nameIt;
+   for (nameIt = fNames.begin(); nameIt != fNames.end() ; nameIt++) {
+      cout << nameIt->first << ": " << nameIt->second << endl;
+   }
+   map<string,bool>::const_iterator optIt;
+   for (optIt = fOptions.begin(); optIt != fOptions.end() ; optIt++) {
+      cout << optIt->first << ": " << optIt->second << endl;
+   }
+   map<string,double>::const_iterator parIt;
+   for (parIt = fParams.begin(); parIt != fParams.end() ; parIt++) {
+      cout << parIt->first << ": " << parIt->second << endl;
+   }
    cout << "-------------------------------------------" << endl;
 }
