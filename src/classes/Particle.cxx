@@ -188,7 +188,7 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       // Measure the magnetic field at the halfway point along step
       const TVector3 field = run->GetExperiment().GetMagField(halfwayPoint,halfwayVel);
       // Notify observers of new field state
-      this->NotifyObservers(halfwayPoint, Context::MagField);
+      this->NotifyObservers(halfwayPoint, halfwayVel, Context::MagField);
       // Precess spin about measured magnetic field
       this->PrecessSpin(field, interval);
       #ifdef VERBOSE_MODE
@@ -202,7 +202,7 @@ void Particle::Move(const Double_t stepTime, const Run* run)
    }
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Notify Observers of Step Completion
-   this->NotifyObservers(this->GetPoint(), Context::Step);
+   this->NotifyObservers(this->GetPoint(), this->GetVelocity(), Context::Step);
 }
 
 //_____________________________________________________________________________
@@ -280,7 +280,7 @@ void Particle::PrecessSpin(const TVector3& field, const Double_t precessTime)
    // -- Precess spin about field for time defined by precessTime 
    fSpin.Precess(field,precessTime);
    // Notify Observers of spin state change
-   NotifyObservers(this->GetPoint(), Context::Spin);
+   NotifyObservers(this->GetPoint(), this->GetVelocity(), Context::Spin);
 }
 
 //_____________________________________________________________________________
@@ -291,7 +291,7 @@ Bool_t Particle::IsSpinUp(const TVector3& axis) const
 }
 
 //_____________________________________________________________________________
-void Particle::NotifyObservers(const Point& point, const std::string& context)
+void Particle::NotifyObservers(const Point& point, const TVector3& velocity, const std::string& context)
 {
    // -- Notify Observers of change
    for(int i = 0; i < this->CountObservers(); i++) {
@@ -343,11 +343,11 @@ Bool_t Particle::Reflect(const Double_t* normal, TGeoNavigator* navigator, TGeoN
    if (gRandom->Uniform(0.0,1.0) <= diffuseProbability) {
       // -- Diffuse Bounce
       this->DiffuseBounce(navigator, norm);
-      this->NotifyObservers(this->GetPoint(), Context::DiffBounce);
+      this->NotifyObservers(this->GetPoint(), this->GetVelocity(), Context::DiffBounce);
    } else {
       // -- Specular Bounce
       this->SpecularBounce(norm);
-      this->NotifyObservers(this->GetPoint(), Context::SpecBounce);
+      this->NotifyObservers(this->GetPoint(), this->GetVelocity(), Context::SpecBounce);
    }
    // Update Navigator
    navigator->SetCurrentDirection(this->Nx(), this->Ny(), this->Nz());

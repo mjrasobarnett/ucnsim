@@ -141,7 +141,7 @@ public:
    void                 IsAnomalous();
    
    // -- Observers
-   virtual void         NotifyObservers(const Point& point, const std::string& context);
+   virtual void NotifyObservers(const Point& point, const TVector3& velocity, const std::string& context);
    
    // -- Output to file
    void                 SaveState(Run* run);
