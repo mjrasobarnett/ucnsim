@@ -143,6 +143,9 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    // Option for whether magnetic field is turned on
    bool magField = runConfigFile.GetBool(RunParams::magField,"Properties");
    fOptions.insert(OptionPair(RunParams::magField, magField));
+   // Option for whether magnetic field is turned on
+   bool elecField = runConfigFile.GetBool(RunParams::elecField,"Properties");
+   fOptions.insert(OptionPair(RunParams::elecField, elecField));
    // Parameter to be set; Specifies time to simulate neutrons to
    double runTime = runConfigFile.GetFloat(RunParams::runTime,"Properties");
    if (runTime <= 0.) {throw runtime_error("Invalid RunTime specified in runconfig");}
@@ -185,8 +188,8 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    // -----------------------------------
    // -----------------------------------
    // Check for inconsistencies in RunConfig File
-   if (fieldsFileName.empty() && magField == true) {
-      throw runtime_error("Incompatible options in RunConfig: Check FieldsFile and MagFieldOn");
+   if (fieldsFileName.empty() && (magField == true || elecField == true)) {
+      throw runtime_error("Incompatible options in RunConfig: Check FieldsFile and Mag/ElecField");
    }
    if (magField == true && spinStepTime == 0.0) {
       throw runtime_error("Incompatible options in RunConfig: Check MagFieldOn and SpinStepTime");

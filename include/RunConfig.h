@@ -24,6 +24,7 @@ namespace RunParams {
    static const std::string restartParticles = "RunFromBeginning";
    static const std::string gravField = "GravField";
    static const std::string magField = "MagFields";
+   static const std::string elecField = "ElecFields";
    static const std::string wallLosses = "WallLosses";
    static const std::string recordSpin = "RecordSpin";
    static const std::string recordBounces = "RecordBounces";
