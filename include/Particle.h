@@ -104,6 +104,7 @@ public:
    Double_t             Phi()    const {return fVel.Phi();}
 
    const Point&         GetPoint() const {return fPos;}
+   const TVector3&      GetVelocity() const {return fVel;}
    
    void                 SetId(const Int_t id) {fId = id;}
    void                 SetPosition(const Double_t x, const Double_t y, const Double_t z, 
