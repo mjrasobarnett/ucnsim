@@ -33,8 +33,10 @@ ClassImp(FieldManager)
 
 //_____________________________________________________________________________
 FieldManager::FieldManager()
-                 :TNamed("FieldManager", "Default Field Manager"), fGravField(NULL),
-                  fMagFieldArray(NULL)
+                 :TNamed("FieldManager", "Default Field Manager"),
+                  fGravField(NULL),
+                  fMagFieldArray(NULL),
+                  fElecFieldArray(NULL)
 {
 // -- Default constructor
    Info("FieldManager", "Default Constructor");
@@ -42,8 +44,10 @@ FieldManager::FieldManager()
 
 //_____________________________________________________________________________
 FieldManager::FieldManager(const FieldManager& other)
-                 :TNamed(other), fGravField(other.fGravField),
-                  fMagFieldArray(other.fMagFieldArray)
+                 :TNamed(other),
+                  fGravField(other.fGravField),
+                  fMagFieldArray(other.fMagFieldArray),
+                  fElecFieldArray(other.fElecFieldArray)
 {
 // -- Copy Constructor
    Info("FieldManager", "Copy Constructor");
@@ -57,6 +61,7 @@ FieldManager& FieldManager::operator=(const FieldManager& other)
       TNamed::operator=(other);
       fGravField = other.fGravField;
       fMagFieldArray = other.fMagFieldArray;
+      fElecFieldArray = other.fElecFieldArray;
    }
    return *this;
 }
@@ -68,6 +73,7 @@ FieldManager::~FieldManager()
    Info("FieldManager", "Destructor");
    if (fGravField) delete fGravField;
    if (fMagFieldArray) delete fMagFieldArray;
+   if (fElecFieldArray) delete fElecFieldArray;
 }
 
 // -- METHODS --
@@ -143,12 +149,16 @@ GravField* FieldManager::AddGravField()
 }
 
 //______________________________________________________________________________
-const TVector3 FieldManager::GetMagField(const Point& point, const string volume) const
+const TVector3 FieldManager::GetMagField(const Point& point, const TVector3& velocity, const string volume) const
 {
+   // -- Calculate the total magnetic field at the given position
+   TVector3 bfield(0.,0.,0.);
    if (fMagFieldArray != NULL) {
-      return fMagFieldArray->GetMagField(point, volume);
-   } else {
-      return TVector3(0.,0.,0.);
+      bfield += fMagFieldArray->GetMagField(point,volume);
    }
+   if (fElecFieldArray != NULL) {
+      bfield += fElecFieldArray->GetMagField(point,velocity,volume);
+   }
+   return bfield;
 }
 
