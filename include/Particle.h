@@ -51,7 +51,6 @@ private:
    Int_t       fId;        // Particle's number (assigned when its created to help keep track of it)
    Point       fPos;
    TVector3    fVel;
-   Double_t    fE;         // kinetic energy
    
    Int_t       fRandomSeed;         // The seed of TRandom when the particle began to propagate
    
@@ -75,7 +74,7 @@ private:
 public:
    // -- Constructors
    Particle();
-   Particle(Int_t id, Point& position, TVector3& mom, Double_t energy);
+   Particle(Int_t id, Point& position, TVector3& vel, Double_t energy);
    Particle(const Particle &part);
 
    // -- Destructor
@@ -93,14 +92,14 @@ public:
    Double_t             Vy()     const {return fVel.Y();}
    Double_t             Vz()     const {return fVel.Z();}
    Double_t             V()      const {return fVel.Mag();}
-   Double_t             Energy() const {return fE;}
+   Double_t             Energy() const {return TMath::Power(V(), 2.0)*(0.5*Neutron::mass_eV_c2);}
    Double_t             P()      const {return this->V()*Neutron::mass_eV_c;}
    Double_t             Px()     const {return this->Vx()*Neutron::mass_eV_c;}
    Double_t             Py()     const {return this->Vy()*Neutron::mass_eV_c;}
    Double_t             Pz()     const {return this->Vz()*Neutron::mass_eV_c;}
    Double_t             Nx()     const {return (this->V() != 0. ? this->Vx()/this->V() : 0.);}
-   Double_t             Ny()     const {return (this->P() != 0. ? this->Vy()/this->V() : 0.);}
-   Double_t             Nz()     const {return (this->P() != 0. ? this->Vz()/this->V() : 0.);}
+   Double_t             Ny()     const {return (this->V() != 0. ? this->Vy()/this->V() : 0.);}
+   Double_t             Nz()     const {return (this->V() != 0. ? this->Vz()/this->V() : 0.);}
    Double_t             Theta()  const {return fVel.Theta();}
    Double_t             Phi()    const {return fVel.Phi();}
 

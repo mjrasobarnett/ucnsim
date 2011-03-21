@@ -33,7 +33,7 @@ ClassImp(Particle)
 //______________________________________________________________________________
 Particle::Particle()
              :TObject(), Observable(),
-              fId(0), fPos(), fVel(), fE(0.),
+              fId(0), fPos(), fVel(),
               fRandomSeed(0), fState(NULL), fSpin()
 {
    // -- Default constructor
@@ -44,9 +44,9 @@ Particle::Particle()
 
 
 //______________________________________________________________________________
-Particle::Particle(Int_t id, Point& pos, TVector3& mom, Double_t energy)
+Particle::Particle(Int_t id, Point& pos, TVector3& vel, Double_t energy)
              :TObject(), Observable(),
-              fId(id), fPos(pos), fVel(mom), fE(energy),
+              fId(id), fPos(pos), fVel(vel),
               fRandomSeed(0), fSpin()
 {
    // -- Constructor
@@ -59,7 +59,7 @@ Particle::Particle(Int_t id, Point& pos, TVector3& mom, Double_t energy)
 //_____________________________________________________________________________
 Particle::Particle(const Particle& p)
              :TObject(p), Observable(p),
-              fId(p.fId), fPos(p.fPos), fVel(p.fVel), fE(p.fE),
+              fId(p.fId), fPos(p.fPos), fVel(p.fVel),
               fRandomSeed(p.fRandomSeed), fState(p.fState), fSpin(p.fSpin)
 {
    // -- Copy Constructor
@@ -105,7 +105,6 @@ void Particle::SetVelocity(const Double_t vx, const Double_t vy, const Double_t 
 {
    // Set current velocity and energy to given coords
    fVel.SetXYZ(vx,vy,vz);
-   fE = TMath::Power(this->P(), 2.0) / (2.0*Neutron::mass_eV);
 }
 
 //_____________________________________________________________________________
