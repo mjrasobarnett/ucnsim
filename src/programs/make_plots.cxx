@@ -868,9 +868,9 @@ void PlotField(TDirectory* const histDir, const vector<TDirectory*> stateDirs, c
                   if (strcmp(fieldData->GetName(),"MagFieldObserver") != 0) continue;
                   FieldData::const_iterator dataIter;
                   for (dataIter = fieldData->begin(); dataIter != fieldData->end(); dataIter++) {
-                     bxHist->Fill((*dataIter)->Bx(),(*dataIter)->T());
-                     byHist->Fill((*dataIter)->By(),(*dataIter)->T());
-                     bzHist->Fill((*dataIter)->Bz(),(*dataIter)->T());
+                     bxHist->Fill((*dataIter)->Fx(),(*dataIter)->T());
+                     byHist->Fill((*dataIter)->Fy(),(*dataIter)->T());
+                     bzHist->Fill((*dataIter)->Fz(),(*dataIter)->T());
                   }
                   delete fieldData;
                }
