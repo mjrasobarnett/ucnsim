@@ -46,6 +46,7 @@ public:
    void AddField(Field* field);
    const TVector3 GetField(const Point& point, const string = "") const;
    virtual void NotifyObservers(const Point& point, const TVector3& velocity, const std::string& context);
+   virtual const TVector3 GetMagField(const Point& point, const TVector3& velocity, const std::string = "") const = 0;
    
    ClassDef(FieldArray, 1)
 };

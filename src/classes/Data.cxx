@@ -384,7 +384,7 @@ void Data::RegisterObservers(Particle* particle)
          particle->Attach(observer);
       }
       // Get observers to make a measurement of the initial state of their subjects
-      observer->RecordEvent(particle->GetPoint(), Context::Creation);
+      observer->RecordEvent(particle->GetPoint(), particle->GetVelocity(), Context::Creation);
    }
 }
 

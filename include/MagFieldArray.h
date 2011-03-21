@@ -28,7 +28,7 @@ public:
    virtual ~MagFieldArray();
 
    // -- methods
-   const TVector3 GetMagField(const Point& point, const std::string = "") const;
+   const TVector3 GetMagField(const Point& point, const TVector3& velocity, const std::string = "") const;
    
    ClassDef(MagFieldArray, 1)
 };

@@ -55,7 +55,7 @@ public:
    virtual ~Observer();
    
    virtual void DefineSubject(const TObject* subject) {fSubject = subject;}
-   virtual void RecordEvent(const Point& point, const std::string& context) = 0;
+   virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context) = 0;
    virtual void ResetData() = 0;
    virtual void LoadExistingData(TDirectory* const particleDir) = 0;
    virtual void WriteToFile(TDirectory* particleDir) = 0;
@@ -82,7 +82,7 @@ public:
    SpinObserver(const SpinObserver&);
    virtual ~SpinObserver();
    
-   virtual void RecordEvent(const Point& point, const std::string& context);
+   virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
    virtual void ResetData();
    virtual void LoadExistingData(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);
@@ -108,7 +108,7 @@ public:
    BounceObserver& operator=(const BounceObserver&);
    virtual ~BounceObserver();
    
-   virtual void RecordEvent(const Point& point, const std::string& context);
+   virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
    virtual void ResetData();
    virtual void LoadExistingData(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);
@@ -135,7 +135,7 @@ public:
    TrackObserver(const TrackObserver&);
    virtual ~TrackObserver();
    
-   virtual void RecordEvent(const Point& point, const std::string& context);
+   virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
    virtual void ResetData();
    virtual void LoadExistingData(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);
@@ -162,7 +162,7 @@ public:
    FieldObserver(const FieldObserver&);
    virtual ~FieldObserver();
    
-   virtual void RecordEvent(const Point& point, const std::string& context);
+   virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
    virtual void ResetData();
    virtual void LoadExistingData(TDirectory* const particleDir);
    virtual void WriteToFile(TDirectory* const particleDir);

@@ -37,7 +37,7 @@ MagFieldArray::~MagFieldArray()
 }
 
 //_____________________________________________________________________________
-const TVector3 MagFieldArray::GetMagField(const Point& point, const std::string volume) const
+const TVector3 MagFieldArray::GetMagField(const Point& point, const TVector3& /*velocity*/, const std::string volume) const
 {
    return this->GetField(point,volume);
 }

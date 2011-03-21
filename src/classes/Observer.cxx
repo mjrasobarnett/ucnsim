@@ -6,7 +6,7 @@
 
 #include "Observer.h"
 
-#include "MagFieldArray.h"
+#include "FieldArray.h"
 #include "Particle.h"
 #include "RunConfig.h"
 #include "Data.h"
@@ -98,7 +98,7 @@ SpinObserver::~SpinObserver()
 }
 
 //_____________________________________________________________________________
-void SpinObserver::RecordEvent(const Point& /*point*/, const std::string& context)
+void SpinObserver::RecordEvent(const Point& /*point*/, const TVector3& /*velocity*/, const std::string& context)
 {
    // -- Record the current spin state
    if (context == Context::Spin) {
@@ -207,7 +207,7 @@ BounceObserver::~BounceObserver()
 }
 
 //_____________________________________________________________________________
-void BounceObserver::RecordEvent(const Point& /*point*/, const std::string& context)
+void BounceObserver::RecordEvent(const Point& /*point*/, const TVector3& /*velocity*/, const std::string& context)
 
 {
    // -- If context indicates a bounce was made, increment counters.
@@ -294,7 +294,7 @@ TrackObserver::~TrackObserver()
 }
 
 //_____________________________________________________________________________
-void TrackObserver::RecordEvent(const Point& /*point*/, const std::string& context)
+void TrackObserver::RecordEvent(const Point& /*point*/, const TVector3& /*velocity*/, const std::string& context)
 {
    // -- Record the current polarisation
    if (context == Context::Step) {
@@ -396,7 +396,7 @@ FieldObserver::~FieldObserver()
 }
 
 //_____________________________________________________________________________
-void FieldObserver::RecordEvent(const Point& point, const std::string& context)
+void FieldObserver::RecordEvent(const Point& point, const TVector3& velocity, const std::string& context)
 {
    // -- Record the current Field at the current point
    if (context == Context::MagField) {
@@ -404,16 +404,16 @@ void FieldObserver::RecordEvent(const Point& point, const std::string& context)
       double currentTime = Clock::Instance()->GetTime();
       if (Precision::IsEqual(currentTime,(fLastMeasurementTime + fMeasInterval))) {
          // Make measurement
-         const TVector3 field = dynamic_cast<const MagFieldArray*>(fSubject)->GetMagField(point);
+         const TVector3 field = dynamic_cast<const FieldArray*>(fSubject)->GetMagField(point,velocity);
          const FieldVertex* fieldvertex = new FieldVertex(point, field);
          fFieldData->push_back(fieldvertex);
          // Update stored value of last measurement
          fLastMeasurementTime = currentTime;
       }
-   }  else if (context == Context::Creation) {
+   } else if (context == Context::Creation) {
       // The creation context signifies that the particle has just been instantiated so we
       // shall make a measurement of the initial state
-      const TVector3 field = dynamic_cast<const MagFieldArray*>(fSubject)->GetMagField(point);
+      const TVector3 field = dynamic_cast<const FieldArray*>(fSubject)->GetMagField(point,velocity);
       const FieldVertex* fieldvertex = new FieldVertex(point, field);
       fFieldData->push_back(fieldvertex);
    }

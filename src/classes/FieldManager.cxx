@@ -171,7 +171,7 @@ const TVector3 FieldManager::GetMagField(const Point& point, const TVector3& vel
    // -- Calculate the total magnetic field at the given position
    TVector3 bfield(0.,0.,0.);
    if (fMagFieldArray != NULL) {
-      bfield += fMagFieldArray->GetMagField(point,volume);
+      bfield += fMagFieldArray->GetMagField(point,velocity,volume);
    }
    if (fElecFieldArray != NULL) {
       bfield += fElecFieldArray->GetMagField(point,velocity,volume);

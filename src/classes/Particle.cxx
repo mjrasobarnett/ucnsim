@@ -296,7 +296,7 @@ void Particle::NotifyObservers(const Point& point, const TVector3& velocity, con
    // -- Notify Observers of change
    for(int i = 0; i < this->CountObservers(); i++) {
       Observer* observer = this->GetObserver(i);
-      observer->RecordEvent(point, context);
+      observer->RecordEvent(point, velocity, context);
    }
 }
 
