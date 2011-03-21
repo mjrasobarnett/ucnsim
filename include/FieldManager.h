@@ -47,7 +47,8 @@ public:
    MagFieldArray& GetMagFieldArray() const {return *fMagFieldArray;}
    const TVector3 GetMagField(const Point& point, const TVector3& vel, const string volume = "") const;
    
-   
+   // Elec Fields
+   ElecFieldArray& GetElecFieldArray() const {return *fElecFieldArray;}
    
    ClassDef(FieldManager,1)
 };

@@ -11,6 +11,7 @@
 
 #include "Experiment.h"
 #include "MagFieldArray.h"
+#include "ElecFieldArray.h"
 #include "DataFileHierarchy.h"
 #include "ProgressBar.h"
 
@@ -342,6 +343,17 @@ void Data::CreateObservers(const RunConfig& runConfig, const Experiment& experim
          obs->DefineSubject(&magFieldArray);
          // Attach observer to its subject
          magFieldArray.Attach(obs);
+      }
+      // Create an observer to record field seen by spin
+      if (runConfig.ElecFieldOn() == kTRUE) {
+         Observer* obs = new FieldObserver("ElecFieldObserver", runConfig.FieldMeasureInterval());
+         // Add observer to the list
+         this->AddObserver("Fields", obs);
+         // Define Observer's subject
+         ElecFieldArray& elecFieldArray = experiment.GetFieldManager().GetElecFieldArray();
+         obs->DefineSubject(&elecFieldArray);
+         // Attach observer to its subject
+         elecFieldArray.Attach(obs);
       }
    }
 }
