@@ -92,10 +92,9 @@ Bool_t FieldManager::Initialise(const RunConfig& runConfig)
    } else {
       Info("Initialise","Gravitational Field set to be OFF.");
    }
-   // Set-up the magnetic fields
-   if (runConfig.MagFieldOn() == kTRUE) {
+   // Set-up the electric/magnetic fields
+   if (runConfig.MagFieldOn() == kTRUE || runConfig.ElecFieldOn() == kTRUE) {
       // Look for Fields file
-      Info("Initialise","Magnetic Environment set to be ON. Creating...");
       TString fieldsFileName = runConfig.FieldsFileName();
       if (fieldsFileName == "") { 
          Error("Initialise","No Fields File has been specified");
@@ -110,23 +109,41 @@ Bool_t FieldManager::Initialise(const RunConfig& runConfig)
       }
       f->ls();
       // Search for Magnetic Field Manager
-      TString magManagerName = "MagFieldArray";
-      MagFieldArray* importedMagFieldArray = 0;
-      f->GetObject(magManagerName,importedMagFieldArray);
-      if (importedMagFieldArray == NULL) {
-         Error("Initialise","Could not find MagFieldArray: %s in file", magManagerName.Data());
-         return kFALSE;
+      if (runConfig.MagFieldOn() == kTRUE) {
+         Info("Initialise","Magnetic Environment set to be ON. Creating...");
+         TString magManagerName = "MagFieldArray";
+         MagFieldArray* importedMagFieldArray = 0;
+         f->GetObject(magManagerName,importedMagFieldArray);
+         if (importedMagFieldArray == NULL) {
+            Error("Initialise","Could not find: %s in file", magManagerName.Data());
+            return kFALSE;
+         }
+         // Store MagField Manager
+         fMagFieldArray = importedMagFieldArray;
+         importedMagFieldArray = 0;
+      } else {
+         Info("Initialise","Magnetic Environment set to be OFF.");
       }
-      // Store MagField Manager
-      fMagFieldArray = importedMagFieldArray;
-      // Clean up
-      importedMagFieldArray = 0;
+      // Search for Electric Field Manager
+      if (runConfig.ElecFieldOn() == kTRUE) {
+         Info("Initialise","Electric Fields Environment set to be ON. Creating...");
+         TString elecFieldArrayName = "ElecFieldArray";
+         ElecFieldArray* importedElecFieldArray = 0;
+         f->GetObject(elecFieldArrayName,importedElecFieldArray);
+         if (importedElecFieldArray == NULL) {
+            Error("Initialise","Could not find: %s in file", elecFieldArrayName.Data());
+            return kFALSE;
+         }
+         // Store ElecField Manager
+         fElecFieldArray = importedElecFieldArray;
+         importedElecFieldArray = 0;
+      } else {
+         Info("Initialise","Electric Environment set to be OFF.");
+      }
+      // Clean up file
       f->Close();
       delete f;
       f = 0;
-      
-   } else {
-      Info("Initialise","Magnetic Environment set to be OFF.");
    }
    
    cout << "-------------------------------------------" << endl;
