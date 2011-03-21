@@ -38,6 +38,7 @@ private:
 public:
    // -- constructors
    FieldArray();
+   FieldArray(const std::string name);
    // -- destructor
    virtual ~FieldArray();
    

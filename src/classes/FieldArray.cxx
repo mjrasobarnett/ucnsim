@@ -23,6 +23,15 @@ FieldArray::FieldArray()
 }
 
 //_____________________________________________________________________________
+FieldArray::FieldArray(const std::string name)
+           :TNamed(name,"FieldArray"),
+            Observable()
+{
+   // Named Constructor
+   Info("FieldArray", "Constructor");
+}
+
+//_____________________________________________________________________________
 FieldArray::FieldArray(const FieldArray& other)
            :TNamed(other),
             Observable(other),

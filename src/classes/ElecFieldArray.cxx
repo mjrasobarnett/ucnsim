@@ -15,7 +15,7 @@ ClassImp(ElecFieldArray);
 
 //_____________________________________________________________________________
 ElecFieldArray::ElecFieldArray()
-               :FieldArray()
+               :FieldArray("ElecFieldArray")
 {
    // Default constructor
    Info("ElecFieldArray", "Default Constructor");

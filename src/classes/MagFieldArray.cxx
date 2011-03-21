@@ -15,7 +15,7 @@ ClassImp(MagFieldArray)
 
 //_____________________________________________________________________________
 MagFieldArray::MagFieldArray()
-              :FieldArray()
+              :FieldArray("MagFieldArray")
 {
    // Default constructor
    Info("MagFieldArray", "Default Constructor");
