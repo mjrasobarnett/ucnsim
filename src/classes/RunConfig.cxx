@@ -197,6 +197,9 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    if (recordSpin == true && spinMeasFreq == 0.0) {
       throw runtime_error("Incompatible options in RunConfig: Check RecordSpin and SpinMeasFreq");
    }
+   if (recordField == true && magField == false) {
+      throw runtime_error("Incompatible options in RunConfig: Check RecordField and MagField");
+   }
    if (recordField == true && fieldMeasInterval == 0.0) {
       throw runtime_error("Incompatible options in RunConfig: Check RecordField and FieldMeasFreq");
    }
