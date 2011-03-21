@@ -35,3 +35,9 @@ MagFieldArray::~MagFieldArray()
    // Destructor
    Info("MagFieldArray", "Destructor");
 }
+
+//_____________________________________________________________________________
+const TVector3 MagFieldArray::GetMagField(const Point& point, const std::string volume) const
+{
+   return this->GetField(point,volume);
+}
