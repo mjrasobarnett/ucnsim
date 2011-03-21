@@ -51,7 +51,6 @@ private:
    Int_t       fId;        // Particle's number (assigned when its created to help keep track of it)
    Point       fPos;
    TVector3    fVel;
-   Double_t    fE;         // kinetic energy
    
    Int_t       fRandomSeed;         // The seed of TRandom when the particle began to propagate
    
@@ -93,7 +92,7 @@ public:
    Double_t             Vy()     const {return fVel.Y();}
    Double_t             Vz()     const {return fVel.Z();}
    Double_t             V()      const {return fVel.Mag();}
-   Double_t             Energy() const {return fE;}
+   Double_t             Energy() const {return TMath::Power(V(), 2.0)*(0.5*Neutron::mass_eV_c2);}
    Double_t             P()      const {return this->V()*Neutron::mass_eV_c;}
    Double_t             Px()     const {return this->Vx()*Neutron::mass_eV_c;}
    Double_t             Py()     const {return this->Vy()*Neutron::mass_eV_c;}
