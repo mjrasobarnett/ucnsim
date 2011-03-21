@@ -314,10 +314,16 @@ namespace GeomParameters {
 
 namespace FieldParameters {
    // -- Uniform Solenoid
-   // X, Y, Z are in the local coord system of the volume
+   // X, Y, Z are in the local coord system of its volume
    const Double_t solenoidBx = 0.0*Units::uT;
    const Double_t solenoidBy = 0.0*Units::uT;
    const Double_t solenoidBz = 5.0*Units::uT;
+   
+   // -- Electric Field
+   // X, Y, Z are in the local coord system of its volume
+   const Double_t hvCellEx = 0.0*Units::KV;
+   const Double_t hvCellEy = 0.0*Units::KV;
+   const Double_t hvCellEz = 40.0*Units::KV;
    
 }
 
