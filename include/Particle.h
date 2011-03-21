@@ -74,7 +74,7 @@ private:
 public:
    // -- Constructors
    Particle();
-   Particle(Int_t id, Point& position, TVector3& mom, Double_t energy);
+   Particle(Int_t id, Point& position, TVector3& vel, Double_t energy);
    Particle(const Particle &part);
 
    // -- Destructor
@@ -98,8 +98,8 @@ public:
    Double_t             Py()     const {return this->Vy()*Neutron::mass_eV_c;}
    Double_t             Pz()     const {return this->Vz()*Neutron::mass_eV_c;}
    Double_t             Nx()     const {return (this->V() != 0. ? this->Vx()/this->V() : 0.);}
-   Double_t             Ny()     const {return (this->P() != 0. ? this->Vy()/this->V() : 0.);}
-   Double_t             Nz()     const {return (this->P() != 0. ? this->Vz()/this->V() : 0.);}
+   Double_t             Ny()     const {return (this->V() != 0. ? this->Vy()/this->V() : 0.);}
+   Double_t             Nz()     const {return (this->V() != 0. ? this->Vz()/this->V() : 0.);}
    Double_t             Theta()  const {return fVel.Theta();}
    Double_t             Phi()    const {return fVel.Phi();}
 
