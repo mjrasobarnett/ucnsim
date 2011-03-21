@@ -425,7 +425,7 @@ void FieldObserver::ResetData()
    // -- Delete current observables and create a new version in its place
    fLastMeasurementTime = 0.0;
    if (fFieldData != NULL) delete fFieldData; fFieldData = NULL;
-   fFieldData = new FieldData();
+   fFieldData = new FieldData(this->GetName());
 }
 
 //_____________________________________________________________________________
@@ -453,6 +453,6 @@ void FieldObserver::WriteToFile(TDirectory* const particleDir)
 {
    // -- Write out the current observable to the provided directory
    particleDir->cd();
-   fFieldData->Write("FieldData",TObject::kOverwrite);
+   fFieldData->Write("FieldData");
 }
 

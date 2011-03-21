@@ -865,6 +865,7 @@ void PlotField(TDirectory* const histDir, const vector<TDirectory*> stateDirs, c
                if (cl->InheritsFrom("FieldData")) {
                   // -- Extract Spin Observer Data if recorded
                   const FieldData* fieldData = dynamic_cast<const FieldData*>(objKey->ReadObj());
+                  if (strcmp(fieldData->GetName(),"MagFieldObserver") != 0) continue;
                   FieldData::const_iterator dataIter;
                   for (dataIter = fieldData->begin(); dataIter != fieldData->end(); dataIter++) {
                      bxHist->Fill((*dataIter)->Bx(),(*dataIter)->T());
