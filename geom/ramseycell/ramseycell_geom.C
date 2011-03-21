@@ -182,20 +182,30 @@ Bool_t BuildUniformField(const TGeoHMatrix& matrix)
 Bool_t BuildFieldMap(const TGeoHMatrix& matrix)
 {
    // Create a Uniform Magnetic field and write it to file
-   string filename = "runs/ramseycell/fieldmap/scv/corrected/fieldmap_config3_offset.txt";
+   string filename = "runs/ramseycell/fieldmap/scv/corrected/config3/fieldmap_config3_offset.txt";
    // Define shape of field
-   TGeoShape* fieldShape = new Tube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
+   TGeoShape* magFieldShape = new Tube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
    // Define transformation that locates field in geometry
-   TGeoMatrix* fieldPosition = new TGeoHMatrix(matrix);
-   MagFieldMap* field = new MagFieldMap("SolenoidField", fieldShape, fieldPosition);
+   TGeoMatrix* magFieldPosition = new TGeoHMatrix(matrix);
+   MagFieldMap* field = new MagFieldMap("SolenoidField", magFieldShape, magFieldPosition);
    if (field->BuildMap(filename) == kFALSE) {
-      Error("BuildFieldMap","Cannot open file: %s", magFileName);
+      Error("BuildFieldMap","Cannot open file: %s", filename);
       return kFALSE;
    }
-   
    // Add field to magfield manager
    MagFieldArray* magFieldArray = new MagFieldArray();
    magFieldArray->AddField(field);
+   
+   // Elec Field
+   // Define shape of field
+   TGeoShape* elecFieldShape = new Tube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
+   // Define transformation that locates field in geometry
+   TGeoMatrix* elecFieldPosition = new TGeoHMatrix(matrix);
+   TVector3 elecFieldStrength(hvCellEx, hvCellEy, hvCellEz);
+   ElecField* elecField = new UniformElecField("ElectricField", elecFieldStrength, elecFieldShape, elecFieldPosition);
+   // Add field to electric field manager
+   ElecFieldArray* elecFieldArray = new ElecFieldArray();
+   elecFieldArray->AddField(elecField);
    
    // -- Write magfieldmanager to geometry file
    const char *magFileName = "$(UCN_GEOM)/fields.root";
@@ -205,9 +215,12 @@ Bool_t BuildFieldMap(const TGeoHMatrix& matrix)
      return kFALSE;
    }
    magFieldArray->Write(magFieldArray->GetName());
+   elecFieldArray->Write(elecFieldArray->GetName());
    f->ls();
    f->Close();
-   if (magFieldArray) delete magFieldArray;
+   delete magFieldArray;
+   delete elecFieldArray;
    magFieldArray = 0;
+   elecFieldArray = 0;
    return kTRUE;
 }
