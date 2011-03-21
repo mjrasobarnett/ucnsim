@@ -359,6 +359,13 @@ bool RunConfig::MagFieldOn() const
 }
 
 //__________________________________________________________________________
+bool RunConfig::ElecFieldOn() const
+{
+   map<string, bool>::const_iterator it = fOptions.find(RunParams::elecField);
+   return (it == fOptions.end()) ? false : it->second;
+}
+
+//__________________________________________________________________________
 bool RunConfig::WallLossesOn() const
 {
    map<string, bool>::const_iterator it = fOptions.find(RunParams::wallLosses);

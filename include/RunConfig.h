@@ -77,6 +77,7 @@ public:
    double SpinStepTime() const;
    bool GravFieldOn() const;
    bool MagFieldOn() const;
+   bool ElecFieldOn() const;
    bool WallLossesOn() const;
    bool ObserveSpin() const;
    bool ObserveBounces() const;
