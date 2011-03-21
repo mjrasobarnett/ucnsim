@@ -74,7 +74,7 @@ private:
 public:
    // -- Constructors
    Particle();
-   Particle(Int_t id, Point& position, TVector3& vel, Double_t energy);
+   Particle(Int_t id, Point& position, TVector3& vel);
    Particle(const Particle &part);
 
    // -- Destructor
