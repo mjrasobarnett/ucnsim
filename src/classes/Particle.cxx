@@ -167,8 +167,10 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       // Calculate position halfway along step
       const Double_t halfInterval = interval*0.5;
       TVector3 halfwayPos(pos);
+      TVector3 halfwayVel(vel);
       for (int i=0;i<3;i++) {
          halfwayPos[i] += vel[i]*halfInterval + 0.5*gravField[i]*halfInterval*halfInterval;
+         halfwayVel[i] += gravField[i]*halfInterval;
       }
       const Double_t halfwayTime = this->T()+halfInterval;
       Point halfwayPoint(halfwayPos,halfwayTime);
@@ -184,7 +186,7 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       this->SetPosition(pos[0],pos[1],pos[2],finalTime);
       this->SetVelocity(vel[0],vel[1],vel[2]);
       // Measure the magnetic field at the halfway point along step
-      const TVector3 field = run->GetExperiment().GetMagField(halfwayPoint);
+      const TVector3 field = run->GetExperiment().GetMagField(halfwayPoint,halfwayVel);
       // Notify observers of new field state
       this->NotifyObservers(halfwayPoint, Context::MagField);
       // Precess spin about measured magnetic field
