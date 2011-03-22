@@ -87,8 +87,8 @@ public:
    virtual void      Sizeof3D() const;
    
    // new methods
-   virtual Double_t     TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const = 0;
-   virtual Double_t     TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const = 0;
+   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const = 0;
+   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const = 0;
 	
    ClassDef(BoolNode, 1)              // a boolean node
 };
@@ -130,8 +130,8 @@ public:
    virtual void      Paint(Option_t *option);
 
    // new methods
-   virtual Double_t     TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
-   virtual Double_t     TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
 
    ClassDef(Union, 1)              // union node
 };
@@ -174,8 +174,8 @@ public:
    virtual void      Paint(Option_t *option);
 
    // new methods
-   virtual Double_t     TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
-   virtual Double_t     TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
 
    ClassDef(Intersection, 1)              // intersection node
 };
@@ -217,8 +217,8 @@ public:
    virtual void      Paint(Option_t *option);
 
    // new methods
-   virtual Double_t     TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
-   virtual Double_t     TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
 
    ClassDef(Subtraction, 1)              // subtraction node
 };

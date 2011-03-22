@@ -15,10 +15,8 @@
 class Box : public TGeoBBox 
 {
 protected:
-   static Double_t TimeFromInsideS(const Double_t* point, const Double_t* velocity, const Double_t* field,
-    const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Bool_t onBoundary);
-   static Double_t TimeFromOutsideS(const Double_t* point, const Double_t* velocity, const Double_t* field,
-    const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Bool_t onBoundary);
+   static Double_t TimeFromInsideS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Bool_t onBoundary);
+   static Double_t TimeFromOutsideS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Bool_t onBoundary);
    
    
    static Bool_t IsNextPointOnBox(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t* boundary, const Double_t t);
@@ -35,10 +33,8 @@ public:
    virtual ~Box();
    
    // methods
-   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field,
-    const Double_t stepTime, const Bool_t onBoundary) const;
-   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field,
-    const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
 
    ClassDef(Box, 1) // Box
 };

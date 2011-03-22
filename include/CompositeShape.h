@@ -77,11 +77,9 @@ public:
    virtual void          Sizeof3D() const;
 
    // methods
-   virtual Double_t     TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field,
-                                    const Double_t stepmax, const Bool_t onBoundary) const;
-   virtual Double_t     TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field,
-                                    const Double_t stepmax, const Bool_t onBoundary) const;
-	
+   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax, const Bool_t onBoundary) const;
+
    ClassDef(CompositeShape, 1)         // boolean composite shape
 };
 
