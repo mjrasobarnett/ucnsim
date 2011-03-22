@@ -129,12 +129,14 @@ OBSERVABLEO = $(ClassPath)/Observable.$(ObjSuf) UCNDict.$(ObjSuf)
 OBSERVABLES = $(ClassPath)/Observable.$(SrcSuf) UCNDict.$(SrcSuf)
 CLOCKO = $(ClassPath)/Clock.$(ObjSuf) UCNDict.$(ObjSuf)
 CLOCKS = $(ClassPath)/Clock.$(SrcSuf) UCNDict.$(SrcSuf)
-ALGORITHMSO = src/Algorithms.$(ObjSuf) UCNDict.$(ObjSuf)
-ALGORITHMSS = src/Algorithms.$(SrcSuf) UCNDict.$(SrcSuf)
 UNIFORMELECFIELDO = $(ClassPath)/UniformElecField.$(ObjSuf) UCNDict.$(ObjSuf)
 UNIFORMELECFIELDS = $(ClassPath)/UniformElecField.$(SrcSuf) UCNDict.$(SrcSuf)
 ELECFIELDARRAYO = $(ClassPath)/ElecFieldArray.$(ObjSuf) UCNDict.$(ObjSuf)
 ELECFIELDARRAYS = $(ClassPath)/ElecFieldArray.$(SrcSuf) UCNDict.$(SrcSuf)
+ALGORITHMSO = src/Algorithms.$(ObjSuf) UCNDict.$(ObjSuf)
+ALGORITHMSS = src/Algorithms.$(SrcSuf) UCNDict.$(SrcSuf)
+MATERIALSO = src/Materials.$(ObjSuf) UCNDict.$(ObjSuf)
+MATERIALSS = src/Materials.$(SrcSuf) UCNDict.$(SrcSuf)
 
 
 #------------------------------------------------------------------------------
@@ -151,7 +153,7 @@ $(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(FIELDARRAYO) $(MAGFIELD
 $(ELECFIELDO) $(INITIALCONFIGO) $(RUNCONFIGO) $(OBSERVERO) $(SPINDATAO) \
 $(BOUNCEDATAO) $(FIELDDATAO) $(TRACKO) \
 $(FIELDMAPO) $(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLEO) \
-$(CLOCKO) $(EVENTO) $(ALGORITHMSO) $(UNIFORMELECFIELDO) $(ELECFIELDARRAYO)
+$(CLOCKO) $(EVENTO) $(ALGORITHMSO) $(UNIFORMELECFIELDO) $(ELECFIELDARRAYO) $(MATERIALSO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(MAKE_PLOTS) $(SANDBOX) \
 $(DRAW_TRACKS) $(TEST_KDTREE) $(MAKE_T2PLOT) $(DRAW_PLOTS) $(MAKE_DENSITY) $(BATCH_SIMULATE)
@@ -303,8 +305,7 @@ POINTO:						include/Point.h
 OBSERVABLEO:				include/Observable.h
 CLOCKO:						include/Clock.h
 ALGORITHMSO:				include/Algorithms.h
-UNIFORMELECFIELDO:		include/UniformElecField.h
-ELECFIELDARRAYO:			include/ElecFieldArray.h
+MATERIALSO:					include/Materials.h
 
 UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/Material.h include/GravField.h include/Particle.h \
