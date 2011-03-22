@@ -58,7 +58,6 @@ public:
    // constructors
    BoolNode();
    BoolNode(const char *expr1, const char *expr2);
-   BoolNode(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat=0, TGeoMatrix *rmat=0);
 
    // destructor
    virtual ~BoolNode();
@@ -105,7 +104,6 @@ public:
    // constructors
    Union();
    Union(const char *expr1, const char *expr2);
-   Union(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat=0, TGeoMatrix *rmat=0);
 
    // destructor
    virtual ~Union();
@@ -149,7 +147,6 @@ public:
    // constructors
    Intersection();
    Intersection(const char *expr1, const char *expr2);
-   Intersection(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat=0, TGeoMatrix *rmat=0);
 
    // destructor
    virtual ~Intersection();
@@ -192,7 +189,6 @@ public:
    // constructors
    Subtraction();
    Subtraction(const char *expr1, const char *expr2);
-   Subtraction(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat=0, TGeoMatrix *rmat=0);
 
    // destructor
    virtual ~Subtraction();

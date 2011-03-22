@@ -86,32 +86,6 @@ BoolNode::BoolNode(const char *expr1, const char *expr2)
 }
 
 //_____________________________________________________________________________
-BoolNode::BoolNode(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, TGeoMatrix *rmat)
-{
-// Constructor providing left and right shapes and matrices (in the Boolean operation).
-   #ifdef PRINT_CONSTRUCTORS
-      Info("BoolNode","Constructor");
-	#endif
-	fSelected = 0;
-   fLeft = left;
-   fRight = right;
-   fLeftMat = lmat;
-   if (!fLeftMat) fLeftMat = gGeoIdentity;
-   else fLeftMat->RegisterYourself();
-   fRightMat = rmat;
-   if (!fRightMat) fRightMat = gGeoIdentity;
-   else fRightMat->RegisterYourself();
-   if (!fLeft) {
-      Error("ctor", "left shape is NULL");
-      return;
-   }   
-   if (!fRight) {
-      Error("ctor", "right shape is NULL");
-      return;
-   }   
-}
-
-//_____________________________________________________________________________
 BoolNode::~BoolNode()
 {
 // Destructor.
@@ -302,19 +276,6 @@ Union::Union(const char *expr1, const char *expr2)
 	#ifdef PRINT_CONSTRUCTORS
       Info("Union","Constructor");
    #endif
-}
-
-//_____________________________________________________________________________
-Union::Union(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, TGeoMatrix *rmat)
-          :BoolNode(left,right,lmat,rmat)
-{
-// Constructor providing pointers to components
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Union","Constructor");
-	#endif
-	if (left->TestShapeBit(TGeoShape::kGeoHalfSpace) || right->TestShapeBit(TGeoShape::kGeoHalfSpace)) {
-      Fatal("Union", "Unions with a half-space (%s + %s) not allowed", left->GetName(), right->GetName());
-   }
 }
 
 //_____________________________________________________________________________
@@ -931,19 +892,6 @@ Subtraction::Subtraction(const char *expr1, const char *expr2)
 }
 
 //_____________________________________________________________________________
-Subtraction::Subtraction(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, TGeoMatrix *rmat)
-                :BoolNode(left,right,lmat,rmat)
-{
-// Constructor providing pointers to components
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Subtraction","Constructor");
-   #endif
-   if (left->TestShapeBit(TGeoShape::kGeoHalfSpace)) {
-      Fatal("TGeoSubstraction", "Substractions from a half-space (%s) not allowed", left->GetName());
-   }
-}
-
-//_____________________________________________________________________________
 Subtraction::~Subtraction()
 {
 // Destructor
@@ -1371,19 +1319,6 @@ Intersection::Intersection(const char *expr1, const char *expr2)
    #ifdef PRINT_CONSTRUCTORS
       Info("Intersection","Constructor");
    #endif
-}
-
-//_____________________________________________________________________________
-Intersection::Intersection(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, TGeoMatrix *rmat)
-                 :BoolNode(left,right,lmat,rmat)
-{
-// Constructor providing pointers to components
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Intersection","Constructor");
-   #endif
-   Bool_t hs1 = (fLeft->TestShapeBit(TGeoShape::kGeoHalfSpace))?kTRUE:kFALSE;
-   Bool_t hs2 = (fRight->TestShapeBit(TGeoShape::kGeoHalfSpace))?kTRUE:kFALSE;
-   if (hs1 && hs2) Fatal("ctor", "cannot intersect two half-spaces: %s * %s", left->GetName(), right->GetName());
 }
 
 //_____________________________________________________________________________
