@@ -20,7 +20,18 @@ ClassImp(FieldData)
 //_____________________________________________________________________________
 FieldData::FieldData()
                  :std::vector<const FieldVertex*>(),
-                  TObject()
+                  TNamed()
+{
+   // Constructor
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldData","Default Constructor");
+   #endif
+}
+
+//_____________________________________________________________________________
+FieldData::FieldData(const string name)
+                 :std::vector<const FieldVertex*>(),
+                  TNamed(name,name)
 {
    // Constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -31,7 +42,7 @@ FieldData::FieldData()
 //_____________________________________________________________________________
 FieldData::FieldData(const FieldData& other)
                     :std::vector<const FieldVertex*>(other),
-                     TObject(other)
+                     TNamed(other)
 {
    // Copy Constructor
    #ifdef PRINT_CONSTRUCTORS

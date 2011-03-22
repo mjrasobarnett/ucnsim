@@ -1,14 +1,10 @@
 // MagField
 // Author: Matthew Raso-Barnett  30/09/2009
 
-#ifndef ROOT_MagField
-#define ROOT_MagField
+#ifndef MAGFIELD_H
+#define MAGFIELD_H
 
-#include "TNamed.h"
-#include "TVector3.h"
-#include "TGeoShape.h"
-#include "TGeoMatrix.h"
-
+#include "Field.h"
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////
@@ -16,20 +12,9 @@
 // MagField - ABC for magnetic field.                                 //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-class Particle;
-class Run;
-class FieldVertex;
 class Point;
 
-class MagField : public TNamed {
-private:
-   // Field Extent -- a virtual volume that defines the extent of this field in the geometry
-   const TGeoShape* fFieldShape;
-   const TGeoMatrix* fFieldMatrix;
-   
-protected:
-   FieldVertex ConvertToGlobalFrame(const FieldVertex& point) const;
-   FieldVertex ConvertToLocalFrame(const FieldVertex& point) const;
+class MagField : public Field {
    
 public:
    MagField();
@@ -37,10 +22,9 @@ public:
    MagField(const MagField&);
    virtual ~MagField();
    
-   virtual Bool_t Contains(const TVector3& point) const;
    virtual const TVector3 GetField(const Point& point) const = 0;
    
    ClassDef(MagField, 1)              // Abstract base Mag field class
 };
 
-#endif
+#endif /* MAGFIELD_H */

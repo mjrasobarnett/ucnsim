@@ -143,6 +143,9 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    // Option for whether magnetic field is turned on
    bool magField = runConfigFile.GetBool(RunParams::magField,"Properties");
    fOptions.insert(OptionPair(RunParams::magField, magField));
+   // Option for whether magnetic field is turned on
+   bool elecField = runConfigFile.GetBool(RunParams::elecField,"Properties");
+   fOptions.insert(OptionPair(RunParams::elecField, elecField));
    // Parameter to be set; Specifies time to simulate neutrons to
    double runTime = runConfigFile.GetFloat(RunParams::runTime,"Properties");
    if (runTime <= 0.) {throw runtime_error("Invalid RunTime specified in runconfig");}
@@ -185,14 +188,17 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    // -----------------------------------
    // -----------------------------------
    // Check for inconsistencies in RunConfig File
-   if (fieldsFileName.empty() && magField == true) {
-      throw runtime_error("Incompatible options in RunConfig: Check FieldsFile and MagFieldOn");
+   if (fieldsFileName.empty() && (magField == true || elecField == true)) {
+      throw runtime_error("Incompatible options in RunConfig: Check FieldsFile and Mag/ElecField");
    }
    if (magField == true && spinStepTime == 0.0) {
       throw runtime_error("Incompatible options in RunConfig: Check MagFieldOn and SpinStepTime");
    }
    if (recordSpin == true && spinMeasFreq == 0.0) {
       throw runtime_error("Incompatible options in RunConfig: Check RecordSpin and SpinMeasFreq");
+   }
+   if (recordField == true && magField == false) {
+      throw runtime_error("Incompatible options in RunConfig: Check RecordField and MagField");
    }
    if (recordField == true && fieldMeasInterval == 0.0) {
       throw runtime_error("Incompatible options in RunConfig: Check RecordField and FieldMeasFreq");
@@ -356,6 +362,13 @@ bool RunConfig::MagFieldOn() const
 }
 
 //__________________________________________________________________________
+bool RunConfig::ElecFieldOn() const
+{
+   map<string, bool>::const_iterator it = fOptions.find(RunParams::elecField);
+   return (it == fOptions.end()) ? false : it->second;
+}
+
+//__________________________________________________________________________
 bool RunConfig::WallLossesOn() const
 {
    map<string, bool>::const_iterator it = fOptions.find(RunParams::wallLosses);
@@ -416,28 +429,17 @@ void RunConfig::Print(Option_t* /*option*/) const
 {
    cout << "-------------------------------------------" << endl;
    cout << "Run Configuration Settings" << endl;
-   cout << "Name: " << RunName() << endl;
-   cout << "GeomFile: " << GeomFileName() << endl;
-   cout << "GeomVisFile: " << GeomVisFileName() << endl;
-   cout << "InputDataFile: " << InputFileName() << endl;
-   cout << "OutputDataFile: " << OutputFileName() << endl;
-   cout << "FieldsFile: " << FieldsFileName() << endl;
-   cout << "InputRunName: " << InputRunName() << endl;
-   cout << "ParticlesToLoad: " << ParticlesToLoad() << endl;
-   cout << "LoadAllParticles: " << LoadAllParticles() << endl;
-   cout << "RestartParticles: " << RestartFromBeginning() << endl;
-   cout << "GravFieldOn: " << GravFieldOn() << endl;
-   cout << "MagFieldOn: " << MagFieldOn() << endl;
-   cout << "WallLossesOn: " << WallLossesOn() << endl;
-   cout << "RunTime (s): " << RunTime() << endl;
-   cout << "MaxStepTime (s): " << MaxStepTime() << endl;
-   cout << "SpinStepTime (s): " << SpinStepTime() << endl;
-   cout << "Observe Spin: " << ObserveSpin() << endl;
-   cout << "Observe Bounces: " << ObserveBounces() << endl;
-   cout << "Observe Tracks: " << ObserveTracks() << endl;
-   cout << "Observe Field: " << ObserveField() << endl;
-   cout << "Track Measurement Interval: " << TrackMeasureInterval() << endl;
-   cout << "Spin Measurement Interval: " << SpinMeasureInterval() << endl;
-   cout << "Field Measurement Interval: " << FieldMeasureInterval() << endl;
+   map<string,string>::const_iterator nameIt;
+   for (nameIt = fNames.begin(); nameIt != fNames.end() ; nameIt++) {
+      cout << nameIt->first << ": " << nameIt->second << endl;
+   }
+   map<string,bool>::const_iterator optIt;
+   for (optIt = fOptions.begin(); optIt != fOptions.end() ; optIt++) {
+      cout << optIt->first << ": " << optIt->second << endl;
+   }
+   map<string,double>::const_iterator parIt;
+   for (parIt = fParams.begin(); parIt != fParams.end() ; parIt++) {
+      cout << parIt->first << ": " << parIt->second << endl;
+   }
    cout << "-------------------------------------------" << endl;
 }

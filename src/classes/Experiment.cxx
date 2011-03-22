@@ -112,9 +112,9 @@ Bool_t Experiment::ExportGeometry(Run& run)
 }
 
 //______________________________________________________________________________
-const TVector3 Experiment::GetMagField(const Point& point, const string volume) const
+const TVector3 Experiment::GetMagField(const Point& point, const TVector3& vel, const string volume) const
 {
    // -- Get FieldManager to measure magnetic field
-   return fFieldManager.GetMagField(point,volume);
+   return fFieldManager.GetMagField(point,vel,volume);
 }
 

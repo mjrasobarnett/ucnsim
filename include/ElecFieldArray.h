@@ -1,36 +1,36 @@
-// MagFieldArray
+// ElecFieldArrayay
 // Author: Matthew Raso-Barnett  29/09/2010
 
-#ifndef MAGFIELDARRAY_H
-#define MAGFIELDARRAY_H
+#ifndef ELECFIELD_ARRAY_H
+#define ELECFIELD_ARRAY_H
 
+#include "TObject.h"
 #include <string>
 #include "FieldArray.h"
+#include "TVector3.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
-//    MagFieldArray                                                 //
+//    ElecFieldArrayay                                                      //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
-class Point;
 
-class MagFieldArray : public FieldArray
+class ElecFieldArray : public FieldArray
 {
 private:
-   // Don't allow copy construction - otherwise we run into problems with ownership of pointers
-   MagFieldArray(const MagFieldArray&);
-
+   
 public:
    // -- constructors
-   MagFieldArray();
+   ElecFieldArray();
+   ElecFieldArray(const ElecFieldArray& other);
    
    // -- destructor
-   virtual ~MagFieldArray();
+   virtual ~ElecFieldArray();
 
    // -- methods
    const TVector3 GetMagField(const Point& point, const TVector3& velocity, const std::string = "") const;
    
-   ClassDef(MagFieldArray, 1)
+   ClassDef(ElecFieldArray, 1)
 };
 
-#endif /* MAGFIELDARRAY_H */
+#endif /* ELECFIELDARRAY_H */

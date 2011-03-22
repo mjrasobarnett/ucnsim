@@ -32,7 +32,7 @@ public:
    Observer* GetObserver(int index) {return fObservers[index];}
    void      WriteObserversToFile(TDirectory* particleDir);
    
-   virtual void   NotifyObservers(const Point& point, const std::string& context) = 0;
+   virtual void NotifyObservers(const Point& point, const TVector3& velocity, const std::string& context) = 0;
 
 };
 

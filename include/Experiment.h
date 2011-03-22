@@ -46,7 +46,7 @@ public:
    // FieldManager Interface
    const FieldManager&     GetFieldManager() const {return fFieldManager;}
    const GravField* const  GetGravField() const {return fFieldManager.GetGravField();}
-   const TVector3          GetMagField(const Point& point, const string volume = "") const;
+   const TVector3          GetMagField(const Point& point, const TVector3& vel, const string volume = "") const;
    
    ClassDef(Experiment, 1)
 };
