@@ -47,6 +47,7 @@ BATCH_SIMULATE = bin/batch_simulate$(ExeSuf)
 # my classes
 #------------------------------------------------------------------------------
 ClassPath = src/classes
+ClassIncPath = include/classes
 CONFIGFILEO = $(ClassPath)/ConfigFile.$(ObjSuf) UCNDict.$(ObjSuf)
 CONFIGFILES = $(ClassPath)/ConfigFile.$(SrcSuf) UCNDict.$(SrcSuf)
 RUNO = $(ClassPath)/Run.$(ObjSuf)  UCNDict.$(ObjSuf)
@@ -263,68 +264,69 @@ endif
 endif
 endif
 
-BOXO: 						include/Box.h
-TUBEO: 						include/Tube.h
-MATERIALO: 					include/Material.h
-GRAVFIELDO: 				include/GravField.h
-PARTICLEO: 					include/Particle.h
-STATEO: 						include/State.h
-SPINO: 						include/Spin.h
-FILEPARSERO: 				include/FileParser.h
-PARABOLAO: 					include/Parabola.h
-POLYNOMIALO: 				include/Polynomial.h
-EXPERIMENTO: 				include/Experiment.h
-DATAO: 						include/Data.h
-FIELDO:						include/Field.h
-MAGFIELDO: 					include/MagField.h
-UNIFORMMAGFIELDO: 		include/UniformMagField.h
-RUNO: 						include/Run.h
-PARABOLICMAGFIELDO: 		include/ParabolicMagField.h
-FIELDMANAGERO: 			include/FieldManager.h
-CONFIGFILEO: 				include/ConfigFile.h
-COMPOSITESHAPEO: 			include/CompositeShape.h
-BOOLNODEO: 					include/BoolNode.h
-VOLUMEO: 					include/Volume.h
-ELEMENTO: 					include/Element.h
-FIELDARRAYO:				include/FieldArray.h
-MAGFIELDARRAYO: 			include/MagFieldArray.h
-ELECFIELDO:					include/ElecField.h
-INITIALCONFIGO: 			include/InitialConfig.h
-RUNCONFIGO: 				include/RunConfig.h
-OBSERVERO:					include/Observer.h
-SPINDATAO:					include/SpinData.h
-BOUNCEDATAO:				include/BounceData.h
-FIELDDATAO: 				include/FieldData.h
-TRACKO:						include/Track.h
-FIELDMAPO:					include/FieldMap.h
-KDTREEO:						include/KDTree.h
-KDTREENODEO:				include/KDTreeNode.h
-FIELDVERTEXO:				include/FieldVertex.h
-VERTEXSTACKO:				include/VertexStack.h
-POINTO:						include/Point.h
-OBSERVABLEO:				include/Observable.h
-CLOCKO:						include/Clock.h
+BOXO: 						$(ClassIncPath)/Box.h
+TUBEO: 						$(ClassIncPath)/Tube.h
+MATERIALO: 					$(ClassIncPath)/Material.h
+GRAVFIELDO: 				$(ClassIncPath)/GravField.h
+PARTICLEO: 					$(ClassIncPath)/Particle.h
+STATEO: 						$(ClassIncPath)/State.h
+SPINO: 						$(ClassIncPath)/Spin.h
+FILEPARSERO: 				$(ClassIncPath)/FileParser.h
+PARABOLAO: 					$(ClassIncPath)/Parabola.h
+POLYNOMIALO: 				$(ClassIncPath)/Polynomial.h
+EXPERIMENTO: 				$(ClassIncPath)/Experiment.h
+DATAO: 						$(ClassIncPath)/Data.h
+FIELDO:						$(ClassIncPath)/Field.h
+MAGFIELDO: 					$(ClassIncPath)/MagField.h
+UNIFORMMAGFIELDO: 		$(ClassIncPath)/UniformMagField.h
+RUNO: 						$(ClassIncPath)/Run.h
+PARABOLICMAGFIELDO: 		$(ClassIncPath)/ParabolicMagField.h
+FIELDMANAGERO: 			$(ClassIncPath)/FieldManager.h
+CONFIGFILEO: 				$(ClassIncPath)/ConfigFile.h
+COMPOSITESHAPEO: 			$(ClassIncPath)/CompositeShape.h
+BOOLNODEO: 					$(ClassIncPath)/BoolNode.h
+VOLUMEO: 					$(ClassIncPath)/Volume.h
+ELEMENTO: 					$(ClassIncPath)/Element.h
+FIELDARRAYO:				$(ClassIncPath)/FieldArray.h
+MAGFIELDARRAYO: 			$(ClassIncPath)/MagFieldArray.h
+ELECFIELDO:					$(ClassIncPath)/ElecField.h
+INITIALCONFIGO: 			$(ClassIncPath)/InitialConfig.h
+RUNCONFIGO: 				$(ClassIncPath)/RunConfig.h
+OBSERVERO:					$(ClassIncPath)/Observer.h
+SPINDATAO:					$(ClassIncPath)/SpinData.h
+BOUNCEDATAO:				$(ClassIncPath)/BounceData.h
+FIELDDATAO: 				$(ClassIncPath)/FieldData.h
+TRACKO:						$(ClassIncPath)/Track.h
+FIELDMAPO:					$(ClassIncPath)/FieldMap.h
+KDTREEO:						$(ClassIncPath)/KDTree.h
+KDTREENODEO:				$(ClassIncPath)/KDTreeNode.h
+FIELDVERTEXO:				$(ClassIncPath)/FieldVertex.h
+VERTEXSTACKO:				$(ClassIncPath)/VertexStack.h
+POINTO:						$(ClassIncPath)/Point.h
+OBSERVABLEO:				$(ClassIncPath)/Observable.h
+CLOCKO:						$(ClassIncPath)/Clock.h
 ALGORITHMSO:				include/Algorithms.h
 MATERIALSO:					include/Materials.h
 
-UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
-								include/Material.h include/GravField.h include/Particle.h \
-								include/State.h include/Spin.h include/FileParser.h \
-								include/Polynomial.h include/Parabola.h \
-								include/Experiment.h include/Data.h include/Field.h include/MagField.h \
-								include/UniformMagField.h include/ParabolicMagField.h \
-								include/Run.h include/FieldManager.h include/ConfigFile.h \
-								include/CompositeShape.h include/BoolNode.h include/Volume.h \
-								include/Element.h include/FieldArray.h include/MagFieldArray.h \
-								include/ElecField.h \
-								include/InitialConfig.h include/RunConfig.h include/Observer.h \
-								include/Track.h include/FieldMap.h \
-								include/KDTree.h include/KDTreeNode.h include/FieldVertex.h \
-								include/VertexStack.h include/Point.h include/Observable.h \
-								include/Clock.h include/Algorithms.h include/UniformElecField.h \
-								include/ElecFieldArray.h $(LINKDEF)
+UCNDict.$(SrcSuf):		$(ClassIncPath)/Box.h $(ClassIncPath)/Tube.h \
+								$(ClassIncPath)/Material.h $(ClassIncPath)/GravField.h $(ClassIncPath)/Particle.h \
+								$(ClassIncPath)/State.h $(ClassIncPath)/Spin.h $(ClassIncPath)/FileParser.h \
+								$(ClassIncPath)/Polynomial.h $(ClassIncPath)/Parabola.h \
+								$(ClassIncPath)/Experiment.h $(ClassIncPath)/Data.h $(ClassIncPath)/Field.h \
+								$(ClassIncPath)/MagField.h \
+								$(ClassIncPath)/UniformMagField.h $(ClassIncPath)/ParabolicMagField.h \
+								$(ClassIncPath)/Run.h $(ClassIncPath)/FieldManager.h $(ClassIncPath)/ConfigFile.h \
+								$(ClassIncPath)/CompositeShape.h $(ClassIncPath)/BoolNode.h $(ClassIncPath)/Volume.h \
+								$(ClassIncPath)/Element.h $(ClassIncPath)/FieldArray.h \
+								$(ClassIncPath)/MagFieldArray.h $(ClassIncPath)/ElecField.h \
+								$(ClassIncPath)/InitialConfig.h $(ClassIncPath)/RunConfig.h \
+								$(ClassIncPath)/Observer.h $(ClassIncPath)/Track.h $(ClassIncPath)/FieldMap.h \
+								$(ClassIncPath)/KDTree.h $(ClassIncPath)/KDTreeNode.h $(ClassIncPath)/FieldVertex.h \
+								$(ClassIncPath)/VertexStack.h $(ClassIncPath)/Point.h $(ClassIncPath)/Observable.h \
+								$(ClassIncPath)/Clock.h $(ClassIncPath)/UniformElecField.h \
+								$(ClassIncPath)/ElecFieldArray.h include/Algorithms.h include/Materials.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 
 .$(SrcSuf).$(ObjSuf):
-	$(CXX)  $(CXXFLAGS) -I$(UCN_DIR)/include -I$(GSL)/include -I$(BOOST) -c $< -o $@
+	$(CXX)  $(CXXFLAGS) -I$(UCN_DIR)/include -I$(UCN_DIR)/include/classes -I$(GSL)/include -I$(BOOST) -c $< -o $@
