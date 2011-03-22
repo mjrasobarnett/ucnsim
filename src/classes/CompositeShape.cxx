@@ -73,21 +73,6 @@ CompositeShape::CompositeShape(const char *expression)
 }  
 
 //_____________________________________________________________________________
-CompositeShape::CompositeShape(const char *name, BoolNode *node)
-                      :Box(0,0,0)
-{
-// Constructor with a Boolean node
-   Info("CompositeShape", "Constructor");
-   SetName(name);
-   fNode = node;
-   if (!fNode) {
-      Error("ctor", "Composite shape %s has null node", name);
-      return;
-   }
-   ComputeBBox();
-}
-
-//_____________________________________________________________________________
 CompositeShape::CompositeShape(const CompositeShape& gcs)
                :Box(gcs), fNode(gcs.fNode)
 {

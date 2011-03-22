@@ -41,7 +41,7 @@ public:
    CompositeShape();
    CompositeShape(const char *name, const char *expression);
    CompositeShape(const char *expression);
-   CompositeShape(const char *name, BoolNode *node);
+
    // destructor
    virtual ~CompositeShape();
 
