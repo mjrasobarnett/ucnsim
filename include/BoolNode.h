@@ -12,13 +12,8 @@
 #ifndef ROOT_BoolNode
 #define ROOT_BoolNode
 
-#ifndef ROOT_TObject
 #include "TObject.h"
-#endif
-
-#ifndef ROOT_TGeoMatrix
 #include "TGeoMatrix.h"
-#endif
 
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
