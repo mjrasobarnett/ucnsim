@@ -73,18 +73,20 @@ CompositeShape::CompositeShape(const char *expression)
 }  
 
 //_____________________________________________________________________________
-CompositeShape::CompositeShape(const char *name, BoolNode *node)
-                      :Box(0,0,0)
+CompositeShape::CompositeShape(const CompositeShape& gcs)
+               :Box(gcs), fNode(gcs.fNode)
 {
-// Constructor with a Boolean node
-   Info("CompositeShape", "Constructor");
-   SetName(name);
-   fNode = node;
-   if (!fNode) {
-      Error("ctor", "Composite shape %s has null node", name);
-      return;
+   Info("CompositeShape", "Copy Constructor");
+}
+
+//_____________________________________________________________________________
+CompositeShape& CompositeShape::operator=(const CompositeShape& gcs)
+{
+   if(this!=&gcs) {
+      Box::operator=(gcs);
+      fNode=gcs.fNode;
    }
-   ComputeBBox();
+   return *this;
 }
 
 //_____________________________________________________________________________
@@ -357,20 +359,20 @@ Int_t CompositeShape::GetNmeshVertices() const
 
 
 //_____________________________________________________________________________
-Double_t CompositeShape::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
+Double_t CompositeShape::TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 // Compute the time from outside point to this composite shape along parabola.
 // Check if the bounding box is crossed within the requested distance
-   Double_t tBox = Box::TimeFromOutsideAlongParabolaS(point,velocity,field, fDX, fDY, fDZ, fOrigin, onBoundary);
+   Double_t tBox = Box::TimeFromOutsideS(point,velocity,field, fDX, fDY, fDZ, fOrigin, onBoundary);
    if (tBox > stepTime + TGeoShape::Tolerance()) return TGeoShape::Big();
-   if (fNode) return fNode->TimeFromOutsideAlongParabola(point, velocity, field, stepTime, onBoundary);
+   if (fNode) return fNode->TimeFromOutside(point, velocity, field, stepTime, onBoundary);
    return TGeoShape::Big();
 }   
 
 //_____________________________________________________________________________
-Double_t CompositeShape::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
+Double_t CompositeShape::TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 // Compute time from inside point to outside of this composite shape along parabola.
-   if (fNode) return fNode->TimeFromInsideAlongParabola(point, velocity, field, stepTime, onBoundary);
+   if (fNode) return fNode->TimeFromInside(point, velocity, field, stepTime, onBoundary);
    return TGeoShape::Big();
 }

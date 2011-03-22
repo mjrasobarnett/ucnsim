@@ -12,13 +12,8 @@
 #ifndef ROOT_BoolNode
 #define ROOT_BoolNode
 
-#ifndef ROOT_TObject
 #include "TObject.h"
-#endif
-
-#ifndef ROOT_TGeoMatrix
 #include "TGeoMatrix.h"
-#endif
 
 //////////////////////////////////////////////////////////////////////////////
 //                                                                          //
@@ -58,7 +53,6 @@ public:
    // constructors
    BoolNode();
    BoolNode(const char *expr1, const char *expr2);
-   BoolNode(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat=0, TGeoMatrix *rmat=0);
 
    // destructor
    virtual ~BoolNode();
@@ -87,8 +81,8 @@ public:
    virtual void      Sizeof3D() const;
    
    // new methods
-   virtual Double_t     TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const = 0;
-   virtual Double_t     TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const = 0;
+   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const = 0;
+   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const = 0;
 	
    ClassDef(BoolNode, 1)              // a boolean node
 };
@@ -105,7 +99,6 @@ public:
    // constructors
    Union();
    Union(const char *expr1, const char *expr2);
-   Union(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat=0, TGeoMatrix *rmat=0);
 
    // destructor
    virtual ~Union();
@@ -130,8 +123,8 @@ public:
    virtual void      Paint(Option_t *option);
 
    // new methods
-   virtual Double_t     TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
-   virtual Double_t     TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
 
    ClassDef(Union, 1)              // union node
 };
@@ -149,7 +142,6 @@ public:
    // constructors
    Intersection();
    Intersection(const char *expr1, const char *expr2);
-   Intersection(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat=0, TGeoMatrix *rmat=0);
 
    // destructor
    virtual ~Intersection();
@@ -174,8 +166,8 @@ public:
    virtual void      Paint(Option_t *option);
 
    // new methods
-   virtual Double_t     TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
-   virtual Double_t     TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
 
    ClassDef(Intersection, 1)              // intersection node
 };
@@ -192,7 +184,6 @@ public:
    // constructors
    Subtraction();
    Subtraction(const char *expr1, const char *expr2);
-   Subtraction(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat=0, TGeoMatrix *rmat=0);
 
    // destructor
    virtual ~Subtraction();
@@ -217,8 +208,8 @@ public:
    virtual void      Paint(Option_t *option);
 
    // new methods
-   virtual Double_t     TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
-   virtual Double_t     TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
 
    ClassDef(Subtraction, 1)              // subtraction node
 };

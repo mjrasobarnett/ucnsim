@@ -174,7 +174,7 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    Bool_t correctFolder = partDir->cd(whichParticles.c_str());
    // check that we ended up in the correct folder
    if (correctFolder == kFALSE) {
-      Error("LoadParticles","Cannot find folder: ", whichParticles.c_str());
+      Error("LoadParticles","Cannot find folder: %s", whichParticles.c_str());
       return kFALSE;
    }
    TDirectory * const sourceDir = gDirectory;

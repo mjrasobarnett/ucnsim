@@ -442,7 +442,7 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* par
    TGeoVolume *vol = navigator->GetCurrentNode()->GetVolume();
    
    // -- Find distance to exiting current node
-   tnext = static_cast<Box*>(vol->GetShape())->TimeFromInsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary); 
+   tnext = static_cast<Box*>(vol->GetShape())->TimeFromInside(localPoint, localVelocity, localField, stepTime, fIsOnBoundary); 
    if (tnext <= 0.0) {
       #ifdef VERBOSE_MODE
          Error("ParabolicBoundaryFinder", "Failed to find boundary");
@@ -695,7 +695,7 @@ TGeoNode* Propagating::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoN
             cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
             cout << "Z: " << localField[2] << endl;
          #endif
-         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);  
+         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutside(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);  
          if (tnext <= 0.0) {
             Error("ParabolicDaughterBoundaryFinder", "Failed to find boundary");
             return NULL;
@@ -727,9 +727,9 @@ TGeoNode* Propagating::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoN
             cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
             cout << "Z: " << localField[2] << endl;
          #endif
-         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
+         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutside(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
          if (tnext <= 0.0) {
-            Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+            Error("FindNextBoundary", "Failed to find boundary");
             return NULL;
          }
          snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
@@ -767,9 +767,9 @@ TGeoNode* Propagating::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoN
             cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
             cout << "Z: " << localField[2] << endl;
             #endif
-         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
+         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutside(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
          if (tnext <= 0.0) {
-            Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+            Error("FindNextBoundary", "Failed to find boundary");
             return NULL;
          }
          snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
@@ -821,9 +821,9 @@ TGeoNode* Propagating::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoN
             cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
             cout << "Z: " << localField[2] << endl;
          #endif
-         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
+         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutside(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
          if (tnext <= 0.0) {
-            Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
+            Error("FindNextBoundary", "Failed to find boundary");
             return NULL;
          }
          snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);

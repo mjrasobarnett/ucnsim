@@ -197,7 +197,7 @@ namespace Materials
       cout << std::setw(15) << "Fermi (neV)" << "\t";
       cout << std::setw(15) << "Eta" << endl;
       // - Hydrogen
-      Element* elemHydrogen = new Element("H", "Hydrogen", Hydrogen::z, Hydrogen::a, Hydrogen::scatLength, Hydrogen::cohCrossSec, Hydrogen::incohCrossSec, Hydrogen::absCrossSec);
+      Element* elemHydrogen = new Element("Hydrogen", Hydrogen::z, Hydrogen::a, Hydrogen::scatLength, Hydrogen::cohCrossSec, Hydrogen::incohCrossSec, Hydrogen::absCrossSec);
       Material* matHydrogen = new Material("Hydrogen", elemHydrogen, Densities::hydrogen);
       TGeoMedium* hydrogen = new TGeoMedium("Hydrogen", 1, matHydrogen);
       cout << std::setw(15) << hydrogen->GetName() << "\t";
@@ -217,7 +217,7 @@ namespace Materials
       cout << "---------------------------------" << endl;
       */
       // - Beryllium
-      Element* elemBeryllium = new Element("Be", "Beryllium", Beryllium::z, Beryllium::a, Beryllium::scatLength, Beryllium::cohCrossSec, Beryllium::incohCrossSec, Beryllium::absCrossSec);
+      Element* elemBeryllium = new Element("Beryllium", Beryllium::z, Beryllium::a, Beryllium::scatLength, Beryllium::cohCrossSec, Beryllium::incohCrossSec, Beryllium::absCrossSec);
       Material* matBeryllium = new Material("Beryllium", elemBeryllium, Densities::beryllium);
       TGeoMedium* beryllium = new TGeoMedium("Beryllium", 1, matBeryllium);
       // Set Beryllium Loss factor to the experimentally determined value
@@ -240,7 +240,7 @@ namespace Materials
       cout << "---------------------------------" << endl;
       */
       // - Copper
-      Element* elemCopper = new Element("Cu", "Copper", Copper::z, Copper::a, Copper::scatLength, Copper::cohCrossSec, Copper::incohCrossSec, Copper::absCrossSec);
+      Element* elemCopper = new Element("Copper", Copper::z, Copper::a, Copper::scatLength, Copper::cohCrossSec, Copper::incohCrossSec, Copper::absCrossSec);
       Material* matCopper = new Material("Copper", elemCopper, Densities::copper);
       TGeoMedium* copper = new TGeoMedium("Copper", 1, matCopper);
       cout << std::setw(15) << copper->GetName() << "\t";
@@ -261,7 +261,7 @@ namespace Materials
       cout << "---------------------------------" << endl;
       */
       // - Aluminium
-      Element* elemAluminium = new Element("Al", "Aluminium", Aluminium::z, Aluminium::a, Aluminium::scatLength, Aluminium::cohCrossSec, Aluminium::incohCrossSec, Aluminium::absCrossSec);
+      Element* elemAluminium = new Element("Aluminium", Aluminium::z, Aluminium::a, Aluminium::scatLength, Aluminium::cohCrossSec, Aluminium::incohCrossSec, Aluminium::absCrossSec);
       Material* matAluminium = new Material("Aluminium", elemAluminium, Densities::aluminium);
       TGeoMedium* aluminium = new TGeoMedium("Aluminium", 1, matAluminium);
       cout << std::setw(15) << aluminium->GetName() << "\t";
@@ -283,7 +283,7 @@ namespace Materials
       //________________________________________
       // TRACKING MATERIALS
       // - HeliumII
-      Element* elemHeliumII = new Element("He", "HeliumII", HeliumII::z, HeliumII::a, HeliumII::scatLength, HeliumII::cohCrossSec, HeliumII::incohCrossSec, HeliumII::absCrossSec);
+      Element* elemHeliumII = new Element("HeliumII", HeliumII::z, HeliumII::a, HeliumII::scatLength, HeliumII::cohCrossSec, HeliumII::incohCrossSec, HeliumII::absCrossSec);
       Material* matHeliumII = new Material("HeliumII", elemHeliumII, Densities::heliumII);
       TGeoMedium* heliumII = new TGeoMedium("HeliumII", 1, matHeliumII);
       cout << std::setw(15) << heliumII->GetName() << "\t";
@@ -305,7 +305,7 @@ namespace Materials
       //________________________________________
       // BLACKHOLE MATERIALS
       // - Vacuum
-      Element* elemVacuum = new Element("H", "Vacuum", Vacuum::z, Vacuum::a, Vacuum::scatLength, Vacuum::cohCrossSec, Vacuum::incohCrossSec, Vacuum::absCrossSec);
+      Element* elemVacuum = new Element("Vacuum", Vacuum::z, Vacuum::a, Vacuum::scatLength, Vacuum::cohCrossSec, Vacuum::incohCrossSec, Vacuum::absCrossSec);
       Material* matVacuum = new Material("Vacuum", elemVacuum, Densities::vacuum);
       TGeoMedium* vacuum = new TGeoMedium("Vacuum", 1, matVacuum);
       cout << std::setw(15) << vacuum->GetName() << "\t";
@@ -327,7 +327,7 @@ namespace Materials
       //________________________________________
       // DETECTOR MATERIALS
       // - Lithium6
-      Element* elemLithium6 = new Element("H", "Lithium6", Lithium6::z, Lithium6::a, Lithium6::scatLength, Lithium6::cohCrossSec, Lithium6::incohCrossSec, Lithium6::absCrossSec);
+      Element* elemLithium6 = new Element("Lithium6", Lithium6::z, Lithium6::a, Lithium6::scatLength, Lithium6::cohCrossSec, Lithium6::incohCrossSec, Lithium6::absCrossSec);
       Material* matLithium6 = new Material("Lithium6", elemLithium6, Densities::lithium6);
       TGeoMedium* lithium6 = new TGeoMedium("Lithium6", 1, matLithium6);
       cout << std::setw(15) << lithium6->GetName() << "\t";

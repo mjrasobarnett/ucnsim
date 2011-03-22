@@ -33,20 +33,23 @@ private :
    BoolNode         *fNode;             // top boolean node
 
 protected:
-   CompositeShape(const CompositeShape& gcs)
-     : Box(gcs), fNode(gcs.fNode) { }
-   CompositeShape& operator=(const CompositeShape& gcs)
-     {if(this!=&gcs) {Box::operator=(gcs); fNode=gcs.fNode;} return *this;}
+   CompositeShape(const CompositeShape& gcs);
+   CompositeShape& operator=(const CompositeShape& gcs);
 
 public:
    // constructors
    CompositeShape();
    CompositeShape(const char *name, const char *expression);
    CompositeShape(const char *expression);
-   CompositeShape(const char *name, BoolNode *node);
+
    // destructor
    virtual ~CompositeShape();
+
    // methods
+   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepmax, const Bool_t onBoundary) const;
+
+   // -- The TGeoCompositeShape class interface is reproduced in full here
    virtual Double_t      Capacity() const;
    virtual void          ComputeBBox();
    virtual void          ComputeNormal(Double_t *point, Double_t *dir, Double_t *norm);
@@ -57,7 +60,7 @@ public:
                                    Double_t step=TGeoShape::Big(), Double_t *safe=0) const;
    virtual TGeoVolume   *Divide(TGeoVolume *voldiv, const char *divname, Int_t iaxis, Int_t ndiv, 
                                 Double_t start, Double_t step);
-   BoolNode      *GetBoolNode() const {return fNode;}
+   BoolNode             *GetBoolNode() const {return fNode;}
    virtual void          GetBoundingCylinder(Double_t * /*param*/) const {;}
    virtual TGeoShape    *GetMakeRuntimeShape(TGeoShape * /*mother*/, TGeoMatrix * /*mat*/) const {return 0;}
    virtual void          GetMeshNumbers(Int_t &nvert, Int_t &nsegs, Int_t &npols) const;
@@ -75,17 +78,9 @@ public:
    virtual void          SetPoints(Double_t *points) const;
    virtual void          SetPoints(Float_t *points) const;
    virtual void          Sizeof3D() const;
-
-   // methods
-   virtual Double_t     TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field,
-                                    const Double_t stepmax, const Bool_t onBoundary) const;
-   virtual Double_t     TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field,
-                                    const Double_t stepmax, const Bool_t onBoundary) const;
-	
+   
    ClassDef(CompositeShape, 1)         // boolean composite shape
 };
-
-
 
 #endif
 
