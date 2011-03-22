@@ -119,16 +119,3 @@ Bool_t Material::AddElement(Element* elem, Double_t density)
                   * Materials::reference_velocity / Units::e_SI); // Units of eV
    return kTRUE;
 }
-
-//_____________________________________________________________________________
-TGeoElement *Material::GetElement(Int_t i) const
-{
-// Retreive the pointer to the element corresponding to component I.
-   if (!fElements) {return 0;}
-   if (i < 0 || i >= fElements->GetEntriesFast()) {
-      Error("GetElement", "Mixture %s has only %d elements", GetName(), fElements->GetEntriesFast());
-      return 0;
-   }   
-   return (TGeoElement*)fElements->At(i);
-}
-

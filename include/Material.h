@@ -38,7 +38,6 @@ public:
    
    // -- methods
    Bool_t       AddElement(Element* element, Double_t density);
-   TGeoElement* GetElement(Int_t i=0) const;
    Double_t     FermiPotential() const {return fFermiPotential;}
    void         FermiPotential(Double_t fermiPotential) {fFermiPotential = fermiPotential;}
    Double_t     WPotential() const {return fWPotential;}

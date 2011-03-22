@@ -4,9 +4,7 @@
 #ifndef ROOT_Element
 #define ROOT_Element
 
-#ifndef  ROOT_TGeoElement
-   #include "TGeoElement.h"
-#endif
+#include "TNamed.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -14,9 +12,11 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-class Element : public TGeoElement
+class Element : public TNamed
 {
 protected:
+   Int_t    fZ;
+   Double_t    fA;
    Double_t    fScatLength;
    Double_t    fCohCrossSec; // Coherent Scattering Cross-sec
    Double_t    fIncohCrossSec; // Incoherent Scattering Cross-sec
@@ -28,12 +28,14 @@ public:
    
    // -- constructors
    Element();
-   Element(const char *name, const char *title, Int_t z, Double_t a, Double_t scatLength, Double_t cohCrossSec, Double_t incoCrossSec, Double_t absCrossSec);
+   Element(const char *name, Int_t z, Double_t a, Double_t scatLength, Double_t cohCrossSec, Double_t incoCrossSec, Double_t absCrossSec);
    
    // -- destructor
    virtual ~Element();
    
    // -- methods
+   Int_t       Z() const {return fZ;}
+   Double_t    A() const {return fA;}
    Double_t    ScatLength() const {return fScatLength;}
    Double_t    CoherentCrossSec() const {return fCohCrossSec;}
    Double_t    InCoherentCrossSec() const {return fIncohCrossSec;}
