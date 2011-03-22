@@ -88,6 +88,23 @@ CompositeShape::CompositeShape(const char *name, BoolNode *node)
 }
 
 //_____________________________________________________________________________
+CompositeShape::CompositeShape(const CompositeShape& gcs)
+               :Box(gcs), fNode(gcs.fNode)
+{
+   Info("CompositeShape", "Copy Constructor");
+}
+
+//_____________________________________________________________________________
+CompositeShape& CompositeShape::operator=(const CompositeShape& gcs)
+{
+   if(this!=&gcs) {
+      Box::operator=(gcs);
+      fNode=gcs.fNode;
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
 CompositeShape::~CompositeShape()
 {
 // destructor
