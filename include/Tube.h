@@ -43,7 +43,11 @@ public:
    // destructor
    virtual ~Tube();
    
-   // methods
+   // -- methods
+   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
+   
+   // -- The TGeoTube class interface is reproduced in full here
    virtual Double_t      Capacity() const;
    static  Double_t      Capacity(Double_t rmin, Double_t rmax, Double_t dz);
    virtual void          ComputeBBox();
@@ -86,11 +90,7 @@ public:
    virtual void          SetPoints(Float_t *points) const;
    virtual void          SetSegsAndPols(TBuffer3D &buff) const;
    virtual void          Sizeof3D() const;
-
-   // -- new methods
-   virtual Double_t TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
-   virtual Double_t TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const;
-      
+   
    ClassDef(Tube, 1)     // UCNGeoTube
 };
 

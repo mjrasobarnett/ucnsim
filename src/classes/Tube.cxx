@@ -106,253 +106,6 @@ Tube::~Tube()
 }
 
 //_____________________________________________________________________________
-Double_t Tube::Capacity() const
-{
-// Computes capacity of the shape in [length^3]
-   return Tube::Capacity(fRmin,fRmax, fDz);
-}   
-
-//_____________________________________________________________________________
-Double_t Tube::Capacity(Double_t rmin, Double_t rmax, Double_t dz)
-{
-// Computes capacity of the shape in [length^3]
-   return TGeoTube::Capacity(rmin,rmax,dz);
-}   
-
-//_____________________________________________________________________________
-void Tube::ComputeBBox()
-{
-// compute bounding box of the tube
-   fDX = fDY = fRmax;
-   fDZ = fDz;
-}
-
-//_____________________________________________________________________________
-void Tube::ComputeNormal(Double_t *point, Double_t *dir, Double_t *norm)
-{
-// Compute normal to closest surface from POINT.
-   fRootTube.ComputeNormal(point,dir,norm);
-}
-
-//_____________________________________________________________________________
-void Tube::ComputeNormalS(Double_t *point, Double_t *dir, Double_t *norm,
-                              Double_t rmin, Double_t rmax, Double_t dz)
-{
-// Compute normal to closest surface from POINT.
-   TGeoTube::ComputeNormalS(point,dir,norm,rmin,rmax,dz);
-}
-
-//_____________________________________________________________________________
-Bool_t Tube::Contains(Double_t *point) const
-{
-// test if point is inside this tube
-   return fRootTube.Contains(point);
-}
-
-//_____________________________________________________________________________
-Int_t Tube::DistancetoPrimitive(Int_t px, Int_t py)
-{
-// compute closest distance from point px,py to each corner
-   return fRootTube.DistancetoPrimitive(px,py);
-}
-
-//_____________________________________________________________________________
-Double_t Tube::DistFromInsideS(Double_t *point, Double_t *dir, Double_t rmin, Double_t rmax, Double_t dz)
-{
-// Compute distance from inside point to surface of the tube (static)
-// Boundary safe algorithm.
-   return TGeoTube::DistFromInsideS(point,dir,rmin,rmax,dz);
-}
-
-//_____________________________________________________________________________
-Double_t Tube::DistFromInside(Double_t *point, Double_t *dir, Int_t iact, Double_t step, Double_t *safe) const
-{
-// Compute distance from inside point to surface of the tube
-// Boundary safe algorithm.
-   return fRootTube.DistFromInside(point,dir,iact,step,safe);
-}
-
-//_____________________________________________________________________________
-Double_t Tube::DistFromOutsideS(Double_t *point, Double_t *dir, Double_t rmin, Double_t rmax, Double_t dz)
-{
-// Static method to compute distance from outside point to a tube with given parameters
-// Boundary safe algorithm.
-   return TGeoTube::DistFromOutsideS(point,dir,rmin,rmax,dz);
-}
-
-//_____________________________________________________________________________
-Double_t Tube::DistFromOutside(Double_t *point, Double_t *dir, Int_t iact, Double_t step, Double_t *safe) const
-{
-// Compute distance from outside point to surface of the tube and safe distance
-// Boundary safe algorithm.
-   return fRootTube.DistFromOutside(point,dir,iact,step,safe);
-}
-
-//_____________________________________________________________________________
-void Tube::DistToTube(Double_t rsq, Double_t nsq, Double_t rdotn, Double_t radius, Double_t &b, Double_t &delta)
-{
-// Static method computing the distance to a tube with given radius, starting from
-// POINT along DIR director cosines. 
-   TGeoTube::DistToTube(rsq,nsq,rdotn,radius,b,delta);
-}
-
-//_____________________________________________________________________________
-TGeoVolume* Tube::Divide(TGeoVolume* /*voldiv*/, const char* /*divname*/, Int_t /*iaxis*/, Int_t /*ndiv*/,
-                             Double_t /*start*/, Double_t /*step*/)
-{
-   Error("Divide","Divide is not implemented for Tube. Sorry");
-   return 0;
-}
-
-//_____________________________________________________________________________
-const char *Tube::GetAxisName(Int_t iaxis) const
-{
-// Returns name of axis IAXIS.
-   return fRootTube.GetAxisName(iaxis);
-}
-
-//_____________________________________________________________________________
-Double_t Tube::GetAxisRange(Int_t iaxis, Double_t &xlo, Double_t &xhi) const
-{
-// Get range of shape for a given axis.
-   return fRootTube.GetAxisRange(iaxis,xlo,xhi);
-}
-
-//_____________________________________________________________________________
-void Tube::GetBoundingCylinder(Double_t *param) const
-{
-//--- Fill vector param[4] with the bounding cylinder parameters.
-   fRootTube.GetBoundingCylinder(param);
-}
-
-//_____________________________________________________________________________
-TGeoShape *Tube::GetMakeRuntimeShape(TGeoShape* /*mother*/, TGeoMatrix * /*mat*/) const
-{
-// in case shape has some negative parameters, these has to be computed
-// in order to fit the mother
-   Error("GetMakeRuntimeShape","This function has been disable for Tube. Sorry");
-   return NULL;
-}
-
-//_____________________________________________________________________________
-void Tube::InspectShape() const
-{
-// print shape parameters
-   fRootTube.InspectShape();
-}
-
-//_____________________________________________________________________________
-TBuffer3D *Tube::MakeBuffer3D() const
-{
-   // Creates a TBuffer3D describing *this* shape.
-   // Coordinates are in local reference frame.
-   return fRootTube.MakeBuffer3D();
-}
-
-//_____________________________________________________________________________
-void Tube::SetSegsAndPols(TBuffer3D &buffer) const
-{
-// Fill TBuffer3D structure for segments and polygons.
-   fRootTube.SetSegsAndPols(buffer);
-}
-
-//_____________________________________________________________________________
-Double_t Tube::Safety(Double_t *point, Bool_t in) const
-{
-// computes the closest distance from given point to this shape, according
-// to option. The matching point on the shape is stored in spoint.
-   return fRootTube.Safety(point,in);
-}
-
-//_____________________________________________________________________________
-Double_t Tube::SafetyS(Double_t *point, Bool_t in, Double_t rmin, Double_t rmax, Double_t dz, Int_t skipz)
-{
-// computes the closest distance from given point to this shape, according
-// to option. The matching point on the shape is stored in spoint.
-   return TGeoTube::SafetyS(point,in,rmin,rmax,dz,skipz);
-}
-
-//_____________________________________________________________________________
-void Tube::SavePrimitive(ostream &out, Option_t * option /*= ""*/)
-{
-// Save a primitive as a C++ statement(s) on output stream "out".
-   fRootTube.SavePrimitive(out,option);
-}
-
-//_____________________________________________________________________________
-void Tube::SetTubeDimensions(Double_t rmin, Double_t rmax, Double_t dz)
-{
-// Set tube dimensions.
-   fRmin = rmin;
-   fRmax = rmax;
-   fDz   = dz;
-   if (fRmin>0 && fRmax>0 && fRmin>=fRmax) {
-      Error("SetTubeDimensions", "In shape %s wrong rmin=%g rmax=%g", GetName(), rmin,rmax);
-   }
-}
-
-//_____________________________________________________________________________
-void Tube::SetDimensions(Double_t *param)
-{
-// Set tube dimensions starting from a list.
-   Double_t rmin = param[0];
-   Double_t rmax = param[1];
-   Double_t dz   = param[2];
-   SetTubeDimensions(rmin, rmax, dz);
-}
-
-//_____________________________________________________________________________
-Bool_t Tube::GetPointsOnSegments(Int_t npoints, Double_t *array) const
-{
-// Fills array with n random points located on the line segments of the shape mesh.
-// The output array must be provided with a length of minimum 3*npoints. Returns
-// true if operation is implemented.
-   return fRootTube.GetPointsOnSegments(npoints,array);
-}                    
-
-//_____________________________________________________________________________
-void Tube::SetPoints(Double_t *points) const
-{
-// create tube mesh points
-   fRootTube.SetPoints(points);
-}
-
-//_____________________________________________________________________________
-void Tube::SetPoints(Float_t *points) const
-{
-// create tube mesh points
-   fRootTube.SetPoints(points);
-}
-
-//_____________________________________________________________________________
-Int_t Tube::GetNmeshVertices() const
-{
-// Return number of vertices of the mesh representation
-   return fRootTube.GetNmeshVertices();
-}
-
-//_____________________________________________________________________________
-void Tube::GetMeshNumbers(Int_t &nvert, Int_t &nsegs, Int_t &npols) const
-{
-// Returns numbers of vertices, segments and polygons composing the shape mesh.
-   return fRootTube.GetMeshNumbers(nvert,nsegs,npols);
-}
-
-//_____________________________________________________________________________
-void Tube::Sizeof3D() const
-{
-   fRootTube.Sizeof3D();
-}
-
-//_____________________________________________________________________________
-const TBuffer3D & Tube::GetBuffer3D(Int_t reqSections, Bool_t localFrame) const
-{
-// Fills a static 3D buffer and returns a reference.
-   return fRootTube.GetBuffer3D(reqSections,localFrame);
-}
-
-
-//_____________________________________________________________________________
 Double_t Tube::TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
 {
 	// Compute time from inside point to surface of the tube
@@ -1206,3 +959,259 @@ Double_t Tube::OutsideTimeToRBoundary(const Double_t* point, const Double_t* vel
 	}	
 	return tmin;
 }
+
+//_____________________________________________________________________________
+//_____________________________________________________________________________
+//_____________________________________________________________________________
+// -- Below are the TGeoTube methods that we are re-implementing (due to the 
+// -- problems of multiple inheritance in this situation). This is mostly achieved
+// -- through the TGeoTube member object, but just to be clear, all Code below is
+// -- either copied from or derived from the ROOT TGeoTube source code
+
+//_____________________________________________________________________________
+Double_t Tube::Capacity() const
+{
+// Computes capacity of the shape in [length^3]
+   return Tube::Capacity(fRmin,fRmax, fDz);
+}   
+
+//_____________________________________________________________________________
+Double_t Tube::Capacity(Double_t rmin, Double_t rmax, Double_t dz)
+{
+// Computes capacity of the shape in [length^3]
+   return TGeoTube::Capacity(rmin,rmax,dz);
+}   
+
+//_____________________________________________________________________________
+void Tube::ComputeBBox()
+{
+// compute bounding box of the tube
+   fDX = fDY = fRmax;
+   fDZ = fDz;
+}
+
+//_____________________________________________________________________________
+void Tube::ComputeNormal(Double_t *point, Double_t *dir, Double_t *norm)
+{
+// Compute normal to closest surface from POINT.
+   fRootTube.ComputeNormal(point,dir,norm);
+}
+
+//_____________________________________________________________________________
+void Tube::ComputeNormalS(Double_t *point, Double_t *dir, Double_t *norm,
+                              Double_t rmin, Double_t rmax, Double_t dz)
+{
+// Compute normal to closest surface from POINT.
+   TGeoTube::ComputeNormalS(point,dir,norm,rmin,rmax,dz);
+}
+
+//_____________________________________________________________________________
+Bool_t Tube::Contains(Double_t *point) const
+{
+// test if point is inside this tube
+   return fRootTube.Contains(point);
+}
+
+//_____________________________________________________________________________
+Int_t Tube::DistancetoPrimitive(Int_t px, Int_t py)
+{
+// compute closest distance from point px,py to each corner
+   return fRootTube.DistancetoPrimitive(px,py);
+}
+
+//_____________________________________________________________________________
+Double_t Tube::DistFromInsideS(Double_t *point, Double_t *dir, Double_t rmin, Double_t rmax, Double_t dz)
+{
+// Compute distance from inside point to surface of the tube (static)
+// Boundary safe algorithm.
+   return TGeoTube::DistFromInsideS(point,dir,rmin,rmax,dz);
+}
+
+//_____________________________________________________________________________
+Double_t Tube::DistFromInside(Double_t *point, Double_t *dir, Int_t iact, Double_t step, Double_t *safe) const
+{
+// Compute distance from inside point to surface of the tube
+// Boundary safe algorithm.
+   return fRootTube.DistFromInside(point,dir,iact,step,safe);
+}
+
+//_____________________________________________________________________________
+Double_t Tube::DistFromOutsideS(Double_t *point, Double_t *dir, Double_t rmin, Double_t rmax, Double_t dz)
+{
+// Static method to compute distance from outside point to a tube with given parameters
+// Boundary safe algorithm.
+   return TGeoTube::DistFromOutsideS(point,dir,rmin,rmax,dz);
+}
+
+//_____________________________________________________________________________
+Double_t Tube::DistFromOutside(Double_t *point, Double_t *dir, Int_t iact, Double_t step, Double_t *safe) const
+{
+// Compute distance from outside point to surface of the tube and safe distance
+// Boundary safe algorithm.
+   return fRootTube.DistFromOutside(point,dir,iact,step,safe);
+}
+
+//_____________________________________________________________________________
+void Tube::DistToTube(Double_t rsq, Double_t nsq, Double_t rdotn, Double_t radius, Double_t &b, Double_t &delta)
+{
+// Static method computing the distance to a tube with given radius, starting from
+// POINT along DIR director cosines. 
+   TGeoTube::DistToTube(rsq,nsq,rdotn,radius,b,delta);
+}
+
+//_____________________________________________________________________________
+TGeoVolume* Tube::Divide(TGeoVolume* /*voldiv*/, const char* /*divname*/, Int_t /*iaxis*/, Int_t /*ndiv*/,
+                             Double_t /*start*/, Double_t /*step*/)
+{
+   Error("Divide","Divide is not implemented for Tube. Sorry");
+   return 0;
+}
+
+//_____________________________________________________________________________
+const char *Tube::GetAxisName(Int_t iaxis) const
+{
+// Returns name of axis IAXIS.
+   return fRootTube.GetAxisName(iaxis);
+}
+
+//_____________________________________________________________________________
+Double_t Tube::GetAxisRange(Int_t iaxis, Double_t &xlo, Double_t &xhi) const
+{
+// Get range of shape for a given axis.
+   return fRootTube.GetAxisRange(iaxis,xlo,xhi);
+}
+
+//_____________________________________________________________________________
+void Tube::GetBoundingCylinder(Double_t *param) const
+{
+//--- Fill vector param[4] with the bounding cylinder parameters.
+   fRootTube.GetBoundingCylinder(param);
+}
+
+//_____________________________________________________________________________
+TGeoShape *Tube::GetMakeRuntimeShape(TGeoShape* /*mother*/, TGeoMatrix * /*mat*/) const
+{
+// in case shape has some negative parameters, these has to be computed
+// in order to fit the mother
+   Error("GetMakeRuntimeShape","This function has been disable for Tube. Sorry");
+   return NULL;
+}
+
+//_____________________________________________________________________________
+void Tube::InspectShape() const
+{
+// print shape parameters
+   fRootTube.InspectShape();
+}
+
+//_____________________________________________________________________________
+TBuffer3D *Tube::MakeBuffer3D() const
+{
+   // Creates a TBuffer3D describing *this* shape.
+   // Coordinates are in local reference frame.
+   return fRootTube.MakeBuffer3D();
+}
+
+//_____________________________________________________________________________
+void Tube::SetSegsAndPols(TBuffer3D &buffer) const
+{
+// Fill TBuffer3D structure for segments and polygons.
+   fRootTube.SetSegsAndPols(buffer);
+}
+
+//_____________________________________________________________________________
+Double_t Tube::Safety(Double_t *point, Bool_t in) const
+{
+// computes the closest distance from given point to this shape, according
+// to option. The matching point on the shape is stored in spoint.
+   return fRootTube.Safety(point,in);
+}
+
+//_____________________________________________________________________________
+Double_t Tube::SafetyS(Double_t *point, Bool_t in, Double_t rmin, Double_t rmax, Double_t dz, Int_t skipz)
+{
+// computes the closest distance from given point to this shape, according
+// to option. The matching point on the shape is stored in spoint.
+   return TGeoTube::SafetyS(point,in,rmin,rmax,dz,skipz);
+}
+
+//_____________________________________________________________________________
+void Tube::SavePrimitive(ostream &out, Option_t * option /*= ""*/)
+{
+// Save a primitive as a C++ statement(s) on output stream "out".
+   fRootTube.SavePrimitive(out,option);
+}
+
+//_____________________________________________________________________________
+void Tube::SetTubeDimensions(Double_t rmin, Double_t rmax, Double_t dz)
+{
+// Set tube dimensions.
+   fRmin = rmin;
+   fRmax = rmax;
+   fDz   = dz;
+   if (fRmin>0 && fRmax>0 && fRmin>=fRmax) {
+      Error("SetTubeDimensions", "In shape %s wrong rmin=%g rmax=%g", GetName(), rmin,rmax);
+   }
+}
+
+//_____________________________________________________________________________
+void Tube::SetDimensions(Double_t *param)
+{
+// Set tube dimensions starting from a list.
+   Double_t rmin = param[0];
+   Double_t rmax = param[1];
+   Double_t dz   = param[2];
+   SetTubeDimensions(rmin, rmax, dz);
+}
+
+//_____________________________________________________________________________
+Bool_t Tube::GetPointsOnSegments(Int_t npoints, Double_t *array) const
+{
+// Fills array with n random points located on the line segments of the shape mesh.
+// The output array must be provided with a length of minimum 3*npoints. Returns
+// true if operation is implemented.
+   return fRootTube.GetPointsOnSegments(npoints,array);
+}                    
+
+//_____________________________________________________________________________
+void Tube::SetPoints(Double_t *points) const
+{
+// create tube mesh points
+   fRootTube.SetPoints(points);
+}
+
+//_____________________________________________________________________________
+void Tube::SetPoints(Float_t *points) const
+{
+// create tube mesh points
+   fRootTube.SetPoints(points);
+}
+
+//_____________________________________________________________________________
+Int_t Tube::GetNmeshVertices() const
+{
+// Return number of vertices of the mesh representation
+   return fRootTube.GetNmeshVertices();
+}
+
+//_____________________________________________________________________________
+void Tube::GetMeshNumbers(Int_t &nvert, Int_t &nsegs, Int_t &npols) const
+{
+// Returns numbers of vertices, segments and polygons composing the shape mesh.
+   return fRootTube.GetMeshNumbers(nvert,nsegs,npols);
+}
+
+//_____________________________________________________________________________
+void Tube::Sizeof3D() const
+{
+   fRootTube.Sizeof3D();
+}
+
+//_____________________________________________________________________________
+const TBuffer3D & Tube::GetBuffer3D(Int_t reqSections, Bool_t localFrame) const
+{
+// Fills a static 3D buffer and returns a reference.
+   return fRootTube.GetBuffer3D(reqSections,localFrame);
+}
+
+
