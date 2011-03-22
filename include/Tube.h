@@ -5,6 +5,7 @@
 #define ROOT_Tube
 
 #include "Box.h"
+#include "TGeoTube.h"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -17,6 +18,7 @@ class Tube : public Box
 protected:
    
    // data members
+   TGeoTube fRootTube;
    Double_t fRmin; // inner radius
    Double_t fRmax; // outer radius
    Double_t fDz;   // half length
