@@ -1070,25 +1070,25 @@ const TBuffer3D & Tube::GetBuffer3D(Int_t reqSections, Bool_t localFrame) const
 
 
 //_____________________________________________________________________________
-Double_t Tube::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
+Double_t Tube::TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
 {
 	// Compute time from inside point to surface of the tube
 	#ifdef VERBOSE_MODE				
-		cout << "Tube::TimeFromInsideAlongParabola" << endl;
-		cout << "TimeFromInsideAlongParabola - Calling TimeFromInsideAlongParabolaS" << endl;
+		cout << "Tube::TimeFromInside" << endl;
+		cout << "TimeFromInside - Calling TimeFromInsideS" << endl;
 	#endif
 	// compute time to surface
-	return TimeFromInsideAlongParabolaS(point, velocity, field, fRmin, fRmax, fDz, onBoundary);
+	return TimeFromInsideS(point, velocity, field, fRmin, fRmax, fDz, onBoundary);
 }
 
 //_____________________________________________________________________________
-Double_t Tube::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t onBoundary)
+Double_t Tube::TimeFromInsideS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t onBoundary)
 {
 	// Compute time from inside point to surface of the tube	
 	#ifdef VERBOSE_MODE				
-		cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Local Field - X: " <<  field[0] << " Y: " << field[1] << " Z: " << field[2] << endl;
-		cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Local Point - X: " <<  point[0] << " Y: " << point[1] << " Z: " << point[2] << endl;
-		cout << "TimeFromInsideAlongParabolaS" << "\t" <<  "Local Vel - X: " <<  velocity[0] << " Y: " << velocity[1] << " Z: " << velocity[2] << endl;
+		cout << "TimeFromInsideS" << "\t" <<  "Local Field - X: " <<  field[0] << " Y: " << field[1] << " Z: " << field[2] << endl;
+		cout << "TimeFromInsideS" << "\t" <<  "Local Point - X: " <<  point[0] << " Y: " << point[1] << " Z: " << point[2] << endl;
+		cout << "TimeFromInsideS" << "\t" <<  "Local Vel - X: " <<  velocity[0] << " Y: " << velocity[1] << " Z: " << velocity[2] << endl;
 	#endif
 	// --------------------------------------------------------------------------------------
    // -- Storage for the overall smallest, non-zero time to the nearest boundary
@@ -1149,7 +1149,7 @@ Double_t Tube::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_
    // Return the smallest time
 	if (tfinal > 0.) { 
 		#ifdef VERBOSE_MODE		
-			cout << "TimeFromInsideAlongParabolaS - Time to nearest boundary: " <<  tfinal << endl; 
+			cout << "TimeFromInsideS - Time to nearest boundary: " <<  tfinal << endl; 
 		#endif
 		return tfinal;
 	} else {
@@ -1161,33 +1161,33 @@ Double_t Tube::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_
 }
 
 //_____________________________________________________________________________
-Double_t Tube::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
+Double_t Tube::TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 	// Compute time from outside point to surface of the tube and safe distance
 	// Boundary safe algorithm.
 	// first localize point w.r.t tube
 	#ifdef VERBOSE_MODE				
-		cout << "Tube::TimeFromOutsideAlongParabola" << endl;
-		cout << "TimeFromOutsideAlongParabola - Check if Bounding box is within maximum step distance" << endl;
+		cout << "Tube::TimeFromOutside" << endl;
+		cout << "TimeFromOutside - Check if Bounding box is within maximum step distance" << endl;
 	#endif
 	// Check if the bounding box is crossed within the requested distance
-   Double_t tBox = Box::TimeFromOutsideAlongParabolaS(point, velocity, field, fDX, fDY, fDZ, fOrigin, onBoundary);
+   Double_t tBox = Box::TimeFromOutsideS(point, velocity, field, fDX, fDY, fDZ, fOrigin, onBoundary);
    #ifdef VERBOSE_MODE				
-		cout << "TimeFromOutsideAlongParabola - Time to Box: " << tBox << endl;
+		cout << "TimeFromOutside - Time to Box: " << tBox << endl;
 	#endif
 	if (tBox > stepTime + TGeoShape::Tolerance()) return TGeoShape::Big();
    // find time to shape
-	return TimeFromOutsideAlongParabolaS(point, velocity, field, fRmin, fRmax, fDz, onBoundary);
+	return TimeFromOutsideS(point, velocity, field, fRmin, fRmax, fDz, onBoundary);
 }
 
 //_____________________________________________________________________________
-Double_t Tube::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t onBoundary)
+Double_t Tube::TimeFromOutsideS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t onBoundary)
 {
 	// Compute time from outside point to the surface of the tube
 	#ifdef VERBOSE_MODE				
-		cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Local Field - X: " <<  field[0] << " Y: " << field[1] << " Z: " << field[2] << endl;
-		cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Local Point - X: " <<  point[0] << " Y: " << point[1] << " Z: " << point[2] << endl;
-		cout << "TimeFromOutsideAlongParabolaS" << "\t" <<  "Local Vel - X: " <<  velocity[0] << " Y: " << velocity[1] << " Z: " << velocity[2] << endl;
+		cout << "TimeFromOutsideS" << "\t" <<  "Local Field - X: " <<  field[0] << " Y: " << field[1] << " Z: " << field[2] << endl;
+		cout << "TimeFromOutsideS" << "\t" <<  "Local Point - X: " <<  point[0] << " Y: " << point[1] << " Z: " << point[2] << endl;
+		cout << "TimeFromOutsideS" << "\t" <<  "Local Vel - X: " <<  velocity[0] << " Y: " << velocity[1] << " Z: " << velocity[2] << endl;
 	#endif
 	// --------------------------------------------------------------------------------------
    // -- Storage for the overall smallest, non-zero time to the nearest boundary
@@ -1204,7 +1204,7 @@ Double_t Tube::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double
 	} else {
 		// -- Solution found. Setting as the current smallest time
 		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideAlongParabolaS - Particle has reached first z-boundary in: " << tmin << endl;
+			cout << "TimeFromOutsideS - Particle has reached first z-boundary in: " << tmin << endl;
 		#endif
 		tfinal = tmin;
 	}
@@ -1221,7 +1221,7 @@ Double_t Tube::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double
 	} else {
 		// -- Solution found. Check to see if it is smaller than the current smallest.
 		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideAlongParabolaS - Particle will reach rmin-boundary in: " << tmin << endl;
+			cout << "TimeFromOutsideS - Particle will reach rmin-boundary in: " << tmin << endl;
 		#endif
 		if (tmin < tfinal) {
 			tfinal = tmin;
@@ -1238,7 +1238,7 @@ Double_t Tube::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double
 	} else {
 		// -- Solution found. Check to see if it is smaller than the current smallest.
 		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideAlongParabolaS - Particle will reach rmax-boundary in: " << tmin << endl;
+			cout << "TimeFromOutsideS - Particle will reach rmax-boundary in: " << tmin << endl;
 		#endif
 		if (tmin < tfinal) {
 			tfinal = tmin;
@@ -1249,17 +1249,17 @@ Double_t Tube::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double
    // -- Return the smallest time to boundary (if any were hit)
 	if (tfinal > 0.) { 
 		#ifdef VERBOSE_MODE		
-			cout << "TimeFromInsideAlongParabolaS - Time to nearest boundary: " <<  tfinal << endl; 
+			cout << "TimeFromInsideS - Time to nearest boundary: " <<  tfinal << endl; 
 		#endif
 		return tfinal;
 	} else if (tfinal == 0.) {
 		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideAlongParabolaS - Particle has failed to hit any boundary: " << tfinal << endl;
+			cout << "TimeFromOutsideS - Particle has failed to hit any boundary: " << tfinal << endl;
 		#endif
 		return TGeoShape::Big();
 	} else {
 		#ifdef VERBOSE_MODE				
-			cout << "Error - TimeFromOutsideAlongParabolaS - Calculation has failed" << tfinal << endl;
+			cout << "Error - TimeFromOutsideS - Calculation has failed" << tfinal << endl;
 		#endif
 		return 0.;
 	}

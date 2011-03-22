@@ -72,7 +72,7 @@ Box::~Box()
 }
 
 //_____________________________________________________________________________
-Double_t Box::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
+Double_t Box::TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
 {
 	// This method calculates the time of all possible intersections of the particle's future path
 	// with all possible boundaries of the current shape.
@@ -80,7 +80,7 @@ Double_t Box::TimeFromInsideAlongParabola(const Double_t* point, const Double_t*
 	// In the case of an error, a value of zero, or a negative value will be returned.
 	
 	#ifdef VERBOSE_MODE		
-		cout << "Box::TimeFromInsideAlongParabola " << endl;
+		cout << "Box::TimeFromInside " << endl;
 	#endif
 	// -- Determine the local point in case the box origin is not as the local centre (ie: 0,0,0)
 	// -- (Not sure of why this would ever be the case, but ROOT does allow you to set the origin...)
@@ -93,11 +93,11 @@ Double_t Box::TimeFromInsideAlongParabola(const Double_t* point, const Double_t*
 	Double_t boundary[3] = {fDX, fDY, fDZ}; // Store the coordinates of the box boundaries
 		
 	#ifdef VERBOSE_MODE		
-		cout << "TimeFromInsideAlongParabola - (Local) +Boundaries - +X: " << boundary[0] << "\t" << "+Y: " << boundary[1] << "\t" <<  "+Z: " << boundary[2] << endl;
-		cout << "TimeFromInsideAlongParabola - Origin - +X: " << fOrigin[0] << "\t" << "+Y: " << fOrigin[1] << "\t" <<  "+Z: " << fOrigin[2] << endl;
-		cout << "TimeFromInsideAlongParabola - (Local) point - +X: " << localpt[0] << "\t" << "+Y: " << localpt[1] << "\t" <<  "+Z: " << localpt[2] << endl;
-		cout << "TimeFromInsideAlongParabola - (Local) velocity - +X: " << velocity[0] << "\t" << "+Y: " << velocity[1] << "\t" <<  "+Z: " << velocity[2] << endl;
-		cout << "TimeFromInsideAlongParabola - (Local) field direction - +X: " << field[0] << "\t" << "+Y: " << field[1] << "\t" <<  "+Z: " << field[2] << endl;
+		cout << "TimeFromInside - (Local) +Boundaries - +X: " << boundary[0] << "\t" << "+Y: " << boundary[1] << "\t" <<  "+Z: " << boundary[2] << endl;
+		cout << "TimeFromInside - Origin - +X: " << fOrigin[0] << "\t" << "+Y: " << fOrigin[1] << "\t" <<  "+Z: " << fOrigin[2] << endl;
+		cout << "TimeFromInside - (Local) point - +X: " << localpt[0] << "\t" << "+Y: " << localpt[1] << "\t" <<  "+Z: " << localpt[2] << endl;
+		cout << "TimeFromInside - (Local) velocity - +X: " << velocity[0] << "\t" << "+Y: " << velocity[1] << "\t" <<  "+Z: " << velocity[2] << endl;
+		cout << "TimeFromInside - (Local) field direction - +X: " << field[0] << "\t" << "+Y: " << field[1] << "\t" <<  "+Z: " << field[2] << endl;
 	#endif
 			
 	// ----------------------------------------------------------------------	
@@ -155,17 +155,17 @@ Double_t Box::TimeFromInsideAlongParabola(const Double_t* point, const Double_t*
 	// -- Analyse the final value for the time to nearest boundary from inside
 	if (tfinal > 0.) { 
 		#ifdef VERBOSE_MODE		
-			cout << "TimeFromInsideAlongParabola - time to nearest boundary: " << tfinal << endl; 
+			cout << "TimeFromInside - time to nearest boundary: " << tfinal << endl; 
 		#endif
 		return tfinal;
 	} else {
-		cout << "Error in Box, TimeFromInsideAlongParabola - no time to boundary is found!" << endl;
+		cout << "Error in Box, TimeFromInside - no time to boundary is found!" << endl;
 		return 0;
 	}
 }
 
 //_____________________________________________________________________________
-Double_t Box::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, 
+Double_t Box::TimeFromInsideS(const Double_t* point, const Double_t* velocity, const Double_t* field, 
 											const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Bool_t onBoundary)
 {
 	// This method calculates the time of all possible intersections of the particle's future
@@ -173,7 +173,7 @@ Double_t Box::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t
 	// Method then compares the times found and returns the smallest, non-zero value. 
 	
 	#ifdef VERBOSE_MODE		
-	cout << "Box::TimeFromInsideAlongParabolaS" << endl;
+	cout << "Box::TimeFromInsideS" << endl;
 	#endif
 	// -- Determine the local point in case the box origin is not as the local centre (ie: 0,0,0)
 	// -- (Not sure of why this would ever be the case, but ROOT does allow you to set the origin...)
@@ -187,11 +187,11 @@ Double_t Box::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t
 	Double_t boundary[3] = {dx, dy, dz}; // Store the coordinates of the box boundaries
 		
 	#ifdef VERBOSE_MODE		
-		cout << "TimeFromInsideAlongParabolaS - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
-		cout << "TimeFromInsideAlongParabolaS - Origin - X: " << origin[0] << "\t" << "Y: " << origin[1] << "\t" <<  "Z: " << origin[2] << endl;
-		cout << "TimeFromInsideAlongParabolaS - (Local) point - +X: " << localpt[0] << "  +Y: " << localpt[1] << "  +Z: " << localpt[2] << endl;
-		cout << "TimeFromInsideAlongParabolaS - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
-		cout << "TimeFromInsideAlongParabolaS - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
+		cout << "TimeFromInsideS - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
+		cout << "TimeFromInsideS - Origin - X: " << origin[0] << "\t" << "Y: " << origin[1] << "\t" <<  "Z: " << origin[2] << endl;
+		cout << "TimeFromInsideS - (Local) point - +X: " << localpt[0] << "  +Y: " << localpt[1] << "  +Z: " << localpt[2] << endl;
+		cout << "TimeFromInsideS - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
+		cout << "TimeFromInsideS - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
 	#endif
 			
 	// ----------------------------------------------------------------------	
@@ -250,17 +250,17 @@ Double_t Box::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t
 	// -- Analyse the final value for the time to nearest boundary from inside
 	if (tfinal > 0.) { 
 		#ifdef VERBOSE_MODE		
-			cout << "TimeFromInsideAlongParabola - time to nearest boundary: " << tfinal << endl; 
+			cout << "TimeFromInside - time to nearest boundary: " << tfinal << endl; 
 		#endif
 		return tfinal;
 	} else {
-		cout << "Error in Box, TimeFromInsideAlongParabola - no time to boundary is found!" << endl;
+		cout << "Error in Box, TimeFromInside - no time to boundary is found!" << endl;
 		return 0;
 	}
 }
 
 //_____________________________________________________________________________
-Double_t Box::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
+Double_t Box::TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
 {
 	// This method calculates the time of all possible intersections of the particle's future path
 	// with all possible boundaries of the current shape.
@@ -269,7 +269,7 @@ Double_t Box::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t
 	// the method	returns the smallest, non-zero value.
 	
 	#ifdef VERBOSE_MODE		
-		cout << "Box::TimeFromOutsideAlongParabola" << endl;
+		cout << "Box::TimeFromOutside" << endl;
 	#endif
 	
    // -- Determine the local point in case the box origin is not as the local centre (ie: 0,0,0)
@@ -283,11 +283,11 @@ Double_t Box::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t
 	Double_t boundary[3] = {fDX, fDY, fDZ}; // Store the coordinates of the box boundaries
 	
 	#ifdef VERBOSE_MODE		
-		cout << "TimeFromOutsideAlongParabola - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
-		cout << "TimeFromOutsideAlongParabola - Origin - +X: " << fOrigin[0] << "\t" << "+Y: " << fOrigin[1] << "\t" <<  "+Z: " << fOrigin[2] << endl;
-		cout << "TimeFromOutsideAlongParabola - (Local) point - +X: " << localpt[0] << "  +Y: " << localpt[1] << "  +Z: " << localpt[2] << endl;
-		cout << "TimeFromOutsideAlongParabola - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
-		cout << "TimeFromOutsideAlongParabola - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
+		cout << "TimeFromOutside - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
+		cout << "TimeFromOutside - Origin - +X: " << fOrigin[0] << "\t" << "+Y: " << fOrigin[1] << "\t" <<  "+Z: " << fOrigin[2] << endl;
+		cout << "TimeFromOutside - (Local) point - +X: " << localpt[0] << "  +Y: " << localpt[1] << "  +Z: " << localpt[2] << endl;
+		cout << "TimeFromOutside - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
+		cout << "TimeFromOutside - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
 	#endif
 		
 	// ----------------------------------------------------------------------	
@@ -346,22 +346,22 @@ Double_t Box::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t
 	// -- Analyse the final value of the shortest time to hit the boundary from outside
 	if (tfinal > 0.) { 
 		#ifdef VERBOSE_MODE		
-			cout << "TimeFromOutsideAlongParabola - Time to nearest boundary: " << tfinal << endl; 
+			cout << "TimeFromOutside - Time to nearest boundary: " << tfinal << endl; 
 		#endif
 		return tfinal;
 	} else if (tfinal == 0.) {
 		#ifdef VERBOSE_MODE		
-			cout << "TimeFromOutsideAlongParabola - No Boundary hit" << endl;
+			cout << "TimeFromOutside - No Boundary hit" << endl;
 		#endif
 		return TGeoShape::Big();
 	} else {
-		cout << "Error In Box, TimeFromOutsideAlongParabola - Calculation error - time to boundary is negative" << endl;
+		cout << "Error In Box, TimeFromOutside - Calculation error - time to boundary is negative" << endl;
 		return 0;
 	}
 }
 
 //_____________________________________________________________________________
-Double_t Box::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, 
+Double_t Box::TimeFromOutsideS(const Double_t* point, const Double_t* velocity, const Double_t* field, 
 											const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Bool_t onBoundary) 
 {
 	// This method calculates the time of all possible intersections of the particle's future path
@@ -380,11 +380,11 @@ Double_t Box::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_
 	Double_t boundary[3] = {dx, dy, dz}; // Store the coordinates of the box boundaries
 	
 	#ifdef VERBOSE_MODE		
-		cout << "TimeFromOutsideAlongParabolaS - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
-		cout << "TimeFromOutsideAlongParabolaS - Origin - X: " << origin[0] << "\t" << "Y: " << origin[1] << "\t" <<  "Z: " << origin[2] << endl;
-		cout << "TimeFromOutsideAlongParabolaS - (Local) point - +X: " << localpt[0] << "  +Y: " << localpt[1] << "  +Z: " << localpt[2] << endl;
-		cout << "TimeFromOutsideAlongParabolaS - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
-		cout << "TimeFromOutsideAlongParabolaS - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
+		cout << "TimeFromOutsideS - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
+		cout << "TimeFromOutsideS - Origin - X: " << origin[0] << "\t" << "Y: " << origin[1] << "\t" <<  "Z: " << origin[2] << endl;
+		cout << "TimeFromOutsideS - (Local) point - +X: " << localpt[0] << "  +Y: " << localpt[1] << "  +Z: " << localpt[2] << endl;
+		cout << "TimeFromOutsideS - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
+		cout << "TimeFromOutsideS - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
 	#endif
 	
 	// ----------------------------------------------------------------------	
@@ -444,16 +444,16 @@ Double_t Box::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_
 	// -- Analyse the final value of the shortest time to hit the boundary from outside
 	if (tfinal > 0.) { 
 		#ifdef VERBOSE_MODE		
-			cout << "TimeFromOutsideAlongParabola - Time to nearest boundary: " << tfinal << endl; 
+			cout << "TimeFromOutside - Time to nearest boundary: " << tfinal << endl; 
 		#endif
 		return tfinal;
 	} else if (tfinal == 0.) {
 		#ifdef VERBOSE_MODE		
-			cout << "TimeFromOutsideAlongParabola - No Boundary hit" << endl;
+			cout << "TimeFromOutside - No Boundary hit" << endl;
 		#endif
 		return TGeoShape::Big();
 	} else {
-		cout << "Error In Box, TimeFromOutsideAlongParabola - Calculation error - time to boundary is negative" << endl;
+		cout << "Error In Box, TimeFromOutside - Calculation error - time to boundary is negative" << endl;
 		return 0;
 	}
 }
