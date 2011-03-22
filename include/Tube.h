@@ -37,9 +37,8 @@ protected:
 public:
    // constructors
    Tube();
-   Tube(Double_t rmin, Double_t rmax, Double_t dz);
    Tube(const char * name, Double_t rmin, Double_t rmax, Double_t dz);
-   Tube(Double_t *params);
+   
    // destructor
    virtual ~Tube();
    

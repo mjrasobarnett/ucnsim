@@ -40,25 +40,6 @@ Tube::Tube()
    fDz   = 0.0;
 }
 
-
-//_____________________________________________________________________________
-Tube::Tube(Double_t rmin, Double_t rmax, Double_t dz)
-     :Box(0, 0, 0),
-      fRootTube(rmin, rmax, dz)
-{
-// Default constructor specifying minimum and maximum radius
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Tube", "Constructor");
-   #endif
-   SetShapeBit(TGeoShape::kGeoTube);
-   SetTubeDimensions(rmin, rmax, dz);
-   if ((fDz<0) || (fRmin<0) || (fRmax<0)) {
-      SetShapeBit(kGeoRunTimeShape);
-//      if (fRmax<=fRmin) SetShapeBit(kGeoInvalidShape);
-//      printf("tube : dz=%f rmin=%f rmax=%f\n", dz, rmin, rmax);
-   }
-   ComputeBBox();
-}
 //_____________________________________________________________________________
 Tube::Tube(const char *name, Double_t rmin, Double_t rmax, Double_t dz)
      :Box(name, 0, 0, 0),
@@ -75,24 +56,6 @@ Tube::Tube(const char *name, Double_t rmin, Double_t rmax, Double_t dz)
 //      if (fRmax<=fRmin) SetShapeBit(kGeoInvalidShape);
 //      printf("tube : dz=%f rmin=%f rmax=%f\n", dz, rmin, rmax);
    }
-   ComputeBBox();
-}
-
-//_____________________________________________________________________________
-Tube::Tube(Double_t *param)
-     :Box(0, 0, 0),
-      fRootTube(param)
-{
-// Default constructor specifying minimum and maximum radius
-// param[0] = Rmin
-// param[1] = Rmax
-// param[2] = dz
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Tube", "Constructor");
-   #endif
-   SetShapeBit(TGeoShape::kGeoTube);
-   SetDimensions(param);
-   if ((fDz<0) || (fRmin<0) || (fRmax<0)) SetShapeBit(kGeoRunTimeShape);
    ComputeBBox();
 }
 
