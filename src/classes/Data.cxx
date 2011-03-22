@@ -1,12 +1,7 @@
-// UCNData.cpp
-// Author: Simon JM Peeters
-// Created July 2009
-
 #include "Data.h"
 
 #include <iostream>
 #include <sstream>
-#include <locale>
 #include <cassert>
 #include <stdexcept>
 
@@ -16,6 +11,7 @@
 
 #include "Experiment.h"
 #include "MagFieldArray.h"
+#include "ElecFieldArray.h"
 #include "DataFileHierarchy.h"
 #include "ProgressBar.h"
 
@@ -319,33 +315,46 @@ void Data::CreateObservers(const RunConfig& runConfig, const Experiment& experim
    cout << "Track Measurement Interval (s): " << runConfig.TrackMeasureInterval() << endl;
    if (runConfig.ObserveBounces() == kTRUE) {
       // Create an observer to track UCN Bounces
-      Observer* obs = new BounceObserver();
+      Observer* obs = new BounceObserver("BounceObserver");
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }
    if (runConfig.ObserveTracks() == kTRUE) {
       // Create an observer to track UCN path
-      Observer* obs = new TrackObserver(runConfig.TrackMeasureInterval());
+      Observer* obs = new TrackObserver("TrackObserver", runConfig.TrackMeasureInterval());
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }
    if (runConfig.ObserveSpin() == kTRUE) {
       // Create an observer to track UCN Spin polarisation
-      Observer* obs = new SpinObserver(runConfig.SpinMeasureInterval());
+      Observer* obs = new SpinObserver("SpinObserver", runConfig.SpinMeasureInterval());
       // Add observer to the list
       this->AddObserver("Particles", obs);
    }
    // -- Attach observers to parts of the experiment
    if (runConfig.ObserveField() == kTRUE) {
       // Create an observer to record field seen by spin
-      Observer* obs = new FieldObserver(runConfig.FieldMeasureInterval());
-      // Add observer to the list
-      this->AddObserver("Fields", obs);
-      // Define Observer's subject
-      MagFieldArray& magFieldArray = experiment.GetFieldManager().GetMagFieldArray();
-      obs->DefineSubject(&magFieldArray);
-      // Attach observer to its subject
-      magFieldArray.Attach(obs);
+      if (runConfig.MagFieldOn() == kTRUE) {
+         Observer* obs = new FieldObserver("MagFieldObserver", runConfig.FieldMeasureInterval());
+         // Add observer to the list
+         this->AddObserver("Fields", obs);
+         // Define Observer's subject
+         MagFieldArray& magFieldArray = experiment.GetFieldManager().GetMagFieldArray();
+         obs->DefineSubject(&magFieldArray);
+         // Attach observer to its subject
+         magFieldArray.Attach(obs);
+      }
+      // Create an observer to record field seen by spin
+      if (runConfig.ElecFieldOn() == kTRUE) {
+         Observer* obs = new FieldObserver("ElecFieldObserver", runConfig.FieldMeasureInterval());
+         // Add observer to the list
+         this->AddObserver("Fields", obs);
+         // Define Observer's subject
+         ElecFieldArray& elecFieldArray = experiment.GetFieldManager().GetElecFieldArray();
+         obs->DefineSubject(&elecFieldArray);
+         // Attach observer to its subject
+         elecFieldArray.Attach(obs);
+      }
    }
 }
 
@@ -375,7 +384,7 @@ void Data::RegisterObservers(Particle* particle)
          particle->Attach(observer);
       }
       // Get observers to make a measurement of the initial state of their subjects
-      observer->RecordEvent(particle->GetPoint(), Context::Creation);
+      observer->RecordEvent(particle->GetPoint(), particle->GetVelocity(), Context::Creation);
    }
 }
 

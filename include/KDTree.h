@@ -18,6 +18,7 @@ class KDTree {
       virtual ~KDTree();
       
       const VertexStack* NearestNeighbours(const FieldVertex& vertex, const int numNeighbours) const;
+      int GetVisited() {return fRoot->GetVisited();}
       
       void OutputGraphViz(std::ostream& out) const;
       

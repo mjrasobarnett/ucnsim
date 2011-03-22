@@ -31,6 +31,7 @@
 #pragma link C++ class Parabola+;
 #pragma link C++ class Polynomial+;
 #pragma link C++ class Data+;
+#pragma link C++ class Field+;
 #pragma link C++ class MagField+;
 #pragma link C++ class UniformMagField+;
 //#pragma link C++ class ParabolicMagField+;
@@ -40,7 +41,9 @@
 #pragma link C++ class Union+;
 #pragma link C++ class Subtraction+;
 #pragma link C++ class Intersection+;
+#pragma link C++ class FieldArray+;
 #pragma link C++ class MagFieldArray+;
+#pragma link C++ class ElecField+;
 #pragma link C++ class InitialConfig+;
 #pragma link C++ class RunConfig+;
 #pragma link C++ class Observer+;
@@ -59,5 +62,7 @@
 #pragma link C++ class VertexStack+;
 #pragma link C++ class FieldObserver+;
 #pragma link C++ class FieldData+;
+#pragma link C++ class UniformElecField+;
+#pragma link C++ class ElecFieldArray+;
 
 #endif

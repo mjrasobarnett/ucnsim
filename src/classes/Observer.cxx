@@ -6,7 +6,7 @@
 
 #include "Observer.h"
 
-#include "MagFieldArray.h"
+#include "FieldArray.h"
 #include "Particle.h"
 #include "RunConfig.h"
 #include "Data.h"
@@ -25,7 +25,39 @@
 using namespace std;
 using namespace Algorithms;
 
-ClassImp(Observer)
+ClassImp(Observer);
+
+//_____________________________________________________________________________
+Observer::Observer()
+         :TNamed()
+{
+   // Constructor
+   Info("Observer","Default Constructor");
+}
+
+//_____________________________________________________________________________
+Observer::Observer(const string name)
+         :TNamed(name,name)
+{
+   // Constructor
+   Info("Observer","Default Constructor");
+}
+
+//_____________________________________________________________________________
+Observer::Observer(const Observer& other)
+         :TNamed(other)
+{
+   // Copy Constructor
+   Info("Observer","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+Observer::~Observer()
+{
+   // Destructor
+   Info("Observer","Destructor");
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -36,8 +68,8 @@ ClassImp(Observer)
 ClassImp(SpinObserver)
 
 //_____________________________________________________________________________
-SpinObserver::SpinObserver(double measureInterval)
-             :Observer(),
+SpinObserver::SpinObserver(const std::string name, double measureInterval)
+             :Observer(name),
               fSpinData(NULL),
               fMeasInterval(measureInterval),
               fLastMeasurementTime(Clock::Instance()->GetTime())
@@ -66,7 +98,7 @@ SpinObserver::~SpinObserver()
 }
 
 //_____________________________________________________________________________
-void SpinObserver::RecordEvent(const Point& /*point*/, const std::string& context)
+void SpinObserver::RecordEvent(const Point& /*point*/, const TVector3& /*velocity*/, const std::string& context)
 {
    // -- Record the current spin state
    if (context == Context::Spin) {
@@ -137,8 +169,8 @@ void SpinObserver::WriteToFile(TDirectory* const particleDir)
 ClassImp(BounceObserver)
 
 //_____________________________________________________________________________
-BounceObserver::BounceObserver()
-                   :Observer(),
+BounceObserver::BounceObserver(const std::string name)
+                   :Observer(name),
                     fBounceData(NULL)
 {
    // Constructor
@@ -175,7 +207,7 @@ BounceObserver::~BounceObserver()
 }
 
 //_____________________________________________________________________________
-void BounceObserver::RecordEvent(const Point& /*point*/, const std::string& context)
+void BounceObserver::RecordEvent(const Point& /*point*/, const TVector3& /*velocity*/, const std::string& context)
 
 {
    // -- If context indicates a bounce was made, increment counters.
@@ -232,8 +264,8 @@ void BounceObserver::WriteToFile(TDirectory* const particleDir)
 ClassImp(TrackObserver)
 
 //_____________________________________________________________________________
-TrackObserver::TrackObserver(double measInterval)
-                   :Observer(),
+TrackObserver::TrackObserver(const std::string name, double measInterval)
+                   :Observer(name),
                     fTrack(NULL),
                     fMeasInterval(measInterval),
                     fLastMeasurementTime(0.0)
@@ -262,7 +294,7 @@ TrackObserver::~TrackObserver()
 }
 
 //_____________________________________________________________________________
-void TrackObserver::RecordEvent(const Point& /*point*/, const std::string& context)
+void TrackObserver::RecordEvent(const Point& /*point*/, const TVector3& /*velocity*/, const std::string& context)
 {
    // -- Record the current polarisation
    if (context == Context::Step) {
@@ -334,8 +366,8 @@ void TrackObserver::WriteToFile(TDirectory* const particleDir)
 ClassImp(FieldObserver)
 
 //_____________________________________________________________________________
-FieldObserver::FieldObserver(double measureInterval)
-              :Observer(),
+FieldObserver::FieldObserver(const std::string name, const double measureInterval)
+              :Observer(name),
                fFieldData(NULL),
                fMeasInterval(measureInterval),
                fLastMeasurementTime(Clock::Instance()->GetTime())
@@ -364,7 +396,7 @@ FieldObserver::~FieldObserver()
 }
 
 //_____________________________________________________________________________
-void FieldObserver::RecordEvent(const Point& point, const std::string& context)
+void FieldObserver::RecordEvent(const Point& point, const TVector3& velocity, const std::string& context)
 {
    // -- Record the current Field at the current point
    if (context == Context::MagField) {
@@ -372,16 +404,16 @@ void FieldObserver::RecordEvent(const Point& point, const std::string& context)
       double currentTime = Clock::Instance()->GetTime();
       if (Precision::IsEqual(currentTime,(fLastMeasurementTime + fMeasInterval))) {
          // Make measurement
-         const TVector3 field = dynamic_cast<const MagFieldArray*>(fSubject)->GetMagField(point);
+         const TVector3 field = dynamic_cast<const FieldArray*>(fSubject)->GetMagField(point,velocity);
          const FieldVertex* fieldvertex = new FieldVertex(point, field);
          fFieldData->push_back(fieldvertex);
          // Update stored value of last measurement
          fLastMeasurementTime = currentTime;
       }
-   }  else if (context == Context::Creation) {
+   } else if (context == Context::Creation) {
       // The creation context signifies that the particle has just been instantiated so we
       // shall make a measurement of the initial state
-      const TVector3 field = dynamic_cast<const MagFieldArray*>(fSubject)->GetMagField(point);
+      const TVector3 field = dynamic_cast<const FieldArray*>(fSubject)->GetMagField(point,velocity);
       const FieldVertex* fieldvertex = new FieldVertex(point, field);
       fFieldData->push_back(fieldvertex);
    }
@@ -393,7 +425,7 @@ void FieldObserver::ResetData()
    // -- Delete current observables and create a new version in its place
    fLastMeasurementTime = 0.0;
    if (fFieldData != NULL) delete fFieldData; fFieldData = NULL;
-   fFieldData = new FieldData();
+   fFieldData = new FieldData(this->GetName());
 }
 
 //_____________________________________________________________________________
@@ -421,6 +453,6 @@ void FieldObserver::WriteToFile(TDirectory* const particleDir)
 {
    // -- Write out the current observable to the provided directory
    particleDir->cd();
-   fFieldData->Write("FieldData",TObject::kOverwrite);
+   fFieldData->Write("FieldData");
 }
 

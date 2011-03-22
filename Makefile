@@ -38,6 +38,10 @@ SANDBOX = bin/sandbox$(ExeSuf)
 TEST_KDTREES = $(ProgPath)/test_kdtree.$(SrcSuf)
 TEST_KDTREEO = $(ProgPath)/test_kdtree.$(ObjSuf)
 TEST_KDTREE = bin/test_kdtree$(ExeSuf)
+BATCH_SIMULATES = $(ProgPath)/batch_simulate.$(SrcSuf)
+BATCH_SIMULATEO = $(ProgPath)/batch_simulate.$(ObjSuf)
+BATCH_SIMULATE = bin/batch_simulate$(ExeSuf)
+
 
 #------------------------------------------------------------------------------
 # my classes
@@ -73,6 +77,8 @@ POLYNOMIALO = $(ClassPath)/Polynomial.$(ObjSuf) UCNDict.$(ObjSuf)
 POLYNOMIALS = $(ClassPath)/Polynomial.$(SrcSuf) UCNDict.$(SrcSuf)
 DATAO = $(ClassPath)/Data.$(ObjSuf) UCNDict.$(ObjSuf)
 DATAS = $(ClassPath)/Data.$(SrcSuf) UCNDict.$(SrcSuf)
+FIELDO = $(ClassPath)/Field.$(ObjSuf) UCNDict.$(ObjSuf)
+FIELDS = $(ClassPath)/Field.$(SrcSuf) UCNDict.$(SrcSuf)
 MAGFIELDO = $(ClassPath)/MagField.$(ObjSuf) UCNDict.$(ObjSuf)
 MAGFIELDS = $(ClassPath)/MagField.$(SrcSuf) UCNDict.$(SrcSuf)
 UNIFORMMAGFIELDO = $(ClassPath)/UniformMagField.$(ObjSuf) UCNDict.$(ObjSuf)
@@ -87,8 +93,12 @@ ELEMENTO = $(ClassPath)/Element.$(ObjSuf) UCNDict.$(ObjSuf)
 ELEMENTS = $(ClassPath)/Element.$(SrcSuf) UCNDict.$(SrcSuf)
 VOLUMEO = $(ClassPath)/Volume.$(ObjSuf) UCNDict.$(ObjSuf)
 VOLUMES = $(ClassPath)/Volume.$(SrcSuf) UCNDict.$(SrcSuf)
+FIELDARRAYO = $(ClassPath)/FieldArray.$(ObjSuf) UCNDict.$(ObjSuf)
+FIELDARRAYS = $(ClassPath)/FieldArray.$(SrcSuf) UCNDict.$(SrcSuf)
 MAGFIELDARRAYO = $(ClassPath)/MagFieldArray.$(ObjSuf) UCNDict.$(ObjSuf)
 MAGFIELDARRAYS = $(ClassPath)/MagFieldArray.$(SrcSuf) UCNDict.$(SrcSuf)
+ELECFIELDO = $(ClassPath)/ElecField.$(ObjSuf) UCNDict.$(ObjSuf)
+ELECFIELDS = $(ClassPath)/ElecField.$(SrcSuf) UCNDict.$(SrcSuf)
 INITIALCONFIGO = $(ClassPath)/InitialConfig.$(ObjSuf) UCNDict.$(ObjSuf)
 INITIALCONFIGS = $(ClassPath)/InitialConfig.$(SrcSuf) UCNDict.$(SrcSuf)
 RUNCONFIGO = $(ClassPath)/RunConfig.$(ObjSuf) UCNDict.$(ObjSuf)
@@ -121,6 +131,11 @@ CLOCKO = $(ClassPath)/Clock.$(ObjSuf) UCNDict.$(ObjSuf)
 CLOCKS = $(ClassPath)/Clock.$(SrcSuf) UCNDict.$(SrcSuf)
 ALGORITHMSO = src/Algorithms.$(ObjSuf) UCNDict.$(ObjSuf)
 ALGORITHMSS = src/Algorithms.$(SrcSuf) UCNDict.$(SrcSuf)
+UNIFORMELECFIELDO = $(ClassPath)/UniformElecField.$(ObjSuf) UCNDict.$(ObjSuf)
+UNIFORMELECFIELDS = $(ClassPath)/UniformElecField.$(SrcSuf) UCNDict.$(SrcSuf)
+ELECFIELDARRAYO = $(ClassPath)/ElecFieldArray.$(ObjSuf) UCNDict.$(ObjSuf)
+ELECFIELDARRAYS = $(ClassPath)/ElecFieldArray.$(SrcSuf) UCNDict.$(SrcSuf)
+
 
 #------------------------------------------------------------------------------
 # my library with my classes
@@ -131,14 +146,15 @@ UCNLIB = -L$(UCN_DIR)/lib -lUCN  -L$(ROOTSYS)/lib -L$(GSL)/lib -lgsl -lgslcblas 
 #------------------------------------------------------------------------------
 OBJS = $(RUNO) $(BOXO) $(TUBEO) $(MATERIALO) $(GRAVFIELDO) $(PARTICLEO) \
 $(STATEO) $(SPINO) $(FILEPARSERO) $(PARABOLAO) $(POLYNOMIALO) $(EXPERIMENTO) $(DATAO) \
-$(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
-$(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(MAGFIELDARRAYO) $(INITIALCONFIGO) \
-$(RUNCONFIGO) $(OBSERVERO) $(SPINDATAO) $(BOUNCEDATAO) $(FIELDDATAO) $(TRACKO) $(FIELDMAPO) \
-$(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLEO) $(CLOCKO) \
-$(EVENTO) $(ALGORITHMSO)
+$(FIELDO) $(MAGFIELDO) $(UNIFORMMAGFIELDO)  $(PARABOLICMAGFIELDO) $(FIELDMANAGERO) $(CONFIGFILEO) \
+$(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(FIELDARRAYO) $(MAGFIELDARRAYO) \
+$(ELECFIELDO) $(INITIALCONFIGO) $(RUNCONFIGO) $(OBSERVERO) $(SPINDATAO) \
+$(BOUNCEDATAO) $(FIELDDATAO) $(TRACKO) \
+$(FIELDMAPO) $(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLEO) \
+$(CLOCKO) $(EVENTO) $(ALGORITHMSO) $(UNIFORMELECFIELDO) $(ELECFIELDARRAYO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(MAKE_PLOTS) $(SANDBOX) \
-$(DRAW_TRACKS) $(TEST_KDTREE) $(MAKE_T2PLOT) $(DRAW_PLOTS) $(MAKE_DENSITY)
+$(DRAW_TRACKS) $(TEST_KDTREE) $(MAKE_T2PLOT) $(DRAW_PLOTS) $(MAKE_DENSITY) $(BATCH_SIMULATE)
 #------------------------------------------------------------------------------
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 .PHONY: simulate_ucn sandbox buildtest fitdata generate_ucn make_plots draw_tracks make_T2plot  draw_plots
@@ -212,6 +228,12 @@ $(TEST_KDTREE): $(TEST_KDTREEO) $(UCNSO)
 					 $(MT_EXE)
 					 @echo "$@ done"
 
+batch_simulate:	 $(BATCH_SIMULATE)
+$(BATCH_SIMULATE): $(BATCH_SIMULATEO) $(UCNSO)
+					 $(LD) $(LDFLAGS) $< $(UCNLIB) $(LIBS)  \
+					 $(OutPutOpt)$@
+					 $(MT_EXE)
+					 @echo "$@ done"
 
 $(UCNSO):		$(OBJS)
 
@@ -251,6 +273,7 @@ PARABOLAO: 					include/Parabola.h
 POLYNOMIALO: 				include/Polynomial.h
 EXPERIMENTO: 				include/Experiment.h
 DATAO: 						include/Data.h
+FIELDO:						include/Field.h
 MAGFIELDO: 					include/MagField.h
 UNIFORMMAGFIELDO: 		include/UniformMagField.h
 RUNO: 						include/Run.h
@@ -261,7 +284,9 @@ COMPOSITESHAPEO: 			include/CompositeShape.h
 BOOLNODEO: 					include/BoolNode.h
 VOLUMEO: 					include/Volume.h
 ELEMENTO: 					include/Element.h
+FIELDARRAYO:				include/FieldArray.h
 MAGFIELDARRAYO: 			include/MagFieldArray.h
+ELECFIELDO:					include/ElecField.h
 INITIALCONFIGO: 			include/InitialConfig.h
 RUNCONFIGO: 				include/RunConfig.h
 OBSERVERO:					include/Observer.h
@@ -278,23 +303,27 @@ POINTO:						include/Point.h
 OBSERVABLEO:				include/Observable.h
 CLOCKO:						include/Clock.h
 ALGORITHMSO:				include/Algorithms.h
+UNIFORMELECFIELDO:		include/UniformElecField.h
+ELECFIELDARRAYO:			include/ElecFieldArray.h
 
 UCNDict.$(SrcSuf):		include/Box.h include/Tube.h \
 								include/Material.h include/GravField.h include/Particle.h \
 								include/State.h include/Spin.h include/FileParser.h \
 								include/Polynomial.h include/Parabola.h \
-								include/Experiment.h include/Data.h include/MagField.h \
+								include/Experiment.h include/Data.h include/Field.h include/MagField.h \
 								include/UniformMagField.h include/ParabolicMagField.h \
 								include/Run.h include/FieldManager.h include/ConfigFile.h \
-								include/CompositeShape.h include/BoolNode.h \
-								include/Volume.h include/Element.h include/MagFieldArray.h \
+								include/CompositeShape.h include/BoolNode.h include/Volume.h \
+								include/Element.h include/FieldArray.h include/MagFieldArray.h \
+								include/ElecField.h \
 								include/InitialConfig.h include/RunConfig.h include/Observer.h \
 								include/Track.h include/FieldMap.h \
 								include/KDTree.h include/KDTreeNode.h include/FieldVertex.h \
 								include/VertexStack.h include/Point.h include/Observable.h \
-								include/Clock.h include/Algorithms.h $(LINKDEF)
+								include/Clock.h include/Algorithms.h include/UniformElecField.h \
+								include/ElecFieldArray.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 
 .$(SrcSuf).$(ObjSuf):
-	$(CXX)  $(CXXFLAGS) -I$(UCN_DIR)/include -I$(GSL)/include -c $< -o $@
+	$(CXX)  $(CXXFLAGS) -I$(UCN_DIR)/include -I$(GSL)/include -I$(BOOST) -c $< -o $@

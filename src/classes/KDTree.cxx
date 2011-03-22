@@ -132,6 +132,7 @@ const VertexStack* KDTree::NearestNeighbours(const FieldVertex& point, const int
       cout << point.ToString() << endl;
    #endif
    // Find leaf node that contains the point. Store as first guess 
+   fRoot->SetVisited(0);
    const KDTreeNode& firstGuess = fRoot->FindNodeContaining(point);
    // Calculate distance from point to first guess nearest neighbour
    double dist = firstGuess.GetPoint().DistanceTo(point);

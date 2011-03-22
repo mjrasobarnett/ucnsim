@@ -8,7 +8,6 @@
 
 #include "Run.h"
 #include "ConfigFile.h"
-#include "RunConfig.h"
 #include "FieldManager.h"
 #include "Particle.h"
 #include "Data.h"

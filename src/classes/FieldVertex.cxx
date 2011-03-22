@@ -15,7 +15,7 @@ ClassImp(FieldVertex);
 //______________________________________________________________________________
 FieldVertex::FieldVertex()
             :TObject(),
-             fPoint(), fBField()
+             fPoint(), fField()
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "FieldVertex Default Construct" << endl;
@@ -23,9 +23,9 @@ FieldVertex::FieldVertex()
 }
 
 //______________________________________________________________________________
-FieldVertex::FieldVertex(double x, double y, double z, double t, double bx, double by, double bz)
+FieldVertex::FieldVertex(double x, double y, double z, double t, double fx, double fy, double fz)
             :TObject(),
-             fPoint(x,y,z,t), fBField(bx, by, bz)
+             fPoint(x,y,z,t), fField(fx, fy, fz)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "FieldVertex Construct" << endl;
@@ -36,7 +36,7 @@ FieldVertex::FieldVertex(double x, double y, double z, double t, double bx, doub
 //______________________________________________________________________________
 FieldVertex::FieldVertex(const Point& point, const TVector3& bfield)
             :TObject(),
-             fPoint(point), fBField(bfield)
+             fPoint(point), fField(bfield)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "FieldVertex Construct" << endl;
@@ -47,7 +47,7 @@ FieldVertex::FieldVertex(const Point& point, const TVector3& bfield)
 FieldVertex::FieldVertex(const FieldVertex& other)
             :TObject(other),
              fPoint(other.fPoint),
-             fBField(other.fBField)
+             fField(other.fField)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "FieldVertex Copy Construct" << endl;
@@ -61,7 +61,7 @@ FieldVertex& FieldVertex::operator=(const FieldVertex& other)
    if(this!=&other) {
       TObject::operator=(other);
       fPoint = other.fPoint;
-      fBField = other.fBField;
+      fField = other.fField;
    }
    return *this;
    
@@ -92,7 +92,7 @@ string FieldVertex::ToString() const
    oss.precision(2);
    oss << "(" << fPoint.X() << ", " << fPoint.Y() << ", " << fPoint.X() << ", " << fPoint.T();
    oss << "), ";
-   oss << "(" << fBField.X() << ", " << fBField.Y() << ", " << fBField.Z() << ") ";
+   oss << "(" << fField.X() << ", " << fField.Y() << ", " << fField.Z() << ") ";
    return oss.str();
 }
 

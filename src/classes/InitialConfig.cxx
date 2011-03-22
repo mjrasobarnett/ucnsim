@@ -4,6 +4,7 @@
 #include <cassert>
 #include <stdexcept>
 
+#include "Algorithms.h"
 #include "Constants.h"
 #include "Units.h"
 
@@ -36,7 +37,7 @@ InitialConfig::InitialConfig(const ConfigFile& masterConfig)
    #endif
    // Extract full path to config files 
    const string compressedfolderpath = masterConfig.GetString("Path","Folder");
-   const string folderpath = masterConfig.ExpandFilePath(compressedfolderpath);
+   const string folderpath = Algorithms::FileSystem::ExpandFilePath(compressedfolderpath);
    // Use full folder path to fetch the initial config file
    const string initialConfigName = folderpath + masterConfig.GetString("Config","Initialisation");
    if (initialConfigName.empty() == kTRUE) {

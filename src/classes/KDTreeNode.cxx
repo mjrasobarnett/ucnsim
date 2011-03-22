@@ -11,6 +11,8 @@
 
 using namespace std;
 
+int KDTreeNode::fVisited;
+
 //______________________________________________________________________________
 KDTreeNode::KDTreeNode()
            :fDepth(0),
@@ -55,6 +57,7 @@ const KDTreeNode& KDTreeNode::FindNodeContaining(const FieldVertex& point) const
 {
    // -- Check whether this node or its daughters are the containing
    // -- node of point
+   fVisited++;
    if (fLeft == NULL && fRight == NULL) {
       // If node has no daughters (is leaf node) then it is the containing node
       #ifdef VERBOSE
@@ -125,12 +128,12 @@ bool KDTreeNode::CheckParentForCloserNodes(const FieldVertex& point, VertexStack
    // --
    // -- Recursively search all parents up the tree until we reach the Root node.
    // -- Return the final best estimate of the nearest node.
-   
    // Get the parent node
    const KDTreeNode* parent = this->GetParent();
    // If there is no parent we have reached the root node and can stop our search
    if (parent == NULL) {return true;}
    // Check if parent node is closer than current best
+   fVisited++;
    neighbours.ExamineVertex(parent->GetPoint(), parent->DistanceTo(point));
    // Define radius of search sphere as distance from current nearest neighbour to point
    // Actually use the **furthest** of the n-th nearest neighbours so that we look for possible
@@ -157,6 +160,7 @@ bool KDTreeNode::CheckParentForCloserNodes(const FieldVertex& point, VertexStack
       // Check if parent actually has another child
       if (otherChild != NULL) {
          // Check whether child is closer than current best 
+         fVisited++;
          neighbours.ExamineVertex(otherChild->GetPoint(), otherChild->DistanceTo(point));
          // Check all of child's children for closer nodes
          otherChild->SearchChildren(point, neighbours);
@@ -242,6 +246,7 @@ bool KDTreeNode::SearchChildren(const FieldVertex& point, VertexStack& neighbour
    if (fLeft != NULL) {
       // Else, check if distance of left child to point is less than current best estimate 
       // If it is closer to point than current best estimate then update estimate
+      fVisited++;
       neighbours.ExamineVertex(fLeft->GetPoint(), fLeft->DistanceTo(point));
       // Recursively search children of Left node for any improvement on current best estimate
       fLeft->SearchChildren(point, neighbours);
@@ -252,6 +257,7 @@ bool KDTreeNode::SearchChildren(const FieldVertex& point, VertexStack& neighbour
    if (fRight != NULL) {
       // Else, check if distance of right child to point is less than current best estimate 
       // If it is closer to point than current best estimate then update estimate
+      fVisited++;
       neighbours.ExamineVertex(fRight->GetPoint(), fRight->DistanceTo(point));
       // Recursively search children of Left node for any improvement on current best estimate
       fRight->SearchChildren(point, neighbours);
