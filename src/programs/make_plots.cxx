@@ -42,12 +42,12 @@
 
 using namespace std;
 
-void PlotFinalStates(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig, TGeoManager* geoManager);
+void PlotFinalStates(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig, TGeoManager& geoManager);
 void PlotSpinPolarisation(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig);
 void PlotBounceCounters(TDirectory* const histDir, const vector<TDirectory*> stateDirs);
 void PlotField(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig);
-void PlotParticleHistories(TDirectory* const histDir, const vector<TDirectory*> stateDirs, TGeoManager* geoManager);
-vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoManager);
+void PlotParticleHistories(TDirectory* const histDir, const vector<TDirectory*> stateDirs, TGeoManager& geoManager);
+vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager& geoManager);
 
 Double_t SpinPrecession(Double_t *x, Double_t *par);
 
@@ -95,27 +95,9 @@ Int_t main(int argc, char **argv)
    ///////////////////////////////////////////////////////////////////////////////////////
    const RunConfig& runConfig = Analysis::DataFile::LoadRunConfig(*file);
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Load the Geometry
-   if (topDir->cd(Folders::geometry.c_str()) == false) {return EXIT_FAILURE;}
-   TDirectory* geomDir = gDirectory;
-   TKey *geomKey;
-   TIter geomIter(geomDir->GetListOfKeys());
-   while ((geomKey = dynamic_cast<TKey*>(geomIter.Next()))) {
-      const char *classname = geomKey->GetClassName();
-      TClass *cl = gROOT->GetClass(classname);
-      if (!cl) continue;
-      if (cl->InheritsFrom("TGeoManager")) {
-         gGeoManager = dynamic_cast<TGeoManager*>(geomKey->ReadObj());
-         break;
-      }
-   }
-   TGeoManager* geoManager = gGeoManager;
-   if (geoManager == NULL) return EXIT_FAILURE;
-   cout << "-------------------------------------------" << endl;
-   cout << "Successfully Loaded Geometry" << endl;
-   cout << "-------------------------------------------" << endl;
+   TGeoManager& geoManager = Analysis::DataFile::LoadGeometry(*file);
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Create a Histogram Dir inside File
+   // -- Create a Histogram Director if one doesn't already exist in File
    TDirectory* histDir = topDir->mkdir(Folders::histograms.c_str());
    if (histDir == NULL) {
       // histogram folder already exists
@@ -174,7 +156,7 @@ Int_t main(int argc, char **argv)
 }
 
 //_____________________________________________________________________________
-void PlotFinalStates(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig, TGeoManager* geoManager)
+void PlotFinalStates(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig, TGeoManager& geoManager)
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into the Histogram's directory
@@ -332,9 +314,9 @@ void PlotFinalStates(TDirectory* const histDir, const vector<TDirectory*> stateD
    // -- Final Positions
    TCanvas *poscanvas = new TCanvas("Positions","Neutron Positions",10,10,50,50);
    poscanvas->cd();
-   geoManager->GetTopVolume()->Draw("ogl");
-   geoManager->SetVisLevel(4);
-   geoManager->SetVisOption(0);
+   geoManager.GetTopVolume()->Draw("ogl");
+   geoManager.SetVisLevel(4);
+   geoManager.SetVisOption(0);
    points->Draw();
    points->Write(points->GetName(),TObject::kOverwrite);
    // -- Get the GLViewer so we can manipulate the camera
@@ -866,7 +848,7 @@ void PlotField(TDirectory* const histDir, const vector<TDirectory*> stateDirs, c
 }
 
 //_____________________________________________________________________________
-void PlotParticleHistories(TDirectory* const histDir, const vector<TDirectory*> stateDirs, TGeoManager* geoManager)
+void PlotParticleHistories(TDirectory* const histDir, const vector<TDirectory*> stateDirs, TGeoManager& geoManager)
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into Histogram's dir
@@ -960,7 +942,7 @@ void PlotParticleHistories(TDirectory* const histDir, const vector<TDirectory*> 
 }
 
 //_____________________________________________________________________________
-vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoManager) {
+vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager& geoManager) {
    // -- Walk though provided track and determine at each step which volume the particle is in,
    // -- and use this to calculate the percentage of time the particle spends in each User-defined
    // -- 'region of interest' in the experiment
@@ -1006,7 +988,7 @@ vector<Double_t> CalculateParticleHistory(const Track& track, TGeoManager* geoMa
    
    for (UInt_t pointNum = 0; pointNum < track.TotalPoints(); pointNum++) {
       const Point& point = track.GetPoint(pointNum);
-      TGeoNode* node = geoManager->FindNode(point.X(), point.Y(), point.Z());
+      TGeoNode* node = geoManager.FindNode(point.X(), point.Y(), point.Z());
       TGeoVolume* volume = node->GetVolume();
       map<string, string>::iterator key = regionList.find(volume->GetName());
       if (key == regionList.end()) {

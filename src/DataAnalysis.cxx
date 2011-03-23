@@ -8,6 +8,7 @@
 #include "TDirectory.h"
 #include "TKey.h"
 #include "TClass.h"
+#include "TGeoManager.h"
 
 #include "RunConfig.h"
 #include "DataFileHierarchy.h"
@@ -69,6 +70,41 @@ const RunConfig& DataFile::LoadRunConfig(TFile& file)
    cout << "Successfully Loaded RunConfig" << endl;
    cout << "-------------------------------------------" << endl;
    return *ptr_config;
+}
+
+//_____________________________________________________________________________
+TGeoManager& DataFile::LoadGeometry(TFile& file)
+{
+   // -- Attempt to navigate to the geometry folder of the supplied file and extract the Geometry
+   // -- Throw an exception if this cannot be done.
+   if (file.cd(Folders::geometry.c_str()) == false) {
+      cerr << "No Folder named: " << Folders::geometry << " in data file" << endl;
+      throw runtime_error("Cannot find geometry folder");
+   }
+   // Loop over contents ("TKeys") of Geometry folder
+   TGeoManager* geoManager = NULL;
+   TDirectory* geomDir = gDirectory;
+   TKey *geomKey;
+   TIter geomIter(geomDir->GetListOfKeys());
+   while ((geomKey = dynamic_cast<TKey*>(geomIter.Next()))) {
+      // Check if current item is of Class TGeomanager
+      const char *classname = geomKey->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TGeoManager")) {
+         // Read TGeoManager into memory when found
+         geoManager = dynamic_cast<TGeoManager*>(geomKey->ReadObj());
+         break;
+      }
+   }
+   // Throw exception if we failed to find any TGeoManager in this folder
+   if (geoManager == NULL) {
+      throw runtime_error("Unable to load GeoManager from geometry folder");
+   }
+   cout << "-------------------------------------------" << endl;
+   cout << "Successfully Loaded Geometry" << endl;
+   cout << "-------------------------------------------" << endl;
+   return *geoManager;
 }
 
 //_____________________________________________________________________________

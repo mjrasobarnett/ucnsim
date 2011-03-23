@@ -9,6 +9,7 @@
 class TDirectory;
 class TFile;
 class RunConfig;
+class TGeoManager;
 
 namespace Analysis {
    //_____________________________________________________________________________
@@ -20,6 +21,8 @@ namespace Analysis {
       TFile* OpenRootFile(const std::string filename, const std::string option = "UPDATE");
       //_____________________________________________________________________________
       const RunConfig& LoadRunConfig(TFile& file);
+      //_____________________________________________________________________________
+      TGeoManager& LoadGeometry(TFile& file);
       //_____________________________________________________________________________
       bool ValidateRootFile(const std::string filename);
       //_____________________________________________________________________________
