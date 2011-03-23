@@ -31,18 +31,7 @@
 
 using namespace std;
 
-typedef struct {
-   double fCosTheta;
-   double fSinTheta;
-   double fTheta;
-} Coords;
-
-void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig);
-void PlotPhaseAngleSnapShots(vector<vector<Coords> >& phase_data, const unsigned int intervals);
-
-Double_t ExponentialDecay(Double_t *x, Double_t *par);
-
-// -------------------------------------------------------------------------------------- 
+//_____________________________________________________________________________
 Int_t main(int argc, char **argv) {
    ///////////////////////////////////////////////////////////////////////////////////////
    // Plot data needs a minimum of 2 arguments - a data file, and the name of the particle
@@ -82,6 +71,7 @@ Int_t main(int argc, char **argv) {
       return -1;
    }
    file->cd();
+   file->ls();
    TDirectory * const topDir = gDirectory;
    if (topDir->cd(Folders::particles.c_str()) == false) {
       cerr << "No Folder named: " << Folders::particles << " in data file" << endl;
@@ -147,217 +137,11 @@ Int_t main(int argc, char **argv) {
    cout << "-------------------------------------------" << endl;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Polarisation
-   PlotT2(histDir, stateDirs, runConfig);
+   Analysis::Spins::PlotT2(histDir, stateDirs, runConfig);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
    cout << "Finished" << endl;
    theApp->Run();
    return EXIT_SUCCESS;
 }
-
-//_____________________________________________________________________________
-void PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig)
-{
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd into Histogram's dir
-   histDir->cd();
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Define Histograms
-   const Double_t runTime = runConfig.RunTime();
-   const Double_t spinMeasInterval = runConfig.SpinMeasureInterval();
-   if (spinMeasInterval == 0) {throw runtime_error("Spin Measure Interval set to zero in config");}
-   const UInt_t intervals = 1 + runTime/spinMeasInterval;
-   cout << "Run Time: " << runTime << "\t";
-   cout << "Spin Measurement interval length: " << spinMeasInterval << endl;
-   cout << "Measurement intervals: " << intervals << endl;
-   const TVector3 xAxis(1.0,0.0,0.0);
-   const TVector3 yAxis(0.0,1.0,0.0);
-   const TVector3 zAxis(0.0,0.0,1.0);
-   // -- Define name of combined states
-   string stateName;
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      if (stateName.empty() == false) stateName += "/";
-      stateName += (*dirIter)->GetName();
-   }
-   //////////////////////////////////////////////////////////////////////////////////////
-   TH1F time_data("T2 Time Data","T2 Time Data", intervals, 0.0, runTime);
-   vector<vector<Coords> > phase_data;
-   TGraph* alphaT2 = new TGraph(intervals);
-   Char_t histname[40];
-   sprintf(histname,"%s:T2_Polarisation",stateName.c_str());
-   alphaT2->SetName(histname);
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over each state to be included in histogram
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      // -- cd into the State's folder
-      (*dirIter)->cd();
-      //////////////////////////////////////////////////////////////////////////////////////
-      // -- Loop over all particle folders in the current state's folder
-      TKey *folderKey;
-      TIter folderIter((*dirIter)->GetListOfKeys());
-      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         const char *classname = folderKey->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // Loop over all objects in particle dir
-            (*dirIter)->cd(folderKey->GetName());
-            TDirectory* particleDir = gDirectory;
-            TKey *objKey;
-            TIter objIter(particleDir->GetListOfKeys());
-            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
-               // For Each object in the particle's directory, check its class name and what it
-               // inherits from to determine what to do.
-               classname = objKey->GetClassName();
-               cl = gROOT->GetClass(classname);
-               if (!cl) continue;
-               if (cl->InheritsFrom("SpinData")) {
-                  // -- Extract Spin Observer Data if recorded
-                  const SpinData* data = dynamic_cast<const SpinData*>(objKey->ReadObj());
-                  assert(data->size() == intervals);
-                  // Create storage for this particle's phase information
-                  vector<Coords> phases;
-                  // Loop over spin data recorded for particle
-                  SpinData::const_iterator dataIter;
-                  for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
-                     // Bin the time in the histogram 
-                     time_data.Fill(dataIter->first);
-                     // -- For a holding Field aligned along the X-Axis, we want to find the
-                     // -- phase of the spin in the Y-Z plane. 
-                     const Spin* spin = dataIter->second;
-                     // Calculate probability of spin up along Y axis
-                     Double_t yprob = spin->CalculateProbSpinUp(yAxis);
-                     // Calculate probability of spin up along Z axis
-                     Double_t zprob = spin->CalculateProbSpinUp(zAxis);
-                     // Remap probabilities, [0,1] into a unit vector in the y-z plane [-1,1] 
-                     Double_t ycoord = (2.0*yprob - 1.0);
-                     Double_t zcoord = (2.0*zprob - 1.0);
-                     // Calculate theta
-                     Double_t theta = TMath::ATan2(zcoord,ycoord);
-                     // Store the current coordinates on the unit circle in the y-z plane
-                     Coords currentCoords;
-                     currentCoords.fSinTheta = ycoord;
-                     currentCoords.fCosTheta = zcoord;
-                     currentCoords.fTheta = theta;
-                     // Add set of y-z coords to list
-                     phases.push_back(currentCoords);
-                  }
-                  // Store particle's phases
-                  phase_data.push_back(phases);
-                  delete data;
-               }
-            }
-         }
-      }
-   }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Plot snapshots of the particles phase distribution over time
-//   PlotPhaseAngleSnapShots(phase_data,intervals);
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Calculate the polarisation, alpha, at each measurement interval
-   histDir->cd();
-   TCanvas *alphaT2canvas = new TCanvas("Alpha T2","Alpha T2",60,0,1200,800);
-   alphaT2canvas->cd();
-   // Calculate T2 polarisation
-   cout << setw(12) << "IntervalNum" << "\t" << setw(12) << "Alpha";
-   cout << setw(12) << "Mean Phase" << "\t" << "Old Mean Phase" << endl;
-   for (unsigned int intervalNum = 0; intervalNum < intervals; intervalNum++) {
-      // -- Calculate the mean phase of the particles alpha.
-      // -- Because the angles are a circular quantity, distibuted usually from (-Pi, +Pi]
-      // -- we cannot just take the arithmetic mean of each particles angle. Instead to get a
-      // -- correct measure of the mean we first take the mean of the points on the unit-sphere
-      // -- eg: {cos(theta),sin(theta)}. Then the mean angle is just
-      // --          mean{theta} = atan2(mean{cos(theta)}/mean{sin(theta)})
-      Double_t sumCosTheta = 0., sumSinTheta = 0., sumTheta = 0.;
-      for (UInt_t particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
-         assert(phase_data[particleIndex].size() == intervals);
-         sumCosTheta += phase_data[particleIndex][intervalNum].fCosTheta;
-         sumSinTheta += phase_data[particleIndex][intervalNum].fSinTheta;
-         sumTheta += phase_data[particleIndex][intervalNum].fTheta;
-      }
-      Double_t meanCosTheta = sumCosTheta/phase_data.size();
-      Double_t meanSinTheta = sumSinTheta/phase_data.size();
-      Double_t meanTheta = sumTheta/phase_data.size();
-      Double_t meanPhase = TMath::ATan2(meanCosTheta, meanSinTheta);
-      // Calculate the number spin up and down based on phase difference
-      Int_t numSpinUp = 0, numSpinDown = 0;
-      for (unsigned int particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
-         // Calculate the angle between each particle's phase and the mean phase
-         Double_t phasediff = TMath::Abs(phase_data[particleIndex][intervalNum].fTheta - meanPhase);
-         Double_t probSpinDown = TMath::Cos(phasediff);
-         if (gRandom->Uniform(0.,1.0) < probSpinDown) {
-            numSpinDown++;
-         } else {
-            numSpinUp++;
-         }
-      }
-      // Calculate polarisation at this time
-      Double_t alpha = TMath::Abs(((double)(numSpinUp - numSpinDown)) / ((double)(numSpinUp + numSpinDown)));
-      Double_t timebin = time_data.GetBinLowEdge(intervalNum);
-      // Add point to graph
-      cout << setw(12) << intervalNum << "\t";
-      cout << setw(12) << alpha << "\t";
-      cout << setw(12) <<  meanPhase*180.0/TMath::Pi() << "\t";
-      cout << setw(12) << meanTheta*180.0/TMath::Pi() << "\t";
-      cout << setw(12) << meanCosTheta << "\t";
-      cout << setw(12) << meanSinTheta << endl;
-      alphaT2->SetPoint(intervalNum, timebin, alpha);
-   }
-   // Draw graph
-   alphaT2->SetMarkerStyle(7);
-   alphaT2->Draw("AP");
-   alphaT2->GetXaxis()->SetTitle("Time (s)");
-   alphaT2->GetXaxis()->SetRangeUser(0.0,runTime);
-   alphaT2->GetYaxis()->SetTitle("Alpha");
-   alphaT2->GetYaxis()->SetRangeUser(-1.0,1.0);
-   alphaT2->SetTitle("T2 Polarisation");
-   alphaT2->Write(alphaT2->GetName(),TObject::kOverwrite);
-   cout << "Written graph: " << alphaT2->GetName() << " to file" << endl;
-   return;
-}
-
-//_____________________________________________________________________________
-Double_t ExponentialDecay(Double_t *x, Double_t *par)
-{
-   Double_t t = x[0];
-   Double_t f = par[0]*TMath::Exp(-t/par[1]);
-   return f;
-}
-
-//_____________________________________________________________________________
-void PlotPhaseAngleSnapShots(vector<vector<Coords> >& phase_data, const unsigned int intervals)
-{
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Plot phase snapshots
-   for (unsigned int intervalNum = 0; intervalNum < intervals; intervalNum++) {
-      TCanvas *phaseCanvas = new TCanvas("Phase","Phase",60,0,1200,800);
-      phaseCanvas->cd();
-      Char_t histname[40];
-      sprintf(histname,"Total:Phase Distribution: %03i",intervalNum);
-      TH1F* nextHistogram = new TH1F(histname, "Phase Angle Distribution",180,-180.,180.);
-      nextHistogram->SetXTitle("Phase Angle");
-      nextHistogram->SetYTitle("Neutrons");
-      nextHistogram->GetYaxis()->SetRangeUser(0,100);
-      nextHistogram->SetLineColor(kBlack);
-      nextHistogram->SetFillStyle(3001);
-      nextHistogram->SetFillColor(kBlack);
-      // Loop over all particles for each interval
-      vector<vector<Coords> >::iterator particleIter = phase_data.begin();
-      for ( ; particleIter != phase_data.end(); particleIter++) {
-         Double_t theta = (*particleIter)[intervalNum].fTheta;
-         nextHistogram->Fill(theta*180.0/TMath::Pi());
-      }
-      nextHistogram->Draw();
-      // Write histogram to file
-      string filepath = "images/";
-      string filename = filepath + nextHistogram->GetName();
-      filename += ".png";
-      phaseCanvas->Print(filename.c_str());
-      delete phaseCanvas;
-      delete nextHistogram;
-   }
-   return;
-}
-
 
