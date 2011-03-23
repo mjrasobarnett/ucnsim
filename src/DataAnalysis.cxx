@@ -51,13 +51,19 @@ const RunConfig& DataFile::LoadRunConfig(TFile& file)
    TKey *configKey;
    TIter configIter(configDir->GetListOfKeys());
    while ((configKey = dynamic_cast<TKey*>(configIter.Next()))) {
+      // Check if current item is of class RunConfig
       const char *classname = configKey->GetClassName();
       TClass *cl = gROOT->GetClass(classname);
       if (!cl) continue;
       if (cl->InheritsFrom("RunConfig")) {
+         // Read RunConfig into memory when found
          ptr_config = dynamic_cast<RunConfig*>(configKey->ReadObj());
          break;
       }
+   }
+   // Throw exception if we failed to find any RunConfig in this folder
+   if (ptr_config == NULL) {
+      throw runtime_error("Unable to load RunConfig from config folder");
    }
    cout << "-------------------------------------------" << endl;
    cout << "Successfully Loaded RunConfig" << endl;
