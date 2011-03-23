@@ -76,29 +76,18 @@ Int_t main(int argc, char **argv)
       cerr << "Error: statenames supplied are not valid" << endl;
       return EXIT_FAILURE;
    }
-   cout << "-------------------------------------------" << endl;
-   cout << "Loading Data File: " << filename << endl;
-   cout << endl;
    // Start an interactive root session so we can view the plots as they are made
    TRint *theApp = new TRint("FittingApp", &argc, argv);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Open Data File
    //////////////////////////////////////////////////////////////////////////////////////
-   TFile *file = 0;
-   file = TFile::Open(filename.c_str(), "UPDATE");
-   if (!file || file->IsZombie()) {
-      cerr << "Cannot open file: " << filename << endl;
-      return -1;
-   }
-   file->cd();
+   TFile* file = Analysis::DataFile::OpenRootFile(filename,"UPDATE");
+   // Navigate to Particle States Folder
    TDirectory * const topDir = gDirectory;
    if (topDir->cd(Folders::particles.c_str()) == false) {
       cerr << "No Folder named: " << Folders::particles << " in data file" << endl;
       return EXIT_FAILURE;
    }
-   cout << "-------------------------------------------" << endl;
-   cout << "Successfully Loaded Data File: " << filename << endl;
-   cout << "-------------------------------------------" << endl;
    TDirectory * const particleDir = gDirectory;
    Analysis::DataFile::CountParticles(particleDir);
    ///////////////////////////////////////////////////////////////////////////////////////

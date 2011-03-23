@@ -16,6 +16,8 @@ namespace Analysis {
    namespace DataFile
    {
       //_____________________________________________________________________________
+      TFile* OpenRootFile(const std::string filename, const std::string option = "UPDATE");
+      //_____________________________________________________________________________
       bool ValidateRootFile(const std::string filename);
       //_____________________________________________________________________________
       bool ValidateStateNames(const std::vector<std::string>& statenames);

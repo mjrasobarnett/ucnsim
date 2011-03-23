@@ -1,4 +1,4 @@
-
+#include <iostream>
 #include "DataAnalysis.h"
 
 #include "TFile.h"
@@ -8,6 +8,25 @@
 
 using namespace Analysis;
 using namespace std;
+
+//_____________________________________________________________________________
+TFile* DataFile::OpenRootFile(const std::string filename, const std::string option)
+{
+   // -- Simply open a Root file with the given name and option and return pointer to it.
+   cout << "-------------------------------------------" << endl;
+   cout << "Loading Data File: " << filename << endl;
+   TFile *file = NULL;
+   file = TFile::Open(filename.c_str(), option.c_str());
+   if (!file || file->IsZombie()) {
+      cerr << "Error: Cannot open file - " << filename << endl;
+      return NULL;
+   }
+   file->cd();
+   cout << "-------------------------------------------" << endl;
+   cout << "Successfully Loaded Data File: " << filename << endl;
+   cout << "-------------------------------------------" << endl;
+   return file;
+}
 
 //_____________________________________________________________________________
 bool DataFile::ValidateRootFile(const string filename)
