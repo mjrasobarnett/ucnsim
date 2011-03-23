@@ -138,6 +138,8 @@ ALGORITHMSO = src/Algorithms.$(ObjSuf) UCNDict.$(ObjSuf)
 ALGORITHMSS = src/Algorithms.$(SrcSuf) UCNDict.$(SrcSuf)
 MATERIALSO = src/Materials.$(ObjSuf) UCNDict.$(ObjSuf)
 MATERIALSS = src/Materials.$(SrcSuf) UCNDict.$(SrcSuf)
+DATAANALYSISO = src/DataAnalysis.$(ObjSuf) UCNDict.$(ObjSuf)
+DATAANALYSISS = src/DataAnalysis.$(SrcSuf) UCNDict.$(SrcSuf)
 
 
 #------------------------------------------------------------------------------
@@ -154,7 +156,7 @@ $(COMPOSITESHAPEO) $(BOOLNODEO) $(VOLUMEO) $(ELEMENTO) $(FIELDARRAYO) $(MAGFIELD
 $(ELECFIELDO) $(INITIALCONFIGO) $(RUNCONFIGO) $(OBSERVERO) $(SPINDATAO) \
 $(BOUNCEDATAO) $(FIELDDATAO) $(TRACKO) \
 $(FIELDMAPO) $(KDTREEO) $(KDTREENODEO) $(FIELDVERTEXO) $(VERTEXSTACKO) $(POINTO) $(OBSERVABLEO) \
-$(CLOCKO) $(EVENTO) $(ALGORITHMSO) $(UNIFORMELECFIELDO) $(ELECFIELDARRAYO) $(MATERIALSO)
+$(CLOCKO) $(EVENTO) $(ALGORITHMSO) $(UNIFORMELECFIELDO) $(ELECFIELDARRAYO) $(MATERIALSO) $(DATAANALYSISO)
 
 PROGRAMS = $(UCNSO) $(SIMULATE_UCN) $(GENERATE_UCN) $(MAKE_PLOTS) $(SANDBOX) \
 $(DRAW_TRACKS) $(TEST_KDTREE) $(MAKE_T2PLOT) $(DRAW_PLOTS) $(MAKE_DENSITY) $(BATCH_SIMULATE)
@@ -307,6 +309,7 @@ OBSERVABLEO:				$(ClassIncPath)/Observable.h
 CLOCKO:						$(ClassIncPath)/Clock.h
 ALGORITHMSO:				include/Algorithms.h
 MATERIALSO:					include/Materials.h
+DATAANALYSISO:				include/DataAnalysis.h
 
 UCNDict.$(SrcSuf):		$(ClassIncPath)/Box.h $(ClassIncPath)/Tube.h \
 								$(ClassIncPath)/Material.h $(ClassIncPath)/GravField.h $(ClassIncPath)/Particle.h \
@@ -324,7 +327,8 @@ UCNDict.$(SrcSuf):		$(ClassIncPath)/Box.h $(ClassIncPath)/Tube.h \
 								$(ClassIncPath)/KDTree.h $(ClassIncPath)/KDTreeNode.h $(ClassIncPath)/FieldVertex.h \
 								$(ClassIncPath)/VertexStack.h $(ClassIncPath)/Point.h $(ClassIncPath)/Observable.h \
 								$(ClassIncPath)/Clock.h $(ClassIncPath)/UniformElecField.h \
-								$(ClassIncPath)/ElecFieldArray.h include/Algorithms.h include/Materials.h $(LINKDEF)
+								$(ClassIncPath)/ElecFieldArray.h include/Algorithms.h include/Materials.h \
+								include/DataAnalysis.h $(LINKDEF)
 								@echo "Generating dictionary $@..."
 								$(ROOTCINT) -f $@ -c $^
 
