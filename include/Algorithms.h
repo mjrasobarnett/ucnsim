@@ -25,19 +25,6 @@ namespace Algorithms {
       bool IsLessOrEqual(double left, double right, double precision = 1.E-10);
    }
    //_____________________________________________________________________________
-   // Namespace holding functions relevant to datafile structure
-   //_____________________________________________________________________________
-   namespace DataFile
-   {
-      //_____________________________________________________________________________
-      bool ValidateRootFile(const std::string filename);
-      //_____________________________________________________________________________
-      bool ValidateStateNames(const std::vector<std::string>& statenames);
-      bool ValidateStateNames(const std::string statename);
-      //_____________________________________________________________________________
-      void CountParticles(TDirectory * const particleDir);
-   }
-   //_____________________________________________________________________________
    // Namespace holding functions relevant to string transformations
    //_____________________________________________________________________________
    namespace String

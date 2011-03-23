@@ -38,6 +38,7 @@
 #include "Units.h"
 #include "DataFileHierarchy.h"
 #include "Algorithms.h"
+#include "DataAnalysis.h"
 
 using namespace std;
 
@@ -63,7 +64,7 @@ Int_t main(int argc, char **argv)
    }
    // Read in Filename and check that it is a .root file
    string filename = argv[1];
-   if (Algorithms::DataFile::ValidateRootFile(filename) == false) {
+   if (Analysis::DataFile::ValidateRootFile(filename) == false) {
       cerr << "Error: filename, " << filename << " does not have a .root extension" << endl;
       return EXIT_FAILURE;
    }
@@ -71,7 +72,7 @@ Int_t main(int argc, char **argv)
    // valid state names
    vector<string> statenames;
    for (int i = 2; i < argc; i++) {statenames.push_back(argv[i]);}
-   if (Algorithms::DataFile::ValidateStateNames(statenames) == false) {
+   if (Analysis::DataFile::ValidateStateNames(statenames) == false) {
       cerr << "Error: statenames supplied are not valid" << endl;
       return EXIT_FAILURE;
    }
@@ -99,7 +100,7 @@ Int_t main(int argc, char **argv)
    cout << "Successfully Loaded Data File: " << filename << endl;
    cout << "-------------------------------------------" << endl;
    TDirectory * const particleDir = gDirectory;
-   Algorithms::DataFile::CountParticles(particleDir);
+   Analysis::DataFile::CountParticles(particleDir);
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////

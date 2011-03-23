@@ -7,12 +7,24 @@
 #include <string>
 
 class TDirectory;
+class TFile;
 
 namespace Analysis {
    //_____________________________________________________________________________
-   // Namespace holding functions relevant to 
+   // Namespace holding functions relevant to datafile structure
    //_____________________________________________________________________________
+   namespace DataFile
+   {
+      //_____________________________________________________________________________
+      bool ValidateRootFile(const std::string filename);
+      //_____________________________________________________________________________
+      bool ValidateStateNames(const std::vector<std::string>& statenames);
+      bool ValidateStateNames(const std::string statename);
+      //_____________________________________________________________________________
+      void CountParticles(TDirectory * const particleDir);
    
+      
+   }
 }
 
 #endif /* DATAANALYSIS */
