@@ -8,6 +8,7 @@
 
 class TDirectory;
 class TFile;
+class RunConfig;
 
 namespace Analysis {
    //_____________________________________________________________________________
@@ -17,6 +18,8 @@ namespace Analysis {
    {
       //_____________________________________________________________________________
       TFile* OpenRootFile(const std::string filename, const std::string option = "UPDATE");
+      //_____________________________________________________________________________
+      const RunConfig& LoadRunConfig(TFile& file);
       //_____________________________________________________________________________
       bool ValidateRootFile(const std::string filename);
       //_____________________________________________________________________________

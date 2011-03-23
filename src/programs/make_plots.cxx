@@ -93,28 +93,7 @@ Int_t main(int argc, char **argv)
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////
-   // Navigate to Config Folder   
-   if (topDir->cd(Folders::config.c_str()) == false) {
-      cerr << "No Folder named: " << Folders::config << " in data file" << endl;
-      return EXIT_FAILURE;
-   }
-   // -- Loop over all objects in folder and extract latest RunConfig
-   RunConfig* ptr_config = NULL;
-   TKey *configKey;
-   TIter configIter(gDirectory->GetListOfKeys());
-   while ((configKey = dynamic_cast<TKey*>(configIter.Next()))) {
-      const char *classname = configKey->GetClassName();
-      TClass *cl = gROOT->GetClass(classname);
-      if (!cl) continue;
-      if (cl->InheritsFrom("RunConfig")) {
-         ptr_config = dynamic_cast<RunConfig*>(configKey->ReadObj());
-         break;
-      }
-   }
-   const RunConfig& runConfig = *ptr_config;
-   cout << "-------------------------------------------" << endl;
-   cout << "Successfully Loaded RunConfig" << endl;
-   cout << "-------------------------------------------" << endl;
+   const RunConfig& runConfig = Analysis::DataFile::LoadRunConfig(*file);
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Load the Geometry
    if (topDir->cd(Folders::geometry.c_str()) == false) {return EXIT_FAILURE;}

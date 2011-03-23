@@ -1,9 +1,15 @@
 #include <iostream>
+#include <cassert>
+#include <stdexcept>
 #include "DataAnalysis.h"
 
+#include "TRoot.h"
 #include "TFile.h"
 #include "TDirectory.h"
+#include "TKey.h"
+#include "TClass.h"
 
+#include "RunConfig.h"
 #include "DataFileHierarchy.h"
 
 using namespace Analysis;
@@ -26,6 +32,37 @@ TFile* DataFile::OpenRootFile(const std::string filename, const std::string opti
    cout << "Successfully Loaded Data File: " << filename << endl;
    cout << "-------------------------------------------" << endl;
    return file;
+}
+
+//_____________________________________________________________________________
+const RunConfig& DataFile::LoadRunConfig(TFile& file)
+{
+   // -- Attempt to navigate to the config file folder in supplied file and extract the runconfig
+   // -- Throw an exception if this cannot be done.
+   cout << "Attempting to load the RunConfig" << endl;
+   // Navigate to Config Folder   
+   if (file.cd(Folders::config.c_str()) == false) {
+      cerr << "No Folder named: " << Folders::config << " in data file" << endl;
+      throw runtime_error("Cannot find config folder");
+   }
+   TDirectory* const configDir = gDirectory;
+   // -- Loop over all objects in folder and extract latest RunConfig
+   RunConfig* ptr_config = NULL;
+   TKey *configKey;
+   TIter configIter(configDir->GetListOfKeys());
+   while ((configKey = dynamic_cast<TKey*>(configIter.Next()))) {
+      const char *classname = configKey->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("RunConfig")) {
+         ptr_config = dynamic_cast<RunConfig*>(configKey->ReadObj());
+         break;
+      }
+   }
+   cout << "-------------------------------------------" << endl;
+   cout << "Successfully Loaded RunConfig" << endl;
+   cout << "-------------------------------------------" << endl;
+   return *ptr_config;
 }
 
 //_____________________________________________________________________________
