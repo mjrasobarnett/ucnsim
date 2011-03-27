@@ -1049,7 +1049,7 @@ void Spins::PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDir
 }
 
 //_____________________________________________________________________________
-void Spins::PlotPhaseAngleSnapShots(vector<vector<Spins::Coords> >& phase_data, const unsigned int intervals)
+void Spins::PlotPhaseAngleSnapShots(vector<vector<Coords> >& phase_data, const unsigned int intervals)
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Plot phase snapshots
