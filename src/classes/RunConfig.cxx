@@ -122,7 +122,7 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    // -- Input Particles options
    // Name of state folder to load particles from
    string particlesToLoad = runConfigFile.GetString(RunParams::inputParticleState,"Particles");
-   if (Analysis::DataFile::ValidateStateNames(particlesToLoad) == false) {
+   if (Analysis::DataFile::IsValidStateName(particlesToLoad) == false) {
       throw runtime_error("Invalid InputParticleState specified in runconfig");
    }
    fNames.insert(NamePair(RunParams::inputParticleState, particlesToLoad));

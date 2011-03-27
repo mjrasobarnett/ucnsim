@@ -52,7 +52,7 @@ Int_t main(int argc, char **argv) {
    // valid state names
    vector<string> statenames;
    for (int i = 2; i < argc; i++) {statenames.push_back(argv[i]);}
-   if (Analysis::DataFile::ValidateStateNames(statenames) == false) {
+   if (Analysis::DataFile::IsValidStateName(statenames) == false) {
       cerr << "Error: statenames supplied are not valid" << endl;
       return EXIT_FAILURE;
    }

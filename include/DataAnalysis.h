@@ -28,8 +28,8 @@ namespace Analysis {
       //_____________________________________________________________________________
       bool ValidateRootFile(const std::string filename);
       //_____________________________________________________________________________
-      bool ValidateStateNames(const std::vector<std::string>& statenames);
-      bool ValidateStateNames(const std::string statename);
+      bool IsValidStateName(const std::vector<std::string>& statenames);
+      bool IsValidStateName(const std::string statename);
       //_____________________________________________________________________________
       void CountParticles(TDirectory * const particleDir);
    }

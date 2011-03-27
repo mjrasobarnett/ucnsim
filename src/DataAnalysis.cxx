@@ -142,7 +142,7 @@ bool DataFile::ValidateRootFile(const string filename)
    return false;
 }
 //_____________________________________________________________________________
-bool DataFile::ValidateStateNames(const vector<string>& statenames)
+bool DataFile::IsValidStateName(const vector<string>& statenames)
 {
    // -- Check that each statename in list is a valid state as defined
    // -- in DataFileHierarchy lvl 3 and is unique
@@ -171,7 +171,7 @@ bool DataFile::ValidateStateNames(const vector<string>& statenames)
    return true;
 }
 //_____________________________________________________________________________
-bool DataFile::ValidateStateNames(const string statename)
+bool DataFile::IsValidStateName(const string statename)
 {
    // -- Check that each statename in list is a valid state as defined
    // -- in DataFileHierarchy lvl 3 and is unique
