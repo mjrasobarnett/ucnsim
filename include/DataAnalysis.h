@@ -32,6 +32,8 @@ namespace Analysis {
       bool IsValidStateName(const std::string statename);
       //_____________________________________________________________________________
       void CountParticles(TDirectory * const particleDir);
+      //_____________________________________________________________________________
+      bool FetchStateDirectories(TFile& file, std::vector<std::string>& stateNames, std::vector<TDirectory*>& stateDirs);
    }
    
    //_____________________________________________________________________________

@@ -220,6 +220,33 @@ void DataFile::CountParticles(TDirectory * const particleDir)
 }
 
 //_____________________________________________________________________________
+bool DataFile::FetchStateDirectories(TFile& file, vector<string>& stateNames, vector<TDirectory*>& stateDirs)
+{   
+   // -- Navigate to and store folder for each selected state. Return false if any of the requested states
+   // -- were not found in the file
+   if (file.cd(Folders::particles.c_str()) == false) {
+      cerr << "Cannot locate Folder: " << Folders::particles << endl;
+      return false;
+   }
+   TDirectory* particleDir = gDirectory;
+   vector<string>::const_iterator stateIter;
+   for (stateIter = stateNames.begin(); stateIter != stateNames.end(); stateIter++) {
+      // Try to cd into state folder
+      if (particleDir->cd((*stateIter).c_str()) == false) {
+         cerr << "Error: State, " << *stateIter << " is not found in file" << endl;
+         return false;
+      }
+      // Store pointer to state folder
+      stateDirs.push_back(gDirectory);
+   }
+   cout << "-------------------------------------------" << endl;
+   cout << "Loading Particles from the Following states: ";
+   copy(stateNames.begin(),stateNames.end(),ostream_iterator<string>(cout,", "));
+   cout << endl;
+   cout << "-------------------------------------------" << endl;
+   return true;
+}
+
 double FitFunctions::SpinPrecession(double *x, double *par)
 {
    double t = x[0];
