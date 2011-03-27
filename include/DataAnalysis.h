@@ -71,8 +71,8 @@ namespace Analysis {
       void PlotT2(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig);
       //_____________________________________________________________________________
       void PlotPhaseAngleSnapShots(std::vector<std::vector<Spins::Coords> >& phase_data, const unsigned int intervals);
-      
-      
+      //_____________________________________________________________________________
+      bool CalculateT2(TFile& dataFile, std::vector<std::string> states, double& t2, double& t2error);
       //_____________________________________________________________________________
       TGraph* CreateAlphaGraph(std::vector<TDirectory*> stateDirs, double runTime, unsigned int intervals);
    }

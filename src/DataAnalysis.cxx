@@ -1084,6 +1084,61 @@ void Spins::PlotPhaseAngleSnapShots(vector<vector<Coords> >& phase_data, const u
 }
 
 //_____________________________________________________________________________
+bool Spins::CalculateT2(TFile& dataFile, std::vector<std::string> stateNames, double& t2, double& t2error)
+{
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Load the RunConfig into memory and store key parameters required
+   const RunConfig& runConfig = DataFile::LoadRunConfig(dataFile);
+   const double runTime = runConfig.RunTime();
+   const double spinMeasInterval = runConfig.SpinMeasureInterval();
+   if (spinMeasInterval <= 0 || runTime <= 0) {
+      cerr << "Invalid RunTime or SpinMeasInterval defined in RunConfig" << endl;
+      return false;
+   }
+   // Calculate number of measurement intervals from total runtime and length of spin measurement
+   const unsigned int intervals = 1 + runTime/spinMeasInterval;
+   cout << "Run Time: " << runTime << "\t";
+   cout << "Spin Measurement interval length: " << spinMeasInterval << endl;
+   cout << "Measurement intervals: " << intervals << endl;
+   // Make a list of the folders for each state to be included in analysis
+   vector<TDirectory*> stateDirs;
+   if (DataFile::FetchStateDirectories(dataFile, stateNames, stateDirs) == false) return false;
+   
+   TGraph* alphaT2 = Spins::CreateAlphaGraph(stateDirs, runTime, intervals);
+   // Draw graph
+   TDirectory* histDir = DataFile::NavigateToHistDir(dataFile);
+   histDir->cd();
+   TCanvas *alphaT2canvas = new TCanvas("Alpha T2","Alpha T2",60,0,1200,800);
+   alphaT2canvas->cd();
+   alphaT2->SetMarkerStyle(7);
+   alphaT2->Draw("AP");
+   alphaT2->GetXaxis()->SetTitle("Time (s)");
+   alphaT2->GetXaxis()->SetRangeUser(0.0,runTime);
+   alphaT2->GetYaxis()->SetTitle("Alpha");
+   alphaT2->GetYaxis()->SetRangeUser(-1.0,1.0);
+   alphaT2->SetTitle("T2 Polarisation");
+   // Write graph to file
+   int bytes = alphaT2->Write(alphaT2->GetName(),TObject::kOverwrite);
+   if (bytes == 0) {
+      cout << "Error: Failed to Write graph: " << alphaT2->GetName() << " to file" << endl;
+   } else {
+      cout << "Written graph: " << alphaT2->GetName() << " to file" << endl;
+   }
+   // Fit exponential to Graph
+   int numParams = 2;
+   TF1* expo = new TF1("Exponential", FitFunctions::ExponentialDecay, 0.0, runTime, numParams);
+   expo->SetParNames("Amplitude","Decay lifetime");
+   expo->SetParameters(1.0,1.0);
+   alphaT2->Fit(expo, "RQ");
+   // Extract T2
+   t2 = expo->GetParameter(1);
+   t2error = expo->GetParError(1);
+   // Clean up
+   delete alphaT2;
+   delete alphaT2canvas;
+   return true;
+}
+
 //_____________________________________________________________________________
 TGraph* Spins::CreateAlphaGraph(vector<TDirectory*> stateDirs, double runTime, unsigned int intervals)
 {
