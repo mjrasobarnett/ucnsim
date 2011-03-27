@@ -9,6 +9,7 @@
 class TDirectory;
 class TFile;
 class TGeoManager;
+class TGraph;
 
 class RunConfig;
 class Track;
@@ -72,6 +73,8 @@ namespace Analysis {
       void PlotPhaseAngleSnapShots(std::vector<std::vector<Spins::Coords> >& phase_data, const unsigned int intervals);
       
       
+      //_____________________________________________________________________________
+      TGraph* CreateAlphaGraph(std::vector<TDirectory*> stateDirs, double runTime, unsigned int intervals);
    }
    
    //_____________________________________________________________________________

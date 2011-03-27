@@ -1084,6 +1084,144 @@ void Spins::PlotPhaseAngleSnapShots(vector<vector<Coords> >& phase_data, const u
 }
 
 //_____________________________________________________________________________
+//_____________________________________________________________________________
+TGraph* Spins::CreateAlphaGraph(vector<TDirectory*> stateDirs, double runTime, unsigned int intervals)
+{
+   
+   
+   // Define name of combined states
+   string stateName = DataFile::ConcatenateStateNames(stateDirs);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Define Histograms
+   // Define axes of coordinate system
+   const TVector3 xAxis(1.0,0.0,0.0);
+   const TVector3 yAxis(0.0,1.0,0.0);
+   const TVector3 zAxis(0.0,0.0,1.0);      
+   //////////////////////////////////////////////////////////////////////////////////////
+   TH1F time_data("T2 Time Data","T2 Time Data", intervals, 0.0, runTime);
+   vector<vector<Coords> > phase_data;
+   TGraph* alphaT2 = new TGraph(intervals);
+   Char_t histname[40];
+   sprintf(histname,"%s:T2_Polarisation",stateName.c_str());
+   alphaT2->SetName(histname);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Loop over each state to be included in histogram
+   vector<TDirectory*>::const_iterator dirIter;
+   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
+      // -- cd into the State's folder
+      (*dirIter)->cd();
+      //////////////////////////////////////////////////////////////////////////////////////
+      // -- Loop over all particle folders in the current state's folder
+      TKey *folderKey;
+      TIter folderIter((*dirIter)->GetListOfKeys());
+      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
+         const char *classname = folderKey->GetClassName();
+         TClass *cl = gROOT->GetClass(classname);
+         if (!cl) continue;
+         if (cl->InheritsFrom("TDirectory")) {
+            // Loop over all objects in particle dir
+            (*dirIter)->cd(folderKey->GetName());
+            TDirectory* particleDir = gDirectory;
+            TKey *objKey;
+            TIter objIter(particleDir->GetListOfKeys());
+            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
+               // For Each object in the particle's directory, check its class name and what it
+               // inherits from to determine what to do.
+               classname = objKey->GetClassName();
+               cl = gROOT->GetClass(classname);
+               if (!cl) continue;
+               if (cl->InheritsFrom("SpinData")) {
+                  // -- Extract Spin Observer Data if recorded
+                  const SpinData* data = dynamic_cast<const SpinData*>(objKey->ReadObj());
+                  assert(data->size() == intervals);
+                  // Create storage for this particle's phase information
+                  vector<Coords> phases;
+                  // Loop over spin data recorded for particle
+                  SpinData::const_iterator dataIter;
+                  for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
+                     // Bin the time in the histogram 
+                     time_data.Fill(dataIter->first);
+                     // -- For a holding Field aligned along the X-Axis, we want to find the
+                     // -- phase of the spin in the Y-Z plane. 
+                     const Spin* spin = dataIter->second;
+                     // Calculate probability of spin up along Y axis
+                     double yprob = spin->CalculateProbSpinUp(yAxis);
+                     // Calculate probability of spin up along Z axis
+                     double zprob = spin->CalculateProbSpinUp(zAxis);
+                     // Remap probabilities, [0,1] into a unit vector in the y-z plane [-1,1] 
+                     double ycoord = (2.0*yprob - 1.0);
+                     double zcoord = (2.0*zprob - 1.0);
+                     // Calculate theta
+                     double theta = TMath::ATan2(zcoord,ycoord);
+                     // Store the current coordinates on the unit circle in the y-z plane
+                     Coords currentCoords;
+                     currentCoords.fSinTheta = ycoord;
+                     currentCoords.fCosTheta = zcoord;
+                     currentCoords.fTheta = theta;
+                     // Add set of y-z coords to list
+                     phases.push_back(currentCoords);
+                  }
+                  // Store particle's phases
+                  phase_data.push_back(phases);
+                  delete data;
+               }
+            }
+         }
+      }
+   }
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Plot snapshots of the particles phase distribution over time
+//    Analysis::Spins::PlotPhaseAngleSnapShots(phase_data,intervals);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Calculate the polarisation, alpha, at each measurement interval
+   cout << setw(12) << "IntervalNum" << "\t" << setw(12) << "Alpha";
+   cout << setw(12) << "Mean Phase" << "\t" << "Old Mean Phase" << endl;
+   for (unsigned int intervalNum = 0; intervalNum < intervals; intervalNum++) {
+      // -- Calculate the mean phase of the particles alpha.
+      // -- Because the angles are a circular quantity, distibuted usually from (-Pi, +Pi]
+      // -- we cannot just take the arithmetic mean of each particles angle. Instead to get a
+      // -- correct measure of the mean we first take the mean of the points on the unit-sphere
+      // -- eg: {cos(theta),sin(theta)}. Then the mean angle is just
+      // --          mean{theta} = atan2(mean{cos(theta)}/mean{sin(theta)})
+      double sumCosTheta = 0., sumSinTheta = 0., sumTheta = 0.;
+      for (unsigned int particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
+         assert(phase_data[particleIndex].size() == intervals);
+         sumCosTheta += phase_data[particleIndex][intervalNum].fCosTheta;
+         sumSinTheta += phase_data[particleIndex][intervalNum].fSinTheta;
+         sumTheta += phase_data[particleIndex][intervalNum].fTheta;
+      }
+      double meanCosTheta = sumCosTheta/phase_data.size();
+      double meanSinTheta = sumSinTheta/phase_data.size();
+      double meanPhase = TMath::ATan2(meanCosTheta, meanSinTheta);
+      // Calculate the number spin up and down based on phase difference
+      int numSpinUp = 0, numSpinDown = 0;
+      for (unsigned int particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
+         // Calculate the angle between each particle's phase and the mean phase
+         double phasediff = TMath::Abs(phase_data[particleIndex][intervalNum].fTheta - meanPhase);
+         double probSpinDown = TMath::Cos(phasediff);
+         if (gRandom->Uniform(0.,1.0) < probSpinDown) {
+            numSpinDown++;
+         } else {
+            numSpinUp++;
+         }
+      }
+      // Calculate polarisation at this time
+      double alpha = TMath::Abs(((double)(numSpinUp - numSpinDown)) / ((double)(numSpinUp + numSpinDown)));
+      double timebin = time_data.GetBinLowEdge(intervalNum);
+      // Add point to graph
+//      cout << setw(12) << intervalNum << "\t";
+//      cout << setw(12) << alpha << "\t";
+//      cout << setw(12) <<  meanPhase*180.0/TMath::Pi() << "\t";
+//      cout << setw(12) << meanTheta*180.0/TMath::Pi() << "\t";
+//      cout << setw(12) << meanCosTheta << "\t";
+//      cout << setw(12) << meanSinTheta << endl;
+      alphaT2->SetPoint(intervalNum, timebin, alpha);
+   }
+   return alphaT2;
+}
+
+
+//_____________________________________________________________________________
 void Bounces::PlotBounceCounters(TDirectory* const histDir, const vector<TDirectory*> stateDirs)
 {
    //////////////////////////////////////////////////////////////////////////////////////
