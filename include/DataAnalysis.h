@@ -36,6 +36,8 @@ namespace Analysis {
       bool FetchStateDirectories(TFile& file, std::vector<std::string>& stateNames, std::vector<TDirectory*>& stateDirs);
       //_____________________________________________________________________________
       std::string ConcatenateStateNames(std::vector<TDirectory*>& stateDirs);
+      //_____________________________________________________________________________
+      TDirectory* NavigateToHistDir(TFile& file);
    }
    
    //_____________________________________________________________________________

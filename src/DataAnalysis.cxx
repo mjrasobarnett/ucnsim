@@ -260,6 +260,20 @@ string DataFile::ConcatenateStateNames(vector<TDirectory*>& stateDirs)
    return stateName;
 }
 
+//_____________________________________________________________________________
+TDirectory* DataFile::NavigateToHistDir(TFile& file)
+{
+   // -- Create a Histogram Director if one doesn't already exist in File
+   TDirectory* histDir = NULL;
+   if (file.cd(Folders::histograms.c_str()) == false) {
+      histDir = file.mkdir(Folders::histograms.c_str());
+   } else {
+      histDir = gDirectory;
+   }
+   return histDir;
+}
+
+//_____________________________________________________________________________
 double FitFunctions::SpinPrecession(double *x, double *par)
 {
    double t = x[0];
