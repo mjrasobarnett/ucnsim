@@ -53,9 +53,6 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    // Get the section of the master config file containing this run's configfile and override params
    map<string,string> section = masterConfig.GetSection(runID.str());
    CheckForOverrideParameters(section);
-   // -----------------------------------
-   // Print properties
-   this->Print();
 }
 
 //__________________________________________________________________________
