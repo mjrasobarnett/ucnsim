@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include "ConfigFile.h"
+#include "Algorithms.h"
 
 //#define VERBOSE
 //#define PRINT_CONSTRUCTORS
@@ -172,83 +173,56 @@ bool ConfigFile::ReadKeyPair(const string &section, const string &line)
 }
 
 //_____________________________________________________________________________
-string ConfigFile::GetString(string key, string section, string defaultval) const
+string ConfigFile::GetString(string key, string sectionName, string defaultval) const
 {
-  string value = fStore.find(section)->second.find(key)->second;
-
-  if (value.size() == 0)
-    return defaultval;
-  else
-    return value;    
+   // If it exists, find the section named 'sectionName' 
+   map<string, map<string, string> >::const_iterator sectionIter = fStore.find(sectionName);
+   if (sectionIter == fStore.end()) return defaultval;
+   const map<string,string>& section = sectionIter->second;
+   // If it exists, find the option named 'key'
+   map<string, string>::const_iterator optionIter = section.find(key);
+   if (optionIter == section.end()) return defaultval;
+   // If the option existed, store its value (as a string)
+   string value = optionIter->second;
+   // If option is empty return defaultval
+   if (value.size() == 0) return defaultval;
+   return value;
 }
 
 //_____________________________________________________________________________
 int ConfigFile::GetInt(string key, string section, int defaultval) const
 {
-  string value = fStore.find(section)->second.find(key)->second;
-  if (value.size() == 0) return defaultval;
-  
-  // Attempt to read an integer out of this stream
-  istringstream iss (value);
-  int ival = 0;
-  iss >> ival;
-  
-  if (!iss.fail())
-  {
-    return ival;
-  } else {
-     cout << "GetInteger::Failed to read [ " << section << " ]. " << key;
-     cout << " = " << value << " as integer." << endl;
-    return defaultval;
-  }
+   string value = this->GetString(key, section);
+   if (value.size() == 0) return defaultval;
+   int returnval;
+   if (Algorithms::String::ConvertToInt(value, returnval) == false) {
+      return defaultval;
+   }
+   return returnval;
 }
 
 //_____________________________________________________________________________
 double ConfigFile::GetFloat(string key, string section, double defaultval) const
 {
-  string value = fStore.find(section)->second.find(key)->second;
-  if (value.size() == 0) return defaultval;
-  
-  // Attempt to read an integer out of this stream
-  istringstream iss (value);
-  double ival = 0.0;
-  iss >> ival;
-  
-  if (!iss.fail())
-  {
-    return ival;
-  } else {
-    cout << "GetFloat:: Failed to read [ " << section << " ]. " << key;
-    cout << " = " << value << " as float." << endl;
-    return defaultval;
-  }
+   string value = this->GetString(key, section);
+   if (value.size() == 0) return defaultval;
+   double returnval;
+   if (Algorithms::String::ConvertToDouble(value, returnval) == false) {
+      return defaultval;
+   }
+   return returnval;
 }
 
 //_____________________________________________________________________________
 bool ConfigFile::GetBool(string key, string section, bool defaultval) const
 {
-   string value = fStore.find(section)->second.find(key)->second;
+   string value = this->GetString(key, section);
    if (value.size() == 0) return defaultval;
-
-   // Now try to work out what it is
-   if (value == "True" || value == "true" || value == "TRUE" || value == "ON" || value == "On" || value == "on" || value == "YES" || value == "Yes" || value == "yes") return true;
-   if (value == "False" || value == "false" || value == "FALSE" || value == "OFF" || value == "Off" || value == "off" || value == "NO" || value == "No" || value == "no" ) return false;
-
-   // Try to convert to an integer, and see if it is non-zero
-   istringstream iss (value);
-   int ival = 0;
-   iss >> ival;
-
-   // It worked - just return the value
-   if (!iss.fail())
-   {
-    return ival;
+   bool returnval;
+   if (Algorithms::String::ConvertToBool(value, returnval) == false) {
+      return defaultval;
    }
-
-   // It failed..... give up here for now
-   cout << "GetBool::Failed to read [ " << section << " ]. " << key;
-   cout << " = " << value << " as bool." << endl;
-   return defaultval;
+   return returnval;
 }
 
 //_____________________________________________________________________________
