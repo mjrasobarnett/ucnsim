@@ -34,6 +34,8 @@ namespace Analysis {
       void CountParticles(TDirectory * const particleDir);
       //_____________________________________________________________________________
       bool FetchStateDirectories(TFile& file, std::vector<std::string>& stateNames, std::vector<TDirectory*>& stateDirs);
+      //_____________________________________________________________________________
+      std::string ConcatenateStateNames(std::vector<TDirectory*>& stateDirs);
    }
    
    //_____________________________________________________________________________

@@ -247,6 +247,19 @@ bool DataFile::FetchStateDirectories(TFile& file, vector<string>& stateNames, ve
    return true;
 }
 
+//_____________________________________________________________________________
+string DataFile::ConcatenateStateNames(vector<TDirectory*>& stateDirs)
+{
+   // -- Return a string made up of the names of each state in the supplied list of state folders
+   string stateName;
+   vector<TDirectory*>::const_iterator dirIter;
+   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
+      if (stateName.empty() == false) stateName.append("+");
+      stateName.append((*dirIter)->GetName());
+   }
+   return stateName;
+}
+
 double FitFunctions::SpinPrecession(double *x, double *par)
 {
    double t = x[0];
