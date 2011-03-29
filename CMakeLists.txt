@@ -10,7 +10,7 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")
 
 # We want to use ROOT. This sets up all the root variables we need
-find_package(Root REQUIRED)
+find_package(ROOT REQUIRED)
 find_package(GSL REQUIRED)
 find_package(Boost REQUIRED)
 

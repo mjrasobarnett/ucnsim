@@ -110,6 +110,5 @@ set (ROOT_CUSTOM_LIBRARIES Geom RGL Ged)
 set (UCNLIB_LIBRARIES ${GSL_LIBRARIES} ${ROOT_CUSTOM_LIBRARIES} ${ROOT_LIBRARIES})
 
 target_link_libraries(UCNLib ${UCNLIB_LIBRARIES} )
-target_link_libraries(UCNLib  )
 
 add_subdirectory(programs)
