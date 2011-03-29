@@ -65,4 +65,48 @@
 #pragma link C++ class UniformElecField+;
 #pragma link C++ class ElecFieldArray+;
 
+#pragma link C++ namespace Elements;
+#pragma link C++ namespace Materials;
+#pragma link C++ function Materials::BuildMaterials(TGeoManager*);
+
+#pragma link C++ namespace Algorithms;
+
+#pragma link C++ namespace Algorithms::Precision;
+#pragma link C++ function Algorithms::Precision::IsEqual(double,double,double);
+#pragma link C++ function Algorithms::Precision::IsNotEqual(double,double,double);
+#pragma link C++ function Algorithms::Precision::IsGreaterOrEqual(double,double,double);
+#pragma link C++ function Algorithms::Precision::IsLessOrEqual(double,double,double);
+
+#pragma link C++ namespace Algorithms::String;
+#pragma link C++ function Algorithms::String::ConvertToInt(const std::string, int&);
+#pragma link C++ function Algorithms::String::ConvertToBool(const std::string, bool&);
+#pragma link C++ function Algorithms::String::ConvertToDouble(const std::string, double&);
+
+#pragma link C++ namespace Algorithms::FileSystem;
+#pragma link C++ function Algorithms::FileSystem::ExpandShellVar(const std::string);
+#pragma link C++ function Algorithms::FileSystem::ExpandFilePath(const std::string);
+
+#pragma link C++ namespace Analysis;
+
+#pragma link C++ namespace Analysis::DataFile;
+#pragma link C++ function Analysis::DataFile::OpenRootFile(std::string,std::string);
+#pragma link C++ function Analysis::DataFile::LoadRunConfig(TFile&);
+#pragma link C++ function Analysis::DataFile::LoadGeometry(TFile&);
+#pragma link C++ function Analysis::DataFile::ValidateRootFile(const std::string);
+#pragma link C++ function Analysis::DataFile::IsValidStateName(const std::vector<std::string>&);
+#pragma link C++ function Analysis::DataFile::IsValidStateName(const std::string);
+#pragma link C++ function Analysis::DataFile::CountParticles(TDirectory* const);
+#pragma link C++ function Analysis::DataFile::FetchStateDirectories(TFile&, std::vector<std::string>&, std::vector<TDirectory*>&);
+#pragma link C++ function Analysis::DataFile::ConcatenateStateNames(std::vector<TDirectory*>&);
+#pragma link C++ function Analysis::DataFile::NavigateToHistDir(TFile&);
+
+#pragma link C++ namespace Analysis::FitFunctions;
+
+//#pragma link C++ namespace Analysis::Spins;
+//#pragma link C++ struct Analysis::Spins::Coords;
+
+#pragma link C++ namespace Analysis::Bounces;
+#pragma link C++ namespace Analysis::FinalStates;
+#pragma link C++ namespace Analysis::Tracks;
+
 #endif
