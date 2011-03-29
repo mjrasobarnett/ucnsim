@@ -12,6 +12,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")
 # We want to use ROOT. This sets up all the root variables we need
 find_package(Root REQUIRED)
 find_package(GSL REQUIRED)
+find_package(Boost REQUIRED)
 
 # Store the path to the include directory
 set(UCNLIB_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/include")
@@ -20,7 +21,8 @@ set(UCNLIB_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/include")
 set(INCLUDE_DIRECTORIES ${UCNLIB_INCLUDE_DIR}
                         "${CMAKE_CURRENT_LIST_DIR}/include/classes"
                         ${ROOT_INCLUDE_DIR}
-                        ${GSL_INCLUDE_DIR})
+                        ${GSL_INCLUDE_DIR}
+                        ${Boost_INCLUDE_DIRS})
 include_directories( ${INCLUDE_DIRECTORIES} )
 link_directories( ${ROOT_LIBRARY_DIR} ${GSL_LINK_DIRECTORIES})
 
