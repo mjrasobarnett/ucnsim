@@ -7,10 +7,10 @@
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
 
-#include "../include/Units.h"
-#include "../include/Constants.h"
-#include "../include/Materials.h"
-#include "../include/GeomParameters.h"
+#include "include/Units.h"
+#include "include/Constants.h"
+#include "include/Materials.h"
+#include "include/GeomParameters.h"
 
 Bool_t Build_Geom(const TGeoManager* geoManager);
 Bool_t Draw_Geom(const TGeoManager* geoManager);
