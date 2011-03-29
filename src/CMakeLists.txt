@@ -91,7 +91,6 @@ endforeach()
 #               "classes/${SOURCEFILE}" )
 # endforeach()
 
-message(STATUS "Cur SD: ${CMAKE_CURRENT_SOURCE_DIR}")
 # 
 # # Generate the root dictionary for all of these
 set( UCNLIB_DICT UCNLibDict.cxx )
