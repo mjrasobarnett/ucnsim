@@ -475,7 +475,7 @@ void FinalStates::PlotFinalStates(TDirectory* const histDir, const vector<TDirec
 }
 
 //_____________________________________________________________________________
-void Spins::PlotSpinPolarisation(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig) 
+void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig) 
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into Histogram's dir
@@ -792,7 +792,7 @@ void Spins::PlotSpinPolarisation(TDirectory* const histDir, const vector<TDirect
 }
 
 //_____________________________________________________________________________
-void Spins::PlotField(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig)
+void Polarisation::PlotField(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig)
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into Histogram's dir
@@ -887,7 +887,7 @@ void Spins::PlotField(TDirectory* const histDir, const vector<TDirectory*> state
 }
 
 //_____________________________________________________________________________
-void Spins::PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig)
+void Polarisation::PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig)
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd into Histogram's dir
@@ -984,7 +984,7 @@ void Spins::PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDir
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Plot snapshots of the particles phase distribution over time
-//    Analysis::Spins::PlotPhaseAngleSnapShots(phase_data,intervals);
+//    Analysis::Polarisation::PlotPhaseAngleSnapShots(phase_data,intervals);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Calculate the polarisation, alpha, at each measurement interval
    histDir->cd();
@@ -1048,8 +1048,8 @@ void Spins::PlotT2(TDirectory* const histDir, const vector<TDirectory*> stateDir
    return;
 }
 
-//_____________________________________________________________________________
-void Spins::PlotPhaseAngleSnapShots(vector<vector<Coords> >& phase_data, const unsigned int intervals)
+/*//_____________________________________________________________________________
+void Polarisation::PlotPhaseAngleSnapShots(vector<vector<Coords> >& phase_data, const unsigned int intervals)
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Plot phase snapshots
@@ -1082,9 +1082,9 @@ void Spins::PlotPhaseAngleSnapShots(vector<vector<Coords> >& phase_data, const u
    }
    return;
 }
-
+*/
 //_____________________________________________________________________________
-bool Spins::CalculateT2(TFile& dataFile, std::vector<std::string> stateNames, double& t2, double& t2error)
+bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNames, double& t2, double& t2error)
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Load the RunConfig into memory and store key parameters required
@@ -1104,7 +1104,7 @@ bool Spins::CalculateT2(TFile& dataFile, std::vector<std::string> stateNames, do
    vector<TDirectory*> stateDirs;
    if (DataFile::FetchStateDirectories(dataFile, stateNames, stateDirs) == false) return false;
    
-   TGraph* alphaT2 = Spins::CreateAlphaGraph(stateDirs, runTime, intervals);
+   TGraph* alphaT2 = Polarisation::CreateAlphaGraph(stateDirs, runTime, intervals);
    // Draw graph
    TDirectory* histDir = DataFile::NavigateToHistDir(dataFile);
    histDir->cd();
@@ -1140,7 +1140,7 @@ bool Spins::CalculateT2(TFile& dataFile, std::vector<std::string> stateNames, do
 }
 
 //_____________________________________________________________________________
-TGraph* Spins::CreateAlphaGraph(vector<TDirectory*> stateDirs, double runTime, unsigned int intervals)
+TGraph* Polarisation::CreateAlphaGraph(vector<TDirectory*> stateDirs, double runTime, unsigned int intervals)
 {
    
    
@@ -1226,7 +1226,7 @@ TGraph* Spins::CreateAlphaGraph(vector<TDirectory*> stateDirs, double runTime, u
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Plot snapshots of the particles phase distribution over time
-//    Analysis::Spins::PlotPhaseAngleSnapShots(phase_data,intervals);
+//    Analysis::Polarisation::PlotPhaseAngleSnapShots(phase_data,intervals);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Calculate the polarisation, alpha, at each measurement interval
    cout << setw(12) << "IntervalNum" << "\t" << setw(12) << "Alpha";

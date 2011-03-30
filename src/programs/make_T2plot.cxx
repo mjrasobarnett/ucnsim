@@ -106,7 +106,7 @@ Int_t main(int argc, char **argv) {
    cout << "-------------------------------------------" << endl;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Polarisation
-   Analysis::Spins::PlotT2(histDir, stateDirs, runConfig);
+   Analysis::Polarisation::PlotT2(histDir, stateDirs, runConfig);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
    cout << "Finished" << endl;

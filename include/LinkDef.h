@@ -102,8 +102,14 @@
 
 #pragma link C++ namespace Analysis::FitFunctions;
 
-//#pragma link C++ namespace Analysis::Spins;
-//#pragma link C++ struct Analysis::Spins::Coords;
+#pragma link C++ namespace Analysis::Polarisation;
+#pragma link C++ struct Analysis::Polarisation::Coords;
+#pragma link C++ function Analysis::Polarisation::PlotSpinPolarisation(TDirectory* const, const std::vector<TDirectory*>, const RunConfig&);
+#pragma link C++ function Analysis::Polarisation::PlotField(TDirectory* const, const std::vector<TDirectory*> , const RunConfig&);
+#pragma link C++ function Analysis::Polarisation::PlotT2(TDirectory* const, const std::vector<TDirectory*>, const RunConfig&);
+#pragma link C++ function Analysis::Polarisation::CalculateT2(TFile&, std::vector<std::string>, double&, double&);
+#pragma link C++ fucntion Analysis::Polarisation::CreateAlphaGraph(std::vector<TDirectory*>, double, unsigned int);
+//#pragma link C++ function Analysis::Polarisation::PlotPhaseAngleSnapShots(std::vector<std::vector<Analysis::Polarisation::Coords> >& , const unsigned int );
 
 #pragma link C++ namespace Analysis::Bounces;
 #pragma link C++ namespace Analysis::FinalStates;

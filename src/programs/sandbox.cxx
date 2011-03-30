@@ -82,7 +82,7 @@ Int_t calculate_T2(string configFileName, vector<string> stateNames) {
       TFile* dataFile = Analysis::DataFile::OpenRootFile(dataFileName, "UPDATE");
       // Calculate T2 for this run
       double t2 = 0., t2error = 0.;
-      if (Analysis::Spins::CalculateT2(*dataFile, stateNames, t2, t2error) == false) {
+      if (Analysis::Polarisation::CalculateT2(*dataFile, stateNames, t2, t2error) == false) {
          cerr << "Failed to calculate T2 for datafile: " << dataFileName << endl;
          return -1;
       }

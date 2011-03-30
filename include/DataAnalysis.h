@@ -54,27 +54,26 @@ namespace Analysis {
    //_____________________________________________________________________________
    // Namespace holding functions relevant to datafile structure
    //_____________________________________________________________________________
-   namespace Spins {
-      //_____________________________________________________________________________
-      void PlotSpinPolarisation(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig);
-      //_____________________________________________________________________________
-      void PlotField(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig);
-      
+   namespace Polarisation {
       //_____________________________________________________________________________
       typedef struct {
          double fCosTheta;
          double fSinTheta;
          double fTheta;
       } Coords;
-      
+      //_____________________________________________________________________________
+      void PlotSpinPolarisation(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig);
+      //_____________________________________________________________________________
+      void PlotField(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig);
       //_____________________________________________________________________________
       void PlotT2(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig);
-      //_____________________________________________________________________________
-      void PlotPhaseAngleSnapShots(std::vector<std::vector<Spins::Coords> >& phase_data, const unsigned int intervals);
       //_____________________________________________________________________________
       bool CalculateT2(TFile& dataFile, std::vector<std::string> states, double& t2, double& t2error);
       //_____________________________________________________________________________
       TGraph* CreateAlphaGraph(std::vector<TDirectory*> stateDirs, double runTime, unsigned int intervals);
+      //_____________________________________________________________________________
+      //void PlotPhaseAngleSnapShots(std::vector<std::vector<Coords> >& phase_data, const unsigned int intervals);
+      
    }
    
    //_____________________________________________________________________________

@@ -97,7 +97,7 @@ Int_t main(int argc, char **argv)
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Polarisation
    if (runConfig.ObserveSpin() == kTRUE) {
-      Analysis::Spins::PlotSpinPolarisation(histDir, stateDirs, runConfig);
+      Analysis::Polarisation::PlotSpinPolarisation(histDir, stateDirs, runConfig);
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounce Data
@@ -112,7 +112,7 @@ Int_t main(int argc, char **argv)
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Track History
    if (runConfig.ObserveField() == kTRUE) {
-      Analysis::Spins::PlotField(histDir, stateDirs, runConfig);
+      Analysis::Polarisation::PlotField(histDir, stateDirs, runConfig);
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
