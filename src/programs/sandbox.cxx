@@ -51,9 +51,9 @@ Int_t main(Int_t argc,Char_t ** argv)
       cerr << "Error: statenames supplied are not valid" << endl;
       return EXIT_FAILURE;
    }
-   TRint *theApp = new TRint("FittingApp", NULL, NULL);
+//   TRint *theApp = new TRint("FittingApp", NULL, NULL);
    calculate_T2(configFileName, stateNames);
-   theApp->Run();
+//   theApp->Run();
    return EXIT_SUCCESS;
 }
 
@@ -70,6 +70,8 @@ Int_t calculate_T2(string configFileName, vector<string> stateNames) {
       cerr << "Cannot read valid number of runs from ConfigFile: " << numberOfRuns << endl;
       return -1;
    }
+   // Make T2 graph
+   TGraphErrors* graph = new TGraphErrors(numberOfRuns);
    ///////////////////////////////////////////////////////////////////////////////////////
    // Loop over runs specified in ConfigFile
    for (int runNum = 1; runNum <= numberOfRuns; runNum++) {
@@ -86,9 +88,26 @@ Int_t calculate_T2(string configFileName, vector<string> stateNames) {
       }
       // Add T2 to graph
       cout << "T2: " << t2 << "\t" << "Error: " << t2error << endl;
+      graph->SetPoint(runNum-1, runNum, t2);
+      graph->SetPointError(runNum-1, 0, t2error);
+      // Close File
+      dataFile->Close();
+      delete dataFile;
    }
    ///////////////////////////////////////////////////////////////////////////////////////
    // Draw Graph
-   
+   TCanvas* canvas = new TCanvas("Phase","Phase",60,0,1200,800);
+   canvas->cd();
+   graph->SetMarkerStyle(8);
+   graph->Draw("AP");
+   graph->GetXaxis()->SetTitle("Config Num");
+   graph->GetYaxis()->SetTitle("T2 (s)");
+   graph->GetYaxis()->SetRangeUser(0.0, 20.0);
+   graph->SetTitle("T2");
+   // Write canvas to file
+   canvas->SaveAs("t2.png");
+   // Clean up graph
+   delete graph;
+   delete canvas;
    return 0;
 }
