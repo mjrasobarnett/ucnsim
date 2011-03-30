@@ -6,7 +6,7 @@
 
 #include "DataAnalysis.h"
 
-#include "TRoot.h"
+#include "TROOT.h"
 #include "TFile.h"
 #include "TDirectory.h"
 #include "TKey.h"
