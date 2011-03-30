@@ -196,7 +196,7 @@ Bool_t BuildFieldMap(const TGeoHMatrix& matrix)
    MagFieldArray* magFieldArray = new MagFieldArray();
    magFieldArray->AddField(field);
    
-   // Elec Field
+/*   // Elec Field
    // Define shape of field
    TGeoShape* elecFieldShape = new Tube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
    // Define transformation that locates field in geometry
@@ -206,21 +206,21 @@ Bool_t BuildFieldMap(const TGeoHMatrix& matrix)
    // Add field to electric field manager
    ElecFieldArray* elecFieldArray = new ElecFieldArray();
    elecFieldArray->AddField(elecField);
-   
+*/   
    // -- Write magfieldmanager to geometry file
-   const char *magFileName = "$(UCN_GEOM)/fields.root";
+   const char *magFileName = "runs/ramseycell/fieldmap/scv/corrected/config5/fields_config5.root";
    TFile *f = TFile::Open(magFileName,"recreate");
    if (!f || f->IsZombie()) {
      Error("BuildFieldMap","Cannot open file: %s", magFileName);
      return kFALSE;
    }
    magFieldArray->Write(magFieldArray->GetName());
-   elecFieldArray->Write(elecFieldArray->GetName());
+//   elecFieldArray->Write(elecFieldArray->GetName());
    f->ls();
    f->Close();
    delete magFieldArray;
-   delete elecFieldArray;
+//   delete elecFieldArray;
    magFieldArray = 0;
-   elecFieldArray = 0;
+//   elecFieldArray = 0;
    return kTRUE;
 }
