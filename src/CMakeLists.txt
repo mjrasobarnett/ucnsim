@@ -94,10 +94,13 @@ endforeach()
 # 
 # # Generate the root dictionary for all of these
 set( UCNLIB_DICT UCNLibDict.cxx )
+
+set(UCNLIB_COMBINED_HEADERS ${UCNLIB_INCLUDE_DIR} ${UCNLIB_INCLUDE_DIR}/classes)
+
 ROOT_GENERATE_DICTIONARY("${UCNLIB_DICT_HEADERS_LONG}"
                         "${UCNLIB_LINKDEF}"
                         "${UCNLIB_DICT}"
-                        "${INCLUDE_DIRECTORIES}")
+                        "${UCNLIB_COMBINED_HEADERS}")
 
 # Add the library. The header files aren't required, however doing so
 # lets the IDE's know that they are related
