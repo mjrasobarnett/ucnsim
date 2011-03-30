@@ -71,7 +71,9 @@ set(UCNLIB_DICT_HEADERS   classes/Box.h classes/Tube.h classes/Material.h
                           classes/Point.h classes/Observable.h
                           classes/Clock.h classes/UniformElecField.h
                           classes/ElecFieldArray.h Algorithms.h
-                          Materials.h DataAnalysis.h )
+                          Constants.h DataAnalysis.h
+                          DataFileHierarchy.h GeomParameters.h
+                          Materials.h Units.h )
                         
 # Append the source directory to each of these, so we have a direct link
 # This is because the project layout is a bit weird and I don't know the
