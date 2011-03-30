@@ -68,7 +68,7 @@ Int_t main(Int_t argc,Char_t **argv)
    }
    // Start 'the app' -- this is so we are able to enter into a ROOT session
    // after the program has run, instead of just quitting.
-   TRint *theApp = new TRint("FittingApp", &argc, argv);
+   TRint *theApp = new TRint("FittingApp", NULL, NULL);
    // Read in Batch Configuration file to find the Initial Configuration File
    ConfigFile configFile(configFileName);
    ///////////////////////////////////////////////////////////////////////////////////////
