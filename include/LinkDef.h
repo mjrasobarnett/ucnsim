@@ -112,7 +112,13 @@
 //#pragma link C++ function Analysis::Polarisation::PlotPhaseAngleSnapShots(std::vector<std::vector<Analysis::Polarisation::Coords> >& , const unsigned int );
 
 #pragma link C++ namespace Analysis::Bounces;
+#pragma link C++ fucntion Analysis::Bounces::PlotBounceCounters(TDirectory* const, const std::vector<TDirectory*>);
+
 #pragma link C++ namespace Analysis::FinalStates;
+#pragma link C++ fucntion Analysis::FinalStates::PlotFinalStates(TDirectory* const, const std::vector<TDirectory*>, const RunConfig&, TGeoManager&);
+
 #pragma link C++ namespace Analysis::Tracks;
+#pragma link C++ function Analysis::Tracks::PlotParticleHistories(TDirectory* const, const std::vector<TDirectory*>, TGeoManager&);
+#pragma link C++ function Analysis::Tracks::CalculateParticleHistory(const Track&, TGeoManager&);
 
 #endif
