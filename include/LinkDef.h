@@ -3,6 +3,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+// ----------------------------------------------------------------------
+// -- Classes
 #pragma link C++ class Run+;
 #pragma link C++ class Experiment+;
 #pragma link C++ class FieldManager+;
@@ -34,7 +36,6 @@
 #pragma link C++ class Field+;
 #pragma link C++ class MagField+;
 #pragma link C++ class UniformMagField+;
-//#pragma link C++ class ParabolicMagField+;
 #pragma link C++ class ConfigFile+;
 #pragma link C++ class CompositeShape+;
 #pragma link C++ class BoolNode+;
@@ -65,10 +66,14 @@
 #pragma link C++ class UniformElecField+;
 #pragma link C++ class ElecFieldArray+;
 
+// ----------------------------------------------------------------------
+// -- Elements and Materials Namespaces are used for defining common material properties
 #pragma link C++ namespace Elements;
 #pragma link C++ namespace Materials;
 #pragma link C++ function Materials::BuildMaterials(TGeoManager*);
 
+// ----------------------------------------------------------------------
+// -- Algorithms namespace contains a number of useful functions relevant project-wide
 #pragma link C++ namespace Algorithms;
 
 #pragma link C++ namespace Algorithms::Precision;
@@ -86,6 +91,8 @@
 #pragma link C++ function Algorithms::FileSystem::ExpandShellVar(const std::string);
 #pragma link C++ function Algorithms::FileSystem::ExpandFilePath(const std::string);
 
+// ----------------------------------------------------------------------
+// -- The Analysis namespace (and its sub-namespaces) contains functions relevant for Data-Analysis-type tasks
 #pragma link C++ namespace Analysis;
 
 #pragma link C++ namespace Analysis::DataFile;
@@ -120,5 +127,6 @@
 #pragma link C++ namespace Analysis::Tracks;
 #pragma link C++ function Analysis::Tracks::PlotParticleHistories(TDirectory* const, const std::vector<TDirectory*>, TGeoManager&);
 #pragma link C++ function Analysis::Tracks::CalculateParticleHistory(const Track&, TGeoManager&);
+// ----------------------------------------------------------------------
 
 #endif
