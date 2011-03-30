@@ -11,7 +11,7 @@ if [[ `uname -n` == "MJRasoBarnett.local" ]] ; then
 	export UCN_DIR=${HOME}/Projects/ucnsim/source
 	export UCN_GEOM=${UCN_DIR}/geom
 	export UCN_RUNS=${UCN_DIR}/runs
-	export PATH=${UCN_DIR}/bin:${PATH}
+	export PATH=${UCN_DIR}/build:${PATH}
 	# Define path to ROOT installation
 	if [[ -z "${ROOTSYS}" ]] ; then
 		export ROOTSYS=${HOME}/Apps/ROOT/root
