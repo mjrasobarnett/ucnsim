@@ -22,7 +22,6 @@ class Material : public TGeoMaterial
 protected:
    TObjArray*  fElements;
    Double_t    fFermiPotential;
-   Double_t    fWPotential;
    Double_t    fLossFactor;
    
 public:
@@ -31,17 +30,15 @@ public:
    Material();
    Material(const char *name, Element* elem, Double_t density);
    Material(const Material&);
-   Material& operator=(const Material&);
    
    // -- destructor
    virtual ~Material();
    
    // -- methods
-   Bool_t       AddElement(Element* element, Double_t density);
    Double_t     FermiPotential() const {return fFermiPotential;}
    void         FermiPotential(Double_t fermiPotential) {fFermiPotential = fermiPotential;}
-   Double_t     WPotential() const {return fWPotential;}
-   void         WPotential(Double_t wPotential) {fWPotential = wPotential;}
+   Double_t     WPotential() const {return fLossFactor*fFermiPotential;}
+   void         WPotential(Double_t wPotential) {fLossFactor = wPotential/fFermiPotential;}
    Double_t     LossFactor() const {return fLossFactor;}
    void         LossFactor(Double_t lossFactor) {fLossFactor = lossFactor;}
       
