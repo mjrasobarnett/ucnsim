@@ -150,22 +150,34 @@ namespace Materials
       static const Double_t lithium6 = 0.534*Units::g/Units::cm3;
       static const Double_t heliumII = 0.125*Units::g/Units::ml;
       static const Double_t vacuum = 0.0*Units::g/Units::cm3;
+      
+      // See Bodek et al. Storage of ultracold neutrons in high resistivity... Nuc. Inst. and Meth. (2008)
+      static const Double_t ptfe = 2.18*Units::g/Units::cm3;
+      static const Double_t quartz = 2.31*Units::g/Units::cm3;
    }
    
    namespace FermiPotential {
       // List of Experimentally determined fermi potentials
       // Useful for large discrepancies between experiment and theoretical prediction
+      static const Double_t ptfe = 123.0*Units::neV;
+      static const Double_t quartz = 95.0*Units::neV;
    }
    
    namespace WPotential {
       // List of Experimentally determined Loss potentials
       // Useful for large discrepancies between experiment and theoretical prediction
+      
    }
    
    namespace LossFactor {
       // List of Experimentally determined Loss potentials
       // Useful for large discrepancies between experiment and theoretical prediction
       static const Double_t beryllium = 2.0E-4;
+      
+      // See Golub Lamoreaux, UCN Book, 
+      static const Double_t ptfe = 0.0;
+      // See Bodek et al. Storage of ultracold neutrons in high resistivity... Nuc. Inst. and Meth. (2008)
+      static const Double_t quartz = 4.0E-4;
    }
    
    //_____________________________________________________________________________

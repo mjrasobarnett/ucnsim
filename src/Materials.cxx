@@ -110,6 +110,52 @@ Bool_t Materials::BuildMaterials(TGeoManager* geoManager) {
    cout << "LossFactor: " << matAluminium->LossFactor() << endl;
    cout << "---------------------------------" << endl;
    */
+   // - PTFE
+   Element* elemPTFE = new Element("PTFE", 0., 0., 0., 0., 0., 0.);
+   Material* matPTFE = new Material("PTFE", elemPTFE, Densities::ptfe);
+   TGeoMedium* ptfe = new TGeoMedium("PTFE", 1, matPTFE);
+   // Set Beryllium Loss factor to the experimentally determined value
+   matPTFE->FermiPotential(FermiPotential::ptfe);
+   matPTFE->LossFactor(LossFactor::ptfe);
+   cout << std::setw(15) << ptfe->GetName() << "\t";
+   cout << std::setw(15) << matPTFE->FermiPotential()/Units::neV << "\t";
+   cout << std::setw(15) << matPTFE->LossFactor() << endl;
+   /*
+   cout << "---------------------------------" << endl;
+   cout << "Density (kg/m^3): " <<  << endl;
+   cout << "Coherent Cross Sec: " << ->CoherentCrossSec() << endl;
+   cout << "InCoh Cross Sec: " << ->InCoherentCrossSec() << endl;
+   cout << "Scat Length: " << ->ScatLength() << endl;
+   cout << "Abs Cross Sec: " << ->AbsorbtionCrossSec() << endl;
+   cout << "Loss Cross Sec: " << ->LossCrossSec() << endl;
+   cout << "V_f: " << ->FermiPotential() << endl;
+   cout << "W: " << ->WPotential() << endl;
+   cout << "LossFactor: " << ->LossFactor() << endl;
+   cout << "---------------------------------" << endl;
+   */
+   // - Quartz
+   Element* elemQuartz = new Element("Quartz", 0., 0., 0., 0., 0., 0.);
+   Material* matQuartz = new Material("Quartz", elemQuartz, Densities::quartz);
+   TGeoMedium* quartz = new TGeoMedium("Quartz", 1, matQuartz);
+   // Set Beryllium Loss factor to the experimentally determined value
+   matQuartz->FermiPotential(FermiPotential::quartz);
+   matQuartz->LossFactor(LossFactor::quartz);
+   cout << std::setw(15) << quartz->GetName() << "\t";
+   cout << std::setw(15) << matQuartz->FermiPotential()/Units::neV << "\t";
+   cout << std::setw(15) << matQuartz->LossFactor() << endl;
+   /*
+   cout << "---------------------------------" << endl;
+   cout << "Density (kg/m^3): " <<  << endl;
+   cout << "Coherent Cross Sec: " << ->CoherentCrossSec() << endl;
+   cout << "InCoh Cross Sec: " << ->InCoherentCrossSec() << endl;
+   cout << "Scat Length: " << ->ScatLength() << endl;
+   cout << "Abs Cross Sec: " << ->AbsorbtionCrossSec() << endl;
+   cout << "Loss Cross Sec: " << ->LossCrossSec() << endl;
+   cout << "V_f: " << ->FermiPotential() << endl;
+   cout << "W: " << ->WPotential() << endl;
+   cout << "LossFactor: " << ->LossFactor() << endl;
+   cout << "---------------------------------" << endl;
+   */
    //________________________________________
    // TRACKING MATERIALS
    // - HeliumII
