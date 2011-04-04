@@ -145,10 +145,21 @@ namespace GeomParameters {
    const Double_t detectorTubeYPos = valveVolYPos;
    const Double_t detectorTubeZPos = detectorTubeTopZPos - detectorTubeTopHalfLength - detectorTubeHalfLength;
    
+   // -- Detector Tube Bottom
+   const Double_t detectorTubeBottomRMin = 15.0*Units::mm;
+   const Double_t detectorTubeBottomRMax = 27.85*Units::mm;
+   const Double_t detectorTubeBottomHalfLength = 5.*Units::mm;
+   const Double_t detectorTubeBottomPhi = 0.0;
+   const Double_t detectorTubeBottomTheta = 0.0;
+   const Double_t detectorTubeBottomPsi = 0.0;
+   const Double_t detectorTubeBottomXPos = detectorValveVolXPos;
+   const Double_t detectorTubeBottomYPos = valveVolYPos;
+   const Double_t detectorTubeBottomZPos = detectorTubeZPos - detectorTubeHalfLength - detectorTubeBottomHalfLength;
+   
    // -- Detector
    const Double_t detectorRMin = 0.;
-   const Double_t detectorRMax = 27.85*Units::mm;
-   const Double_t detectorHalfLength = 5.*Units::mm;
+   const Double_t detectorRMax = 15.0*Units::mm;
+   const Double_t detectorHalfLength = 5.0*Units::mm;
    const Double_t detectorPhi = 0.0;
    const Double_t detectorTheta = 0.0;
    const Double_t detectorPsi = 0.0;
