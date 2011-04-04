@@ -73,6 +73,8 @@ namespace Analysis {
       TGraph* CreateAlphaGraph(std::vector<TDirectory*> stateDirs, double runTime, unsigned int intervals);
       //_____________________________________________________________________________
       //void PlotPhaseAngleSnapShots(std::vector<std::vector<Coords> >& phase_data, const unsigned int intervals);
+      //_____________________________________________________________________________
+      bool PlotT2_vs_Runs(const std::string configFileName, const std::string statename);
       
    }
    

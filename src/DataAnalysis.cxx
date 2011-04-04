@@ -14,6 +14,7 @@
 #include "TGeoManager.h"
 #include "TF1.h"
 #include "TGraph.h"
+#include "TGraphErrors.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TPolyMarker3D.h"
@@ -28,6 +29,7 @@
 #include "TGLPerspectiveCamera.h"
 
 #include "Particle.h"
+#include "ConfigFile.h"
 #include "RunConfig.h"
 #include "SpinData.h"
 #include "BounceData.h"
@@ -1275,6 +1277,65 @@ TGraph* Polarisation::CreateAlphaGraph(vector<TDirectory*> stateDirs, double run
    return alphaT2;
 }
 
+//_____________________________________________________________________________
+bool Polarisation::PlotT2_vs_Runs(string configFileName, string statename)
+{
+   // Read in list of states to be included in histogram and check that they are valid state names
+   vector<string> stateNames;
+   stateNames.push_back(statename);
+   if (Analysis::DataFile::IsValidStateName(stateNames) == false) {
+      cerr << "Error: statenames supplied are not valid" << endl;
+      return false;
+   }
+   // Build the ConfigFile
+   ConfigFile configFile(configFileName);
+   // Fetch the Number of Runs
+   const int numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
+   if (numberOfRuns < 1) {
+      cerr << "Cannot read valid number of runs from ConfigFile: " << numberOfRuns << endl;
+      return false;
+   }
+   // Make T2 graph
+   TGraphErrors* graph = new TGraphErrors(numberOfRuns);
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // Loop over runs specified in ConfigFile
+   for (int runNum = 1; runNum <= numberOfRuns; runNum++) {
+      // Load Run Config for this run
+      RunConfig runConfig(configFile, runNum);
+      // Fetch this run's Data file
+      const string dataFileName = runConfig.OutputFileName();
+      TFile* dataFile = Analysis::DataFile::OpenRootFile(dataFileName, "UPDATE");
+      // Calculate T2 for this run
+      double t2 = 0., t2error = 0.;
+      if (Analysis::Polarisation::CalculateT2(*dataFile, stateNames, t2, t2error) == false) {
+         cerr << "Failed to calculate T2 for datafile: " << dataFileName << endl;
+         return false;
+      }
+      // Add T2 to graph
+      cout << "T2: " << t2 << "\t" << "Error: " << t2error << endl;
+      graph->SetPoint(runNum-1, runNum, t2);
+      graph->SetPointError(runNum-1, 0, t2error);
+      // Close File
+      dataFile->Close();
+      delete dataFile;
+   }
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // Draw Graph
+   TCanvas* canvas = new TCanvas("Phase","Phase",60,0,1200,800);
+   canvas->cd();
+   graph->SetMarkerStyle(8);
+   graph->Draw("AP");
+   graph->GetXaxis()->SetTitle("Config Num");
+   graph->GetYaxis()->SetTitle("T2 (s)");
+   graph->GetYaxis()->SetRangeUser(0.0, 20.0);
+   graph->SetTitle("T2");
+   // Write canvas to file
+   canvas->SaveAs("t2.png");
+   // Clean up graph
+   delete graph;
+   delete canvas;
+   return true;
+}
 
 //_____________________________________________________________________________
 void Bounces::PlotBounceCounters(TDirectory* const histDir, const vector<TDirectory*> stateDirs)
