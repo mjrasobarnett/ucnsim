@@ -7,10 +7,10 @@
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
 
-#include "../include/Units.h"
-#include "../include/Constants.h"
-#include "../include/Materials.h"
-#include "../include/GeomParameters.h"
+#include "include/Units.h"
+#include "include/Constants.h"
+#include "include/Materials.h"
+#include "include/GeomParameters.h"
 
 Bool_t Build_Geom(const TGeoManager* geoManager);
 Bool_t Draw_Geom(const TGeoManager* geoManager);
@@ -367,7 +367,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -- TGeoShape downcasting problems in TGeoPainter. The geometry that is left becomes
    // --  the visualisation geometry used for drawing
    // First replace the composite shapes in the geometry
-   TGeoCompositeShape *valveVolShapeVis = new TGeoCompositeShape("ValveVolVis",                                    "(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
+   TGeoCompositeShape *valveVolShapeVis = new TGeoCompositeShape("ValveVolVis","(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
    valveVol->SetShape(valveVolShapeVis);
    
    TGeoCompositeShape* bendShapeVis = new TGeoCompositeShape("BendShapeVis","(CircleBend * BendBox:BendBoxMatrix)");
