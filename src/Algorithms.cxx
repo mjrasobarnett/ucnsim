@@ -128,6 +128,9 @@ string FileSystem::ExpandFilePath(const string path)
       // Check fullpath for any more shell variables to expand
       start_pos = fullpath.find_first_of("$");
    }
+   // Finally check that final character is a '/' command, as this path serves as
+   // a prefix to be able to locate specific files in this folder
+   if (strcmp(&fullpath.at(fullpath.length() - 1), "/") != 0) {fullpath.append("/");}
    #ifdef VERBOSE
       cout << "Full path: " << fullpath << endl;
    #endif
