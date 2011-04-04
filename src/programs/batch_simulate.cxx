@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "ConfigFile.h"
 #include "Algorithms.h"
@@ -47,7 +48,8 @@ Int_t main(Int_t argc, Char_t **argv)
    for (int runNum = 1; runNum <= numberOfRuns; runNum++) {
       // Get the current run name and check that a section for this run exists in the config file
       ostringstream runName;
-      runName << "Run" << runNum;
+      boost::gregorian::date today_date(boost::gregorian::day_clock::local_day());
+      runName << today_date << "_Run" << runNum;
       map<string,string> section = configFile.GetSection(runName.str());
       if (section.empty()) {
          cerr << "Error: Could not find Section - " << runName.str() << endl;
