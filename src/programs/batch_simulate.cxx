@@ -55,7 +55,8 @@ Int_t main(Int_t argc, Char_t **argv)
       }
       // Format a string that will specify the qsub command we wish to issue on feynman
       // that will submit a job
-      string script = Algorithms::FileSystem::ExpandFilePath("$UCN_DIR/scripts/submit_job.sh");
+      string script = Algorithms::FileSystem::ExpandFilePath("$UCN_DIR");
+      script += "/scripts/submit_job.sh";
       ostringstream command;
       command << "qsub -q " << queueName << ".q ";
       command << "-N " << runName.str() << " ";
