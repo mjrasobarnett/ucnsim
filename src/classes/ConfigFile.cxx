@@ -33,8 +33,11 @@ ConfigFile::ConfigFile(string filename)
     // All is well, read the file in!
     ReadFile(cfg); 
    } else {
-    // Print an error message if we were trying to open a file
-    if (filename != "") {throw runtime_error("Could not read configuration file.");}
+      // Print an error message if we were trying to open a file
+      if (filename != "") {
+         cout << "Could not open file: " << filename << endl;
+         throw runtime_error("Could not read configuration file");
+      }
    }
    /// Otherwise, we are blank! Nothing more needs to be done....
 }
