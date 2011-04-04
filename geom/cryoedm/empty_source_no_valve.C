@@ -18,7 +18,7 @@ Bool_t Draw_Geom(const TGeoManager* geoManager);
 using namespace GeomParameters;
 
 //__________________________________________________________________________
-Int_t cryoedm_empty_source()
+Int_t empty_source_no_valve()
 {
    // Create the geoManager
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
@@ -311,7 +311,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out geometry to file
-   const char *fileName = "$(UCN_GEOM)/cryoedm_empty_source.root";
+   const char *fileName = "$(UCN_GEOM)/empty_source_no_valve.root";
    cout << "Simulation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    
@@ -329,7 +329,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out visualisation geometry to file
-   const char *visFileName = "$(UCN_GEOM)/cryoedm_empty_source_vis.root";
+   const char *visFileName = "$(UCN_GEOM)/empty_source_no_valve_vis.root";
    cout << "Visualisation Geometry Built... Writing to file: " << visFileName << endl;
    geoManager->Export(visFileName);
    
