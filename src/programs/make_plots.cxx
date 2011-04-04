@@ -49,14 +49,6 @@ Int_t main(int argc, char **argv)
    // -- Open Data File
    //////////////////////////////////////////////////////////////////////////////////////
    TFile* file = Analysis::DataFile::OpenRootFile(filename,"UPDATE");
-   // Navigate to Particle States Folder
-   TDirectory * const topDir = gDirectory;
-   if (topDir->cd(Folders::particles.c_str()) == false) {
-      cerr << "No Folder named: " << Folders::particles << " in data file" << endl;
-      return EXIT_FAILURE;
-   }
-   TDirectory * const particleDir = gDirectory;
-   Analysis::DataFile::CountParticles(particleDir);
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////
@@ -64,33 +56,20 @@ Int_t main(int argc, char **argv)
    ///////////////////////////////////////////////////////////////////////////////////////
    TGeoManager& geoManager = Analysis::DataFile::LoadGeometry(*file);
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Create a Histogram Director if one doesn't already exist in File
-   TDirectory* histDir = topDir->mkdir(Folders::histograms.c_str());
-   if (histDir == NULL) {
-      // histogram folder already exists
-      topDir->cd(Folders::histograms.c_str());
-      histDir = gDirectory;
-   }
-   //////////////////////////////////////////////////////////////////////////////////////
    // -- Navigate to and store folder for each selected state
    //////////////////////////////////////////////////////////////////////////////////////
-   particleDir->cd();
    vector<TDirectory*> stateDirs;
-   vector<string>::const_iterator stateIter;
-   for (stateIter = statenames.begin(); stateIter != statenames.end(); stateIter++) {
-      // Try to cd into state folder
-      if (particleDir->cd((*stateIter).c_str()) == kFALSE) {
-         cout << "Error: State, " << *stateIter << " is not found in file" << endl;
-         return EXIT_FAILURE;
-      }
-      // Store pointer to state folder
-      stateDirs.push_back(gDirectory);
+   if (Analysis::DataFile::FetchStateDirectories(*file, statenames, stateDirs) == false) {
+      return EXIT_FAILURE;
    }
-   cout << "-------------------------------------------" << endl;
-   cout << "Loading Particles from the Following states: ";
-   copy(statenames.begin(),statenames.end(),ostream_iterator<string>(cout,", "));
-   cout << endl;
-   cout << "-------------------------------------------" << endl;
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Create a Histogram Director if one doesn't already exist in File
+   TDirectory* histDir = file->mkdir(Folders::histograms.c_str());
+   if (histDir == NULL) {
+      // histogram folder already exists
+      file->cd(Folders::histograms.c_str());
+      histDir = gDirectory;
+   }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Particle final state
    Analysis::FinalStates::PlotFinalStates(histDir, stateDirs, runConfig, geoManager);
