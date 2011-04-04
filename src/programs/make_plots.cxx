@@ -116,7 +116,6 @@ Int_t main(int argc, char **argv)
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
-   file->ls();
    cout << "Finished" << endl;
    theApp->Run();
    return EXIT_SUCCESS;
