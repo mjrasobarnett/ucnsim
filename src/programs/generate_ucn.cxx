@@ -250,7 +250,9 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
    glViewer->SetCurrentCamera(camera);
    glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   Double_t cameraCentre[3] = {0,0,0};
+   // -- Set Camera centre to Centre of the Beam
+   const TVector3 beamCentre = initialConfig.BeamDisplacement();
+   Double_t cameraCentre[3] = {beamCentre.X(),beamCentre.Y(),beamCentre.Z()};
    glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
    // -- Draw Reference Point, Axes
    Double_t refPoint[3] = {0.,0.,0.};
