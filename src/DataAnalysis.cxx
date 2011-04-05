@@ -477,6 +477,86 @@ void FinalStates::PlotFinalStates(TDirectory* const histDir, const vector<TDirec
 }
 
 //_____________________________________________________________________________
+bool FinalStates::PlotEmptyingTime(const vector<TDirectory*> stateDirs, const RunConfig& runConfig, const double lLimit, const double uLimit)
+{
+   //////////////////////////////////////////////////////////////////////////////////////
+   Char_t histname[40];
+   // -- Count total Neutrons, and define name of combined states
+   string stateName = DataFile::ConcatenateStateNames(stateDirs);
+   int total_neutrons = 0;
+   vector<TDirectory*>::const_iterator dirIter;
+   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
+      total_neutrons += (*dirIter)->GetNkeys();
+   }
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Run Time
+   const double runTime = runConfig.RunTime();
+   sprintf(histname,"%s:Time",stateName.c_str());
+   TH1F* timeHist = new TH1F(histname,"Time: Units of s", ((int)runTime), 0.0, runTime);
+   timeHist->SetXTitle("Time (s)");
+   timeHist->SetYTitle("Neutrons");
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Loop over each state to be included in histogram
+   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
+      // -- cd into the State's folder
+      (*dirIter)->cd();
+      //////////////////////////////////////////////////////////////////////////////////////
+      // -- Loop over all particle folders in the current state's folder
+      TKey *folderKey;
+      TIter folderIter((*dirIter)->GetListOfKeys());
+      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
+         const char *classname = folderKey->GetClassName();
+         TClass *cl = gROOT->GetClass(classname);
+         if (!cl) continue;
+         if (cl->InheritsFrom("TDirectory")) {
+            // Loop over all objects in particle dir
+            (*dirIter)->cd(folderKey->GetName());
+            TDirectory* particleDir = gDirectory;
+            TKey *objKey;
+            TIter objIter(particleDir->GetListOfKeys());
+            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
+               // For Each object in the particle's directory, check its class name and what it
+               // inherits from to determine what to do.
+               classname = objKey->GetClassName();
+               cl = gROOT->GetClass(classname);
+               if (!cl) continue;
+               if (cl->InheritsFrom("Particle")) {
+                  // -- Extract Final Particle State Data
+                  Particle* particle = dynamic_cast<Particle*>(objKey->ReadObj());
+                  // -- Fill Histograms
+                  timeHist->Fill(particle->T());
+                  delete particle;
+               }
+            }
+         }
+      }
+   }
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Draw Histograms
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Time Distribution
+   TCanvas *timecanvas = new TCanvas("Times","Final Time (s)",60,0,600,600);
+   timecanvas->cd();
+   timeHist->Draw("E1");
+   
+   // Fit exponential to Graph
+   int numParams = 2;
+   TF1* expo = new TF1("Exponential", FitFunctions::ExponentialDecay, lLimit, uLimit, numParams);
+   expo->SetParNames("Amplitude","Decay lifetime");
+   expo->SetParameters(1.0,1.0);
+   timeHist->Fit(expo, "R 0");
+   expo->Draw("SAME");
+   // Extract Emptying Time
+   double t2 = expo->GetParameter(1);
+   double t2error = expo->GetParError(1);
+   
+   cout << "Emptying Lifetime: " << t2 << "\t Error: " << t2error << endl;
+   
+   timecanvas->SaveAs("lifetime.root");
+   return true;
+}
+
+//_____________________________________________________________________________
 void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig) 
 {
    //////////////////////////////////////////////////////////////////////////////////////

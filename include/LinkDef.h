@@ -124,6 +124,7 @@
 
 #pragma link C++ namespace Analysis::FinalStates;
 #pragma link C++ function Analysis::FinalStates::PlotFinalStates(TDirectory* const, const std::vector<TDirectory*>, const RunConfig&, TGeoManager&);
+#pragma link C++ function Analysis::FinalStates::PlotEmptyingTime(std::vector<TDirectory*>,const RunConfig&,const double,const double);
 
 #pragma link C++ namespace Analysis::Tracks;
 #pragma link C++ function Analysis::Tracks::PlotParticleHistories(TDirectory* const, const std::vector<TDirectory*>, TGeoManager&);

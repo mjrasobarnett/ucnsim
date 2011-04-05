@@ -93,6 +93,8 @@ namespace Analysis {
    namespace FinalStates {
       //_____________________________________________________________________________
       void PlotFinalStates(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig, TGeoManager& geoManager);
+      //_____________________________________________________________________________
+      bool PlotEmptyingTime(const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig, const double lLimit, const double uLimit);   
    }
    
    //_____________________________________________________________________________
