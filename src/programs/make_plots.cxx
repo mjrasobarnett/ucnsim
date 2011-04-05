@@ -44,7 +44,7 @@ Int_t main(int argc, char **argv)
       return EXIT_FAILURE;
    }
    // Start an interactive root session so we can view the plots as they are made
-   TRint *theApp = new TRint("FittingApp", &argc, argv);
+   TRint *theApp = new TRint("FittingApp", NULL, NULL);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Open Data File
    //////////////////////////////////////////////////////////////////////////////////////
