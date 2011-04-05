@@ -299,13 +299,11 @@ void FinalStates::PlotFinalStates(TDirectory* const histDir, const vector<TDirec
    histDir->cd();
    Char_t histname[40];
    // -- Count total Neutrons, and define name of combined states
+   string stateName = DataFile::ConcatenateStateNames(stateDirs);
    int total_neutrons = 0;
-   string stateName;
    vector<TDirectory*>::const_iterator dirIter;
    for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
       total_neutrons += (*dirIter)->GetNkeys();
-      if (stateName.empty() == false) stateName += "/";
-      stateName += (*dirIter)->GetName();
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Final Positions
