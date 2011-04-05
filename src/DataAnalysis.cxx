@@ -744,43 +744,12 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinXcanvas->cd(1);
    spinUpAlongXHist->Draw();
    spinUpAlongXHist->Write(spinUpAlongXHist->GetName(),TObject::kOverwrite);
-   //   spinUpHist->GetYaxis()->SetRangeUser(0.0,200.0);
-   //   TF1 *upprecession = new TF1("UpSpinPrecessionFunc", SpinPrecession, 0.0, 20., 3);
-   //   upprecession->SetParameters(150.0,1.0,0.0);
-   //   upprecession->SetParNames("Amplitude","Omega (rad/s)","Phase (Pi/2)");
-   //   spinUpHist->Fit(upprecession, "RQ");
-   //   double upamplitude = upprecession->GetParameter(0);
-   //   double upomega = upprecession->GetParameter(1);
-   //   double upphase = upprecession->GetParameter(2);
-   //   cout << "------------------------------------" << endl;
-   //   cout << "Spin Up:" << endl;
-   //   cout << "Amplitude: " << upamplitude << "\t" << "Omega: " << upomega;
-   //   cout << "\t" << "Phase: " << upphase << endl;
-   //   cout << "------------------------------------" << endl;
    spinXcanvas->cd(2);
    spinDownAlongXHist->Draw();
    spinDownAlongXHist->Write(spinDownAlongXHist->GetName(),TObject::kOverwrite);
-   //   spinDownHist->GetYaxis()->SetRangeUser(0.0,200.0);
-   //   TF1 *downprecession = new TF1("DownSpinPrecessionFunc", SpinPrecession, 0.0, 20., 3);
-   //   downprecession->SetParameters(150.0,1.0,0.0);
-   //   downprecession->SetParNames("Amplitude","Omega (rad/s)","Phase (Pi/2)");
-   //   spinDownHist->Fit(downprecession, "RQ");
-   //   double downamplitude = downprecession->GetParameter(0);
-   //   double downomega = downprecession->GetParameter(1);
-   //   double downphase = downprecession->GetParameter(2);
-   //   cout << "------------------------------------" << endl;
-   //   cout << "Spin Down:" << endl;
-   //   cout << "Amplitude: " << downamplitude << "\t" << "Omega: " << downomega;
-   //   cout << "\t" << "Phase: " << downphase << endl;   
-   //   cout << "------------------------------------" << endl; 
    spinXcanvas->cd(3);
    spinUpDownAlongXHist->Draw();
    spinUpDownAlongXHist->Write(spinUpDownAlongXHist->GetName(),TObject::kOverwrite);
-   //   TLegend* leg = new TLegend(0.7,0.91,0.9,0.99); //coordinates are fractions of pad dimensions
-   //   leg->SetFillColor(0);
-   //   leg->AddEntry(spinUpHist,"Spin Up"); // l means line, p shows marker
-   //   leg->AddEntry(spinDownHist,"Spin Down");
-   //   leg->Draw();
    spinXcanvas->cd(4);
    // Calculate polarisation
    assert(spinUpAlongXHist->GetNbinsX() == nbins);
@@ -802,14 +771,49 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinAlphaX->GetYaxis()->SetRangeUser(-1.0,1.0);
    spinAlphaX->SetTitle("Polarisation along X");
    spinAlphaX->Write(spinAlphaX->GetName(),TObject::kOverwrite);
-   
+
    TCanvas *spinYcanvas = new TCanvas("SpinAlongY","Spin Polarisation Along Y",60,0,1200,800);
    spinYcanvas->Divide(2,2);
    spinYcanvas->cd(1);
    spinUpAlongYHist->Draw();
+//   spinUpAlongYHist->GetXaxis()->SetRangeUser(0.0,0.05);
+//   spinUpAlongYHist->GetYaxis()->SetRangeUser(0.0,1000.0);
+//   TF1 *upprecession = new TF1("UpSpinPrecessionFunc", FitFunctions::SpinPrecession, 0.0, 0.05, 3);
+//   upprecession->SetParameters(1000.0,400.0,1.0);
+//   upprecession->SetParNames("Amplitude","Omega (rad/s)","Phase (Pi/2)");
+//   spinUpAlongYHist->Fit(upprecession, "R 0");
+//   upprecession->Draw("SAME");
+//   double upamplitude = upprecession->GetParameter(0);
+//   double upomega = upprecession->GetParameter(1);
+//   double upphase = upprecession->GetParameter(2);
+//   cout << "------------------------------------" << endl;
+//   cout << "Spin Up:" << endl;
+//   cout << "Amplitude: " << upamplitude << "\t" << "Omega: " << upomega;
+//   cout << "\t" << "Phase: " << upphase << endl;
+//   cout << "------------------------------------" << endl;
    spinUpAlongYHist->Write(spinUpAlongYHist->GetName(),TObject::kOverwrite);
    spinYcanvas->cd(2);
    spinDownAlongYHist->Draw();
+//   spinDownAlongYHist->GetXaxis()->SetRangeUser(0.0,0.05);
+//   spinDownAlongYHist->GetYaxis()->SetRangeUser(0.0,1000.0);
+//   TF1 *downprecession = new TF1("DownSpinPrecessionFunc", FitFunctions::SpinPrecession, 0.0, 0.05, 3);
+//   downprecession->SetParameters(1000.0,400.0,0.0);
+//   downprecession->SetParNames("Amplitude","Omega (rad/s)","Phase (Pi/2)");
+//   spinDownAlongYHist->Fit(downprecession, "R 0");
+//   downprecession->Draw("SAME");
+//   double downamplitude = downprecession->GetParameter(0);
+//   double downomega = downprecession->GetParameter(1);
+//   double downphase = downprecession->GetParameter(2);
+//   cout << "------------------------------------" << endl;
+//   cout << "Spin Down:" << endl;
+//   cout << "Amplitude: " << downamplitude << "\t" << "Omega: " << downomega;
+//   cout << "\t" << "Phase: " << downphase << endl;   
+//   cout << "------------------------------------" << endl;
+//   TLegend* leg = new TLegend(0.7,0.91,0.9,0.99); //coordinates are fractions of pad dimensions
+//  leg->SetFillColor(0);
+//   leg->AddEntry(spinUpAlongYHist,"Spin Up"); // l means line, p shows marker
+//   leg->AddEntry(spinDownAlongYHist,"Spin Down");
+//   leg->Draw("SAME");
    spinDownAlongYHist->Write(spinDownAlongYHist->GetName(),TObject::kOverwrite);
    spinYcanvas->cd(3);
    spinUpDownAlongYHist->Draw();
