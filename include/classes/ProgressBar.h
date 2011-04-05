@@ -28,7 +28,7 @@ namespace ProgressBar {
        Float_t fract = ceil(nEntries/20.);  
        if (ceil(((Float_t)entry)/fract)==((Float_t)entry)/fract)
        {
-           cout 
+           cerr 
              <<"Fraction of loop complete: "<<entry 
              <<"/"<<nEntries<<"  ("
              <<(Int_t)(100.*entry/nEntries)<<"%)"<<endl;
@@ -81,7 +81,7 @@ namespace ProgressBar {
 
        // Work out when the next bar will occur
        nextbar = (Int_t)((Float_t)(numeq+1)/(Float_t)barlen*nEntries);
-       //cout << "Next bar at: " << nextbar << "        " << endl;
+       //cerr << "Next bar at: " << nextbar << "        " << endl;
        bar = TString('=', numeq);
        bar += TString(' ', barlen - numeq);
      } else if (entry > nEntries) {
@@ -112,14 +112,14 @@ namespace ProgressBar {
        ETA << std::setfill('0') << std::setw(2) << mins << ":" << std::setw(2) << seconds;
      }
 
-     cout << " Progress: [" << bar << "] "
+     cerr << " Progress: [" << bar << "] "
           << std::setw(countlen) << entry << "/" << nEntries
           << " " << ETA.str()
           << '\r'
           << std::flush;
      // Move to the next line, if this is the final entry!
      if (entry == nEntries) {
-       cout << endl;
+       cerr << endl;
      }
    }
    
