@@ -250,7 +250,7 @@ bool DataFile::FetchStateDirectories(TFile& file, vector<string>& stateNames, ve
 }
 
 //_____________________________________________________________________________
-string DataFile::ConcatenateStateNames(vector<TDirectory*>& stateDirs)
+string DataFile::ConcatenateStateNames(const vector<TDirectory*>& stateDirs)
 {
    // -- Return a string made up of the names of each state in the supplied list of state folders
    string stateName;
