@@ -1068,7 +1068,7 @@ void Polarisation::PlotT2(TDirectory* const histDir, const vector<TDirectory*> s
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Plot snapshots of the particles phase distribution over time
-//    Analysis::Polarisation::PlotPhaseAngleSnapShots(phase_data,intervals);
+   Analysis::Polarisation::PlotPhaseAngleSnapShots(phase_data,intervals);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Calculate the polarisation, alpha, at each measurement interval
    histDir->cd();
@@ -1132,8 +1132,8 @@ void Polarisation::PlotT2(TDirectory* const histDir, const vector<TDirectory*> s
    return;
 }
 
-/*//_____________________________________________________________________________
-void Polarisation::PlotPhaseAngleSnapShots(vector<vector<Coords> >& phase_data, const unsigned int intervals)
+//_____________________________________________________________________________
+void Polarisation::PlotPhaseAngleSnapShots(vector<vector<Polarisation::Coords> >& phase_data, const unsigned int intervals)
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Plot phase snapshots
@@ -1166,7 +1166,7 @@ void Polarisation::PlotPhaseAngleSnapShots(vector<vector<Coords> >& phase_data, 
    }
    return;
 }
-*/
+
 //_____________________________________________________________________________
 bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNames, double& t2, double& t2error)
 {
