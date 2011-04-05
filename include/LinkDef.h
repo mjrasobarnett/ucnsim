@@ -115,15 +115,15 @@
 #pragma link C++ function Analysis::Polarisation::PlotField(TDirectory* const, const std::vector<TDirectory*> , const RunConfig&);
 #pragma link C++ function Analysis::Polarisation::PlotT2(TDirectory* const, const std::vector<TDirectory*>, const RunConfig&);
 #pragma link C++ function Analysis::Polarisation::CalculateT2(TFile&, std::vector<std::string>, double&, double&);
-#pragma link C++ fucntion Analysis::Polarisation::CreateAlphaGraph(std::vector<TDirectory*>, double, unsigned int);
+#pragma link C++ function Analysis::Polarisation::CreateAlphaGraph(std::vector<TDirectory*>, double, unsigned int);
 //#pragma link C++ function Analysis::Polarisation::PlotPhaseAngleSnapShots(std::vector<std::vector<Analysis::Polarisation::Coords> >& , const unsigned int );
 #pragma link C++ function Analysis::Polarisation::PlotT2_vs_Runs(const std::string, const std::string);
 
 #pragma link C++ namespace Analysis::Bounces;
-#pragma link C++ fucntion Analysis::Bounces::PlotBounceCounters(TDirectory* const, const std::vector<TDirectory*>);
+#pragma link C++ function Analysis::Bounces::PlotBounceCounters(TDirectory* const, const std::vector<TDirectory*>);
 
 #pragma link C++ namespace Analysis::FinalStates;
-#pragma link C++ fucntion Analysis::FinalStates::PlotFinalStates(TDirectory* const, const std::vector<TDirectory*>, const RunConfig&, TGeoManager&);
+#pragma link C++ function Analysis::FinalStates::PlotFinalStates(TDirectory* const, const std::vector<TDirectory*>, const RunConfig&, TGeoManager&);
 
 #pragma link C++ namespace Analysis::Tracks;
 #pragma link C++ function Analysis::Tracks::PlotParticleHistories(TDirectory* const, const std::vector<TDirectory*>, TGeoManager&);
