@@ -1069,8 +1069,6 @@ bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNa
 //_____________________________________________________________________________
 TGraph* Polarisation::CreateT2AlphaGraph(vector<TDirectory*> stateDirs, double runTime, unsigned int intervals)
 {
-   
-   
    // Define name of combined states
    string stateName = DataFile::ConcatenateStateNames(stateDirs);
    //////////////////////////////////////////////////////////////////////////////////////
