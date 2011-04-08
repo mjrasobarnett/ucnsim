@@ -1059,6 +1059,7 @@ bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNa
    // Extract T2
    t2 = expo->GetParameter(1);
    t2error = expo->GetParError(1);
+   cout << "T2: " << t2 << "\t Error: " << t2error << endl;
    // Clean up
    delete alphaT2;
    delete alphaT2canvas;
