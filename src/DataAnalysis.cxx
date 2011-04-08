@@ -975,6 +975,8 @@ void Polarisation::PlotPhaseAngleSnapShots(vector<vector<Polarisation::Coords> >
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Plot phase snapshots
+   cout << "Plotting Phase Angle Snapshots - Setting ROOT to Batch mode" << endl;
+   gROOT->SetBatch(true);
    for (unsigned int intervalNum = 0; intervalNum < intervals; intervalNum++) {
       TCanvas *phaseCanvas = new TCanvas("Phase","Phase",60,0,1200,800);
       phaseCanvas->cd();
@@ -1002,6 +1004,8 @@ void Polarisation::PlotPhaseAngleSnapShots(vector<vector<Polarisation::Coords> >
       delete phaseCanvas;
       delete nextHistogram;
    }
+   cout << "Finished Phase Angle Snapshots - Ending Batch mode" << endl;
+   gROOT->SetBatch(false);
    return;
 }
 
