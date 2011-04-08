@@ -1026,7 +1026,7 @@ bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNa
    vector<TDirectory*> stateDirs;
    if (DataFile::FetchStateDirectories(dataFile, stateNames, stateDirs) == false) return false;
    
-   TGraph* alphaT2 = Polarisation::CreateAlphaGraph(stateDirs, runTime, intervals);
+   TGraph* alphaT2 = Polarisation::CreateT2AlphaGraph(stateDirs, runTime, intervals);
    // Draw graph
    TDirectory* histDir = DataFile::NavigateToHistDir(dataFile);
    histDir->cd();
@@ -1062,7 +1062,7 @@ bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNa
 }
 
 //_____________________________________________________________________________
-TGraph* Polarisation::CreateAlphaGraph(vector<TDirectory*> stateDirs, double runTime, unsigned int intervals)
+TGraph* Polarisation::CreateT2AlphaGraph(vector<TDirectory*> stateDirs, double runTime, unsigned int intervals)
 {
    
    
