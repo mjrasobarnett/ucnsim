@@ -66,8 +66,6 @@ namespace Analysis {
       //_____________________________________________________________________________
       void PlotField(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig);
       //_____________________________________________________________________________
-      void PlotT2(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig);
-      //_____________________________________________________________________________
       bool CalculateT2(TFile& dataFile, std::vector<std::string> states, double& t2, double& t2error);
       //_____________________________________________________________________________
       TGraph* CreateAlphaGraph(std::vector<TDirectory*> stateDirs, double runTime, unsigned int intervals);

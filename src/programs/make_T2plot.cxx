@@ -106,7 +106,9 @@ Int_t main(int argc, char **argv) {
    cout << "-------------------------------------------" << endl;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Polarisation
-   Analysis::Polarisation::PlotT2(histDir, stateDirs, runConfig);
+   double t2 = 0;
+   double t2error = 0.;
+   Analysis::Polarisation::CalculateT2(*file, statenames, t2, t2error);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
    cout << "Finished" << endl;
