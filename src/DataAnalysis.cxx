@@ -1152,7 +1152,7 @@ TGraph* Polarisation::CreateT2AlphaGraph(vector<TDirectory*> stateDirs, double r
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Plot snapshots of the particles phase distribution over time
-//    Analysis::Polarisation::PlotPhaseAngleSnapShots(phase_data,intervals);
+   Analysis::Polarisation::PlotPhaseAngleSnapShots(phase_data,intervals);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Calculate the polarisation, alpha, at each measurement interval
    cout << setw(12) << "IntervalNum" << "\t" << setw(12) << "Alpha";
