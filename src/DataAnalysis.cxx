@@ -1187,6 +1187,11 @@ TGraph* Polarisation::CreateT2AlphaGraph(vector<TDirectory*> stateDirs, double r
                      // Remap probabilities, [0,1] into a unit vector in the y-z plane [-1,1] 
                      double ycoord = (2.0*yprob - 1.0);
                      double zcoord = (2.0*zprob - 1.0);
+                     // Normalize vector
+                     double mag = ycoord*ycoord + zcoord*zcoord;
+                     assert(Algorithms::Precision::IsNotEqual(mag,0.0));
+                     ycoord = ycoord/mag;
+                     zcoord = zcoord/mag;
                      // Calculate theta
                      double theta = TMath::ATan2(zcoord,ycoord);
                      // Store the current coordinates on the unit circle in the y-z plane
