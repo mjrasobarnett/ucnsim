@@ -27,6 +27,7 @@
 #include "TGLViewer.h"
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
+#include "TLine.h"
 
 #include "Particle.h"
 #include "ConfigFile.h"
@@ -1047,6 +1048,10 @@ void Polarisation::PlotPhaseAngleSnapShots(vector<vector<Polarisation::Coords> >
          nextHistogram->Fill(theta*180.0/TMath::Pi());
       }
       nextHistogram->Draw();
+      // Draw a line to mark where the mean phase is on each histogram
+      double meanPhase = Polarisation::CalculateMeanPhase(phase_data, intervalNum);
+      TLine line(meanPhase*180.0/TMath::Pi(), 0.0, meanPhase*180.0/TMath::Pi(), 100);
+      line.Draw("SAME");
       // Write histogram to file
       string filepath = "images/";
       string filename = filepath + nextHistogram->GetName();
