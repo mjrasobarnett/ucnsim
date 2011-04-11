@@ -1208,36 +1208,8 @@ TGraph* Polarisation::CreateT2AlphaGraph(vector<TDirectory*> stateDirs, double r
    cout << setw(12) << "IntervalNum" << "\t" << setw(12) << "Alpha";
    cout << setw(12) << "Mean Phase" << "\t" << "Old Mean Phase" << endl;
    for (unsigned int intervalNum = 0; intervalNum < intervals; intervalNum++) {
-      // -- Calculate the mean phase of the particles alpha.
-      // -- Because the angles are a circular quantity, distibuted usually from (-Pi, +Pi]
-      // -- we cannot just take the arithmetic mean of each particles angle. Instead to get a
-      // -- correct measure of the mean we first take the mean of the points on the unit-sphere
-      // -- eg: {cos(theta),sin(theta)}. Then the mean angle is just
-      // --          mean{theta} = atan2(mean{cos(theta)}/mean{sin(theta)})
-      double sumCosTheta = 0., sumSinTheta = 0., sumTheta = 0.;
-      for (unsigned int particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
-         assert(phase_data[particleIndex].size() == intervals);
-         sumCosTheta += phase_data[particleIndex][intervalNum].fCosTheta;
-         sumSinTheta += phase_data[particleIndex][intervalNum].fSinTheta;
-         sumTheta += phase_data[particleIndex][intervalNum].fTheta;
-      }
-      double meanCosTheta = sumCosTheta/phase_data.size();
-      double meanSinTheta = sumSinTheta/phase_data.size();
-      double meanPhase = TMath::ATan2(meanCosTheta, meanSinTheta);
-      // Calculate the number spin up and down based on phase difference
-      int numSpinUp = 0, numSpinDown = 0;
-      for (unsigned int particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
-         // Calculate the angle between each particle's phase and the mean phase
-         double phasediff = TMath::Abs(phase_data[particleIndex][intervalNum].fTheta - meanPhase);
-         double probSpinDown = TMath::Cos(phasediff);
-         if (gRandom->Uniform(0.,1.0) < probSpinDown) {
-            numSpinDown++;
-         } else {
-            numSpinUp++;
-         }
-      }
-      // Calculate polarisation at this time
-      double alpha = TMath::Abs(((double)(numSpinUp - numSpinDown)) / ((double)(numSpinUp + numSpinDown)));
+      double meanPhase = Polarisation::CalculateMeanPhase(phase_data, intervalNum);
+      double alpha = Polarisation::CalculateAlpha(phase_data, intervalNum, meanPhase);
       double timebin = time_data.GetBinLowEdge(intervalNum);
       // Add point to graph
 //      cout << setw(12) << intervalNum << "\t";
