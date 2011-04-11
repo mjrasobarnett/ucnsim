@@ -73,6 +73,8 @@ namespace Analysis {
       void PlotPhaseAngleSnapShots(std::vector<std::vector<Analysis::Polarisation::Coords> >& phase_data, const unsigned int intervals);
       //_____________________________________________________________________________
       bool PlotT2_vs_Runs(const std::string configFileName, const std::string statename);
+      //_____________________________________________________________________________
+      double CalculateMeanPhase(std::vector<std::vector<Analysis::Polarisation::Coords> >& phase_data, const unsigned int intervalNum);
       
    }
    

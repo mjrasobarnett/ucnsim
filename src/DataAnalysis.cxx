@@ -971,6 +971,26 @@ void Polarisation::PlotField(TDirectory* const histDir, const vector<TDirectory*
 }
 
 //_____________________________________________________________________________
+double Polarisation::CalculateMeanPhase(vector<vector<Polarisation::Coords> >& phase_data, const unsigned int intervalNum)
+{
+   // -- Calculate the mean phase of the particles alpha.
+   // -- Because the angles are a circular quantity, distibuted usually from (-Pi, +Pi]
+   // -- we cannot just take the arithmetic mean of each particles angle. Instead to get a
+   // -- correct measure of the mean we first take the mean of the points on the unit-sphere
+   // -- eg: {cos(theta),sin(theta)}. Then the mean angle is just
+   // --          mean{theta} = atan2(mean{cos(theta)}/mean{sin(theta)})
+   double sumCosTheta = 0., sumSinTheta = 0., sumTheta = 0.;
+   for (unsigned int particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
+      assert(phase_data[particleIndex].size() == intervals);
+      sumCosTheta += phase_data[particleIndex][intervalNum].fCosTheta;
+      sumSinTheta += phase_data[particleIndex][intervalNum].fSinTheta;
+      sumTheta += phase_data[particleIndex][intervalNum].fTheta;
+   }
+   double meanCosTheta = sumCosTheta/phase_data.size();
+   double meanSinTheta = sumSinTheta/phase_data.size();
+   double meanPhase = TMath::ATan2(meanSinTheta, meanCosTheta);
+   return meanPhase;
+}
 void Polarisation::PlotPhaseAngleSnapShots(vector<vector<Polarisation::Coords> >& phase_data, const unsigned int intervals)
 {
    //////////////////////////////////////////////////////////////////////////////////////

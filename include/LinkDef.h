@@ -117,6 +117,7 @@
 #pragma link C++ function Analysis::Polarisation::CreateT2AlphaGraph(std::vector<TDirectory*>, double, unsigned int);
 #pragma link C++ function Analysis::Polarisation::PlotPhaseAngleSnapShots(std::vector<std::vector<Analysis::Polarisation::Coords> >& , const unsigned int );
 #pragma link C++ function Analysis::Polarisation::PlotT2_vs_Runs(const std::string, const std::string);
+#pragma link C++ function Analysis::Polarisation::CalculateMeanPhase(std::vector<std::vector<Analysis::Polarisation::Coords> >& , const unsigned int);
 
 #pragma link C++ namespace Analysis::Bounces;
 #pragma link C++ function Analysis::Bounces::PlotBounceCounters(TDirectory* const, const std::vector<TDirectory*>);
