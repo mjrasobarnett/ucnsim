@@ -991,6 +991,37 @@ double Polarisation::CalculateMeanPhase(vector<vector<Polarisation::Coords> >& p
    double meanPhase = TMath::ATan2(meanSinTheta, meanCosTheta);
    return meanPhase;
 }
+
+//_____________________________________________________________________________
+double Polarisation::CalculateAlpha(vector<vector<Polarisation::Coords> >& phase_data, const unsigned int intervalNum, const double meanPhase)
+{
+   // Calculate the number spin up and down based on phase difference
+   int numSpinUp = 0, numSpinDown = 0;
+   for (unsigned int particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
+      // Calculate the angle between each particle's phase and the mean phase
+      double phasediff = TMath::Abs(phase_data[particleIndex][intervalNum].fTheta - meanPhase);
+      double probSpinDown = (TMath::Cos(phasediff) + 1.0) / 2.0;
+      if (gRandom->Uniform(0.0,1.0) < probSpinDown) {
+         numSpinDown++;
+      } else {
+         numSpinUp++;
+      }
+//       cout << setw(4) << particleIndex << "\t";
+//       cout << setw(12) << "Mean Phase: " << setw(6) << meanPhase*180.0/TMath::Pi() << "\t";
+//       cout << setw(12) << "Theta: " << setw(6) << phase_data[particleIndex][intervalNum].fTheta*180.0/TMath::Pi() << "\t";
+//       cout << setw(12) << "Phase Diff: " << setw(6) << phasediff*180.0/TMath::Pi() << "\t";
+//       cout << setw(12) << "ProbSpinDown: " << setw(6) << probSpinDown << "\t";
+//       cout << setw(12) << "Up: " << setw(6) << numSpinUp << "\t";
+//       cout << setw(12) << "Down: " << setw(6) << numSpinDown << "\t";
+//       cout << setw(12) << "Up+Down: " << setw(6) << numSpinUp + numSpinDown << "\t";
+//       cout << setw(12) << "Up-Down: " << setw(6) << numSpinUp - numSpinDown << endl;
+   }
+   // Calculate polarisation at this time
+   double alpha = ((double)(numSpinDown - numSpinUp)) / ((double)(numSpinUp + numSpinDown));
+   return alpha;
+}
+
+//_____________________________________________________________________________
 void Polarisation::PlotPhaseAngleSnapShots(vector<vector<Polarisation::Coords> >& phase_data, const unsigned int intervals)
 {
    //////////////////////////////////////////////////////////////////////////////////////

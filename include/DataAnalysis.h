@@ -75,6 +75,8 @@ namespace Analysis {
       bool PlotT2_vs_Runs(const std::string configFileName, const std::string statename);
       //_____________________________________________________________________________
       double CalculateMeanPhase(std::vector<std::vector<Analysis::Polarisation::Coords> >& phase_data, const unsigned int intervalNum);
+      //_____________________________________________________________________________
+      double CalculateAlpha(std::vector<std::vector<Analysis::Polarisation::Coords> >& phase_data, const unsigned int intervalNum, const double meanPhase);
       
    }
    
