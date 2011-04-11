@@ -1196,8 +1196,8 @@ TGraph* Polarisation::CreateT2AlphaGraph(vector<TDirectory*> stateDirs, double r
                      double theta = TMath::ATan2(zcoord,ycoord);
                      // Store the current coordinates on the unit circle in the y-z plane
                      Coords currentCoords;
-                     currentCoords.fSinTheta = ycoord;
-                     currentCoords.fCosTheta = zcoord;
+                     currentCoords.fSinTheta = zcoord;
+                     currentCoords.fCosTheta = ycoord;
                      currentCoords.fTheta = theta;
                      // Add set of y-z coords to list
                      phases.push_back(currentCoords);
