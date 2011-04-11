@@ -1096,9 +1096,9 @@ bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNa
    alphaT2->Draw("AP");
    alphaT2->GetXaxis()->SetTitle("Time (s)");
    alphaT2->GetXaxis()->SetRangeUser(0.0,runTime);
-   alphaT2->GetYaxis()->SetTitle("Alpha");
+   alphaT2->GetYaxis()->SetTitle("Spin Down Polarisation");
    alphaT2->GetYaxis()->SetRangeUser(-1.0,1.0);
-   alphaT2->SetTitle("T2 Polarisation");
+   alphaT2->SetTitle("Spin Polarisation after second ramsey pulse (T2)");
    // Write graph to file
    int bytes = alphaT2->Write(alphaT2->GetName(),TObject::kOverwrite);
    if (bytes == 0) {
@@ -1222,12 +1222,9 @@ TGraph* Polarisation::CreateT2AlphaGraph(vector<TDirectory*> stateDirs, double r
       double alpha = Polarisation::CalculateAlpha(phase_data, intervalNum, meanPhase);
       double timebin = time_data.GetBinLowEdge(intervalNum);
       // Add point to graph
-//      cout << setw(12) << intervalNum << "\t";
-//      cout << setw(12) << alpha << "\t";
-//      cout << setw(12) <<  meanPhase*180.0/TMath::Pi() << "\t";
-//      cout << setw(12) << meanTheta*180.0/TMath::Pi() << "\t";
-//      cout << setw(12) << meanCosTheta << "\t";
-//      cout << setw(12) << meanSinTheta << endl;
+      cout << setw(4) << intervalNum << "\t";
+      cout << setw(12) << "Alpha: " << setw(6) << alpha << "\t";
+      cout << setw(12) << "Mean Phase: " << setw(6) << meanPhase*180.0/TMath::Pi() << "\t";
       alphaT2->SetPoint(intervalNum, timebin, alpha);
    }
    return alphaT2;
