@@ -982,7 +982,6 @@ double Polarisation::CalculateMeanPhase(vector<vector<Polarisation::Coords> >& p
    // --          mean{theta} = atan2(mean{cos(theta)}/mean{sin(theta)})
    double sumCosTheta = 0., sumSinTheta = 0., sumTheta = 0.;
    for (unsigned int particleIndex  = 0; particleIndex < phase_data.size(); particleIndex++) {
-      assert(phase_data[particleIndex].size() == intervals);
       sumCosTheta += phase_data[particleIndex][intervalNum].fCosTheta;
       sumSinTheta += phase_data[particleIndex][intervalNum].fSinTheta;
       sumTheta += phase_data[particleIndex][intervalNum].fTheta;
