@@ -96,6 +96,32 @@ bool String::ConvertToDouble(const string input, double& output)
    return true;
 }
 
+//_____________________________________________________________________________
+bool String::ConvertVectorToInt(const vector<string>& input, vector<int>& output)
+{
+   // -- Convert vector of strings to integers
+   vector<string>::const_iterator input_Iter;
+   for (input_Iter = input.begin(); input_Iter != input.end(); input_Iter++) {
+      int value = 0;
+      if (String::ConvertToInt(*input_Iter, value) == false) return false;
+      output.push_back(value);
+   }
+   return true;
+}
+
+//_____________________________________________________________________________
+bool ConvertVectorToDouble(const std::vector<std::string>& input, std::vector<double>& output)
+{
+   // -- Convert vector of strings to doubles
+   vector<string>::const_iterator input_Iter;
+   for (input_Iter = input.begin(); input_Iter != input.end(); input_Iter++) {
+      double value = 0;
+      if (String::ConvertToDouble(*input_Iter, value) == false) return false;
+      output.push_back(value);
+   }
+   return true;
+}
+
 
 //_____________________________________________________________________________
 string FileSystem::ExpandFilePath(const string path)

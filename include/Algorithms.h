@@ -35,6 +35,10 @@ namespace Algorithms {
       bool ConvertToBool(const std::string input, bool& output);
       //_____________________________________________________________________________
       bool ConvertToDouble(const std::string input, double& output);
+      //_____________________________________________________________________________
+      bool ConvertVectorToInt(const std::vector<std::string>& input, std::vector<int>& output);
+      //_____________________________________________________________________________
+      bool ConvertVectorToDouble(const std::vector<std::string>& input, std::vector<double>& output);
    }
    //_____________________________________________________________________________
    // Namespace holding functions relevant to underlying filesystem
