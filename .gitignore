@@ -13,5 +13,6 @@ temp/*
 *.root
 *.png
 *.gif
+doc/*
 build
 build_xcode
