@@ -90,7 +90,7 @@ string FieldVertex::ToString() const
 {
    ostringstream oss;
    oss.precision(2);
-   oss << "(" << fPoint.X() << ", " << fPoint.Y() << ", " << fPoint.X() << ", " << fPoint.T();
+   oss << "(" << fPoint.X() << ", " << fPoint.Y() << ", " << fPoint.Z() << ", " << fPoint.T();
    oss << "), ";
    oss << "(" << fField.X() << ", " << fField.Y() << ", " << fField.Z() << ") ";
    return oss.str();
