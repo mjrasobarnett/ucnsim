@@ -102,11 +102,11 @@ namespace GeomParameters {
    const Double_t bendVolZPos = -2.0*bendEntranceHalfZ;
    
    // -- Detector Valve Volume
-   const Double_t detectorValveVolHalfX = 55.0*Units::mm;
+   const Double_t detectorValveVolHalfX = 30.0*Units::mm;
    const Double_t detectorValveVolHalfY = 30.0*Units::mm;
-   const Double_t detectorValveVolHalfZ = 30.0*Units::mm;
-   const Double_t detectorValveVolPhi = 0.0;
-   const Double_t detectorValveVolTheta = 0.0;
+   const Double_t detectorValveVolHalfZ = 55.0*Units::mm;
+   const Double_t detectorValveVolPhi = -90.0;
+   const Double_t detectorValveVolTheta = 90.0;
    const Double_t detectorValveVolPsi = 0.0;
    const Double_t detectorValveVolXPos = bendVolXPos - detectorValveVolHalfX;
    const Double_t detectorValveVolYPos = valveVolYPos;
@@ -177,7 +177,7 @@ namespace GeomParameters {
    const Double_t guidePhi = -90;
    const Double_t guideTheta = 90;
    const Double_t guidePsi = 0;
-   const Double_t guideXPos = detectorValveVolXPos - detectorValveVolHalfX - guideSegHalfZ;
+   const Double_t guideXPos = detectorValveVolXPos - detectorValveVolHalfZ - guideSegHalfZ + 1.0*Units::mm;
    const Double_t guideYPos = detectorValveVolYPos;
    const Double_t guideZPos = detectorValveVolZPos;
 
