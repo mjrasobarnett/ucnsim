@@ -86,6 +86,8 @@
 #pragma link C++ function Algorithms::String::ConvertToInt(const std::string, int&);
 #pragma link C++ function Algorithms::String::ConvertToBool(const std::string, bool&);
 #pragma link C++ function Algorithms::String::ConvertToDouble(const std::string, double&);
+#pragma link C++ function Algorithms::String::ConvertVectorToInt(const std::vector<std::string>&, std::vector<int>&);
+#pragma link C++ function Algorithms::String::ConvertVectorToDouble(const std::vector<std::string>&, std::vector<double>&);
 
 #pragma link C++ namespace Algorithms::FileSystem;
 #pragma link C++ function Algorithms::FileSystem::ExpandShellVar(const std::string);
