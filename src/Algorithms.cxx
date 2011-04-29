@@ -110,7 +110,7 @@ bool String::ConvertVectorToInt(const vector<string>& input, vector<int>& output
 }
 
 //_____________________________________________________________________________
-bool ConvertVectorToDouble(const std::vector<std::string>& input, std::vector<double>& output)
+bool String::ConvertVectorToDouble(const std::vector<std::string>& input, std::vector<double>& output)
 {
    // -- Convert vector of strings to doubles
    vector<string>::const_iterator input_Iter;
