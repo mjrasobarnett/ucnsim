@@ -93,6 +93,9 @@
 #pragma link C++ function Algorithms::FileSystem::ExpandShellVar(const std::string);
 #pragma link C++ function Algorithms::FileSystem::ExpandFilePath(const std::string);
 
+#pragma link C++ namespace Algorithms::ProgressBar;
+#pragma link C++ function Algorithms::ProgressBar::PrintProgress(int, float, int);
+
 // ----------------------------------------------------------------------
 // -- The Analysis namespace (and its sub-namespaces) contains functions relevant for Data-Analysis-type tasks
 #pragma link C++ namespace Analysis;

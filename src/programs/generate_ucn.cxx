@@ -30,7 +30,7 @@
 #include "Units.h"
 #include "DataFileHierarchy.h"
 #include "GeomParameters.h"
-#include "ProgressBar.h"
+#include "Algorithms.h"
 
 using std::cin;
 using std::cout;
@@ -204,7 +204,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       data->SaveParticle(particle, Folders::initial);
       if (particle) delete particle;
       // -- Update progress bar
-      ProgressBar::PrintProgress(i,particles,1);
+      Algorithms::ProgressBar::PrintProgress(i,particles,1);
    }
    // -- Close the data
    delete data;

@@ -50,5 +50,14 @@ namespace Algorithms {
       //_____________________________________________________________________________
       std::string ExpandFilePath(const std::string path);
    }
+   
+   //_____________________________________________________________________________
+   // Namespace for functions relating to the Progress Bar
+   //_____________________________________________________________________________
+   namespace ProgressBar
+   {
+      //_____________________________________________________________________________
+      void PrintProgress(int entry, float nEntriesF, int mintime);
+   }
 }
 #endif

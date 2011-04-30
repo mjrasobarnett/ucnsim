@@ -13,7 +13,7 @@
 #include "MagFieldArray.h"
 #include "ElecFieldArray.h"
 #include "DataFileHierarchy.h"
-#include "ProgressBar.h"
+#include "Algorithms.h"
 
 using namespace std;
 
@@ -281,7 +281,7 @@ void Data::CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * cons
          delete obj;
       }
       ++counter;
-      ProgressBar::PrintProgress(counter,sourceDir->GetNkeys(),1);
+      Algorithms::ProgressBar::PrintProgress(counter,sourceDir->GetNkeys(),1);
    }
    outputDir->SaveSelf(kTRUE);
    outputDir->cd();
