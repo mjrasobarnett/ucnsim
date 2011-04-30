@@ -5,19 +5,17 @@
 #include <sstream>
 #include <sys/stat.h> // Required by Progress bar
 #include <iomanip>
-
-#include "TMath.h"
-#include "TString.h"
+#include <string>
 
 using namespace std;
 
 namespace ProgressBar {
    
    //_____________________________________________________________________________
-   static void PrintProgress(Int_t entry, Float_t nEntriesF, Int_t mintime)
+   static void PrintProgress(int entry, float nEntriesF, int mintime)
    {
     // Written by Nicholas Devenish - 01/2010
-     Int_t nEntries = (Int_t)nEntriesF;
+     int nEntries = (int)nEntriesF;
 
      // Are we streaming to a file? If so, show the old style
      struct stat buf;
@@ -25,26 +23,26 @@ namespace ProgressBar {
      // Check if we are a file, or a pipe (i.e. in case the user tees)
      const bool isFile = buf.st_mode & (S_IFREG | S_IFIFO) ;
      if (isFile) {
-       Float_t fract = ceil(nEntries/20.);  
-       if (ceil(((Float_t)entry)/fract)==((Float_t)entry)/fract)
+       float fract = ceil(nEntries/20.);  
+       if (ceil(((float)entry)/fract)==((float)entry)/fract)
        {
            cerr 
              <<"Fraction of loop complete: "<<entry 
              <<"/"<<nEntries<<"  ("
-             <<(Int_t)(100.*entry/nEntries)<<"%)"<<endl;
+             <<(int)(100.*entry/nEntries)<<"%)"<<endl;
        }
        return;
      }
 
 
      // How wide should we make the progress bar?
-     const Int_t width = 70;
+     const int width = 70;
      // How long is the string for entries?
-     static Int_t countlen = -1;
+     static int countlen = -1;
      // How long is our progress bar?
-     static Int_t barlen = -1;
+     static int barlen = -1;
      // The entry number of the next bar entry
-     static Int_t nextbar = -1;
+     static int nextbar = -1;
      // When did we start?
      static time_t starttime = 0;
      // when do we next update?
@@ -53,7 +51,7 @@ namespace ProgressBar {
      if (entry <= 1)
      {
        // Get the new length of the entry string
-       countlen = (Int_t)TMath::Ceil(TMath::Log10(nEntries)) + 1;
+       countlen = (int)ceil(log10(nEntries)) + 1;
        nextbar = -1;
        starttime = time(NULL);
 
@@ -70,39 +68,39 @@ namespace ProgressBar {
      nextupdate = time(NULL) + 10;
 
      // Because this is used in several places, make it here
-     Float_t frac = (Float_t)entry / (Float_t)nEntries;
+     float frac = (float)entry / (float)nEntries;
 
      // Prepare the progress bar string
-     TString bar;
+     string bar;
      if (entry <= nEntries)
      {
        // Work out how many characters we are in
-       Int_t numeq = TMath::FloorNint(frac*barlen);
+       int numeq = floor(frac*barlen);
 
        // Work out when the next bar will occur
-       nextbar = (Int_t)((Float_t)(numeq+1)/(Float_t)barlen*nEntries);
+       nextbar = (int)((float)(numeq+1)/(float)barlen*nEntries);
        //cerr << "Next bar at: " << nextbar << "        " << endl;
-       bar = TString('=', numeq);
-       bar += TString(' ', barlen - numeq);
+       bar = string(numeq,'=');
+       bar += string(barlen - numeq, ' ');
      } else if (entry > nEntries) {
        // We have gone over. Oh no!
-       bar = TString('+', barlen);
+       bar = string(barlen, '+');
      } else if (entry < 0) {
        // Somehow, we are below zero. Handle it nonetheless
-       bar = TString('-', barlen);
+       bar = string(barlen, '-');
      }
 
 
      // Prepare the ETA
-     Float_t elapsed_time = (Float_t)(time(NULL) - starttime);
-     Float_t time_left = -60;
+     float elapsed_time = (float)(time(NULL) - starttime);
+     float time_left = -60;
      if (frac > 1e-6) {
        time_left = (elapsed_time / frac) - elapsed_time;
      }
-     Int_t mins, seconds;
-     mins    = (Int_t)TMath::Floor(time_left / 60.0f);
-     seconds = (Int_t)TMath::Floor(time_left - (Float_t)(mins*60.0f));
-     // TString ETA;
+     int mins, seconds;
+     mins    = (int)floor(time_left / 60.0f);
+     seconds = (int)floor(time_left - (float)(mins*60.0f));
+     // ETA;
      std::ostringstream ETA;
 
      ETA << "ETA ";
