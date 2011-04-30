@@ -17,4 +17,5 @@ doc/*
 build
 build_xcode
 *.xls
+*.cfg
 
