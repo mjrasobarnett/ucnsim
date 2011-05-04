@@ -254,7 +254,6 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    cout << "-------------------------------------------" << endl;
    cout << this->InitialParticles() << " particles have been loaded succesfully" << endl;
    cout << "-------------------------------------------" << endl;
-   delete selected_particles;
    return true;
 }
 
