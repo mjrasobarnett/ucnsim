@@ -9,6 +9,9 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 # Root and GSL do not come with CMake, use our local copies
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")
 
+# Set Build type
+set(CMAKE_BUILD_TYPE debug)
+
 # We want to use ROOT. This sets up all the root variables we need
 find_package(ROOT REQUIRED)
 find_package(GSL REQUIRED)
