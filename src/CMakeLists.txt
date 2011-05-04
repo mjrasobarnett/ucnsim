@@ -41,7 +41,7 @@ set(UCNLIB_HEADER_NAMES   Algorithms.h classes/BoolNode.h
                           classes/Observable.h classes/Observer.h
                           classes/Parabola.h classes/ParabolicMagField.h
                           classes/Particle.h classes/Point.h
-                          classes/Polynomial.h classes/ProgressBar.h
+                          classes/Polynomial.h
                           classes/Run.h classes/RunConfig.h
                           classes/Spin.h classes/SpinData.h
                           classes/State.h classes/Track.h classes/Tube.h
