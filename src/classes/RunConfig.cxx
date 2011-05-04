@@ -4,6 +4,8 @@
 #include <sstream>
 #include <cassert>
 #include <stdexcept>
+#include <algorithm>
+#include <iterator>
 
 #include "Algorithms.h"
 #include "DataAnalysis.h"
@@ -19,7 +21,7 @@ ClassImp(RunConfig);
 
 //__________________________________________________________________________
 RunConfig::RunConfig()
-          :TObject(), fNames(), fOptions(), fParams()
+          :TObject(), fNames(), fOptions(), fParams(), fSelectedParticleIDs()
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Default Constructor" << endl;
@@ -28,7 +30,7 @@ RunConfig::RunConfig()
 
 //__________________________________________________________________________
 RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
-          :TObject(), fNames(), fOptions(), fParams()
+          :TObject(), fNames(), fOptions(), fParams(), fSelectedParticleIDs()
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Constructor" << endl;
@@ -60,7 +62,8 @@ RunConfig::RunConfig(const RunConfig& other)
           :TObject(other),
            fNames(other.fNames),
            fOptions(other.fOptions),
-           fParams(other.fParams)
+           fParams(other.fParams),
+           fSelectedParticleIDs(other.fSelectedParticleIDs)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Copy Constructor" << endl;
@@ -184,6 +187,11 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    double fieldMeasInterval = (fieldMeasFreq == 0.0 ? 0.0 : (1.0/fieldMeasFreq));
    fParams.insert(ParamPair(RunParams::fieldMeasFreq, fieldMeasInterval));
    // -----------------------------------
+   // -- Selected Particle IDs
+   if (loadAllParticles == false) {
+      string s_particle_IDs = runConfigFile.GetString(RunParams::selectedParticleIDs,"Particles");
+      fSelectedParticleIDs = Algorithms::String::FactorString(s_particle_IDs,',');
+   }
    // -----------------------------------
    // Check for inconsistencies in RunConfig File
    if (fieldsFileName.empty() && (magField == true || elecField == true)) {

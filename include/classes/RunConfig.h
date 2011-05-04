@@ -8,6 +8,7 @@
 #include "TObject.h"
 #include <string>
 #include <map>
+#include <vector>
 
 namespace RunParams {
    // -- Names
@@ -21,6 +22,7 @@ namespace RunParams {
    static const std::string inputParticleState = "InputParticleState";
    // -- Options (Boolean or yes/no questions)
    static const std::string loadAllParticles = "AllParticles";
+   static const std::string selectedParticleIDs = "SelectedParticleIDs";
    static const std::string restartParticles = "RunFromBeginning";
    static const std::string gravField = "GravField";
    static const std::string magField = "MagFields";
@@ -50,7 +52,8 @@ private:
    std::map<std::string, std::string> fNames;
    std::map<std::string, bool> fOptions;
    std::map<std::string, double> fParams;
-
+   std::vector<std::string> fSelectedParticleIDs;
+   
    void ReadInRunConfig(const ConfigFile& runConfigFile, const std::string folderpath);
    void CheckForOverrideParameters(const std::map<std::string, std::string> section);
 
@@ -86,7 +89,7 @@ public:
    double TrackMeasureInterval() const;
    double SpinMeasureInterval() const;
    double FieldMeasureInterval() const;;
-   
+   std::vector<std::string> SelectedParticleIDs() const {return fSelectedParticleIDs;}
    virtual void Print(Option_t* option = "") const;
 
    ClassDef(RunConfig,1);
