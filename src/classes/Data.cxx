@@ -204,8 +204,7 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
             cout << "Error: Cannot find particle " << *idIter << endl;
             return false;
          }
-      }
-      
+      }  
    }
    ///////////////////////////////////////////////////////////////////////
    // - Load Particles into the initial state folder of the output file 
