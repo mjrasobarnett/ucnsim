@@ -166,14 +166,14 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    TDirectory * const partDir = gDirectory;
    ///////////////////////////////////////////////////////////////////////
    // -- Check Config for which particle states we wish to load as our input particles
-   string whichParticles = runConfig.ParticlesToLoad();
+   string which_particle_state = runConfig.ParticlesToLoad();
    // Convert to lowercase.
-   boost::to_lower(whichParticles);
+   boost::to_lower(which_particle_state);
    // Navigate to the folder containing the input particle states 
-   Bool_t correctFolder = partDir->cd(whichParticles.c_str());
+   Bool_t correctFolder = partDir->cd(which_particle_state.c_str());
    // check that we ended up in the correct folder
    if (correctFolder == kFALSE) {
-      Error("LoadParticles","Cannot find folder: %s", whichParticles.c_str());
+      Error("LoadParticles","Cannot find folder: %s", which_particle_state.c_str());
       return kFALSE;
    }
    TDirectory * const sourceDir = gDirectory;
