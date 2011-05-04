@@ -39,6 +39,8 @@ namespace Algorithms {
       bool ConvertVectorToInt(const std::vector<std::string>& input, std::vector<int>& output);
       //_____________________________________________________________________________
       bool ConvertVectorToDouble(const std::vector<std::string>& input, std::vector<double>& output);
+      //_____________________________________________________________________________
+      std::vector<std::string> FactorString(const std::string input, const char delim);
    }
    //_____________________________________________________________________________
    // Namespace holding functions relevant to underlying filesystem

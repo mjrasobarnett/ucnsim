@@ -11,6 +11,7 @@
 
 #include "FileParser.h"
 #include "FieldVertex.h"
+#include "Algorithms.h"
 
 #define PRINT_CONSTRUCTORS 
 //#define VERBOSE_MODE
@@ -70,8 +71,8 @@ bool FileParser::ExtractFieldVertices(std::string filename, std::vector<FieldVer
    // according to structure 'x' 'y' 'z' 'bx' 'by' 'bz'
    // Loop over each line and extract its data
    while (getline(in, line, lineDelim).eof() == false) {
-      vector<string> s_row = this->FactorString(line, '\t');
       vector<double> row = this->ConvertVecToDouble(s_row);
+      vector<string> s_row = Algorithms::String::FactorString(line, '\t');
       // Check if row size corresponds to the expected 6 columns
       if (row.size() != 6) {continue;}
       // Create new FieldVertex and add to list
@@ -81,23 +82,6 @@ bool FileParser::ExtractFieldVertices(std::string filename, std::vector<FieldVer
 }
 
 //______________________________________________________________________________
-vector<string> FileParser::FactorString(const string input, const char delim) const
-{
-   // -- Take input string and split it up into a vector of sub-strings using the supplied delimeter
-   vector<string> result;
-   size_t previousTabPos = 0, nextTabPos = 0;
-   while (nextTabPos != string::npos) {
-      // Find position of nex tab
-      nextTabPos = input.find(delim, previousTabPos);
-      // Extract string between found tab position and previous tab position
-      string value = input.substr(previousTabPos, nextTabPos - previousTabPos);
-      result.push_back(value);
-      // Increment previous tab position to next tab position (plus 1 so that we search for the
-      // next tab from right after this position)
-      previousTabPos = nextTabPos+1;
-   }
-   return result;
-}
 
 //______________________________________________________________________________
 int FileParser::ConvertToInt(string value) const

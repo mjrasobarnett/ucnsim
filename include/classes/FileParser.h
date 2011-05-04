@@ -15,8 +15,6 @@ class FileParser {
       std::vector<int> ConvertVecToInt(const std::vector<std::string>& input) const;
       std::vector<double> ConvertVecToDouble(const std::vector<std::string>& input) const;
       
-      std::vector<std::string> FactorString(const std::string input, const char delim) const;
-      
    public:
       FileParser();
       virtual ~FileParser();

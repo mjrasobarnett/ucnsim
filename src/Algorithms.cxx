@@ -124,6 +124,24 @@ bool String::ConvertVectorToDouble(const std::vector<std::string>& input, std::v
    return true;
 }
 
+//______________________________________________________________________________
+vector<string> String::FactorString(const string input, const char delim)
+{
+   // -- Take input string and split it up into a vector of sub-strings using the supplied delimeter
+   vector<string> result;
+   size_t previousTabPos = 0, nextTabPos = 0;
+   while (nextTabPos != string::npos) {
+      // Find position of nex tab
+      nextTabPos = input.find(delim, previousTabPos);
+      // Extract string between found tab position and previous tab position
+      string value = input.substr(previousTabPos, nextTabPos - previousTabPos);
+      result.push_back(value);
+      // Increment previous tab position to next tab position (plus 1 so that we search for the
+      // next tab from right after this position)
+      previousTabPos = nextTabPos+1;
+   }
+   return result;
+}
 
 //_____________________________________________________________________________
 string FileSystem::ExpandFilePath(const string path)
