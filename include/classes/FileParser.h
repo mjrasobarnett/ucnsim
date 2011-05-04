@@ -10,11 +10,6 @@ class FieldVertex;
 class FileParser {
    private:
       
-      int   ConvertToInt(std::string value) const;
-      double ConvertToDouble(std::string value) const;
-      std::vector<int> ConvertVecToInt(const std::vector<std::string>& input) const;
-      std::vector<double> ConvertVecToDouble(const std::vector<std::string>& input) const;
-      
    public:
       FileParser();
       virtual ~FileParser();
