@@ -187,7 +187,7 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    TList* selected_particles = NULL;
    if (loadAllParticles == true) {
       // All particles are to be loaded
-      selected_particles = new TList(sourceDir->GetListOfKeys());
+      selected_particles = sourceDir->GetListOfKeys();
    } else {
       // Only subset of particles are to be loaded
       vector<string> selected_IDs = runConfig.SelectedParticleIDs();
