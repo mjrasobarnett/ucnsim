@@ -4,7 +4,10 @@
 #include <sstream>
 #include <cassert>
 #include <stdexcept>
+#include <algorithm>
+#include <iterator>
 
+#include "TList.h"
 #include "TKey.h"
 #include "TClass.h"
 #include "TGeoManager.h"
@@ -179,34 +182,69 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    TDirectory * const sourceDir = gDirectory;
    TDirectory * const outputDir = fInitialStatesFolder; 
    ///////////////////////////////////////////////////////////////////////
-   // - Check Config for whether we will re-start the particles specified above from their initial
-   // - states. This will only be done for particles that are not in their initial states already.
-   Bool_t fromBeginning = runConfig.RestartFromBeginning();
-   if (fromBeginning == kTRUE && sourceDir->GetName() != Folders::initial) {
-      cout << "Resetting particles in the state: " << sourceDir->GetName();
-      cout << ", to their initial state as the input to current Run " << endl;
-      // Loop on all entries of source directory, which will be a set of folders containing
-      // the particles in this state
-      TKey *key;
-      TIter nextkey(sourceDir->GetListOfKeys());
-      while ((key = static_cast<TKey*>(nextkey.Next()))) {
-         const char *classname = key->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // For each particle-folder in the current directory, find its corresponding
-            // initial states folder in the input file, and make a copy of it in the output file
+   // -- Make a list of the IDs of which particle to load. 
+   Bool_t loadAllParticles = runConfig.LoadAllParticles();
+   TList* selected_particles = NULL;
+   if (loadAllParticles == true) {
+      // All particles are to be loaded
+      selected_particles = new TList(sourceDir->GetListOfKeys());
+   } else {
+      // Only subset of particles are to be loaded
+      vector<string> selected_IDs = runConfig.SelectedParticleIDs();
+      cout << "Loading select particles: ";
+      copy(selected_IDs.begin(), selected_IDs.end(), ostream_iterator<string>(cout,","));
+      cout << endl;
+      selected_particles = new TList();
+      vector<string>::const_iterator idIter;
+      for (idIter = selected_IDs.begin(); idIter != selected_IDs.end(); idIter++) {
+         TKey* particleKey = sourceDir->FindKey(idIter->c_str());
+         if (particleKey != NULL) {
+            selected_particles->Add(particleKey);
+         } else {
+            cout << "Error: Cannot find particle " << *idIter << endl;
+            return false;
+         }
+      }
+      
+   }
+   ///////////////////////////////////////////////////////////////////////
+   // - Load Particles into the initial state folder of the output file 
+   cout << "Loading particles in the state: " << sourceDir->GetName();
+   cout << ", as the input to current Run, to continue their propagation" << endl;
+   // Copy selected particles from the source directory into the initial states directory of the run
+   TKey *key;
+   TIter nextkey(selected_particles);
+   while ((key = static_cast<TKey*>(nextkey.Next()))) {
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TDirectory")) {
+         ///////////////////////////////////////////////////////////////////////
+         // - Check Config for whether we will re-start the particles specified above from their initial
+         // - states. This will only be done for particles that are not in their initial states already.
+         Bool_t fromBeginning = runConfig.RestartFromBeginning();
+         if (fromBeginning == kTRUE && sourceDir->GetName() != Folders::initial) {
+            // cd to the initial states folder of the input file. 
             partDir->cd(Folders::initial.c_str());
+            // Look for the initial state folder of the current particle
+            TKey* initial_key = gDirectory->FindKey(key->GetName());
+            // If that folder exists, cd into it
+            if (initial_key == NULL) {
+               cout << "Cannot Find Initial state of particle: " << key->GetName() << endl;
+               return false;
+            } else {
+               gDirectory->cd(initial_key->GetName());
+            }
+            // Copy this particles initial state to the output directory
+            TDirectory * const initialDir = gDirectory;
+            this->CopyDirectory(initialDir, outputDir);
+         } else {
+            // Copy particle's state into the output directory
+            sourceDir->cd(key->GetName());
             TDirectory * const initialDir = gDirectory;
             this->CopyDirectory(initialDir, outputDir);
          }
       }
-   } else {
-      // Otherwise we just propagate the particles from where they left off
-      cout << "Loading particles in the state: " << sourceDir->GetName();
-      cout << ", as the input to current Run, to continue their propagation" << endl;
-      // Copy particles from the source directory into the initial states directory of the run
-      this->CopyDirectoryContents(sourceDir, outputDir);
    }
    // Clean up
    inputfile->Close();
@@ -214,7 +252,8 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    cout << "-------------------------------------------" << endl;
    cout << this->InitialParticles() << " particles have been loaded succesfully" << endl;
    cout << "-------------------------------------------" << endl;
-   return kTRUE;
+   delete selected_particles;
+   return true;
 }
 
 //_____________________________________________________________________________
