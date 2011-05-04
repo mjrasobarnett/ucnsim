@@ -211,6 +211,7 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    cout << "Loading particles in the state: " << sourceDir->GetName();
    cout << ", as the input to current Run, to continue their propagation" << endl;
    // Copy selected particles from the source directory into the initial states directory of the run
+   Int_t counter = 0;
    TKey *key;
    TIter nextkey(selected_particles);
    while ((key = static_cast<TKey*>(nextkey.Next()))) {
@@ -244,6 +245,8 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
             this->CopyDirectory(initialDir, outputDir);
          }
       }
+      ++counter;
+      Algorithms::ProgressBar::PrintProgress(counter,sourceDir->GetNkeys(),1);
    }
    // Clean up
    inputfile->Close();
