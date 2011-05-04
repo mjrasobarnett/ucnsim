@@ -15,6 +15,8 @@
 #include "DataFileHierarchy.h"
 #include "Algorithms.h"
 
+#include <boost/algorithm/string.hpp>
+
 using namespace std;
 
 ClassImp(Data)
@@ -166,10 +168,7 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    // -- Check Config for which particle states we wish to load as our input particles
    string whichParticles = runConfig.ParticlesToLoad();
    // Convert to lowercase.
-   locale loc;
-   for (size_t i=0; i < whichParticles.length(); ++i) {
-      whichParticles[i] = tolower(whichParticles[i],loc);
-   }
+   boost::to_lower(whichParticles);
    // Navigate to the folder containing the input particle states 
    Bool_t correctFolder = partDir->cd(whichParticles.c_str());
    // check that we ended up in the correct folder
