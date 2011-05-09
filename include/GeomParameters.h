@@ -108,20 +108,20 @@ namespace GeomParameters {
    const Double_t detectorValveVolPhi = -90.0;
    const Double_t detectorValveVolTheta = 90.0;
    const Double_t detectorValveVolPsi = 0.0;
-   const Double_t detectorValveVolXPos = bendVolXPos - detectorValveVolHalfX;
+   const Double_t detectorValveVolXPos = bendVolXPos - detectorValveVolHalfZ;
    const Double_t detectorValveVolYPos = valveVolYPos;
    const Double_t detectorValveVolZPos = bendVolZPos + bendVolXPos;
    
    // -- Detector Valve
    const Double_t detectorValveHalfX = 2.0*Units::mm;
    const Double_t detectorValveHalfY = 29.0*Units::mm;
-   const Double_t detectorValveHalfZ = 40.0*Units::mm;
-   const Double_t detectorValvePhi = 90;
-   const Double_t detectorValveTheta = -60.0;
+   const Double_t detectorValveHalfZ = 33.0*Units::mm;
+   const Double_t detectorValvePhi = 0;
+   const Double_t detectorValveTheta = -45.0;
    const Double_t detectorValvePsi = 90;
-   const Double_t detectorValveXPos = 10.0*Units::mm;
-   const Double_t detectorValveYPos = 0.;
-   const Double_t detectorValveZPos = -12.0*Units::mm;
+   const Double_t detectorValveXPos = 0.0*Units::mm;
+   const Double_t detectorValveYPos = -5.0*Units::mm;
+   const Double_t detectorValveZPos = -5.0*Units::mm;
    
    // -- Detector Tube Top
    const Double_t detectorTubeTopRMin = 0.;
@@ -131,8 +131,8 @@ namespace GeomParameters {
    const Double_t detectorTubeTopTheta = 0.0;
    const Double_t detectorTubeTopPsi = 0.0;
    const Double_t detectorTubeTopXPos = detectorValveVolXPos;
-   const Double_t detectorTubeTopYPos = valveVolYPos;
-   const Double_t detectorTubeTopZPos = detectorValveVolZPos - detectorValveVolHalfZ - detectorTubeTopHalfLength;
+   const Double_t detectorTubeTopYPos = detectorValveVolYPos;
+   const Double_t detectorTubeTopZPos = detectorValveVolZPos - detectorValveVolHalfX - detectorTubeTopHalfLength;
    
    // -- Detector Tube
    const Double_t detectorTubeRMin = 0.;
@@ -158,7 +158,7 @@ namespace GeomParameters {
    
    // -- Detector
    const Double_t detectorRMin = 0.;
-   const Double_t detectorRMax = 15.0*Units::mm;
+   const Double_t detectorRMax = 27.85*Units::mm;
    const Double_t detectorHalfLength = 5.0*Units::mm;
    const Double_t detectorPhi = 0.0;
    const Double_t detectorTheta = 0.0;

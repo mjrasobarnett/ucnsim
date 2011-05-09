@@ -175,7 +175,7 @@ Bool_t BuildFieldMap(const TGeoHMatrix& matrix)
    // Create a Uniform Magnetic field and write it to file
    string filename = "runs/polarisation/guide_tube/C8=9 A +SQUIDs Coil =26_4 mA +D1=2 A + 6WS TC guide tube -100 z +80 cm.txt";
    // Define shape of field
-   TGeoShape* magFieldShape = new Box("FieldShape",3.0, 3.0, 3.0);
+   TGeoShape* magFieldShape = new Box("FieldShape",0.031, 0.031, 3.0);
    // Define transformation that locates field in geometry
    TGeoMatrix* magFieldPosition = new TGeoHMatrix(matrix);
    magFieldPosition->Print();

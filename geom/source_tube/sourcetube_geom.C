@@ -69,13 +69,13 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    sourceSeg->SetVisibility(kTRUE);
    sourceSeg->SetTransparency(20);
    
-   Double_t segmentYPosition = sourceSegHalfLength;
+   Double_t segmentYPosition = sourceSegYPos;
    for (Int_t segNum = 1; segNum <= 13; segNum++) {
       // -- Define SourceTube matrix
       // Rotation seems to be applied before translation so bear that in mind when choosing which
       // coordinate to transform in translation
-      TGeoRotation segmentRot("SegmentRot",0,sourceSegAngle,0); // phi, theta, psi
-      TGeoTranslation segmentTra("SegmentTra",0.,segmentYPosition,0.); // x, y, z
+      TGeoRotation segmentRot("SegmentRot",sourceSegPhi,sourceSegTheta,sourceSegPsi); // phi, theta, psi
+      TGeoTranslation segmentTra("SegmentTra",sourceSegXPos,segmentYPosition,sourceSegZPos); // x, y, z
       TGeoCombiTrans segmentCom(segmentTra,segmentRot);
       TGeoHMatrix segmentMat = segmentCom;
       Char_t sourceMatrixName[20];
@@ -96,8 +96,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    valveVolEntrance->SetVisibility(kTRUE);
    valveVolEntrance->SetTransparency(20);
    // -- Define the Valve volume entrance
-   TGeoRotation valveVolEntranceRot("ValveVolEntranceRot",0,valveVolEntranceAngle,0);
-   TGeoTranslation valveVolEntranceTra("ValveVolEntranceTra",0.,valveVolEntranceYDisplacement,0.);
+   TGeoRotation valveVolEntranceRot("ValveVolEntranceRot",valveVolEntrancePhi,valveVolEntranceTheta,valveVolEntrancePsi);
+   TGeoTranslation valveVolEntranceTra("ValveVolEntranceTra",valveVolEntranceXPos,valveVolEntranceYPos,valveVolEntranceZPos);
    TGeoCombiTrans valveVolEntranceCom(valveVolEntranceTra,valveVolEntranceRot);
    TGeoHMatrix valveVolEntranceMat = valveVolEntranceCom;
    chamber->AddNode(valveVolEntrance, 1, new TGeoHMatrix(valveVolEntranceMat));
@@ -108,7 +108,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out geometry to file
-   const char *fileName = "$(UCN_GEOM)/sourcetube/sourcetube_geom.root";
+   const char *fileName = "$(UCN_GEOM)/sourcetube_geom.root";
    cerr << "Simulation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    

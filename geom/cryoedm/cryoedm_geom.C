@@ -60,12 +60,12 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    chamber->SetTransparency(80);
    // Add to geom
    top->AddNode(chamber,1);
-   
+
    // -------------------------------------
    // -- SOURCE TUBE
    // Source tube has 13 segments, all of which are identical 
    // (except one which has a hole in the top)
-   
+
    // -- Make a SourceTube Segment
    Tube *sourceSegShape = new Tube("SourceSeg", sourceSegRMin, sourceSegRMax, sourceSegHalfLength);
    TrackingVolume* sourceSeg = new TrackingVolume("SourceSeg", sourceSegShape, heliumII);
@@ -74,23 +74,23 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    sourceSeg->SetVisibility(kTRUE);
    sourceSeg->SetTransparency(20);
    Double_t sourceCapacity = 0.0;
-   Double_t segmentYPosition = sourceSegHalfLength;
-   for (Int_t segNum = 1; segNum <= 13; segNum++) {
+   Double_t segmentYPos = sourceSegHalfLength;
+   for (Int_t segNum = 1; segNum <= sourceSegments; segNum++) {
       // -- Define SourceTube matrix
       // Rotation seems to be applied before translation so bear that in mind when choosing which
       // coordinate to transform in translation
-      TGeoRotation segmentRot("SegmentRot",0,sourceSegAngle,0); // phi, theta, psi
-      TGeoTranslation segmentTra("SegmentTra",0.,segmentYPosition,0.); // x, y, z
+      TGeoRotation segmentRot("SegmentRot",sourceSegPhi,sourceSegTheta,sourceSegPsi);
+      TGeoTranslation segmentTra("SegmentTra",sourceSegXPos, segmentYPos, sourceSegZPos);
       TGeoCombiTrans segmentCom(segmentTra,segmentRot);
       TGeoHMatrix segmentMat = segmentCom;
       Char_t sourceMatrixName[20];
       sprintf(sourceMatrixName, "SourceMatrix%d", segNum); 
       segmentMat.SetName(sourceMatrixName);
       chamber->AddNode(sourceSeg, segNum, new TGeoHMatrix(segmentMat));
-      segmentYPosition += 2.*sourceSegHalfLength; // Shift next segment along by length of segment 
+      segmentYPos += 2.*sourceSegHalfLength; // Shift next segment along by length of segment 
       sourceCapacity += sourceSegShape->Capacity();
    }
-   
+
    // -------------------------------------
    // -- SOURCE VALVE
    // Valve entrance volume is a shorter source-tube segment-like that connects
@@ -102,13 +102,13 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    valveVolEntrance->SetVisibility(kTRUE);
    valveVolEntrance->SetTransparency(20);
    // -- Define the Valve volume entrance
-   TGeoRotation valveVolEntranceRot("ValveVolEntranceRot",0,valveVolEntranceAngle,0);
-   TGeoTranslation valveVolEntranceTra("ValveVolEntranceTra",0.,valveVolEntranceYDisplacement,0.);
+   TGeoRotation valveVolEntranceRot("ValveVolEntranceRot",valveVolEntrancePhi,valveVolEntranceTheta, valveVolEntrancePsi);
+   TGeoTranslation valveVolEntranceTra("ValveVolEntranceTra",valveVolEntranceXPos, valveVolEntranceYPos, valveVolEntranceZPos);
    TGeoCombiTrans valveVolEntranceCom(valveVolEntranceTra,valveVolEntranceRot);
    TGeoHMatrix valveVolEntranceMat = valveVolEntranceCom;
    chamber->AddNode(valveVolEntrance, 1, new TGeoHMatrix(valveVolEntranceMat));
    Double_t valveVolEntraceCapacity = valveVolEntranceShape->Capacity();
-   
+
    // -------------------------------------
    // -- Valve volume front - this is what the valve press against
    Tube *valveVolFrontShape = new Tube("ValveVolFront", valveVolFrontRMin, valveVolFrontRMax, valveVolFrontHalfLength);
@@ -118,74 +118,72 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    valveVolFront->SetVisibility(kTRUE);
    valveVolFront->SetTransparency(20);
    // -- Define the Valve volume front
-   TGeoRotation valveVolFrontRot("ValveVolFrontRot",0,valveVolFrontAngle,0); // phi, theta, psi
-   TGeoTranslation valveVolFrontTra("ValveVolFrontTra",0.,valveVolFrontYDisplacement,0.); // x, y, z
+   TGeoRotation valveVolFrontRot("ValveVolFrontRot",valveVolFrontPhi, valveVolFrontTheta, valveVolFrontPsi);
+   TGeoTranslation valveVolFrontTra("ValveVolFrontTra",valveVolFrontXPos, valveVolFrontYPos, valveVolFrontZPos);
    TGeoCombiTrans valveVolFrontCom(valveVolFrontTra,valveVolFrontRot);
    TGeoHMatrix valveVolFrontMat = valveVolFrontCom;
    chamber->AddNode(valveVolFront, 1, new TGeoHMatrix(valveVolFrontMat));
    Double_t valveVolFrontCapacity = valveVolFrontShape->Capacity();
-   
+
    // -------------------------------------
    // -- Valve volume - this is what the valve sits in
    // -- This is joined together with the start of the bend volume to make a composite volume
    Tube *valveVolBackShape = new Tube("ValveVolBack", valveVolBackRMin, valveVolBackRMax, valveVolBackHalfLength);
    TrackingVolume* valveVolBack = new TrackingVolume("ValveVolBack", valveVolBackShape, heliumII);
-   // -- Define the Valve volume back
-   TGeoRotation valveVolBackRot("ValveVolBackRot",0,valveVolBackAngle,0); // phi, theta, psi
-   TGeoTranslation valveVolBackTra("ValveVolBackTra",0.,0.,0.); // x, y, z
+   TGeoRotation valveVolBackRot("ValveVolBackRot",valveVolBackPhi, valveVolBackTheta, valveVolBackPsi);
+   TGeoTranslation valveVolBackTra("ValveVolBackTra",valveVolBackXPos, valveVolBackXPos, valveVolBackXPos);
    TGeoCombiTrans valveVolBackCom(valveVolBackTra,valveVolBackRot);
    TGeoHMatrix valveVolBackMat = valveVolBackCom;
    TGeoHMatrix *valveVolBackMatrix = new TGeoHMatrix(valveVolBackMat);
    valveVolBackMatrix->SetName("ValveVolBackMatrix");
    valveVolBackMatrix->RegisterYourself();
-   
+
    // -- BendEntrance - this is joined to the valve volume back  
    Box *bendEntranceShape = new Box("BendEntrance", bendEntranceHalfX, bendEntranceHalfY, bendEntranceHalfZ);
    TrackingVolume* bendEntrance = new TrackingVolume("BendEntrance", bendEntranceShape, heliumII);
-   // -- Define the Bend Entrance segment
-   TGeoRotation bendEntranceRot("BendEntranceRot",0,bendEntranceAngle,0); // phi, theta, psi
-   TGeoTranslation bendEntranceTra("BendEntranceTra",0.,0.,-bendEntranceZDisplacement); // x, y, z
+   TGeoRotation bendEntranceRot("BendEntranceRot",bendEntrancePhi, bendEntranceTheta, bendEntrancePsi);
+   TGeoTranslation bendEntranceTra("BendEntranceTra",bendEntranceXPos, bendEntranceYPos, bendEntranceZPos);
    TGeoCombiTrans bendEntranceCom(bendEntranceTra,bendEntranceRot);
    TGeoHMatrix bendEntranceMat = bendEntranceCom;
    TGeoHMatrix *bendEntranceMatrix = new TGeoHMatrix(bendEntranceMat);
    bendEntranceMatrix->SetName("BendEntranceMatrix");
    bendEntranceMatrix->RegisterYourself();
-   
+
    // -- Create the composite Valve volume
    CompositeShape *valveVolShape = new CompositeShape("ValveVol", "(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
    TrackingVolume* valveVol = new TrackingVolume("ValveVol",valveVolShape,heliumII);
    valveVol->SetLineColor(kTeal-5);
    valveVol->SetLineWidth(1);
    valveVol->SetVisibility(kTRUE);
-   valveVol->SetTransparency(20);// -- Define the Valve volume transformation
-   TGeoRotation valveVolRot("ValveVolRot",0,valveVolAngle,0); // phi, theta, psi
-   TGeoTranslation valveVolTra("ValveVolTra",0.,valveVolYDisplacement,0.); // x, y, z
+   valveVol->SetTransparency(20);
+   TGeoRotation valveVolRot("ValveVolRot",valveVolPsi,valveVolTheta,valveVolPhi);
+   TGeoTranslation valveVolTra("ValveVolTra",valveVolXPos,valveVolYPos,valveVolZPos);
    TGeoCombiTrans valveVolCom(valveVolTra,valveVolRot);
    TGeoHMatrix valveVolMat = valveVolCom;
    chamber->AddNode(valveVol, 1, new TGeoHMatrix(valveVolMat));
    Double_t valveVolCapacity = valveVolShape->Capacity();
-   
+
 /* // -- Define the valve in its open state 
    Double_t openValveRMin = 0., openValveRMax = 36.0*Units::mm, openValveHalfLength = 1.375*Units::mm;
    TGeoVolume *openValve = Builder::UCNInstance(geoManager)->MakeUCNTube("OpenValve", boundary, openValveRMin, openValveRMax, openValveHalfLength);
    Double_t openValveAngle = 90.0;
-   Double_t openValveYDisplacement = valveVolBackHalfLength - openValveHalfLength;
+   Double_t openValveYPos = valveVolBackHalfLength - openValveHalfLength;
    TGeoRotation openValveRot("ValveVolBackRot",0,openValveAngle,0); // phi, theta, psi
-   TGeoTranslation openValveTra("ValveVolBackTra",0.,openValveYDisplacement,0.); // x, y, z
+   TGeoTranslation openValveTra("ValveVolBackTra",0.,openValveYPos,0.); // x, y, z
    TGeoCombiTrans openValveCom(openValveTra,openValveRot);
    TGeoHMatrix openValveMat = openValveCom;
    openValve->SetLineColor(kBlue+3);
    openValve->SetLineWidth(1);
    openValve->SetVisibility(kTRUE);
    openValve->SetTransparency(20);
-   
+
    // -- Define the valve in its closed state 
    Double_t closedValveRMin = 0., closedValveRMax = 36.0*Units::mm, closedValveHalfLength = 1.375*Units::mm;
    TGeoVolume *closedValve = Builder::UCNInstance(geoManager)->MakeUCNTube("OpenValve", vacuum, closedValveRMin, closedValveRMax, closedValveHalfLength);
    Double_t closedValveAngle = 90.0;
-   Double_t closedValveYDisplacement = closedValveHalfLength - valveVolBackHalfLength;
+   Double_t closedValveYPos = closedValveHalfLength - valveVolBackHalfLength;
    TGeoRotation closedValveRot("ValveVolBackRot",0,closedValveAngle,0); // phi, theta, psi
-   TGeoTranslation closedValveTra("ValveVolBackTra",0.,closedValveYDisplacement,0.); // x, y, z
+   TGeoTranslation closedValveTra("ValveVolBackTra",0.,closedValveYPos,0.); // x, y, z
    TGeoCombiTrans closedValveCom(closedValveTra,closedValveRot);
    TGeoHMatrix closedValveMat = closedValveCom;
    closedValve->SetLineColor(kBlue+3);
@@ -195,18 +193,17 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    valveVol->AddNode(closedValve,1,new TGeoHMatrix(closedValveMat));
    valveVol->AddNode(openValve,1,new TGeoHMatrix(openValveMat));
 */ 
-   
    // -------------------------------------
    // -- BEND
    Tube *circleBendShape = new Tube("CircleBend", bendRMin, bendRMax, bendHalfLength);
    TrackingVolume* circleBend = new TrackingVolume("CircleBend", circleBendShape, heliumII);
-      
+
    Box *bendBoxShape = new Box("BendBox", 2.0*bendHalfLength, bendRMax, bendRMax);
    Boundary* bendBox = new Boundary("BendBox", bendBoxShape, beryllium, surfaceRoughness);
-   
+
    // -- Define the transformation of bendbox
-   TGeoRotation bendBoxRot("BendBoxRot",0,90,90); // phi, theta, psi
-   TGeoTranslation bendBoxTra("BendBoxTra",bendRMax,-bendRMax,0.); // x, y, z
+   TGeoRotation bendBoxRot("BendBoxRot",bendBoxPhi,bendBoxTheta,bendBoxPsi);
+   TGeoTranslation bendBoxTra("BendBoxTra",bendBoxXPos,bendBoxYPos,bendBoxZPos);
    TGeoCombiTrans bendBoxCom(bendBoxTra,bendBoxRot);
    TGeoHMatrix bendBoxMat = bendBoxCom;
    TGeoHMatrix *bendBoxMatrix = new TGeoHMatrix(bendBoxMat);
@@ -220,13 +217,13 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    bendVol->SetVisibility(kTRUE);
    bendVol->SetTransparency(20);
    // -- Define the transformation of the bend
-   TGeoRotation bendVolRot("BendVolRot",0,bendVolAngle,0); // phi, theta, psi
-   TGeoTranslation bendVolTra("BendVolTra", -bendVolXDisplacement, bendVolYDisplacement, -bendVolZDisplacement); 
+   TGeoRotation bendVolRot("BendVolRot",bendVolPhi,bendVolTheta,bendVolPsi);
+   TGeoTranslation bendVolTra("BendVolTra", bendVolXPos, bendVolYPos, bendVolZPos);
    TGeoCombiTrans bendVolCom(bendVolTra,bendVolRot);
    TGeoHMatrix bendVolMat = bendVolCom;
    chamber->AddNode(bendVol, 1, new TGeoHMatrix(bendVolMat));
    Double_t bendCapacity = bendShape->Capacity();
-   
+
    // -------------------------------------
    // -- DETECTOR VALVE
    // DetectorValveVol
@@ -237,32 +234,28 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    detectorValveVol->SetVisibility(kTRUE);
    detectorValveVol->SetTransparency(0);
    // -- Define the Valve volume back
-   TGeoRotation detectorValveVolRot("DetectorValveVolXDisplacementRot",0,detectorValveVolAngle,0); // phi, theta, psi
-   TGeoTranslation detectorValveVolTra("DetectorValveVolXDisplacementTra", -detectorValveVolXDisplacement, detectorValveVolYDisplacement, -detectorValveVolZDisplacement);
+   TGeoRotation detectorValveVolRot("DetectorValveVolRot",detectorValveVolPhi, detectorValveVolTheta, detectorValveVolPsi);
+   TGeoTranslation detectorValveVolTra("DetectorValveVolTra",detectorValveVolXPos, detectorValveVolYPos, detectorValveVolZPos);
    TGeoCombiTrans detectorValveVolCom(detectorValveVolTra,detectorValveVolRot);
    TGeoHMatrix detectorValveVolMat = detectorValveVolCom;
    chamber->AddNode(detectorValveVol, 1, new TGeoHMatrix(detectorValveVolMat));
    Double_t detectorValveVolCapacity = detectorValveVolShape->Capacity();
-   
-/* // -------------------------------------
+
+/*   // -------------------------------------
    // -- DetectorValve
-   Double_t detectorValveHalfX = 2.0*Units::mm, detectorValveHalfY = 30.0*Units::mm, detectorValveHalfZ = 30.0*Units::mm;
-   TGeoVolume *detectorValve = Builder::UCNInstance(geoManager)->MakeUCNBox("DetectorValve", vacuum, detectorValveHalfX, detectorValveHalfY, detectorValveHalfZ);
+   Box *detectorValveShape = new Box("DetectorValveShape", detectorValveHalfX, detectorValveHalfY, detectorValveHalfZ);
+   Boundary* detectorValve = new Boundary("DetectorValve", detectorValveShape, beryllium, surfaceRoughness);
    detectorValve->SetLineColor(kBlue+3);
    detectorValve->SetLineWidth(1);
    detectorValve->SetVisibility(kTRUE);
    detectorValve->SetTransparency(0);
    // -- Define the Valve volume back
-   Double_t detectorValveAngle = -50.0;
-   Double_t detectorValveXDisplacement = 0.;
-   Double_t detectorValveYDisplacement = 0.;
-   Double_t detectorValveZDisplacement = 9.0*Units::mm;
-   TGeoRotation detectorValveRot("DetectorValveXDisplacementRot",90,detectorValveAngle,90); // phi, theta, psi
-   TGeoTranslation detectorValveTra("DetectorValveXDisplacementTra", -detectorValveXDisplacement, detectorValveYDisplacement, -detectorValveZDisplacement);
+   TGeoRotation detectorValveRot("DetectorValveRot",detectorValvePhi,detectorValveTheta,detectorValvePsi);
+   TGeoTranslation detectorValveTra("DetectorValveXPosTra",detectorValveXPos, detectorValveYPos, detectorValveZPos);
    TGeoCombiTrans detectorValveCom(detectorValveTra,detectorValveRot);
    TGeoHMatrix detectorValveMat = detectorValveCom;
    detectorValveVol->AddNode(detectorValve, 1, new TGeoHMatrix(detectorValveMat));
-*/ 
+*/
    // -------------------------------------
    // -- DETECTOR TUBE
    // DetectorTubeTop - Entrance into the detector tube
@@ -273,13 +266,13 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    detectorTubeTop->SetVisibility(kTRUE);
    detectorTubeTop->SetTransparency(20);
    // -- Define the Valve volume back
-   TGeoRotation detectorTubeTopRot("DetectorTubeTopRot",0,detectorTubeTopAngle,0);
-   TGeoTranslation detectorTubeTopTra("DetectorTubeTopTra", -detectorTubeTopXDisplacement, detectorTubeTopYDisplacement, -detectorTubeTopZDisplacement);
+   TGeoRotation detectorTubeTopRot("DetectorTubeTopRot",detectorTubeTopPhi, detectorTubeTopTheta, detectorTubeTopPsi);
+   TGeoTranslation detectorTubeTopTra("DetectorTubeTopTra", detectorTubeTopXPos, detectorTubeTopYPos, detectorTubeTopZPos);
    TGeoCombiTrans detectorTubeTopCom(detectorTubeTopTra,detectorTubeTopRot);
    TGeoHMatrix detectorTubeTopMat = detectorTubeTopCom; 
    chamber->AddNode(detectorTubeTop, 1, new TGeoHMatrix(detectorTubeTopMat));
    Double_t detectorTubeTopCapacity = detectorTubeTopShape->Capacity();
-   
+
    // -------------------------------------
    // -- DetectorTube
    Tube *detectorTubeShape = new Tube("DetectorTube", detectorTubeRMin, detectorTubeRMax, detectorTubeHalfLength);
@@ -289,13 +282,13 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    detectorTube->SetVisibility(kTRUE);
    detectorTube->SetTransparency(20);
    // -- Define the Valve volume back
-   TGeoRotation detectorTubeRot("DetectorTubeRot",0,detectorTubeAngle,0);
-   TGeoTranslation detectorTubeTra("DetectorTubeTra", -detectorTubeXDisplacement, detectorTubeYDisplacement, -detectorTubeZDisplacement);
+   TGeoRotation detectorTubeRot("DetectorTubeRot",detectorTubePhi,detectorTubeTheta, detectorTubePsi);
+   TGeoTranslation detectorTubeTra("DetectorTubeTra", detectorTubeXPos, detectorTubeYPos, detectorTubeZPos);
    TGeoCombiTrans detectorTubeCom(detectorTubeTra,detectorTubeRot);
    TGeoHMatrix detectorTubeMat = detectorTubeCom;
    chamber->AddNode(detectorTube, 1, new TGeoHMatrix(detectorTubeMat));
    Double_t detectorTubeCapacity = detectorTubeShape->Capacity();
-   
+
    // -------------------------------------
    // -- Detector
    Double_t detectorEfficiency = 1.0;
@@ -306,8 +299,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    detector->SetVisibility(kTRUE);
    detector->SetTransparency(0);
    // -- Define the Valve volume back
-   TGeoRotation detectorRot("DetectorRot",0,detectorTubeAngle,0);
-   TGeoTranslation detectorTra("DetectorTra", -detectorXDisplacement,detectorYDisplacement,-detectorZDisplacement);
+   TGeoRotation detectorRot("DetectorRot",detectorTubePhi,detectorTubeTheta,detectorTubePsi);
+   TGeoTranslation detectorTra("DetectorTra", detectorXPos, detectorYPos, detectorZPos);
    TGeoCombiTrans detectorCom(detectorTra,detectorRot);
    TGeoHMatrix detectorMat = detectorCom;
    chamber->AddNode(detector, 1, new TGeoHMatrix(detectorMat));
@@ -321,12 +314,12 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    guideSeg->SetLineWidth(1);
    guideSeg->SetVisibility(kTRUE);
    guideSeg->SetTransparency(20);
-   Double_t guideSegXPos = guideXDisplacement;
+   Double_t guideSegXPos = guideXPos;
    Double_t guideCapacity = 0.0;
    for (Int_t segNum = 1; segNum <= 5; segNum++) {
       // Define Guide Seg matrix
-      TGeoRotation segmentRot("SegmentRot",guidePhi,guideTheta,0); // phi, theta, psi
-      TGeoTranslation segmentTra("SegmentTra",guideSegXPos, guideYDisplacement, guideZDisplacement);
+      TGeoRotation segmentRot("SegmentRot",guidePhi,guideTheta,guidePsi); // phi, theta, psi
+      TGeoTranslation segmentTra("SegmentTra",guideSegXPos, guideYPos, guideZPos);
       TGeoCombiTrans segmentCom(segmentTra,segmentRot);
       TGeoHMatrix segmentMat = segmentCom;
       Char_t sourceMatrixName[20];
@@ -352,7 +345,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    preVolumeBox->SetVisibility(kTRUE);
    preVolumeBox->SetTransparency(20);
    TGeoRotation preVolumeBoxRot("PreVolumeBoxRot", preVolumePhi, preVolumeTheta, 45);
-   TGeoTranslation preVolumeBoxTra("PreVolumeBoxTra", preVolumeXDisplacement, preVolumeYDisplacement, preVolumeZDisplacement);
+   TGeoTranslation preVolumeBoxTra("PreVolumeBoxTra", preVolumeXPos, preVolumeYPos, preVolumeZPos);
    TGeoCombiTrans preVolumeBoxCom(preVolumeBoxTra,preVolumeBoxRot);
    TGeoHMatrix preVolumeBoxMat = preVolumeBoxCom;
    chamber->AddNode(preVolumeBox, 1, new TGeoHMatrix(preVolumeBoxMat));
@@ -368,7 +361,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    neutralElectrode->SetVisibility(kTRUE);
    neutralElectrode->SetTransparency(20);
    TGeoRotation neutralElectrodeRot("NeutralElectrodeRot", neutralElectrodePhi, neutralElectrodeTheta, neutralElectrodePsi);
-   TGeoTranslation neutralElectrodeTra("NeutralElectrodeTra", neutralElectrodeXDisplacement, neutralElectrodeYDisplacement, neutralElectrodeZDisplacement);
+   TGeoTranslation neutralElectrodeTra("NeutralElectrodeTra", neutralElectrodeXPos, neutralElectrodeYPos, neutralElectrodeZPos);
    TGeoCombiTrans neutralElectrodeCom(neutralElectrodeTra,neutralElectrodeRot);
    TGeoHMatrix neutralElectrodeMat = neutralElectrodeCom;
 //   chamber->AddNode(neutralElectrode, 1, new TGeoHMatrix(neutralElectrodeMat));
@@ -382,7 +375,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    neutralElectrodeHole1->SetVisibility(kTRUE);
    neutralElectrodeHole1->SetTransparency(20);
    TGeoRotation neutralElectrodeHoleRot("NeutralElectrodeHoleRot", neutralElectrodeHolePhi, neutralElectrodeHoleTheta, neutralElectrodeHolePsi);
-   TGeoTranslation neutralElectrodeHole1Tra("NeutralElectrodeHole1Tra", neutralElectrodeHole1XDisplacement, neutralElectrodeHole1YDisplacement, neutralElectrodeHole1ZDisplacement);
+   TGeoTranslation neutralElectrodeHole1Tra("NeutralElectrodeHole1Tra", neutralElectrodeHole1XPos, neutralElectrodeHole1YPos, neutralElectrodeHole1ZPos);
    TGeoCombiTrans neutralElectrodeHole1Com(neutralElectrodeHole1Tra,neutralElectrodeHoleRot);
    TGeoHMatrix neutralElectrodeHole1Mat = neutralElectrodeHole1Com;
    chamber->AddNode(neutralElectrodeHole1, 1, new TGeoHMatrix(neutralElectrodeHole1Mat));
@@ -394,7 +387,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    neutralElectrodeHole2->SetLineWidth(1);
    neutralElectrodeHole2->SetVisibility(kTRUE);
    neutralElectrodeHole2->SetTransparency(20);
-   TGeoTranslation neutralElectrodeHole2Tra("NeutralElectrodeHole2Tra", neutralElectrodeHole2XDisplacement, neutralElectrodeHole2YDisplacement, neutralElectrodeHole2ZDisplacement);
+   TGeoTranslation neutralElectrodeHole2Tra("NeutralElectrodeHole2Tra", neutralElectrodeHole2XPos, neutralElectrodeHole2YPos, neutralElectrodeHole2ZPos);
    TGeoCombiTrans neutralElectrodeHole2Com(neutralElectrodeHole2Tra,neutralElectrodeHoleRot);
    TGeoHMatrix neutralElectrodeHole2Mat = neutralElectrodeHole2Com;
 //   chamber->AddNode(neutralElectrodeHole2, 1, new TGeoHMatrix(neutralElectrodeHole2Mat));
@@ -404,7 +397,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    neutralElectrodeHole3->SetLineWidth(1);
    neutralElectrodeHole3->SetVisibility(kTRUE);
    neutralElectrodeHole3->SetTransparency(20);
-   TGeoTranslation neutralElectrodeHole3Tra("NeutralElectrodeHole3Tra", neutralElectrodeHole3XDisplacement, neutralElectrodeHole3YDisplacement, neutralElectrodeHole3ZDisplacement);
+   TGeoTranslation neutralElectrodeHole3Tra("NeutralElectrodeHole3Tra", neutralElectrodeHole3XPos, neutralElectrodeHole3YPos, neutralElectrodeHole3ZPos);
    TGeoCombiTrans neutralElectrodeHole3Com(neutralElectrodeHole3Tra,neutralElectrodeHoleRot);
    TGeoHMatrix neutralElectrodeHole3Mat = neutralElectrodeHole3Com;
    chamber->AddNode(neutralElectrodeHole3, 1, new TGeoHMatrix(neutralElectrodeHole3Mat));
@@ -416,7 +409,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    neutralElectrodeHole4->SetLineWidth(1);
    neutralElectrodeHole4->SetVisibility(kTRUE);
    neutralElectrodeHole4->SetTransparency(20);
-   TGeoTranslation neutralElectrodeHole4Tra("NeutralElectrodeHole4Tra", neutralElectrodeHole4XDisplacement, neutralElectrodeHole4YDisplacement, neutralElectrodeHole4ZDisplacement);
+   TGeoTranslation neutralElectrodeHole4Tra("NeutralElectrodeHole4Tra", neutralElectrodeHole4XPos, neutralElectrodeHole4YPos, neutralElectrodeHole4ZPos);
    TGeoCombiTrans neutralElectrodeHole4Com(neutralElectrodeHole4Tra,neutralElectrodeHoleRot);
    TGeoHMatrix neutralElectrodeHole4Mat = neutralElectrodeHole4Com;
 //   chamber->AddNode(neutralElectrodeHole4, 1, new TGeoHMatrix(neutralElectrodeHole4Mat));
@@ -429,7 +422,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    neutralCell->SetVisibility(kTRUE);
    neutralCell->SetTransparency(20);
    TGeoRotation neutralCellRot("NeutralCellRot", neutralCellPhi, neutralCellTheta, neutralCellPsi);
-   TGeoTranslation neutralCellTra("NeutralCellTra", neutralCellXDisplacement, neutralCellYDisplacement, neutralCellZDisplacement);
+   TGeoTranslation neutralCellTra("NeutralCellTra", neutralCellXPos, neutralCellYPos, neutralCellZPos);
    TGeoCombiTrans neutralCellCom(neutralCellTra,neutralCellRot);
    TGeoHMatrix neutralCellMat = neutralCellCom;
    chamber->AddNode(neutralCell, 1, new TGeoHMatrix(neutralCellMat));
@@ -443,7 +436,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    cellConnector->SetVisibility(kTRUE);
    cellConnector->SetTransparency(20);
    TGeoRotation cellConnectorRot("CellConnectorRot", cellConnectorPhi, cellConnectorTheta, cellConnectorPsi);
-   TGeoTranslation cellConnectorTra("CellConnectorTra", cellConnectorXDisplacement, cellConnectorYDisplacement, cellConnectorZDisplacement);
+   TGeoTranslation cellConnectorTra("CellConnectorTra", cellConnectorXPos, cellConnectorYPos, cellConnectorZPos);
    TGeoCombiTrans cellConnectorCom(cellConnectorTra,cellConnectorRot);
    TGeoHMatrix cellConnectorMat = cellConnectorCom;
    chamber->AddNode(cellConnector, 1, new TGeoHMatrix(cellConnectorMat));
@@ -457,7 +450,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    centralElectrode->SetVisibility(kTRUE);
    centralElectrode->SetTransparency(20);
    TGeoRotation centralElectrodeRot("CentralElectrodeRot", centralElectrodePhi, centralElectrodeTheta, centralElectrodePsi);
-   TGeoTranslation centralElectrodeTra("CentralElectrodeTra", centralElectrodeXDisplacement, centralElectrodeYDisplacement, centralElectrodeZDisplacement);
+   TGeoTranslation centralElectrodeTra("CentralElectrodeTra", centralElectrodeXPos, centralElectrodeYPos, centralElectrodeZPos);
    TGeoCombiTrans centralElectrodeCom(centralElectrodeTra,centralElectrodeRot);
    TGeoHMatrix centralElectrodeMat = centralElectrodeCom;
 //   chamber->AddNode(centralElectrode, 1, new TGeoHMatrix(centralElectrodeMat));
@@ -470,7 +463,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    centralElectrodeHole->SetVisibility(kTRUE);
    centralElectrodeHole->SetTransparency(20);
    TGeoRotation centralElectrodeHoleRot("CentralElectrodeHoleRot", centralElectrodeHolePhi, centralElectrodeHoleTheta, centralElectrodeHolePsi);
-   TGeoTranslation centralElectrodeHoleTra("CentralElectrodeHoleTra", centralElectrodeHoleXDisplacement, centralElectrodeHoleYDisplacement, centralElectrodeHoleZDisplacement);
+   TGeoTranslation centralElectrodeHoleTra("CentralElectrodeHoleTra", centralElectrodeHoleXPos, centralElectrodeHoleYPos, centralElectrodeHoleZPos);
    TGeoCombiTrans centralElectrodeHoleCom(centralElectrodeHoleTra,centralElectrodeHoleRot);
    TGeoHMatrix centralElectrodeHoleMat = centralElectrodeHoleCom;
    chamber->AddNode(centralElectrodeHole, 1, new TGeoHMatrix(centralElectrodeHoleMat));
@@ -484,7 +477,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    hvCell->SetVisibility(kTRUE);
    hvCell->SetTransparency(20);
    TGeoRotation hvCellRot("HVCellRot", hvCellPhi, hvCellTheta, hvCellPsi);
-   TGeoTranslation hvCellTra("HVCellTra", hvCellXDisplacement, hvCellYDisplacement, hvCellZDisplacement);
+   TGeoTranslation hvCellTra("HVCellTra", hvCellXPos, hvCellYPos, hvCellZPos);
    TGeoCombiTrans hvCellCom(hvCellTra,hvCellRot);
    TGeoHMatrix hvCellMat = hvCellCom;
    chamber->AddNode(hvCell, 1, new TGeoHMatrix(hvCellMat));
@@ -498,7 +491,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    hvElectrode->SetVisibility(kTRUE);
    hvElectrode->SetTransparency(20);
    TGeoRotation hvElectrodeRot("HVElectrodeRot", hvElectrodePhi, hvElectrodeTheta, hvElectrodePsi);
-   TGeoTranslation hvElectrodeTra("HVElectrodeTra", hvElectrodeXDisplacement, hvElectrodeYDisplacement, hvElectrodeZDisplacement);
+   TGeoTranslation hvElectrodeTra("HVElectrodeTra", hvElectrodeXPos, hvElectrodeYPos, hvElectrodeZPos);
    TGeoCombiTrans hvElectrodeCom(hvElectrodeTra,hvElectrodeRot);
    TGeoHMatrix hvElectrodeMat = hvElectrodeCom;
 //   chamber->AddNode(hvElectrode, 1, new TGeoHMatrix(hvElectrodeMat));
@@ -573,7 +566,7 @@ Bool_t Draw_Geom(const TGeoManager* geoManager)
    TGLViewer::ECameraType camera = 2;
    glViewer->SetCurrentCamera(camera);
    glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   Double_t cameraCentre[3] = {preVolumeXDisplacement, preVolumeYDisplacement, preVolumeZDisplacement};
+   Double_t cameraCentre[3] = {preVolumeXPos, preVolumeYPos, preVolumeZPos};
    glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
    // -- Draw Reference Point, Axes
    Double_t refPoint[3] = {0.,0.,0.};
