@@ -4,8 +4,11 @@
 #include <sstream>
 #include <cassert>
 #include <stdexcept>
+#include <algorithm>
+#include <iterator>
 
 #include "Algorithms.h"
+#include "DataAnalysis.h"
 #include "Constants.h"
 #include "Units.h"
 
@@ -18,7 +21,7 @@ ClassImp(RunConfig);
 
 //__________________________________________________________________________
 RunConfig::RunConfig()
-          :TObject(), fNames(), fOptions(), fParams()
+          :TObject(), fNames(), fOptions(), fParams(), fSelectedParticleIDs()
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Default Constructor" << endl;
@@ -27,7 +30,7 @@ RunConfig::RunConfig()
 
 //__________________________________________________________________________
 RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
-          :TObject(), fNames(), fOptions(), fParams()
+          :TObject(), fNames(), fOptions(), fParams(), fSelectedParticleIDs()
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Constructor" << endl;
@@ -52,9 +55,6 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    // Get the section of the master config file containing this run's configfile and override params
    map<string,string> section = masterConfig.GetSection(runID.str());
    CheckForOverrideParameters(section);
-   // -----------------------------------
-   // Print properties
-   this->Print();
 }
 
 //__________________________________________________________________________
@@ -62,7 +62,8 @@ RunConfig::RunConfig(const RunConfig& other)
           :TObject(other),
            fNames(other.fNames),
            fOptions(other.fOptions),
-           fParams(other.fParams)
+           fParams(other.fParams),
+           fSelectedParticleIDs(other.fSelectedParticleIDs)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "RunConfig::Copy Constructor" << endl;
@@ -121,7 +122,7 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    // -- Input Particles options
    // Name of state folder to load particles from
    string particlesToLoad = runConfigFile.GetString(RunParams::inputParticleState,"Particles");
-   if (Algorithms::DataFile::ValidateStateNames(particlesToLoad) == false) {
+   if (Analysis::DataFile::IsValidStateName(particlesToLoad) == false) {
       throw runtime_error("Invalid InputParticleState specified in runconfig");
    }
    fNames.insert(NamePair(RunParams::inputParticleState, particlesToLoad));
@@ -156,7 +157,7 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    fParams.insert(ParamPair(RunParams::maxStepTime, maxStepTime));
    // Parameter to be set; Maximum spin step allowed in simulation
    double spinStepTime = runConfigFile.GetFloat(RunParams::spinStepTime,"Properties");
-   if (spinStepTime <= 0.) {throw runtime_error("Invalid SpinStepTime specified in runconfig");}
+   if (spinStepTime < 0.) {throw runtime_error("Invalid SpinStepTime specified in runconfig");}
    fParams.insert(ParamPair(RunParams::spinStepTime, spinStepTime));
    // -----------------------------------
    // -- Observer Options
@@ -186,6 +187,11 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    double fieldMeasInterval = (fieldMeasFreq == 0.0 ? 0.0 : (1.0/fieldMeasFreq));
    fParams.insert(ParamPair(RunParams::fieldMeasFreq, fieldMeasInterval));
    // -----------------------------------
+   // -- Selected Particle IDs
+   if (loadAllParticles == false) {
+      string s_particle_IDs = runConfigFile.GetString(RunParams::selectedParticleIDs,"Particles");
+      fSelectedParticleIDs = Algorithms::String::FactorString(s_particle_IDs,',');
+   }
    // -----------------------------------
    // Check for inconsistencies in RunConfig File
    if (fieldsFileName.empty() && (magField == true || elecField == true)) {

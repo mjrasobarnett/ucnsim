@@ -26,7 +26,6 @@
 
 ClassImp(CompositeShape)
 
-
 //_____________________________________________________________________________
 CompositeShape::CompositeShape()
                       :Box(0, 0, 0)
@@ -66,7 +65,7 @@ CompositeShape::CompositeShape(const char *expression)
    if (!fNode) {
       char message[256];
       sprintf(message, "Composite (no name) could not parse expression %s", expression);
-      Error("ctor", message);
+      Error("ctor", "%s", message);
       return;
    }
    ComputeBBox();

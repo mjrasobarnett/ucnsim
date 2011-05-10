@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 #include "ConfigFile.h"
 #include "Algorithms.h"
@@ -46,8 +47,10 @@ Int_t main(Int_t argc, Char_t **argv)
    // Loop over all runs in the config file
    for (int runNum = 1; runNum <= numberOfRuns; runNum++) {
       // Get the current run name and check that a section for this run exists in the config file
-      ostringstream runName;
+      ostringstream runName, jobName;
+      boost::gregorian::date today_date(boost::gregorian::day_clock::local_day());
       runName << "Run" << runNum;
+      jobName << "job_" << today_date << "_Run" << runNum;
       map<string,string> section = configFile.GetSection(runName.str());
       if (section.empty()) {
          cerr << "Error: Could not find Section - " << runName.str() << endl;
@@ -55,10 +58,11 @@ Int_t main(Int_t argc, Char_t **argv)
       }
       // Format a string that will specify the qsub command we wish to issue on feynman
       // that will submit a job
-      string script = Algorithms::FileSystem::ExpandFilePath("$UCN_DIR/scripts/submit_job.sh");
+      string script = Algorithms::FileSystem::ExpandFilePath("$UCN_DIR");
+      script += "/scripts/submit_job.sh";
       ostringstream command;
       command << "qsub -q " << queueName << ".q ";
-      command << "-N " << runName.str() << " ";
+      command << "-N " << jobName.str() << " ";
       command << script << " ";
       command << configFileName << " ";
       command << runNum;

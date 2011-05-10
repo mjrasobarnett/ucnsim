@@ -39,6 +39,8 @@ Int_t main(Int_t argc, Char_t **argv)
       cerr << "Usage, ucnsim <configFile.cfg> <run no.>" << endl;
       return EXIT_FAILURE;
    }
+   cout << "-------------------------------------------" << endl;
+   cout << "Opening Batch ConfigFile: " << configFileName << endl;
    ConfigFile configFile(configFileName);
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Fetch the Number of Runs
@@ -76,10 +78,11 @@ bool PerformSimulation(const ConfigFile& configFile, const int runNumber)
 {
    // -- Perform a simulation for the given run number
    // Read in the Run Configuration
+   cout << "-------------------------------------------" << endl;
+   cout << "Reading in Run Configuration " << runNumber << endl;
    RunConfig runConfig(configFile, runNumber);
    // Create the Run
-   cout << "-------------------------------------------" << endl;
-   cout << "Creating Run" << runNumber << endl;
+   cout << "Creating Run" << endl;
    Run run(runConfig);
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Initialise Run

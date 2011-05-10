@@ -15,7 +15,7 @@ Bool_t Draw_Geom(const TGeoManager* geoManager);
 using namespace GeomParameters;
 
 //__________________________________________________________________________
-Int_t vertical_tube()
+Int_t sourcetube_geom()
 {
    // Create the geoManager
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
@@ -35,8 +35,6 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    Materials::BuildMaterials(geoManager);
    TGeoMedium* beryllium = geoManager->GetMedium("Beryllium");
-   TGeoMedium* copper = geoManager->GetMedium("Copper");
-   TGeoMedium* aluminium = geoManager->GetMedium("Aluminium");
    TGeoMedium* blackhole = geoManager->GetMedium("BlackHole");
    TGeoMedium* heliumII = geoManager->GetMedium("HeliumII");
    
@@ -60,31 +58,57 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    top->AddNode(chamber,1);
    
    // -------------------------------------
-   // -- Vertical Tube   
+   // -- SOURCE TUBE
+   // -- Source tube has 13 segments, all of which are identical (except one which has a hole in the top)
+   
    // -- Make a SourceTube Segment
-   Tube *tubeShape = new Tube("Tube", 0.0, 0.235, 0.06);
-   TrackingVolume* tube = new TrackingVolume("Tube", tubeShape, heliumII);
-   tube->SetLineColor(kAzure-4);
-   tube->SetLineWidth(1);
-   tube->SetVisibility(kTRUE);
-   tube->SetTransparency(20);
-   // -- Define matrix
-   TGeoRotation rot("Rot",0,0,0); // phi, theta, psi
-   TGeoTranslation tra("Tra",0.,0.,0.); // x, y, z
-   TGeoCombiTrans com(tra,rot);
-   TGeoHMatrix mat = com;
-   Char_t matrixName[20];
-   sprintf(matrixName, "TubeMatrix"); 
-   mat.SetName(matrixName);
-   chamber->AddNode(tube, 1, new TGeoHMatrix(mat));
-    
+   Tube *sourceSegShape = new Tube("SourceSeg", sourceSegRMin, sourceSegRMax, sourceSegHalfLength);
+   TrackingVolume* sourceSeg = new TrackingVolume("SourceSeg", sourceSegShape, heliumII);
+   sourceSeg->SetLineColor(kAzure-4);
+   sourceSeg->SetLineWidth(1);
+   sourceSeg->SetVisibility(kTRUE);
+   sourceSeg->SetTransparency(20);
+   
+   Double_t segmentYPosition = sourceSegYPos;
+   for (Int_t segNum = 1; segNum <= 13; segNum++) {
+      // -- Define SourceTube matrix
+      // Rotation seems to be applied before translation so bear that in mind when choosing which
+      // coordinate to transform in translation
+      TGeoRotation segmentRot("SegmentRot",sourceSegPhi,sourceSegTheta,sourceSegPsi); // phi, theta, psi
+      TGeoTranslation segmentTra("SegmentTra",sourceSegXPos,segmentYPosition,sourceSegZPos); // x, y, z
+      TGeoCombiTrans segmentCom(segmentTra,segmentRot);
+      TGeoHMatrix segmentMat = segmentCom;
+      Char_t sourceMatrixName[20];
+      sprintf(sourceMatrixName, "SourceMatrix%d", segNum); 
+      segmentMat.SetName(sourceMatrixName);
+      chamber->AddNode(sourceSeg, segNum, new TGeoHMatrix(segmentMat));
+      segmentYPosition += 2.*sourceSegHalfLength; // Shift next segment along by length of segment 
+   }
+   
+   // -------------------------------------
+   // -- SOURCE VALVE
+   // Valve entrance volume is a shorter source-tube segment-like that connects
+   // the valve volume to the source
+   Tube *valveVolEntranceShape = new Tube("ValveVolEntrance", valveVolEntranceRMin, valveVolEntranceRMax, valveVolEntranceHalfLength);
+   TrackingVolume* valveVolEntrance = new TrackingVolume("ValveVolEntrance", valveVolEntranceShape, heliumII);
+   valveVolEntrance->SetLineColor(kTeal-3);
+   valveVolEntrance->SetLineWidth(1);
+   valveVolEntrance->SetVisibility(kTRUE);
+   valveVolEntrance->SetTransparency(20);
+   // -- Define the Valve volume entrance
+   TGeoRotation valveVolEntranceRot("ValveVolEntranceRot",valveVolEntrancePhi,valveVolEntranceTheta,valveVolEntrancePsi);
+   TGeoTranslation valveVolEntranceTra("ValveVolEntranceTra",valveVolEntranceXPos,valveVolEntranceYPos,valveVolEntranceZPos);
+   TGeoCombiTrans valveVolEntranceCom(valveVolEntranceTra,valveVolEntranceRot);
+   TGeoHMatrix valveVolEntranceMat = valveVolEntranceCom;
+   chamber->AddNode(valveVolEntrance, 1, new TGeoHMatrix(valveVolEntranceMat));
+   
    // -------------------------------------
    // -- Close Geometry
    geoManager->CloseGeometry();
    
    // -------------------------------------
    // -- Write out geometry to file
-   const char *fileName = "$(UCN_GEOM)/vertical_tube.root";
+   const char *fileName = "$(UCN_GEOM)/sourcetube_geom.root";
    cerr << "Simulation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    

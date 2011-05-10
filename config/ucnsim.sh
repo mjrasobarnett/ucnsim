@@ -11,7 +11,7 @@ if [[ `uname -n` == "MJRasoBarnett.local" ]] ; then
 	export UCN_DIR=${HOME}/Projects/ucnsim/source
 	export UCN_GEOM=${UCN_DIR}/geom
 	export UCN_RUNS=${UCN_DIR}/runs
-	export PATH=${UCN_DIR}/bin:${PATH}
+	export PATH=${UCN_DIR}/build:${PATH}
 	# Define path to ROOT installation
 	if [[ -z "${ROOTSYS}" ]] ; then
 		export ROOTSYS=${HOME}/Apps/ROOT/root
@@ -29,7 +29,7 @@ elif [[ `uname -n` == "feynman" ]] ; then
 	export UCN_GEOM=${UCN_DIR}/geom
 	export SCRATCH=/epp/scratch/nedm/mb325
 	export UCN_RUNS=${SCRATCH}/runs
-	export PATH=${UCN_DIR}/bin:${UCN_DIR}/scripts:${PATH}
+	export PATH=${UCN_DIR}/build:${UCN_DIR}/scripts:${PATH}
 	if [[ -z "${ROOTSYS}" ]] ; then
 		export ROOTSYS=${HOME}/root/root
 		export PATH=${ROOTSYS}/bin:${PATH}

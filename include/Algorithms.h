@@ -25,19 +25,6 @@ namespace Algorithms {
       bool IsLessOrEqual(double left, double right, double precision = 1.E-10);
    }
    //_____________________________________________________________________________
-   // Namespace holding functions relevant to datafile structure
-   //_____________________________________________________________________________
-   namespace DataFile
-   {
-      //_____________________________________________________________________________
-      bool ValidateRootFile(const std::string filename);
-      //_____________________________________________________________________________
-      bool ValidateStateNames(const std::vector<std::string>& statenames);
-      bool ValidateStateNames(const std::string statename);
-      //_____________________________________________________________________________
-      void CountParticles(TDirectory * const particleDir);
-   }
-   //_____________________________________________________________________________
    // Namespace holding functions relevant to string transformations
    //_____________________________________________________________________________
    namespace String
@@ -48,6 +35,12 @@ namespace Algorithms {
       bool ConvertToBool(const std::string input, bool& output);
       //_____________________________________________________________________________
       bool ConvertToDouble(const std::string input, double& output);
+      //_____________________________________________________________________________
+      bool ConvertVectorToInt(const std::vector<std::string>& input, std::vector<int>& output);
+      //_____________________________________________________________________________
+      bool ConvertVectorToDouble(const std::vector<std::string>& input, std::vector<double>& output);
+      //_____________________________________________________________________________
+      std::vector<std::string> FactorString(const std::string input, const char delim);
    }
    //_____________________________________________________________________________
    // Namespace holding functions relevant to underlying filesystem
@@ -58,6 +51,15 @@ namespace Algorithms {
       std::string ExpandShellVar(const std::string var);
       //_____________________________________________________________________________
       std::string ExpandFilePath(const std::string path);
+   }
+   
+   //_____________________________________________________________________________
+   // Namespace for functions relating to the Progress Bar
+   //_____________________________________________________________________________
+   namespace ProgressBar
+   {
+      //_____________________________________________________________________________
+      void PrintProgress(int entry, float nEntriesF, int mintime);
    }
 }
 #endif

@@ -16,7 +16,7 @@
 #include "TFile.h"
 #include "TRandom.h"
 
-#include "ProgressBar.h"
+#include "Algorithms.h"
 #include "Units.h"
 
 using std::cout;
@@ -193,7 +193,7 @@ Bool_t Run::Start()
       particle->SaveState(this);
       // Print Progress Bar to Screen
       #ifndef VERBOSE_MODE
-         ProgressBar::PrintProgress(index, totalParticles, 2);
+         Algorithms::ProgressBar::PrintProgress(index, totalParticles, 2);
       #endif
       // Delete Particle
       delete particle;

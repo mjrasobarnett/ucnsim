@@ -30,7 +30,7 @@
 #include "Units.h"
 #include "DataFileHierarchy.h"
 #include "GeomParameters.h"
-#include "ProgressBar.h"
+#include "Algorithms.h"
 
 using std::cin;
 using std::cout;
@@ -68,7 +68,7 @@ Int_t main(Int_t argc,Char_t **argv)
    }
    // Start 'the app' -- this is so we are able to enter into a ROOT session
    // after the program has run, instead of just quitting.
-   TRint *theApp = new TRint("FittingApp", &argc, argv);
+   TRint *theApp = new TRint("FittingApp", NULL, NULL);
    // Read in Batch Configuration file to find the Initial Configuration File
    ConfigFile configFile(configFileName);
    ///////////////////////////////////////////////////////////////////////////////////////
@@ -199,12 +199,12 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       initialVZHist->Fill(particle->Vz());
       initialVHist->Fill(particle->V());
       initialTHist->Fill(particle->T());
-      positions->SetPoint(particle->Id(), particle->X(), particle->Y(), particle->Z());
+      positions->SetPoint(particle->Id()-1, particle->X(), particle->Y(), particle->Z());
       // -- Add particle to data file
       data->SaveParticle(particle, Folders::initial);
       if (particle) delete particle;
       // -- Update progress bar
-      ProgressBar::PrintProgress(i,particles,1);
+      Algorithms::ProgressBar::PrintProgress(i,particles,1);
    }
    // -- Close the data
    delete data;
@@ -250,7 +250,9 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
    glViewer->SetCurrentCamera(camera);
    glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   Double_t cameraCentre[3] = {0,0,0};
+   // -- Set Camera centre to Centre of the Beam
+   const TVector3 beamCentre = initialConfig.BeamDisplacement();
+   Double_t cameraCentre[3] = {beamCentre.X(),beamCentre.Y(),beamCentre.Z()};
    glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
    // -- Draw Reference Point, Axes
    Double_t refPoint[3] = {0.,0.,0.};

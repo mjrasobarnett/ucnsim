@@ -3,7 +3,6 @@
 
 #include "Field.h"
 #include "FieldVertex.h"
-
 //______________________________________________________________________________
 // Field - ABC for magnetic field.
 //
@@ -69,10 +68,12 @@ FieldVertex Field::ConvertToGlobalFrame(const FieldVertex& point) const
    FieldVertex globalPoint;
    Double_t localPoint[3] = {point.X(), point.Y(), point.Z()};
    Double_t masterPoint[3] = {0.,0.,0.};
+   fFieldMatrix->LocalToMaster(localPoint, masterPoint);
+   // Rotate the field (but dont apply translation)
    Double_t localField[3] = {point.Fx(), point.Fy(), point.Fz()};
    Double_t masterField[3] = {0.,0.,0.};
-   fFieldMatrix->LocalToMaster(localPoint, masterPoint);
-   fFieldMatrix->LocalToMaster(localField, masterField);
+   TGeoRotation rotationMatrix(*fFieldMatrix);
+   rotationMatrix.LocalToMaster(localField, masterField);
    globalPoint.SetPosition(masterPoint[0],masterPoint[1],masterPoint[2]);
    globalPoint.SetField(masterField[0],masterField[1],masterField[2]);
    return globalPoint;
@@ -85,10 +86,12 @@ FieldVertex Field::ConvertToLocalFrame(const FieldVertex& point) const
    FieldVertex globalPoint;
    Double_t localPoint[3] = {0.,0.,0.};
    Double_t masterPoint[3] = {point.X(), point.Y(), point.Z()};
+   fFieldMatrix->MasterToLocal(masterPoint, localPoint);
+   // Rotate the field (but dont apply translation)
    Double_t localField[3] = {0.,0.,0.};
    Double_t masterField[3] = {point.Fx(), point.Fy(), point.Fz()};
-   fFieldMatrix->MasterToLocal(masterPoint, localPoint);
-   fFieldMatrix->MasterToLocal(masterField, localField);
+   TGeoRotation rotationMatrix(*fFieldMatrix);
+   rotationMatrix.MasterToLocal(masterField, localField);
    globalPoint.SetPosition(localPoint[0],localPoint[1],localPoint[2]);
    globalPoint.SetField(localField[0],localField[1],localField[2]);
    return globalPoint;

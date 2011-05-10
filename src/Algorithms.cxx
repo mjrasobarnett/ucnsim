@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <iostream>
 #include <sstream>
+#include <sys/stat.h> // Required by Progress bar
+#include <iomanip>
 
 #include <boost/algorithm/string.hpp>
 
@@ -44,94 +46,6 @@ bool Precision::IsLessOrEqual(double left, double right, double precision) {
    } else {
       return false;
    }
-}
-
-
-//_____________________________________________________________________________
-bool DataFile::ValidateRootFile(const string filename)
-{
-   // -- Check that the filename supplied has a .root extension
-   size_t found = filename.find_last_of(".");
-   if (found == string::npos) return false;
-   if (filename.substr(found) == ".root") return true;
-   return false;
-}
-//_____________________________________________________________________________
-bool DataFile::ValidateStateNames(const vector<string>& statenames)
-{
-   // -- Check that each statename in list is a valid state as defined
-   // -- in DataFileHierarchy lvl 3 and is unique
-   vector<string>::const_iterator iter;
-   for (iter = statenames.begin(); iter != statenames.end(); iter++) {
-      // Check state-name
-      if (*iter != Folders::initial &&
-          *iter != Folders::propagating &&
-          *iter != Folders::absorbed &&
-          *iter != Folders::lost &&
-          *iter != Folders::decayed &&
-          *iter != Folders::detected &&
-          *iter != Folders::anomalous) {
-         cerr << "Argument, " << *iter << " is not a valid statename" << endl;
-         return false;
-      }
-      // Check for duplicates
-      vector<string>::const_iterator second_iter;
-      for (second_iter = iter+1; second_iter != statenames.end(); second_iter++) {
-         if (*second_iter == *iter) {
-            cerr << "Duplicate statenames given: " << *iter << endl;
-            return false;
-         }
-      }
-   }
-   return true;
-}
-//_____________________________________________________________________________
-bool DataFile::ValidateStateNames(const string statename)
-{
-   // -- Check that each statename in list is a valid state as defined
-   // -- in DataFileHierarchy lvl 3 and is unique
-   // Check state-name
-   if (statename != Folders::initial &&
-         statename != Folders::propagating &&
-         statename != Folders::absorbed &&
-         statename != Folders::lost &&
-         statename != Folders::decayed &&
-         statename != Folders::detected &&
-         statename != Folders::anomalous) {
-      cerr << "Argument, " << statename << " is not a valid statename" << endl;
-      return false;
-   }
-   return true;
-}
-//_____________________________________________________________________________
-void DataFile::CountParticles(TDirectory * const particleDir)
-{
-   // -- Given the particle state directory, count the number of particles
-   // -- in each state subfolder
-   if (particleDir->cd(Folders::initial.c_str()) == false) return;
-   Int_t initial = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::propagating.c_str()) == false) return;
-   Int_t propagating = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::absorbed.c_str()) == false) return;
-   Int_t absorbed = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::detected.c_str()) == false) return;
-   Int_t detected = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::decayed.c_str()) == false) return;
-   Int_t decayed = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::lost.c_str()) == false) return;
-   Int_t lost = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::anomalous.c_str()) == false) return;
-   Int_t anomalous = gDirectory->GetNkeys();
-   cout << "Initial Particles: " << initial << endl;
-   cout << "Final Total: ";
-   cout << propagating+detected+absorbed+decayed+lost+anomalous << endl;
-   cout << "Propagating: " << propagating << endl;
-   cout << "Detected: " << detected << endl;
-   cout << "Absorbed: " << absorbed << endl;
-   cout << "Decayed: " << decayed << endl;
-   cout << "Lost: " << lost << endl;
-   cout << "Anomalous: " << anomalous << endl;
-   return;
 }
 
 //_____________________________________________________________________________
@@ -184,6 +98,50 @@ bool String::ConvertToDouble(const string input, double& output)
    return true;
 }
 
+//_____________________________________________________________________________
+bool String::ConvertVectorToInt(const vector<string>& input, vector<int>& output)
+{
+   // -- Convert vector of strings to integers
+   vector<string>::const_iterator input_Iter;
+   for (input_Iter = input.begin(); input_Iter != input.end(); input_Iter++) {
+      int value = 0;
+      if (String::ConvertToInt(*input_Iter, value) == false) return false;
+      output.push_back(value);
+   }
+   return true;
+}
+
+//_____________________________________________________________________________
+bool String::ConvertVectorToDouble(const std::vector<std::string>& input, std::vector<double>& output)
+{
+   // -- Convert vector of strings to doubles
+   vector<string>::const_iterator input_Iter;
+   for (input_Iter = input.begin(); input_Iter != input.end(); input_Iter++) {
+      double value = 0;
+      if (String::ConvertToDouble(*input_Iter, value) == false) return false;
+      output.push_back(value);
+   }
+   return true;
+}
+
+//______________________________________________________________________________
+vector<string> String::FactorString(const string input, const char delim)
+{
+   // -- Take input string and split it up into a vector of sub-strings using the supplied delimeter
+   vector<string> result;
+   size_t previousTabPos = 0, nextTabPos = 0;
+   while (nextTabPos != string::npos) {
+      // Find position of nex tab
+      nextTabPos = input.find(delim, previousTabPos);
+      // Extract string between found tab position and previous tab position
+      string value = input.substr(previousTabPos, nextTabPos - previousTabPos);
+      result.push_back(value);
+      // Increment previous tab position to next tab position (plus 1 so that we search for the
+      // next tab from right after this position)
+      previousTabPos = nextTabPos+1;
+   }
+   return result;
+}
 
 //_____________________________________________________________________________
 string FileSystem::ExpandFilePath(const string path)
@@ -216,6 +174,9 @@ string FileSystem::ExpandFilePath(const string path)
       // Check fullpath for any more shell variables to expand
       start_pos = fullpath.find_first_of("$");
    }
+   // Finally check that final character is a '/' command, as this path serves as
+   // a prefix to be able to locate specific files in this folder
+   if (strcmp(&fullpath.at(fullpath.length() - 1), "/") != 0) {fullpath.append("/");}
    #ifdef VERBOSE
       cout << "Full path: " << fullpath << endl;
    #endif
@@ -250,3 +211,114 @@ string FileSystem::ExpandShellVar(const string var)
    string empty_str;
    return empty_str;
 }
+
+//_____________________________________________________________________________
+void ProgressBar::PrintProgress(int entry, float nEntriesF, int mintime)
+{
+   // -- Written by Nicholas Devenish - 01/2010
+   int nEntries = (int)nEntriesF;
+
+   // Are we streaming to a file? If so, show the old style
+   struct stat buf;
+   fstat(fileno(stdout), &buf);
+   // Check if we are a file, or a pipe (i.e. in case the user tees)
+   const bool isFile = buf.st_mode & (S_IFREG | S_IFIFO) ;
+   if (isFile) {
+     float fract = ceil(nEntries/20.);  
+     if (ceil(((float)entry)/fract)==((float)entry)/fract)
+     {
+         cerr 
+           <<"Fraction of loop complete: "<<entry 
+           <<"/"<<nEntries<<"  ("
+           <<(int)(100.*entry/nEntries)<<"%)"<<endl;
+     }
+     return;
+   }
+
+
+   // How wide should we make the progress bar?
+   const int width = 70;
+   // How long is the string for entries?
+   static int countlen = -1;
+   // How long is our progress bar?
+   static int barlen = -1;
+   // The entry number of the next bar entry
+   static int nextbar = -1;
+   // When did we start?
+   static time_t starttime = 0;
+   // when do we next update?
+   static time_t nextupdate = 0;
+   // If we are processing the first entry, reset everything
+   if (entry <= 1)
+   {
+     // Get the new length of the entry string
+     countlen = (int)ceil(log10(nEntries)) + 1;
+     nextbar = -1;
+     starttime = time(NULL);
+
+     barlen = width - 14 - countlen*2 - 1;
+
+     // Don't update until we get to the minimum time
+     nextupdate = starttime + mintime;
+   }
+
+   // Check here to see if we should update; otherwise, return
+   // Check to see if the bar would update
+   // or, alternatively, it is time to refresh.
+   if ((time(NULL) < nextupdate) && (entry < nextbar || (nextbar == -1)))return;
+   nextupdate = time(NULL) + 10;
+
+   // Because this is used in several places, make it here
+   float frac = (float)entry / (float)nEntries;
+
+   // Prepare the progress bar string
+   string bar;
+   if (entry <= nEntries)
+   {
+     // Work out how many characters we are in
+     int numeq = floor(frac*barlen);
+
+     // Work out when the next bar will occur
+     nextbar = (int)((float)(numeq+1)/(float)barlen*nEntries);
+     //cerr << "Next bar at: " << nextbar << "        " << endl;
+     bar = string(numeq,'=');
+     bar += string(barlen - numeq, ' ');
+   } else if (entry > nEntries) {
+     // We have gone over. Oh no!
+     bar = string(barlen, '+');
+   } else if (entry < 0) {
+     // Somehow, we are below zero. Handle it nonetheless
+     bar = string(barlen, '-');
+   }
+
+
+   // Prepare the ETA
+   float elapsed_time = (float)(time(NULL) - starttime);
+   float time_left = -60;
+   if (frac > 1e-6) {
+     time_left = (elapsed_time / frac) - elapsed_time;
+   }
+   int mins, seconds;
+   mins    = (int)floor(time_left / 60.0f);
+   seconds = (int)floor(time_left - (float)(mins*60.0f));
+   // ETA;
+   std::ostringstream ETA;
+
+   ETA << "ETA ";
+   if ((mins < 0 || seconds < 0) || (mins == 0 && seconds == 0)) {
+     ETA << "--:--";
+   } else {
+     ETA << std::setfill('0') << std::setw(2) << mins << ":" << std::setw(2) << seconds;
+   }
+
+   cerr << " Progress: [" << bar << "] "
+        << std::setw(countlen) << entry << "/" << nEntries
+        << " " << ETA.str()
+        << '\r'
+        << std::flush;
+   // Move to the next line, if this is the final entry!
+   if (entry == nEntries) {
+     cerr << endl;
+   }
+}
+
