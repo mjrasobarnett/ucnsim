@@ -3,6 +3,7 @@
 #include <cassert>
 #include <iterator>
 #include <stdexcept>
+#include <math.h>
 
 #include "DataAnalysis.h"
 
@@ -566,7 +567,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    Char_t histname[40];
    const double runTime = runConfig.RunTime();
    const double spinMeasInterval = runConfig.SpinMeasureInterval();
-   const int nbins = runTime/spinMeasInterval;
+   const int nbins = ceil(runTime/spinMeasInterval);
    const TVector3 xAxis(1.0,0.0,0.0);
    const TVector3 yAxis(0.0,1.0,0.0);
    const TVector3 zAxis(0.0,0.0,1.0);
