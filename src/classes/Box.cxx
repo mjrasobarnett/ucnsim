@@ -635,7 +635,7 @@ Double_t Box::SmallestInsideTime(const Int_t solutions, Double_t* roots, const B
 		} else {
 			//-- Only Root is negative or zero
 			#ifdef VERBOSE_MODE
-				cout << "Only root is nagative or zero" << endl;
+				cout << "Only root is negative or zero" << endl;
 				cout << "-----------------------------" << endl;
          #endif
 			return 0;
