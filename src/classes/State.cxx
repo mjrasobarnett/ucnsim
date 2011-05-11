@@ -408,12 +408,12 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
 // node.
    
    // -- Get the global coordinates
-   Double_t globalField[3] 	 = {field->Gx(), field->Gy(), field->Gz()}; 
+   Double_t globalField[3]     = {field->Gx(), field->Gy(), field->Gz()}; 
    Double_t globalPoint[3]     = {particle.X(), particle.Y(), particle.Z()};
    Double_t globalDir[3]       = {particle.Nx(), particle.Ny(), particle.Nz()};
    Double_t globalVelocity[3]  = {particle.Vx(), particle.Vy(), particle.Vz()};
    
-   Double_t currentField[3]	 = {globalField[0], globalField[1], globalField[2]};
+   Double_t currentField[3]    = {globalField[0], globalField[1], globalField[2]};
    Double_t currentPoint[3]    = {globalPoint[0], globalPoint[1], globalPoint[2]};
    Double_t currentDir[3]      = {globalDir[0], globalDir[1], globalDir[2]};
    Double_t currentVelocity[3] = {globalVelocity[0], globalVelocity[1], globalVelocity[2]};
