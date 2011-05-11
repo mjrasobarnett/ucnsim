@@ -501,10 +501,6 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
       currentPoint[1] += navigator->GetStep()*currentDir[1]; 
       currentPoint[2] += navigator->GetStep()*currentDir[2];	
       navigator->SetCurrentPoint(currentPoint);
-      if (navigator->GetCurrentNode()->IsOffset()) {
-         Warning("ParabolicBoundaryFinder","Deprecated CrossDivisionCell().");
-         throw runtime_error("In Particle PBF Need to call CrossDivisionCell but can't!");
-      }
       // -- Cross Boundary and return new volume
       if (navigator->GetLevel()) {
          navigator->CdUp(); 
@@ -629,12 +625,6 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
    }
    current = navigator->GetCurrentNode();
    navigator->CdDown(icrossed);
-   nextindex = navigator->GetCurrentNode()->GetVolume()->GetNextNodeIndex();
-   while (nextindex>=0) {
-      current = navigator->GetCurrentNode();
-      navigator->CdDown(nextindex);
-      nextindex = navigator->GetCurrentNode()->GetVolume()->GetNextNodeIndex();
-   }
    #ifdef VERBOSE_MODE
       cout << "Crossing boundary. Navigating Downwards in Node Hierarchy." << endl;
       cout << "---------------------------------------" << endl;
