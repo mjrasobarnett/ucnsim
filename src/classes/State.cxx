@@ -293,7 +293,7 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
    } else {
       // CASE 2; Grav Field present - tracking along parabolic trajectories
       // -- Propagate Point by StepTime along Parabola
-      TGeoNode* nextNode = this->ParabolicBoundaryFinder(stepTime, particle, navigator, crossedNode, gravField);
+      TGeoNode* nextNode = this->ParabolicBoundaryFinder(stepTime, *particle, navigator, crossedNode, gravField);
       if (nextNode == NULL) {
          #ifdef VERBOSE_MODE
             Error("MakeStep", "MakeStep has failed to find the next node");
@@ -400,7 +400,7 @@ Double_t Propagating::DetermineNextStepTime(const Particle& particle, const RunC
 }
 
 //_____________________________________________________________________________
-TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* particle, TGeoNavigator* navigator, TGeoNode* crossedNode, const GravField* const field)
+TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particle& particle, TGeoNavigator* navigator, TGeoNode* crossedNode, const GravField* const field)
 {
 // Compute distance to next boundary within STEPMAX. If no boundary is found,
 // propagate current point along current direction with fStep=STEPMAX. Otherwise
@@ -409,9 +409,9 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* par
    
    // -- Get the global coordinates
    Double_t globalField[3] 	 = {field->Gx(), field->Gy(), field->Gz()}; 
-   Double_t globalPoint[3] 	 = {particle->X(), particle->Y(), particle->Z()};
-   Double_t globalDir[3]	 	 = {particle->Nx(), particle->Ny(), particle->Nz()};
-   Double_t globalVelocity[3]  = {particle->Vx(), particle->Vy(), particle->Vz()};
+   Double_t globalPoint[3]     = {particle.X(), particle.Y(), particle.Z()};
+   Double_t globalDir[3]       = {particle.Nx(), particle.Ny(), particle.Nz()};
+   Double_t globalVelocity[3]  = {particle.Vx(), particle.Vy(), particle.Vz()};
    
    Double_t currentField[3]	 = {globalField[0], globalField[1], globalField[2]};
    Double_t currentPoint[3]    = {globalPoint[0], globalPoint[1], globalPoint[2]};

@@ -72,7 +72,7 @@ protected:
    virtual Bool_t    MakeStep(Double_t stepTime, Particle* particle, Run* run);
    
    // Boundary Finding
-   virtual TGeoNode* ParabolicBoundaryFinder(Double_t& stepTime, Particle* particle,
+   virtual TGeoNode* ParabolicBoundaryFinder(Double_t& stepTime, const Particle& particle,
                                           TGeoNavigator* navigator, TGeoNode* crossedNode,
                                           const GravField* const field);
    virtual TGeoNode* ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator,
