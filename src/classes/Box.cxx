@@ -526,7 +526,7 @@ Bool_t Box::IsNextPointOnBox(const Double_t* point, const Double_t* velocity, co
 	// Check that this intersection is actually located on the surface of the box. 
 	#ifdef VERBOSE_MODE
 		cout << "-----------------------------" << endl;
-      cout << "-- IsNextPointOnBox --" << endl;
+      cout << "-- IsNextPointOnBox -- For Solution: " << t << endl;
 	#endif
 	
 	Double_t crossedpoint[3], surface[3];
