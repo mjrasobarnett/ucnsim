@@ -625,11 +625,13 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
    }
    current = navigator->GetCurrentNode();
    navigator->CdDown(icrossed);
+   TGeoNode* finalNode = navigator->CrossBoundaryAndLocate(kTRUE, current);
    #ifdef VERBOSE_MODE
       cout << "Crossing boundary. Navigating Downwards in Node Hierarchy." << endl;
+      cout << "Final Node: " << finalNode->GetName() << endl;
       cout << "---------------------------------------" << endl;
    #endif
-   return navigator->CrossBoundaryAndLocate(kTRUE, current);
+   return finalNode;
 }
 
 //_____________________________________________________________________________
