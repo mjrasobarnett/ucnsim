@@ -305,6 +305,27 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
       assert(nextNode == navigator->GetCurrentNode());
    }
    
+   // -- We should now have propagated our point by some stepsize and be inside the correct volume 
+   if (fIsStepEntering == kTRUE) {
+      // If current node is the daughter of the initial node, then we need to set the current node
+      // as the crossed node, so that we use its normal vector for making reflections off of
+      crossedNode = navigator->GetCurrentNode();
+      #ifdef VERBOSE_MODE
+         cout << "Particle has entered a Daughter volume of the initial volume: " << crossedNode->GetName() << endl;
+      #endif
+   } else if (fIsStepExiting == kTRUE) {
+      // We are exiting mother volume
+      // crossedNode = initialNode --> therefore no change to be made
+      #ifdef VERBOSE_MODE
+         cout << "Particle has exited the boundary of the initial volume: " << crossedNode->GetName() << endl;
+      #endif
+   } else {
+      // Neither Exiting mother nor entering daughter. Hopefully its because we didnt hit any boundaries
+      #ifdef VERBOSE_MODE
+         cout << "Particle has not hit any boundaries in this step" << endl;
+      #endif
+   }
+   
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Move Particle to next position.
    // -- Along the way, if a MagField is present, precess the spin
@@ -316,6 +337,7 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
       cout << "Steptime (s): " << stepTime << endl;
       cout << "-----------------------------" << endl;
       cout << "Navigator's Current Node: " << navigator->GetCurrentNode()->GetName() << endl;
+      cout << "Crossed Node: " << crossedNode->GetName() << endl;
       cout << "Is On Boundary?  " << fIsOnBoundary << endl;
       cout << "Is Step Entering?  " << fIsStepEntering << endl;
       cout << "Is Step Exiting?  " << fIsStepExiting << endl;
@@ -335,7 +357,6 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
       this->IsAnomalous(particle);;
       throw runtime_error("Unable to locate particle uniquely in correct volume");
    }
-   // -- We should now have propagated our point by some stepsize and be inside the correct volume 
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Determine whether we collided with a wall, decayed, or any other
