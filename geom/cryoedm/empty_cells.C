@@ -79,6 +79,21 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    Double_t detectorValveVolCapacity = detectorValveVolShape->Capacity();
    
    // -------------------------------------
+   // -- DetectorValve
+   Box *detectorValveShape = new Box("DetectorValveShape", detectorValveHalfX, detectorValveHalfY, detectorValveHalfZ);
+   Boundary* detectorValve = new Boundary("DetectorValve", detectorValveShape, beryllium, surfaceRoughness);
+   detectorValve->SetLineColor(kBlue+3);
+   detectorValve->SetLineWidth(1);
+   detectorValve->SetVisibility(kTRUE);
+   detectorValve->SetTransparency(0);
+   // -- Define the Valve volume back
+   TGeoRotation detectorValveRot("DetectorValveRot",detectorValvePhi,detectorValveTheta,detectorValvePsi);
+   TGeoTranslation detectorValveTra("DetectorValveXPosTra",detectorValveXPos, detectorValveYPos, detectorValveZPos);
+   TGeoCombiTrans detectorValveCom(detectorValveTra,detectorValveRot);
+   TGeoHMatrix detectorValveMat = detectorValveCom;
+   detectorValveVol->AddNode(detectorValve, 1, new TGeoHMatrix(detectorValveMat));
+      
+   // -------------------------------------
    // -- DETECTOR TUBE
    // DetectorTubeTop - Entrance into the detector tube
    Tube *detectorTubeTopShape = new Tube("DetectorTubeTop", detectorTubeTopRMin, detectorTubeTopRMax, detectorTubeTopHalfLength);
