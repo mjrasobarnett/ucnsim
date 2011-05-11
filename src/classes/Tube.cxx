@@ -532,7 +532,6 @@ Double_t Tube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* vel
 					#ifdef VERBOSE_MODE
 						cout << "Both roots are negative, zero or invalid" << endl; 
 					#endif
-					return 0;
 				}
 			}
 		} else if (solutions == 1) {
@@ -544,14 +543,12 @@ Double_t Tube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* vel
 				#ifdef VERBOSE_MODE
 					cout << "Only root is negative, zero or invalid" << endl; 
 				#endif
-				return 0;
 			}
 		} else {
 			// -- No Real Roots
 			#ifdef VERBOSE_MODE
 				cout << "No solutions" << endl; 
 			#endif
-			return 0;
 		}
 		
 		#ifdef VERBOSE_MODE
