@@ -558,12 +558,6 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* par
       // the current volume's boundary.
       crossedNode = crossed;
    }
-   // -- If we are in an overlapping node, return an error as we are no longer supporting this.
-   // -- Geometries must be constructed with no overlaps beyond common boundaries.
-   if (navigator->GetNmany()) {
-      Error("PBF","In overlapping node - implementation of this removed");
-      return 0;
-   }
    // *********************************************************************
    // -- Update the navigator's state to intersection point
    // *********************************************************************
