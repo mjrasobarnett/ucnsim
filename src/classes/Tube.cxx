@@ -216,14 +216,16 @@ Double_t Tube::TimeFromOutsideS(const Double_t* point, const Double_t* velocity,
 	if (tmin == 0.0) {
 		// -- Failed to hit either of the z-boundaries
 		#ifdef VERBOSE_MODE
-			cout << "Particle has failed to hit either z-boundary from Inside." << endl;
+			cout << "Particle has failed to hit either z-boundary from Outside." << endl;
 		#endif
 	} else {
 		// -- Solution found. Setting as the current smallest time
 		#ifdef VERBOSE_MODE
 			cout << "Particle has reached first z-boundary in: " << tmin << endl;
 		#endif
-		tfinal = tmin;
+      if (tfinal == 0. || tmin < tfinal) {
+         tfinal = tmin;
+      }
 	}
 	
 	// --------------------------------------------------------------------------------------
