@@ -275,6 +275,19 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix cellConnectorMat = cellConnectorCom;
    neutralCell->AddNode(cellConnector, 1, new TGeoHMatrix(cellConnectorMat));
    
+   // Cell Connector Tube Boundary
+   Tube *cellConnectorBoundaryShape = new Tube("CellConnectorBoundaryShape", cellConnectorBoundaryRMin, cellConnectorBoundaryRMax, cellConnectorBoundaryHalfZ);
+   Boundary* cellConnectorBoundary = new Boundary("CellConnectorBoundary", cellConnectorBoundaryShape, beryllium, surfaceRoughness);
+   cellConnectorBoundary->SetLineColor(kGreen-1);
+   cellConnectorBoundary->SetLineWidth(1);
+   cellConnectorBoundary->SetVisibility(kFALSE);
+   cellConnectorBoundary->SetTransparency(20);
+   TGeoRotation cellConnectorBoundaryRot("CellConnectorBoundaryRot", cellConnectorBoundaryPhi, cellConnectorBoundaryTheta, cellConnectorBoundaryPsi);
+   TGeoTranslation cellConnectorBoundaryTra("CellConnectorBoundaryTra", cellConnectorBoundaryXPos, cellConnectorBoundaryYPos, cellConnectorBoundaryZPos);
+   TGeoCombiTrans cellConnectorBoundaryCom(cellConnectorBoundaryTra,cellConnectorBoundaryRot);
+   TGeoHMatrix cellConnectorBoundaryMat = cellConnectorBoundaryCom;
+   neutralCell->AddNode(cellConnectorBoundary, 1, new TGeoHMatrix(cellConnectorBoundaryMat));
+   
    // Define Central electrode 
    Tube *centralElectrodeShape = new Tube("CentralElectrodeShape", centralElectrodeRMin, centralElectrodeRMax, centralElectrodeHalfZ);
    Boundary* centralElectrode = new Boundary("CentralElectrode", centralElectrodeShape, beryllium, surfaceRoughness);
