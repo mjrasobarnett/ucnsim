@@ -12,7 +12,6 @@ class ConfigFile;
 
 class InitialConfig {
 private:
-   std::string fRunName;
    
    std::string fGeomFile;
    std::string fGeomVisFile;
@@ -48,7 +47,6 @@ public:
    virtual ~InitialConfig();
    
    // Methods
-   std::string RunName() const {return fRunName;}
    std::string GeomFileName() const {return fGeomFile;}
    std::string GeomVisFileName() const {return fGeomVisFile;}
    std::string OutputFileName() const {return fOutputDataFile;}
