@@ -460,7 +460,6 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
    // -- distance to boundary of current node.
    // *********************************************************************
    Double_t localPoint[3], localVelocity[3], localField[3]; // Containers for the local coords
-   Int_t icrossed = -2;
    navigator->GetCurrentMatrix()->MasterToLocal(currentPoint, &localPoint[0]);
    navigator->GetCurrentMatrix()->MasterToLocalVect(currentVelocity, &localVelocity[0]);
    navigator->GetCurrentMatrix()->MasterToLocalVect(currentField, &localField[0]);
@@ -481,6 +480,7 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
       cout << "Time to nearest boundary of " << crossedNode->GetName() << ": " << tnext << endl;
       cout << "Proposed Step Time: " << stepTime << endl;
    #endif
+   
    // -- If distance to exiting current node is <= Tolerance value (1e-10)
    // -- make a small step by navigator tolerance value
    if (snext <= TGeoShape::Tolerance()) {
@@ -513,7 +513,6 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
    // -- If distance to exiting current node is smaller than proposed Stepsize
    // -- then set our stepsize fStep to navigator distance (snext)
    if (snext < navigator->GetStep() - TGeoShape::Tolerance()) {
-      icrossed = -1;
       navigator->SetStep(snext);
       stepTime = tnext;
       fIsStepEntering = kFALSE;
@@ -531,14 +530,13 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
    #ifdef VERBOSE_MODE
       cout << "Check daughter volumes of " << crossedNode->GetName() << " to see if there are any further intersection" << endl;
    #endif
-   Int_t idaughter = -1;
-   TGeoNode *crossed = this->ParabolicDaughterBoundaryFinder(stepTime, navigator, localPoint, localVelocity, localField, idaughter, kTRUE);
+   Int_t daughterIndex = -1;
+   TGeoNode *crossed = this->ParabolicDaughterBoundaryFinder(stepTime, navigator, localPoint, localVelocity, localField, daughterIndex, kTRUE);
    if (crossed) {
       #ifdef VERBOSE_MODE
          cout << "Particle will intersect " << crossed->GetName() << " volume first." << endl;
       #endif
       fIsStepExiting = kFALSE;
-      icrossed = idaughter;
       fIsStepEntering = kTRUE;
       // If we crossed a daughter volume, set this node to be the new crossedNode,
       // since in this case it is the daughter's boundary we are crossing, rather than
@@ -589,7 +587,7 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
    // -- Return Final Node
    // *********************************************************************
    TGeoNode *current = 0;
-   if (icrossed == -2) {
+   if (fIsStepExiting == false && fIsStepEntering == false) {
       // Nothing crossed within stepMax -> propagate and return same location
       #ifdef VERBOSE_MODE
          cout << "Nothing crossed within step." << endl;
@@ -598,7 +596,7 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
       return navigator->GetCurrentNode();
    }
    fIsOnBoundary = kTRUE;
-   if (icrossed == -1) {
+   if (fIsStepExiting == true) {
       #ifdef VERBOSE_MODE
          cout << "Reached a boundary of current volume (or daughter of current volume) within step." << endl;
          cout << "Now crossing boundary and determining what our next volume is..." << endl;
@@ -624,7 +622,8 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
       return finalNode;
    }
    current = navigator->GetCurrentNode();
-   navigator->CdDown(icrossed);
+   // Make a daughter of current node current  
+   navigator->CdDown(daughterIndex);
    TGeoNode* finalNode = navigator->CrossBoundaryAndLocate(kTRUE, current);
    #ifdef VERBOSE_MODE
       cout << "Crossing boundary. Navigating Downwards in Node Hierarchy." << endl;
