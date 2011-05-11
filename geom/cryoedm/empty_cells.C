@@ -316,7 +316,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    Double_t centralElectrodeHoleCapacity = centralElectrodeHoleShape->Capacity(); 
    
    // HV Cell
-   Tube *hvCellShape = new Tube("HVShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
+   Tube *hvCellShape = new Tube("HVCellShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
    TrackingVolume* hvCell = new TrackingVolume("HVCell", hvCellShape, heliumII);
    hvCell->SetLineColor(kYellow-8);
    hvCell->SetLineWidth(1);
