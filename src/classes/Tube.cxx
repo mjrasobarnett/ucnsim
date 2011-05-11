@@ -110,7 +110,9 @@ Double_t Tube::TimeFromInsideS(const Double_t* point, const Double_t* velocity, 
 		#ifdef VERBOSE_MODE
 			cout << "Particle will reach first z-boundary in: " << tmin << endl;
 		#endif
-		tfinal = tmin;
+      if (tfinal == 0. || tmin < tfinal) {
+         tfinal = tmin;
+      }
 	}
 	
 	// --------------------------------------------------------------------------------------
@@ -127,7 +129,7 @@ Double_t Tube::TimeFromInsideS(const Double_t* point, const Double_t* velocity, 
 		#ifdef VERBOSE_MODE
 			cout << "Particle will reach rmin-boundary in: " << tmin << endl;
 		#endif
-		if (tmin < tfinal) {
+		if (tfinal == 0. || tmin < tfinal) {
 			tfinal = tmin;
 		}
 	}
@@ -146,7 +148,7 @@ Double_t Tube::TimeFromInsideS(const Double_t* point, const Double_t* velocity, 
 		#ifdef VERBOSE_MODE
 			cout << "Particle will reach rmax-boundary in: " << tmin << endl;
 		#endif
-		if (tmin < tfinal) {
+		if (tfinal == 0. || tmin < tfinal) {
 			tfinal = tmin;
 		}
 	}
@@ -242,7 +244,7 @@ Double_t Tube::TimeFromOutsideS(const Double_t* point, const Double_t* velocity,
 		#ifdef VERBOSE_MODE
 			cout << "Particle will reach rmin-boundary in: " << tmin << endl;
 		#endif
-		if (tmin < tfinal) {
+      if (tfinal == 0. || tmin < tfinal) {
 			tfinal = tmin;
 		}
 	}
@@ -259,7 +261,7 @@ Double_t Tube::TimeFromOutsideS(const Double_t* point, const Double_t* velocity,
 		#ifdef VERBOSE_MODE
 			cout << "Particle will reach rmax-boundary in: " << tmin << endl;
 		#endif
-		if (tmin < tfinal) {
+		if (tfinal == 0. || tmin < tfinal) {
 			tfinal = tmin;
 		}
 	}
