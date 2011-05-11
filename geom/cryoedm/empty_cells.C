@@ -265,7 +265,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // Cell Connector Tube
    Tube *cellConnectorShape = new Tube("CellConnectorShape", cellConnectorRMin, cellConnectorRMax, cellConnectorHalfZ);
    TrackingVolume* cellConnector = new TrackingVolume("CellConnector", cellConnectorShape, heliumII);
-   cellConnector->SetLineColor(kGreen+2);
+   cellConnector->SetLineColor(kMagenta-8);
    cellConnector->SetLineWidth(1);
    cellConnector->SetVisibility(kTRUE);
    cellConnector->SetTransparency(20);
@@ -273,8 +273,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoTranslation cellConnectorTra("CellConnectorTra", cellConnectorXPos, cellConnectorYPos, cellConnectorZPos);
    TGeoCombiTrans cellConnectorCom(cellConnectorTra,cellConnectorRot);
    TGeoHMatrix cellConnectorMat = cellConnectorCom;
-   chamber->AddNode(cellConnector, 1, new TGeoHMatrix(cellConnectorMat));
-   Double_t cellConnectorCapacity = cellConnectorShape->Capacity();
+   neutralCell->AddNode(cellConnector, 1, new TGeoHMatrix(cellConnectorMat));
    
    // Define Central electrode 
    Tube *centralElectrodeShape = new Tube("CentralElectrodeShape", centralElectrodeRMin, centralElectrodeRMax, centralElectrodeHalfZ);
