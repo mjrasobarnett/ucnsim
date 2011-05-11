@@ -425,7 +425,6 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* par
    static Int_t icount = 0;
    icount++;
    Int_t nextindex;
-   Bool_t is_assembly;
    fIsStepExiting  = kFALSE;
    fIsStepEntering = kFALSE;
    TGeoNode *skip;
@@ -505,11 +504,6 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* par
       currentPoint[1] += navigator->GetStep()*currentDir[1]; 
       currentPoint[2] += navigator->GetStep()*currentDir[2];	
       navigator->SetCurrentPoint(currentPoint);
-      is_assembly = navigator->GetCurrentNode()->GetVolume()->IsAssembly();
-      if (!(navigator->GetLevel()) && !is_assembly) {
-         // fUCNIsOutside = kTRUE ;
-         return 0;
-      }
       if (navigator->GetCurrentNode()->IsOffset()) {
          Warning("ParabolicBoundaryFinder","Deprecated CrossDivisionCell().");
          throw runtime_error("In Particle PBF Need to call CrossDivisionCell but can't!");
@@ -619,11 +613,6 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* par
          cout << "Get Level: " << navigator->GetLevel() << endl;
       #endif
       skip = navigator->GetCurrentNode();
-      is_assembly = navigator->GetCurrentNode()->GetVolume()->IsAssembly();
-      if (!(navigator->GetLevel()) && !is_assembly) {
-         // fUCNIsOutside = kTRUE;
-         return 0;
-      }   
       if (navigator->GetCurrentNode()->IsOffset()) {
          throw runtime_error("In PBF Need to call CrossDivisionCell but can't!");
          //return navigator->CrossDivisionCell();
