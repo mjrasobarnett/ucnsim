@@ -472,14 +472,11 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
    #endif
    tnext = static_cast<Box*>(vol->GetShape())->TimeFromInside(localPoint, localVelocity, localField, stepTime, fIsOnBoundary); 
    if (tnext <= 0.0) {
-      #ifdef VERBOSE_MODE
-         Error("ParabolicBoundaryFinder", "Failed to find boundary");
-      #endif
+      Error("ParabolicBoundaryFinder", "Failed to find boundary of current node from inside");
       return NULL;
    }
    snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
    crossedNode = navigator->GetCurrentNode();
-   
    #ifdef VERBOSE_MODE
       cout << "Time to nearest boundary of " << crossedNode->GetName() << ": " << tnext << endl;
       cout << "Proposed Step Time: " << stepTime << endl;
