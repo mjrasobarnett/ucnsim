@@ -631,7 +631,7 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
 }
 
 //_____________________________________________________________________________
-TGeoNode* Propagating::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator, Double_t* point, Double_t* velocity, Double_t* field, Int_t &idaughter, Bool_t compmatrix)
+TGeoNode* Propagating::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator, Double_t* point, Double_t* velocity, Double_t* field, Int_t &daughterIndex, Bool_t compmatrix)
 {
 // Computes as fStep the distance to next daughter of the current volume. 
 // The point and direction must be converted in the coordinate system of the current volume.
@@ -649,208 +649,62 @@ TGeoNode* Propagating::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoN
    // -- Initialising some important parameters
    Double_t tnext = TGeoShape::Big();
    Double_t snext = TGeoShape::Big();
-   idaughter = -1; // nothing crossed
+   daughterIndex = -1; // nothing crossed
    TGeoNode *nodefound = 0;
    // This has been added because we do not have access to fGlobalMatrix in TGeoNavigator
    TGeoHMatrix* globalMatrix = navigator->GetCurrentMatrix(); 
    
    // Get number of daughters. If no daughters we are done.
    TGeoVolume *vol = navigator->GetCurrentNode()->GetVolume();
-   Int_t nd = vol->GetNdaughters();
+   Int_t numberOfDaughters = vol->GetNdaughters();
    
    #ifdef VERBOSE_MODE
       cout << "Mother Volume: " << vol->GetName() << "\t";
-      cout << "Number of Daughters: " << nd << endl;
+      cout << "Number of Daughters: " << numberOfDaughters << endl;
    #endif
-   if (!nd) return 0;  // No daughter 
-   if (gGeoManager->IsActivityEnabled() && !vol->IsActiveDaughters()) {
-      cout << "Warning PDBF - IsActivityEnabled in geomanager" << endl;
-      return 0;
-   }
+   if (numberOfDaughters == 0) return 0;  // No daughter 
    
    Double_t localPoint[3], localVelocity[3], localField[3];
    TGeoNode *current = 0;
    Int_t i=0;
    // ************************************************************************************
-   // -- BRANCH 1
-   // -- if current volume is divided, we are in the non-divided region. We
-   // -- check first if we are inside a cell in which case compute distance to next cell
+   // Calculate distance to all daughters of current volume
+   // If any daughters will be reached within current step, return the closest of these
    // ************************************************************************************
-	
-   TGeoPatternFinder *finder = vol->GetFinder();
-   if (finder) {
-      cout << "Divided Volume. Calculate distance from outside to first cell." << endl;
-      Int_t ifirst = finder->GetDivIndex();
-      Int_t ilast = ifirst+finder->GetNdiv()-1;
-      current = finder->FindNode(motherPoint);
-      if (current) {
-         // Point inside a cell: find distance to next cell
-         Int_t index = current->GetIndex();
-         if ((index-1) >= ifirst) ifirst = index-1;
-         else                     ifirst = -1;
-         if ((index+1) <= ilast)  ilast  = index+1;
-         else                     ilast  = -1;
+   #ifdef VERBOSE_MODE
+      cout << "Only Few daughters. Calculate distance from outside to all." << endl;
+   #endif
+   for (i=0; i<numberOfDaughters; i++) {
+      current = vol->GetNode(i);
+      current->cd();
+      current->MasterToLocal(motherPoint, localPoint);
+      current->MasterToLocalVect(motherVelocity, localVelocity);
+      current->MasterToLocalVect(motherField, localField);
+      if (current->IsOverlapping() && current->GetVolume()->Contains(localPoint)) continue;
+      tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutside(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
+      if (tnext <= 0.0) {
+         Error("ParabolicDaughterBoundaryFinder", "Failed to find boundary");
+         return NULL;
       }
-      if (ifirst>=0) {   
-         current = vol->GetNode(ifirst);
-         current->cd();
-         current->MasterToLocal(&motherPoint[0], &localPoint[0]);
-         current->MasterToLocalVect(&motherVelocity[0], &localVelocity[0]);
-         current->MasterToLocalVect(&motherField[0], &localField[0]);
-         #ifdef VERBOSE_MODE
-            cout << "Volume: " << current->GetName() << endl;
-         #endif
-         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutside(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);  
-         if (tnext <= 0.0) {
-            Error("ParabolicDaughterBoundaryFinder", "Failed to find boundary");
-            return NULL;
-         }
-         snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
-         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
-            if (compmatrix) {
-               navigator->GetHMatrix()->CopyFrom(globalMatrix);
-               navigator->GetHMatrix()->Multiply(current->GetMatrix());
-            }
-            fIsStepExiting  = kFALSE;
-            fIsStepEntering = kTRUE;
-            navigator->SetStep(snext);
-            stepTime = tnext;
-            nodefound = current;
-            idaughter = ifirst;
-         }
-      }
-      if (ilast==ifirst) return nodefound;
-      if (ilast>=0) { 
-         current = vol->GetNode(ilast);
-         current->cd();
-         current->MasterToLocal(&motherPoint[0], localPoint);
-         current->MasterToLocalVect(&motherVelocity[0], localVelocity);
-         current->MasterToLocalVect(&motherField[0], localField);
-         #ifdef VERBOSE_MODE		
-            cout << "Divided Volume. Calculate distance from outside to last cell." << endl;
-            cout << "Volume: " << current->GetName() << endl;
-         #endif
-         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutside(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
-         if (tnext <= 0.0) {
-            Error("FindNextBoundary", "Failed to find boundary");
-            return NULL;
-         }
-         snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
-         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
-            if (compmatrix) {
-               navigator->GetHMatrix()->CopyFrom(globalMatrix);
-               navigator->GetHMatrix()->Multiply(current->GetMatrix());
-            }
-            fIsStepExiting  = kFALSE;
-            fIsStepEntering = kTRUE;
-            navigator->SetStep(snext);
-            stepTime = tnext;
-            nodefound = current;
-            idaughter = ilast;
-         }
-      }   
-      return nodefound;
-   }
-   // if only few daughters, check all and exit
-   TGeoVoxelFinder *voxels = vol->GetVoxels();
-   Int_t indnext;
-   if (nd<5 || !voxels) {
-      #ifdef VERBOSE_MODE		
-         cout << "Only Few daughters. Calculate distance from outside to all." << endl;
-      #endif
-      for (i=0; i<nd; i++) {
-         current = vol->GetNode(i);
-         if (gGeoManager->IsActivityEnabled() && !current->GetVolume()->IsActive()) continue;
-         current->cd();
-         if (voxels && voxels->IsSafeVoxel(motherPoint, i, navigator->GetStep())) continue;
-         current->MasterToLocal(motherPoint, localPoint);
-         current->MasterToLocalVect(motherVelocity, localVelocity);
-         current->MasterToLocalVect(motherField, localField);
-         if (current->IsOverlapping() && current->GetVolume()->Contains(localPoint)) continue;
-         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutside(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
-         if (tnext <= 0.0) {
-            Error("FindNextBoundary", "Failed to find boundary");
-            return NULL;
-         }
-         snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
-         #ifdef VERBOSE_MODE
-            cout << "Daughter Volume: " << current->GetName() << endl;
-            cout << "Time to nearest Daughter boundary: " << tnext << endl;
-         #endif
-         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
-            #ifdef VERBOSE_MODE
-            cout << "Distance to daughter boundary is less than distance to mother volume." << endl;
-            #endif
-            indnext = current->GetVolume()->GetNextNodeIndex();
-            if (compmatrix) {
-               navigator->GetHMatrix()->CopyFrom(globalMatrix);
-               navigator->GetHMatrix()->Multiply(current->GetMatrix());
-            }    
-            fIsStepExiting  = kFALSE;
-            fIsStepEntering = kTRUE;
-            navigator->SetStep(snext);
-            stepTime = tnext;
-            nodefound = current;   
-            idaughter = i;   
-            while (indnext>=0) {
-               current = current->GetDaughter(indnext);
-               if (compmatrix) navigator->GetHMatrix()->Multiply(current->GetMatrix());
-               nodefound = current;
-               indnext = current->GetVolume()->GetNextNodeIndex();
-            }
-         }
-      }
+      snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
       #ifdef VERBOSE_MODE
-         if (nodefound) cout << "Nearest Daughter Node: " << nodefound->GetName() << endl;
+         cout << "Daughter Volume: " << current->GetName() << endl;
+         cout << "Time to nearest Daughter boundary: " << tnext << endl;
       #endif
-      return nodefound;
-   }
-   // if current volume is voxelized, first get current voxel
-   Int_t ncheck = 0;
-   Int_t sumchecked = 0;
-   Int_t *vlist = 0;
-   voxels->SortCrossedVoxels(motherPoint, motherVelocity);
-   cout << "Volume is voxelized. Calculate distance from outside to voxel." << endl;
-   while ((sumchecked<nd) && (vlist=voxels->GetNextVoxel(motherPoint, motherVelocity, ncheck))) {
-      for (i=0; i<ncheck; i++) {
-         current = vol->GetNode(vlist[i]);
-         if (gGeoManager->IsActivityEnabled() && !current->GetVolume()->IsActive()) continue;
-         current->cd();
-         current->MasterToLocal(motherPoint, localPoint);
-         current->MasterToLocalVect(motherVelocity, localVelocity);
-         current->MasterToLocalVect(&motherField[0], &localField[0]);
-         if (current->IsOverlapping() && current->GetVolume()->Contains(localPoint)) continue;
-         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutside(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
-         if (tnext <= 0.0) {
-            Error("FindNextBoundary", "Failed to find boundary");
-            return NULL;
-         }
-         snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
+      if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
          #ifdef VERBOSE_MODE
-            cout << "Daughter Volume: " << current->GetName() << endl;
-            cout << "Time to nearest Daughter: " << tnext << endl;
+         cout << "Distance to daughter boundary is less than distance to mother volume." << endl;
          #endif
-         sumchecked++;
-//         printf("checked %d from %d : snext=%g\n", sumchecked, nd, snext);
-         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
-            indnext = current->GetVolume()->GetNextNodeIndex();
-            if (compmatrix) {
-               navigator->GetHMatrix()->CopyFrom(globalMatrix);
-               navigator->GetHMatrix()->Multiply(current->GetMatrix());
-            }
-            fIsStepExiting  = kFALSE;
-            fIsStepEntering = kTRUE;
-            navigator->SetStep(snext);
-            stepTime = tnext;
-            nodefound = current;
-            idaughter = vlist[i];
-            while (indnext>=0) {
-               current = current->GetDaughter(indnext);
-               if (compmatrix) navigator->GetHMatrix()->Multiply(current->GetMatrix());
-               nodefound = current;
-               indnext = current->GetVolume()->GetNextNodeIndex();
-            }
-         }
+         if (compmatrix) {
+            navigator->GetHMatrix()->CopyFrom(globalMatrix);
+            navigator->GetHMatrix()->Multiply(current->GetMatrix());
+         }    
+         fIsStepExiting  = kFALSE;
+         fIsStepEntering = kTRUE;
+         navigator->SetStep(snext);
+         stepTime = tnext;
+         nodefound = current;
+         daughterIndex = i;
       }
    }
    return nodefound;
