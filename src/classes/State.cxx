@@ -422,9 +422,6 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particl
    const Double_t stepMax = Parabola::Instance()->ArcLength(globalVelocity, globalField, stepTime);
    
    // -- Some initialisations
-   static Int_t icount = 0;
-   icount++;
-   Int_t nextindex;
    fIsStepExiting  = kFALSE;
    fIsStepEntering = kFALSE;
    TGeoNode *skip;
