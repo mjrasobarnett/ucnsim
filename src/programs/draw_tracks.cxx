@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -35,6 +36,8 @@
 #include "DataAnalysis.h"
 
 using namespace std;
+
+void DrawTrack(Track* track, TPolyLine3D* line, TPolyMarker3D* startMarker, TPolyMarker3D* endMarker);
 
 //_____________________________________________________________________________
 Int_t main(Int_t argc,Char_t **argv)
@@ -86,17 +89,31 @@ Int_t main(Int_t argc,Char_t **argv)
    TDirectory* const stateDir = stateDirs[0];
    //////////////////////////////////////////////////////////////////////////////////////
    // Ask User to choose which Particle to draw
-   Track* track = NULL;
    cout << "Select which particle's track to draw: " << endl;
    cout << "Options: 'l' -- List all particles in directory" << endl;
    cout.width(9);
    cout << " " << "'q' -- Quit" << endl; 
    cout.width(15);
-   string userInput;   
-   while (userInput != "q") {
-      cout << "   -- Enter Particle's ID: ";
+   
+   string userInput;
+   
+   Track* track = NULL;
+   TCanvas* canvas = NULL;
+   TPolyLine3D* line = NULL;
+   TPointSet3D* endMarker = NULL;
+   TPointSet3D* startMarker = NULL;
+
+   while (true) {
+      cout << "   -- Enter Particle's ID (or 'q' to quit): ";
       cin >> userInput;
       cout << endl;
+      cin.clear();
+      // Delete previous resources
+      if (track) delete track; track = NULL;
+      if (canvas) delete canvas; canvas = NULL;
+      if (line) delete line; line = NULL;
+      
+      if (userInput == "q") {break;}
       if (userInput == "l") {stateDir->ls(); continue;}
       // Loop over particle folders in stateDir for a folder that matches the provided ID
       TKey *folderKey;
@@ -128,72 +145,123 @@ Int_t main(Int_t argc,Char_t **argv)
             break;
          }
       }
-      // Check if we found a track for thi
+      // Check if we found a track for the request index
       if (track == NULL) {
          cout << endl;
          cout << "No track for this particle ID could be found.";
          cout << " Please try again, Or input 'q' to quit." << endl;
       } else {
-         break;
+         canvas = new TCanvas("Positions","Neutron Positions",60,30,400,400);
+         canvas->cd();
+         geoManager.GetTopVolume()->Draw("ogl");
+         geoManager.SetVisLevel(4);
+         geoManager.SetVisOption(0);
+         TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
+         // -- Select Draw style 
+         glViewer->SetStyle(TGLRnrCtx::kFill);
+         // -- Set Background colour
+         glViewer->SetClearColor(kBlack);
+         // -- Set Camera type
+         TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
+         glViewer->SetCurrentCamera(camera);
+         glViewer->CurrentCamera().SetExternalCenter(kTRUE);
+         Double_t cameraCentre[3] = {0,0,0};
+         glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
+         // -- Draw Reference Point, Axes
+         Double_t refPoint[3] = {0.,0.,0.};
+         // Int_t axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const Double_t referencePos[3]
+         glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
+         DrawTrack(track, line, startMarker, endMarker);
+         theApp->Run(kTRUE);
+         // Reset user input
+         userInput = "";
+         continue;
       }
    }
+   // Clean up
+   if (canvas) delete canvas; canvas = NULL;
+   if (line) delete line; line = NULL;
+   if (track) delete track; track = NULL;
+   if (endMarker) delete endMarker; endMarker = NULL;
+   if (startMarker) delete startMarker; startMarker = NULL;
+
    file->Close();
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Draw Track
-   //////////////////////////////////////////////////////////////////////////////////////
-   if (track != NULL) {
-      
-      TCanvas *poscanvas = new TCanvas("Positions","Neutron Positions",60,30,400,400);
-      poscanvas->cd();
-      geoManager.GetTopVolume()->Draw("ogl");
-      geoManager.SetVisLevel(4);
-      geoManager.SetVisOption(0);
-      
-      vector<Double_t> trackpoints = track->OutputPointsArray();
-      cout << "Number of Points: " << track->TotalPoints() << endl;
-      TPolyLine3D* line = new TPolyLine3D(track->TotalPoints(),&trackpoints[0]);
-      line->SetLineColor(kRed);
-      line->Draw();
-      
-      // -- Draw Start and Finish points of track
-      TPointSet3D* endMarker = new TPointSet3D(1,24);
-      TPointSet3D* startMarker = new TPointSet3D(1,24);      
-      // Start is BLUE
-      startMarker->SetMarkerColor(kBlue);
-      // End is GREEN
-      endMarker->SetMarkerColor(kGreen-3);
-      const Point& startPoint = track->GetPoint(0);
-      const Point& endPoint = track->GetPoint(track->TotalPoints());
-      startMarker->SetPoint(0, startPoint.X(), startPoint.Y(), startPoint.Z());
-      endMarker->SetPoint(0, endPoint.X(), endPoint.Y(), endPoint.Z());
-      startMarker->Draw();
-      endMarker->Draw();
-      cout << "Start: " << startPoint.X() << "\t" << startPoint.Y() << "\t";
-      cout << startPoint.Z() << endl; 
-      cout << "End: " << endPoint.X() << "\t" << endPoint.Y() << "\t" << endPoint.Z() << endl;       
-      
-      // -- Get the GLViewer so we can manipulate the camera
-      TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
-      // -- Select Draw style 
-      glViewer->SetStyle(TGLRnrCtx::kFill);
-      // -- Set Background colour
-      glViewer->SetClearColor(kBlack);
-      // -- Set Camera type
-      TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
-      glViewer->SetCurrentCamera(camera);
-      glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-      Double_t cameraCentre[3] = {0,0,0};
-      glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
-      // -- Draw Reference Point, Axes
-      Double_t refPoint[3] = {0.,0.,0.};
-      // Int_t axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const Double_t referencePos[3]
-      glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
-      glViewer->UpdateScene();
-      glViewer = 0;
-      
-   }
    cout << "Finished" << endl;
-   theApp->Run();
    return 0;
+}
+
+//_____________________________________________________________________________
+void DrawTrack(Track* track, TPolyLine3D* line, TPolyMarker3D* startMarker, TPolyMarker3D* endMarker)
+{
+   double startTime = -1.0, endTime = -1.0;
+   string useWholeTrack;
+   int totalPoints = 0;
+   vector<Double_t> trackpoints;
+   
+   Point startPoint;
+   Point endPoint;
+   while (true) {
+      cout << "   -- Do you want to draw the whole track? (y/n): ";
+      cin >> useWholeTrack;
+      cout << endl;
+      cin.clear();
+      if (useWholeTrack == "y") {
+         trackpoints = track->OutputPointsArray();
+         totalPoints = track->TotalPoints();
+         startPoint = track->GetPoint(0);
+         endPoint = track->GetPoint(track->TotalPoints());
+         break;
+      } else if (useWholeTrack == "n") {
+         cout << "   -- Enter Start time, for where you would like to view the track from: ";
+         cin >> startTime;
+         cout << endl;
+         cin.clear();
+         cout << "   -- Enter End Time, for where you would like to view the track up to: ";
+         cin >> endTime;
+         cout << endl;
+         cin.clear();
+         // Take segment of track
+         cout << "Creating track segment" << endl;
+         Track newtrack = track->GetTrackSegment(startTime, endTime);
+         trackpoints = newtrack.OutputPointsArray();
+         totalPoints = newtrack.TotalPoints();
+         startPoint = newtrack.GetPoint(0);
+         endPoint = newtrack.GetPoint(newtrack.TotalPoints());
+         break;
+      } else {
+         cout << "Please input 'y' or 'n'" << endl;
+      }
+   }
+   cout << "Number of Points: " << totalPoints << endl;
+   line = new TPolyLine3D(totalPoints ,&trackpoints[0]);
+   line->SetLineColor(kRed);
+   line->SetLineWidth(3);
+   line->Draw();
+   
+   // -- Draw Start and Finish points of track
+   if (endMarker) delete endMarker; endMarker = NULL;
+   endMarker = new TPointSet3D(1,24);
+   if (startMarker) delete startMarker; startMarker = NULL;
+   startMarker = new TPointSet3D(1,24);
+   startMarker->SetPoint(0, startPoint.X(), startPoint.Y(), startPoint.Z());
+   endMarker->SetPoint(0, endPoint.X(), endPoint.Y(), endPoint.Z());
+   // Start is BLUE
+   startMarker->SetMarkerColor(kBlue);
+   // End is GREEN
+   endMarker->SetMarkerColor(kGreen-3);
+   startMarker->Draw();
+   endMarker->Draw();
+   cout << "Drawing Start and End Points of Track -- " << endl;
+   cout << left << setw(25) << "Start (Blue Marker) -- " << setw(4) << "X: " << setw(10) << startPoint.X() << "\t";
+   cout << setw(4) << "Y: " << setw(10) << startPoint.Y() << "\t";
+   cout << setw(4) << "Z: " << setw(10) << startPoint.Z() << endl;
+   cout << setw(25) << "End (Green Marker) -- " << setw(4) << "X: " << setw(10) << endPoint.X() << "\t";
+   cout << setw(4) << "Y: " << setw(10) << endPoint.Y() << "\t";
+   cout << setw(4) << "Z: " << setw(10) << endPoint.Z() << endl;
+   
+   // -- Get the GLViewer so we can manipulate the camera
+   TGLViewer* glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
+   glViewer->UpdateScene();
+   return;
 }
 
