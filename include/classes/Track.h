@@ -35,6 +35,8 @@ public:
    const Point&   GetPoint(unsigned int i) const;
    unsigned int   TotalPoints() const {return fPoints.size();}
    
+   Track GetTrackSegment(const Double_t startTime, const Double_t endTime) const;
+   
    std::vector<Double_t> OutputPointsArray();
    
    ClassDef(Track, 1)

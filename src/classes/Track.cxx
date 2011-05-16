@@ -92,6 +92,29 @@ const Point& Track::GetPoint(unsigned int i) const
 }
 
 //______________________________________________________________________________
+Track Track::GetTrackSegment(const Double_t startTime, const Double_t endTime) const
+{
+   // Return a new Track object that only contains points whose times fall between the startTime
+   // and the endTime
+   if (startTime < fPoints.front()->T() || endTime > fPoints.back()->T()) {
+      cout << "Error - requested start/end times are outside of track's scope" << endl;
+      cout << "Track Start: " << fPoints.front()->T() << "\t" << "Requested start: " << startTime << endl;
+      cout << "Track End: " << fPoints.back()->T() << "\t" << "Requested end: " << endTime << endl;
+      return *this;
+   }
+   // Create new track segment
+   Track trackSegment;
+   for (int pointNum = 0; pointNum < fPoints.size(); pointNum++) {
+      const Point& point = this->GetPoint(pointNum);
+      if (point.T() >= startTime && point.T() <= endTime) {
+         trackSegment.AddPoint(point);
+      }
+   }
+   cout << trackSegment.TotalPoints() << endl;
+   return trackSegment;
+}
+
+//______________________________________________________________________________
 vector<Double_t> Track::OutputPointsArray()
 {
    // -- Return an array of size 3*number-of-vertices, which contains just the positions
