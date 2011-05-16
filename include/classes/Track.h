@@ -31,7 +31,7 @@ public:
    virtual ~Track();
    
    // -- methods
-   void           AddPoint(const Double_t x, const Double_t y, const Double_t z, const Double_t t);
+   void           AddPoint(const Point& point);
    const Point&   GetPoint(unsigned int i) const;
    unsigned int   TotalPoints() const {return fPoints.size();}
    

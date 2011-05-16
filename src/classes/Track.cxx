@@ -69,10 +69,10 @@ void Track::PurgeContainer()
 }
 
 //______________________________________________________________________________
-void Track::AddPoint(const Double_t x, const Double_t y, const Double_t z, const Double_t t)
+void Track::AddPoint(const Point& point)
 {
    // -- Add point to track
-   fPoints.push_back(new Point(x,y,z,t));
+   fPoints.push_back(new Point(point));
 }
 
 //______________________________________________________________________________

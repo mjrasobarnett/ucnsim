@@ -302,10 +302,10 @@ void TrackObserver::RecordEvent(const Point& /*point*/, const TVector3& /*veloci
       // If no measurement interval is set, we record every step
       if (fMeasInterval == 0.0) {
          const Particle* particle = dynamic_cast<const Particle*>(fSubject);
-         fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
+         fTrack->AddPoint(particle->GetPoint());
       } else if (Precision::IsEqual(currentTime, (fLastMeasurementTime + fMeasInterval))) {
          const Particle* particle = dynamic_cast<const Particle*>(fSubject);
-         fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
+         fTrack->AddPoint(particle->GetPoint());
          // Update stored value of last measurement
          fLastMeasurementTime = currentTime;
       } else {
@@ -315,7 +315,7 @@ void TrackObserver::RecordEvent(const Point& /*point*/, const TVector3& /*veloci
       // The creation context signifies that the particle has just been instantiated so we
       // shall make a measurement of its initial state
       const Particle* particle = dynamic_cast<const Particle*>(fSubject);
-      fTrack->AddPoint(particle->X(), particle->Y(), particle->Z(), particle->T());
+      fTrack->AddPoint(particle->GetPoint());
    }
 }
 
