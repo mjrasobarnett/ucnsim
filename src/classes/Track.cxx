@@ -33,6 +33,13 @@ Track::Track(const Track& other)
    #ifdef PRINT_CONSTRUCTORS
       Info("Track", "Copy Constructor");
    #endif
+   // Have to copy every point in container
+   if (other.TotalPoints() > 0) {
+      for (int pointNum = 0; pointNum < other.TotalPoints(); pointNum++) {
+         const Point& point = other.GetPoint(pointNum);
+         this->AddPoint(point);
+      }
+   }
 }
 
 //_____________________________________________________________________________
