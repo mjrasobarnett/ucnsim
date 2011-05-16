@@ -435,7 +435,7 @@ Double_t Tube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* vel
 	// -- Find the smallest, non-zero, positive time to one of the tube end caps from Outside
 	#ifdef VERBOSE_MODE
       cout << "-----------------------------" << endl;
-      cout << "-- OutsideTimeToZBoundary -- " << endl;
+      cout << "-- Tube::OutsideTimeToZBoundary -- " << endl;
 	#endif
 	Double_t tfinal = 0.0;
 	Double_t boundary = dz;

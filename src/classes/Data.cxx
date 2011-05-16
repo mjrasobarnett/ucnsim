@@ -191,7 +191,7 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    } else {
       // Only subset of particles are to be loaded
       vector<string> selected_IDs = runConfig.SelectedParticleIDs();
-      cout << "Loading select particles: ";
+      cout << "Loading specific particles, Numbers: ";
       copy(selected_IDs.begin(), selected_IDs.end(), ostream_iterator<string>(cout,","));
       cout << endl;
       selected_particles = new TList();
