@@ -537,7 +537,7 @@ bool FinalStates::PlotEmptyingTime(const vector<TDirectory*> stateDirs, const Ru
    // -- Time Distribution
    TCanvas *timecanvas = new TCanvas("Times","Final Time (s)",60,0,600,600);
    timecanvas->cd();
-   timeHist->Draw("E1");
+   timeHist->Draw("PE1 X0");
    
    // Fit exponential to Graph
    int numParams = 2;
@@ -897,19 +897,19 @@ void Polarisation::PlotField(TDirectory* const histDir, const vector<TDirectory*
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bx
    sprintf(histname,"%s:Field Bx",stateName.c_str());
-   TH2F* bxHist = new TH2F(histname,"Bx", 500, 4.998*Units::uT, 5.002*Units::uT, 500, 0.0, runTime);
+   TH2F* bxHist = new TH2F(histname,"Bx", 2000, -1000*Units::uT, 1000*Units::uT, 500, 0.0, runTime);
    bxHist->SetXTitle("Field measured (T)");
    bxHist->SetYTitle("Time (s)");
    bxHist->SetZTitle("Neutrons");
    // -- By
    sprintf(histname,"%s:Field By",stateName.c_str());
-   TH2F* byHist = new TH2F(histname,"By", 500, -5.5*Units::uT, 5.5*Units::uT, 500, 0.0, runTime);
+   TH2F* byHist = new TH2F(histname,"By", 2000, -100*Units::uT, 100*Units::uT, 500, 0.0, runTime);
    byHist->SetXTitle("Field measured (T)");
    byHist->SetYTitle("Time (s)");
    byHist->SetZTitle("Neutrons");
    // -- B`
    sprintf(histname,"%s:Field Bz",stateName.c_str());
-   TH2F* bzHist = new TH2F(histname,"Bz", 500, -5.5*Units::uT, 5.5*Units::uT, 500, 0.0, runTime);
+   TH2F* bzHist = new TH2F(histname,"Bz", 2000, -100*Units::uT, 100*Units::uT, 500, 0.0, runTime);
    bzHist->SetXTitle("Field measured (T)");
    bzHist->SetYTitle("Time (s)");
    bzHist->SetZTitle("Neutrons");
