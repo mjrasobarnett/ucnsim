@@ -69,77 +69,21 @@ Int_t main(Int_t argc,Char_t **argv)
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Open Data File
    //////////////////////////////////////////////////////////////////////////////////////
-   TFile *file = 0;
-   file = TFile::Open(filename.c_str(), "UPDATE");
-   if (!file || file->IsZombie()) {
-      cerr << "Cannot open file: " << filename << endl;
-      return -1;
-   }
-   file->cd();
-   TDirectory * const topDir = gDirectory;
-   if (topDir->cd(Folders::particles.c_str()) == false) {
-      cerr << "No Folder named: " << Folders::particles << " in data file" << endl;
-      return EXIT_FAILURE;
-   }
-   cout << "-------------------------------------------" << endl;
-   cout << "Successfully Loaded Data File: " << filename << endl;
-   cout << "-------------------------------------------" << endl;
-   TDirectory * const particleDir = gDirectory;
-   Analysis::DataFile::CountParticles(particleDir);
+   TFile* file = Analysis::DataFile::OpenRootFile(filename,"UPDATE");
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////
-   // Navigate to Config Folder   
-   if (topDir->cd(Folders::config.c_str()) == false) {
-      cerr << "No Folder named: " << Folders::config << " in data file" << endl;
-      return EXIT_FAILURE;
-   }
-   // -- Loop over all objects in folder and extract latest RunConfig
-   RunConfig* ptr_config = NULL;
-   TKey *configKey;
-   TIter configIter(gDirectory->GetListOfKeys());
-   while ((configKey = dynamic_cast<TKey*>(configIter.Next()))) {
-      const char *classname = configKey->GetClassName();
-      TClass *cl = gROOT->GetClass(classname);
-      if (!cl) continue;
-      if (cl->InheritsFrom("RunConfig")) {
-         ptr_config = dynamic_cast<RunConfig*>(configKey->ReadObj());
-         break;
-      }
-   }
-   const RunConfig& runConfig = *ptr_config;
-   cout << "-------------------------------------------" << endl;
-   cout << "Successfully Loaded RunConfig" << endl;
-   cout << "-------------------------------------------" << endl;
+   const RunConfig& runConfig = Analysis::DataFile::LoadRunConfig(*file);
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Load the Geometry
-   if (topDir->cd(Folders::geometry.c_str()) == false) {return EXIT_FAILURE;}
-   TDirectory* geomDir = gDirectory;
-   TKey *geomKey;
-   TIter geomIter(geomDir->GetListOfKeys());
-   while ((geomKey = dynamic_cast<TKey*>(geomIter.Next()))) {
-      const char *classname = geomKey->GetClassName();
-      TClass *cl = gROOT->GetClass(classname);
-      if (!cl) continue;
-      if (cl->InheritsFrom("TGeoManager")) {
-         gGeoManager = dynamic_cast<TGeoManager*>(geomKey->ReadObj());
-         break;
-      }
-   }
-   TGeoManager* geoManager = gGeoManager;
-   if (geoManager == NULL) return EXIT_FAILURE;
-   cout << "-------------------------------------------" << endl;
-   cout << "Successfully Loaded Geometry" << endl;
-   cout << "-------------------------------------------" << endl;
+   TGeoManager& geoManager = Analysis::DataFile::LoadGeometry(*file);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Navigate to folder for selected state
-   file->cd();
-   gDirectory->cd(Folders::particles.c_str());
-   if (gDirectory->cd(statenames[0].c_str()) == kFALSE) {
-      cout << "State name provided is not found in the under /particles/finalstates" << endl;
-      return -1;
+   vector<TDirectory*> stateDirs;
+   if (Analysis::DataFile::FetchStateDirectories(*file, statenames, stateDirs) == false) {
+      return EXIT_FAILURE;
    }
-   TDirectory* const stateDir = gDirectory;
+   TDirectory* const stateDir = stateDirs[0];
    //////////////////////////////////////////////////////////////////////////////////////
    // Ask User to choose which Particle to draw
    Track* track = NULL;
@@ -201,9 +145,9 @@ Int_t main(Int_t argc,Char_t **argv)
       
       TCanvas *poscanvas = new TCanvas("Positions","Neutron Positions",60,30,400,400);
       poscanvas->cd();
-      geoManager->GetTopVolume()->Draw("ogl");
-      geoManager->SetVisLevel(4);
-      geoManager->SetVisOption(0);
+      geoManager.GetTopVolume()->Draw("ogl");
+      geoManager.SetVisLevel(4);
+      geoManager.SetVisOption(0);
       
       vector<Double_t> trackpoints = track->OutputPointsArray();
       cout << "Number of Points: " << track->TotalPoints() << endl;
@@ -252,3 +196,4 @@ Int_t main(Int_t argc,Char_t **argv)
    theApp->Run();
    return 0;
 }
+
