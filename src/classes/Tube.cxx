@@ -502,7 +502,11 @@ Double_t Tube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* vel
 				// produce two intersections in this case).
 				// We could also be very very close to another boundary, say if we are sitting right in the corner of a box.
 				// In any case, we have a single solution which should be correct and not need setting to zero.
-				if (TMath::Abs(roots[0]) < 1.E-8) cout << "Warning::OutsideTimeToZBoundary - Single Root found to be < 1.E-8 : " << roots[0] << endl;
+				if (TMath::Abs(roots[0]) < 1.E-8) {
+				   #ifdef VERBOSE_MODE
+         		   cout << "Warning::OutsideTimeToZBoundary - Single Root found to be < 1.E-8 : " << roots[0] << endl;
+			      #endif
+			   }
 			} else {
 				// Nothing to be done - both roots should be zero anyway - no solutions found
 			}
