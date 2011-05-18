@@ -177,7 +177,7 @@ namespace GeomParameters {
    const Double_t guidePhi = -90;
    const Double_t guideTheta = 90;
    const Double_t guidePsi = 0;
-   const Double_t guideXPos = detectorValveVolXPos - detectorValveVolHalfZ - guideSegHalfZ + 1.0*Units::mm;
+   const Double_t guideXPos = detectorValveVolXPos - detectorValveVolHalfZ - guideSegHalfZ;
    const Double_t guideYPos = detectorValveVolYPos;
    const Double_t guideZPos = detectorValveVolZPos;
 
@@ -230,7 +230,7 @@ namespace GeomParameters {
    const Double_t preVolumeCorner4YPos = -65.0*Units::mm;
    const Double_t preVolumeCorner4ZPos = 0.0*Units::mm;
    
-   const Double_t preVolumePhi = 90;
+   const Double_t preVolumePhi = -90;
    const Double_t preVolumeTheta = 90;
    const Double_t preVolumePsi = 45;
    const Double_t preVolumeXPos = guideXPos - 9*guideSegHalfZ - preVolumeBoxHalfZ;
@@ -290,40 +290,43 @@ namespace GeomParameters {
    const Double_t neutralCellRMin = 0.0*Units::mm;
    const Double_t neutralCellRMax = 125.0*Units::mm;
    const Double_t neutralCellHalfZ = 22.5*Units::mm;
-   const Double_t neutralCellPhi = 90;
-   const Double_t neutralCellTheta = 90;
-   const Double_t neutralCellPsi = 0;
+   const Double_t neutralCellPhi = neutralElectrodePhi;
+   const Double_t neutralCellTheta = neutralElectrodeTheta;
+   const Double_t neutralCellPsi = neutralElectrodePsi;
    const Double_t neutralCellXPos = neutralElectrodeXPos - neutralElectrodeHalfZ - neutralCellHalfZ;
    const Double_t neutralCellYPos = neutralElectrodeYPos;
    const Double_t neutralCellZPos = neutralElectrodeZPos;
    
    // Cell connector tube
-   const Double_t cellConnectorRMin = 15.0*Units::mm;
-   const Double_t cellConnectorRMax = 17.5*Units::mm;
-   const Double_t cellConnectorHalfZ = 27.5*Units::mm;
-   const Double_t cellConnectorPhi = 90;
-   const Double_t cellConnectorTheta = 90;
-   const Double_t cellConnectorPsi = 0;
-   const Double_t cellConnectorXPos = neutralCellXPos;
-   const Double_t cellConnectorYPos = neutralCellYPos;
-   const Double_t cellConnectorZPos = neutralCellZPos + 65.0*Units::mm;
-/*   
-   const Double_t cellConnectorPhi = 0;
-   const Double_t cellConnectorTheta = 0;
-   const Double_t cellConnectorPsi = 0;
-   const Double_t cellConnectorXPos = 0;
+   const Double_t cellConnectorRMin = 0.0*Units::mm;
+   const Double_t cellConnectorRMax = 15.0*Units::mm;
+   const Double_t cellConnectorHalfZ = 22.5*Units::mm;
+   const Double_t cellConnectorPhi = 0.;
+   const Double_t cellConnectorTheta = 0.;
+   const Double_t cellConnectorPsi = 0.;
+   const Double_t cellConnectorXPos = 0.0;
    const Double_t cellConnectorYPos = 65.0*Units::mm;
-   const Double_t cellConnectorZPos = 0;
-*/ 
+   const Double_t cellConnectorZPos = 0.;
 
+   // Cell connector tube boundary
+   const Double_t cellConnectorBoundaryRMin = 15.0*Units::mm;
+   const Double_t cellConnectorBoundaryRMax = 17.5*Units::mm;
+   const Double_t cellConnectorBoundaryHalfZ = 22.5*Units::mm;
+   const Double_t cellConnectorBoundaryPhi = 0.;
+   const Double_t cellConnectorBoundaryTheta = 0.;
+   const Double_t cellConnectorBoundaryPsi = 0.;
+   const Double_t cellConnectorBoundaryXPos = 0.0;
+   const Double_t cellConnectorBoundaryYPos = 65.0*Units::mm;
+   const Double_t cellConnectorBoundaryZPos = 0.;
+   
    // Central Electrode
    const Double_t centralElectrodeRMin = 0.0*Units::mm;
    const Double_t centralElectrodeRMax = 140.0*Units::mm;
-   const Double_t centralElectrodeHalfZ = 7.0*Units::mm;
-   const Double_t centralElectrodePhi = 90;
-   const Double_t centralElectrodeTheta = 90;
-   const Double_t centralElectrodePsi = 0;
-   const Double_t centralElectrodeXPos = neutralCellXPos - neutralCellHalfZ - neutralElectrodeHalfZ + 1.0*Units::mm;
+   const Double_t centralElectrodeHalfZ = 7.5*Units::mm;
+   const Double_t centralElectrodePhi = neutralElectrodePhi;
+   const Double_t centralElectrodeTheta = neutralElectrodeTheta;
+   const Double_t centralElectrodePsi = neutralElectrodePsi;
+   const Double_t centralElectrodeXPos = neutralCellXPos - neutralCellHalfZ - centralElectrodeHalfZ;
    const Double_t centralElectrodeYPos = neutralCellYPos;
    const Double_t centralElectrodeZPos = neutralCellZPos;
    
@@ -331,13 +334,6 @@ namespace GeomParameters {
    const Double_t centralElectrodeHoleRMin = 0.0*Units::mm;
    const Double_t centralElectrodeHoleRMax = 15.0*Units::mm;
    const Double_t centralElectrodeHoleHalfZ = centralElectrodeHalfZ;
-/*   const Double_t centralElectrodeHolePhi = 0.0;
-   const Double_t centralElectrodeHoleTheta = 0.0;
-   const Double_t centralElectrodeHolePsi = 0.0;
-   const Double_t centralElectrodeHoleXPos = 0;
-   const Double_t centralElectrodeHoleYPos = 65.0*Units::mm;
-   const Double_t centralElectrodeHoleZPos = centralElectrodeHoleZPos;
-*/   
    const Double_t centralElectrodeHolePhi = centralElectrodePhi;
    const Double_t centralElectrodeHoleTheta = centralElectrodeTheta;
    const Double_t centralElectrodeHolePsi = centralElectrodePsi;
@@ -349,9 +345,9 @@ namespace GeomParameters {
    const Double_t hvCellRMin = 0.0*Units::mm;
    const Double_t hvCellRMax = 125.0*Units::mm;
    const Double_t hvCellHalfZ = 22.5*Units::mm;
-   const Double_t hvCellPhi = 90;
-   const Double_t hvCellTheta = 90;
-   const Double_t hvCellPsi = 0;
+   const Double_t hvCellPhi = neutralElectrodePhi;
+   const Double_t hvCellTheta = neutralElectrodeTheta;
+   const Double_t hvCellPsi = neutralElectrodePsi;
    const Double_t hvCellXPos = centralElectrodeXPos - centralElectrodeHalfZ - hvCellHalfZ;
    const Double_t hvCellYPos = centralElectrodeYPos;
    const Double_t hvCellZPos = centralElectrodeZPos;
@@ -360,9 +356,9 @@ namespace GeomParameters {
    const Double_t hvElectrodeRMin = 0.0*Units::mm;
    const Double_t hvElectrodeRMax = 125.0*Units::mm;
    const Double_t hvElectrodeHalfZ = 2.*Units::mm;
-   const Double_t hvElectrodePhi = 90;
-   const Double_t hvElectrodeTheta = 90;
-   const Double_t hvElectrodePsi = 0;
+   const Double_t hvElectrodePhi = neutralElectrodePhi;
+   const Double_t hvElectrodeTheta = neutralElectrodeTheta;
+   const Double_t hvElectrodePsi = neutralElectrodePsi;
    const Double_t hvElectrodeXPos = hvCellXPos - hvCellHalfZ - hvElectrodeHalfZ;
    const Double_t hvElectrodeYPos = hvCellYPos;
    const Double_t hvElectrodeZPos = hvCellZPos;

@@ -1,6 +1,7 @@
 // UCN class
 // Author: Matthew Raso-Barnett  19/01/2009
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 #include <stdexcept>
 
@@ -110,16 +111,23 @@ void Particle::SetVelocity(const Double_t vx, const Double_t vy, const Double_t 
 //_____________________________________________________________________________
 void Particle::Print(const Option_t* /*option*/) const
 {
-   cout << "Particle: " << this->Id() << "\t" << "Time Elapsed: " << this->T() << endl;
-   cout << "Vertex (m): " << "X:" << this->X() << "\t" << "Y:" << this->Y();
-   cout << "\t" << "Z:" << this->Z() << endl;
-   cout << "Dir: " << "Nx:" << this->Nx()  << "\t" << "Ny:" << this->Ny();
-   cout << "\t" << "Nz:" << this->Nz() << endl;
-   cout << "Vel (m/s): " << "Vx:" << this->Vx()  << "\t" << "Vy:" << this->Vy();
-   cout << "\t" << "Vz:" << this->Vz() << "\t" << "V:" << this->V() << endl;
-   cout << "Mom (eV): " << "X:" << this->Px()  << "\t" << "Y:" << this->Py();
-   cout << "\t" << "Z:" << this->Pz() << "\t" << "P:" << this->P() << endl;
-   cout << "Energy (neV): " << this->Energy() / Units::neV << endl;
+   cout << left << setw(15) << "Particle: " << setw(8) << this->Id() << "\t";
+   cout << setw(4) << "T: " << setw(8) << this->T() << endl;
+   cout << setw(15) << "Vertex (m): " << setw(4) << "X:" << setw(8) << this->X() << "\t";
+   cout << setw(4) << "Y:" << setw(8) << this->Y() << "\t";
+   cout << setw(4) << "Z:" << setw(8) << this->Z() << endl;
+   cout << setw(15) << "Dir: " << setw(4) << "Nx:" << setw(8) << this->Nx()  << "\t";
+   cout << setw(4) << "Ny:" << setw(8) << this->Ny() << "\t";
+   cout << setw(4) << "Nz:" << setw(8) << this->Nz() << endl;
+   cout << setw(15) << "Vel (m/s): " << setw(4) << "Vx:" << setw(8) << this->Vx()  << "\t";
+   cout << setw(4) << "Vy:" << setw(8) << this->Vy() << "\t";
+   cout << setw(4) << "Vz:" << setw(8) << this->Vz() << "\t";
+   cout << setw(4) << "V:" << setw(8) << this->V() << endl;
+   cout << setw(15) << "Mom (eV): " << setw(4) << "X:" << setw(8) << this->Px()  << "\t";
+   cout << setw(4) << "Y:" << setw(8) << this->Py() << "\t";
+   cout << setw(4) << "Z:" << setw(8) << this->Pz() << "\t";
+   cout << setw(4) << "P:" << setw(8) << this->P() << endl;
+   cout << setw(15) << "Energy (neV): " << setw(8) << this->Energy() / Units::neV << endl;
 }
 
 //_____________________________________________________________________________
@@ -140,6 +148,20 @@ void Particle::Move(const Double_t stepTime, const Run* run)
    if (interval >= stepTime || interval <= 0.0) {
       interval = stepTime;
    }
+   #ifdef VERBOSE_MODE
+      cout << "-------------------------------------------" << endl;
+      cout << "-- Move Particle along trajectory -- " << endl;
+      cout << "Interval: " << interval << "\t" << "StepTime: " << stepTime << endl;
+      cout << "----------" << endl;
+      cout << setw(10) << "Initial - " << setw(4) << "X: " << setw(10) << this->X() << "\t";
+      cout << setw(4) << "Y: " << setw(10) << this->Y() << "\t";
+      cout << setw(4) << "Z: " << setw(10) << this->Z() << endl;
+      cout << setw(10) << "Initial - " << setw(4) << "Vx: " << setw(10) << this->Vx() << "\t";
+      cout << setw(4) << "Vy: " << setw(10) << this->Vy() << "\t";
+      cout << setw(4) << "Vz: " << setw(10) << this->Vz() << endl;
+      cout << setw(4) << "E: " << setw(10) << this->Energy()/Units::neV << endl;
+      cout << "----------" << endl;
+   #endif
    // Fetch the Gravitational Field if it exists, and store field's components
    const GravField* const gravity = run->GetExperiment().GetGravField();
    TVector3 gravField(0.,0.,0.);
@@ -150,15 +172,6 @@ void Particle::Move(const Double_t stepTime, const Run* run)
    // one step of size 'stepTime'
    const Double_t end = this->T() + stepTime;
    while (this->T() < end) {
-      #ifdef VERBOSE_MODE
-         cout << "-------------------------------------------" << endl;
-         cout << "Move -- Interval: " << interval << "\t" << "StepTime: " << stepTime << endl;
-         cout << "Move -- Initial X: " << this->X() << "\t" << "Y: " << this->Y();
-         cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
-         cout << "Move -- Initial Vx: " << this->Vx() << "\t" << "Vy: " << this->Py();
-         cout << "\t" <<  "Vz: " << this->Pz() << "\t";
-         cout <<  "E: " << this->Energy()/Units::neV << endl;
-      #endif
       // Check if we will reach the end of stepTime within the next small step
       if (this->T() + interval > end) {interval = end - this->T();} 
       // Get current positions
@@ -191,15 +204,17 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       this->NotifyObservers(halfwayPoint, halfwayVel, Context::MagField);
       // Precess spin about measured magnetic field
       this->PrecessSpin(field, interval);
-      #ifdef VERBOSE_MODE
-         cout << "-------------------------------------------" << endl;
-         cout << "Move -- Final X: " << this->X() << "\t" << "Y: " << this->Y();
-         cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
-         cout << "Move -- Final Vx: " << this->Vx() << "\t" << "Vy: " << this->Py();
-         cout << "\t" <<  "Vz: " << this->Pz() << "\t";
-         cout <<  "E: " << this->Energy()/Units::neV << endl;
-      #endif
    }
+   #ifdef VERBOSE_MODE
+      cout << setw(10) << "Final - " << setw(4) << "X: " << setw(10) << this->X() << "\t";
+      cout << setw(4) << "Y: " << setw(10) << this->Y() << "\t";
+      cout << setw(4) << "Z: " << setw(10) << this->Z() << endl;
+      cout << setw(10) << "Final - " << setw(4) << "Vx: " << setw(10) << this->Vx() << "\t";
+      cout << setw(4) << "Vy: " << setw(10) << this->Vy() << "\t";
+      cout << setw(4) << "Vz: " << setw(10) << this->Vz() << endl;
+      cout << setw(4) << "E: " << setw(10) << this->Energy()/Units::neV << endl;
+      cout << "---------------------------------------" << endl;
+   #endif
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Notify Observers of Step Completion
    this->NotifyObservers(this->GetPoint(), this->GetVelocity(), Context::Step);
@@ -211,11 +226,15 @@ void Particle::UpdateCoordinates(const TGeoNavigator* navigator)
    // Take the Navigator's internal state (position, direction) and set particle's to this
    #ifdef VERBOSE_MODE
       cout << "-------------------------------------------" << endl;
-      cout << "Update -- Initial X: " << this->X() << "\t" << "Y: " << this->Y();
-      cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
-      cout << "Update -- Initial Vx: " << this->Vx() << "\t" << "Vy: " << this->Py();
-      cout << "\t" <<  "Vz: " << this->Pz() << "\t";
-      cout <<  "E: " << this->Energy()/Units::neV << endl;
+      cout << "-- Update Particle's state with that of the Navigator --" << endl;
+      cout << setw(10) << "Initial - " << setw(4) << "X: " << setw(10) << this->X() << "\t";
+      cout << setw(4) << "Y: " << setw(10) << this->Y() << "\t";
+      cout << setw(4) << "Z: " << setw(10) << this->Z() << endl;
+      cout << setw(10) << "Initial - " << setw(4) << "Vx: " << setw(10) << this->Vx() << "\t";
+      cout << setw(4) << "Vy: " << setw(10) << this->Vy() << "\t";
+      cout << setw(4) << "Vz: " << setw(10) << this->Vz() << endl;
+      cout << setw(4) << "E: " << setw(10) << this->Energy()/Units::neV << endl;
+      cout << "----------" << endl;
    #endif
    const Double_t* pos = navigator->GetCurrentPoint();
    const Double_t* dir = navigator->GetCurrentDirection();
@@ -224,11 +243,13 @@ void Particle::UpdateCoordinates(const TGeoNavigator* navigator)
    this->SetPosition(pos[0], pos[1], pos[2], this->T());
    this->SetVelocity(vel*dir[0], vel*dir[1], vel*dir[2]);
    #ifdef VERBOSE_MODE
-      cout << "Update -- Final X: " << this->X() << "\t" << "Y: " << this->Y();
-      cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
-      cout << "Update -- Final Vx: " << this->Vx() << "\t" << "Vy: " << this->Py();
-      cout << "\t" <<  "Vz: " << this->Pz() << "\t";
-      cout <<  "E: " << this->Energy()/Units::neV << endl;
+      cout << setw(10) << "Final - " << setw(4) << "X: " << setw(10) << this->X() << "\t";
+      cout << setw(4) << "Y: " << setw(10) << this->Y() << "\t";
+      cout << setw(4) << "Z: " << setw(10) << this->Z() << endl;
+      cout << setw(10) << "Final - " << setw(4) << "Vx: " << setw(10) << this->Vx() << "\t";
+      cout << setw(4) << "Vy: " << setw(10) << this->Vy() << "\t";
+      cout << setw(4) << "Vz: " << setw(10) << this->Vz() << endl;
+      cout << setw(4) << "E: " << setw(10) << this->Energy()/Units::neV << endl;
       cout << "-------------------------------------------" << endl;
    #endif
 }

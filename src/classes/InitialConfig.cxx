@@ -17,7 +17,7 @@ ClassImp(InitialConfig)
 
 //__________________________________________________________________________
 InitialConfig::InitialConfig()
-              :fRunName(""), fGeomFile(""), fGeomVisFile(""), fOutputDataFile(""),
+              :fGeomFile(""), fGeomVisFile(""), fOutputDataFile(""),
                fBeamShape(""), fBeamRadius(0.), fBeamLength(0.), fBeamPhi(0.), fBeamTheta(0.),
                fBeamPsi(0.), fBeamDisplacement(), fInitialParticles(0), fInitialMaxVelocity(0.),
                fFillingTime(0.), fDirMinTheta(0.), fDirMaxTheta(0.), fDirMinPhi(0.), fDirMaxPhi(0.),
@@ -46,8 +46,7 @@ InitialConfig::InitialConfig(const ConfigFile& masterConfig)
    }
    
    ConfigFile initialConfigFile(initialConfigName);
-   fRunName = initialConfigFile.GetString("RunName","Name");
-   
+
    fGeomFile = folderpath + initialConfigFile.GetString("GeomFile","Files");
    string geomVisFileName = initialConfigFile.GetString("GeomVisFile","Files");
    if (geomVisFileName.empty() == false) {fGeomVisFile = folderpath + geomVisFileName;}
@@ -97,8 +96,7 @@ InitialConfig::InitialConfig(const ConfigFile& masterConfig)
 
 //__________________________________________________________________________
 InitialConfig::InitialConfig(const InitialConfig& other)
-              :fRunName(other.fRunName),
-               fGeomFile(other.fGeomFile),
+              :fGeomFile(other.fGeomFile),
                fGeomVisFile(other.fGeomVisFile),
                fOutputDataFile(other.fOutputDataFile),
                fBeamShape(other.fBeamShape),
@@ -128,7 +126,6 @@ InitialConfig::InitialConfig(const InitialConfig& other)
 InitialConfig& InitialConfig::operator=(const InitialConfig& other)
 {
    if(this!=&other) {
-      fRunName = other.fRunName;
       fGeomFile = other.fGeomFile;
       fGeomVisFile = other.fGeomVisFile;
       fOutputDataFile = other.fOutputDataFile;
@@ -166,7 +163,6 @@ void InitialConfig::Print(Option_t* /*option*/) const
 {
    cout << "-------------------------------------------" << endl;
    cout << "Initial Configuration Settings" << endl;
-   cout << "Name: " << fRunName << endl;
    cout << "GeomFile: " << fGeomFile << endl;
    cout << "GeomVisFile: " << fGeomVisFile << endl;
    cout << "OutputDataFile: " << fOutputDataFile << endl;

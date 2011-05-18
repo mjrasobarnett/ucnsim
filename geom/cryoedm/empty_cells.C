@@ -79,6 +79,21 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    Double_t detectorValveVolCapacity = detectorValveVolShape->Capacity();
    
    // -------------------------------------
+   // -- DetectorValve
+   Box *detectorValveShape = new Box("DetectorValveShape", detectorValveHalfX, detectorValveHalfY, detectorValveHalfZ);
+   Boundary* detectorValve = new Boundary("DetectorValve", detectorValveShape, beryllium, surfaceRoughness);
+   detectorValve->SetLineColor(kBlue+3);
+   detectorValve->SetLineWidth(1);
+   detectorValve->SetVisibility(kTRUE);
+   detectorValve->SetTransparency(0);
+   // -- Define the Valve volume back
+   TGeoRotation detectorValveRot("DetectorValveRot",detectorValvePhi,detectorValveTheta,detectorValvePsi);
+   TGeoTranslation detectorValveTra("DetectorValveXPosTra",detectorValveXPos, detectorValveYPos, detectorValveZPos);
+   TGeoCombiTrans detectorValveCom(detectorValveTra,detectorValveRot);
+   TGeoHMatrix detectorValveMat = detectorValveCom;
+   detectorValveVol->AddNode(detectorValve, 1, new TGeoHMatrix(detectorValveMat));
+      
+   // -------------------------------------
    // -- DETECTOR TUBE
    // DetectorTubeTop - Entrance into the detector tube
    Tube *detectorTubeTopShape = new Tube("DetectorTubeTop", detectorTubeTopRMin, detectorTubeTopRMax, detectorTubeTopHalfLength);
@@ -250,7 +265,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // Cell Connector Tube
    Tube *cellConnectorShape = new Tube("CellConnectorShape", cellConnectorRMin, cellConnectorRMax, cellConnectorHalfZ);
    TrackingVolume* cellConnector = new TrackingVolume("CellConnector", cellConnectorShape, heliumII);
-   cellConnector->SetLineColor(kGreen+2);
+   cellConnector->SetLineColor(kMagenta-8);
    cellConnector->SetLineWidth(1);
    cellConnector->SetVisibility(kTRUE);
    cellConnector->SetTransparency(20);
@@ -258,8 +273,20 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoTranslation cellConnectorTra("CellConnectorTra", cellConnectorXPos, cellConnectorYPos, cellConnectorZPos);
    TGeoCombiTrans cellConnectorCom(cellConnectorTra,cellConnectorRot);
    TGeoHMatrix cellConnectorMat = cellConnectorCom;
-   chamber->AddNode(cellConnector, 1, new TGeoHMatrix(cellConnectorMat));
-   Double_t cellConnectorCapacity = cellConnectorShape->Capacity();
+   neutralCell->AddNode(cellConnector, 1, new TGeoHMatrix(cellConnectorMat));
+   
+   // Cell Connector Tube Boundary
+   Tube *cellConnectorBoundaryShape = new Tube("CellConnectorBoundaryShape", cellConnectorBoundaryRMin, cellConnectorBoundaryRMax, cellConnectorBoundaryHalfZ);
+   Boundary* cellConnectorBoundary = new Boundary("CellConnectorBoundary", cellConnectorBoundaryShape, beryllium, surfaceRoughness);
+   cellConnectorBoundary->SetLineColor(kGreen-1);
+   cellConnectorBoundary->SetLineWidth(1);
+   cellConnectorBoundary->SetVisibility(kFALSE);
+   cellConnectorBoundary->SetTransparency(20);
+   TGeoRotation cellConnectorBoundaryRot("CellConnectorBoundaryRot", cellConnectorBoundaryPhi, cellConnectorBoundaryTheta, cellConnectorBoundaryPsi);
+   TGeoTranslation cellConnectorBoundaryTra("CellConnectorBoundaryTra", cellConnectorBoundaryXPos, cellConnectorBoundaryYPos, cellConnectorBoundaryZPos);
+   TGeoCombiTrans cellConnectorBoundaryCom(cellConnectorBoundaryTra,cellConnectorBoundaryRot);
+   TGeoHMatrix cellConnectorBoundaryMat = cellConnectorBoundaryCom;
+   neutralCell->AddNode(cellConnectorBoundary, 1, new TGeoHMatrix(cellConnectorBoundaryMat));
    
    // Define Central electrode 
    Tube *centralElectrodeShape = new Tube("CentralElectrodeShape", centralElectrodeRMin, centralElectrodeRMax, centralElectrodeHalfZ);
@@ -289,7 +316,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    Double_t centralElectrodeHoleCapacity = centralElectrodeHoleShape->Capacity(); 
    
    // HV Cell
-   Tube *hvCellShape = new Tube("HVShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
+   Tube *hvCellShape = new Tube("HVCellShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
    TrackingVolume* hvCell = new TrackingVolume("HVCell", hvCellShape, heliumII);
    hvCell->SetLineColor(kYellow-8);
    hvCell->SetLineWidth(1);
