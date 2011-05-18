@@ -341,7 +341,7 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
    // -- state change occured
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Check whether particle has decayed in the last step
-   if(this->WillDecay(stepTime) == kTRUE) {
+   if(particle->WillDecay(stepTime) == kTRUE) {
       this->IsDecayed(particle);
       return kFALSE;
    }
@@ -1164,13 +1164,6 @@ Bool_t Propagating::FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigato
    crossedNode->GetVolume()->GetShape()->ComputeNormal(local, ldir, lnorm);
    navigator->GetHMatrix()->LocalToMasterVect(lnorm, normal);
    return kTRUE;
-}
-
-//______________________________________________________________________________
-Bool_t Propagating::WillDecay(const Double_t /*timeInterval*/)
-{
-   // Placeholder for method to calculate probability particle will decay within timeInterval, and then roll the dice!
-   return kFALSE;
 }
 
 //_____________________________________________________________________________

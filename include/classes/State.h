@@ -88,8 +88,6 @@ protected:
    virtual Bool_t    FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigator,
                                     const TGeoNode* crossedNode);
 
-   virtual Bool_t    WillDecay(const Double_t timeInterval);
-   
 public:
    // -- Constructors
    Propagating();
