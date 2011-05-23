@@ -24,6 +24,8 @@
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
 #include "TPolyMarker3D.h"
+#include "TTree.h"
+#include "TBranch.h"
 
 #include "Materials.h"
 #include "Constants.h"
@@ -177,13 +179,21 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Create storage for the particles
-   Data * data = new Data();
-   data->Initialise(initialConfig);
+   const string outputFileName = initialConfig.OutputFileName();
+   if (outputFileName == "") {
+      cout << "Error - No Output file path specified in initial configuration" << endl;
+      return false;
+   }
+   // Open and store pointer to File
+   TFile file(outputFileName.c_str(), "RECREATE");
+   fParticleStatesFolder = topDir->mkdir(Folders::particles.c_str());
+   TTree tree("Particles","Tree of Particle Data");
+   Particle* particle = new Particle();
+   TBranch* initialBranch = tree.Branch(Folders::initial, particle->ClassName(), &particle);
    
    // -- Loop over the total number of particles to be created. 
    for (Int_t i = 1; i <= particles; i++) {
       // -- Create particle at a random position inside beam volume
-      Particle* particle = new Particle();
       particle->SetId(i);
       CreateRandomParticle(particle, fillTime, beamVolume, beamMatrix);
       // -- Initialise particle's momentum
@@ -201,14 +211,13 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       initialTHist->Fill(particle->T());
       positions->SetPoint(particle->Id()-1, particle->X(), particle->Y(), particle->Z());
       // -- Add particle to data file
-      data->SaveParticle(particle, Folders::initial);
-      if (particle) delete particle;
+      initialBranch->Fill();
       // -- Update progress bar
       Algorithms::ProgressBar::PrintProgress(i,particles,1);
    }
    // -- Close the data
-   delete data;
-   data = NULL;
+   tree.Write();
+   file.Close();
    
    TCanvas *canvas1 = new TCanvas("InitialPhaseSpace","Initial Phase Space",60,0,1000,800);
    canvas1->Divide(4,2);
