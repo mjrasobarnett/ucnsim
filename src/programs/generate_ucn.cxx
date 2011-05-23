@@ -30,7 +30,7 @@
 #include "Materials.h"
 #include "Constants.h"
 #include "Units.h"
-#include "DataFileHierarchy.h"
+#include "ValidStates.h"
 #include "GeomParameters.h"
 #include "Algorithms.h"
 
@@ -186,10 +186,9 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    }
    // Open and store pointer to File
    TFile file(outputFileName.c_str(), "RECREATE");
-   fParticleStatesFolder = topDir->mkdir(Folders::particles.c_str());
    TTree tree("Particles","Tree of Particle Data");
    Particle* particle = new Particle();
-   TBranch* initialBranch = tree.Branch(Folders::initial, particle->ClassName(), &particle);
+   TBranch* initialBranch = tree.Branch(States::initial.c_str(), particle->ClassName(), &particle);
    
    // -- Loop over the total number of particles to be created. 
    for (Int_t i = 1; i <= particles; i++) {
@@ -209,7 +208,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       initialVZHist->Fill(particle->Vz());
       initialVHist->Fill(particle->V());
       initialTHist->Fill(particle->T());
-      positions->SetPoint(particle->Id()-1, particle->X(), particle->Y(), particle->Z());
+      positions->SetPoint(i-1, particle->X(), particle->Y(), particle->Z());
       // -- Add particle to data file
       initialBranch->Fill();
       // -- Update progress bar

@@ -23,12 +23,12 @@
 
 #include "Constants.h"
 #include "Units.h"
-#include "DataFileHierarchy.h"
+#include "ValidStates.h"
 #include "Algorithms.h"
 #include "DataAnalysis.h"
 
 using namespace std;
-using namespace Folders;
+using namespace States;
 using namespace Algorithms;
 
 void PlotDensitySnapshots(TFile* const file, const vector<TDirectory*> stateDirs, const RunConfig& runConfig);
@@ -64,8 +64,8 @@ Int_t main(int argc, char **argv) {
    }
    file->cd();
    TDirectory * const topDir = gDirectory;
-   if (topDir->cd(Folders::particles.c_str()) == false) {
-      cerr << "No Folder named: " << Folders::particles << " in data file" << endl;
+   if (topDir->cd("") == false) {
+      cerr << "No Folder named: " << "" << " in data file" << endl;
       return EXIT_FAILURE;
    }
    cout << "-------------------------------------------" << endl;
@@ -77,8 +77,8 @@ Int_t main(int argc, char **argv) {
    // Build the ConfigFile
    ///////////////////////////////////////////////////////////////////////////////////////
    // Navigate to Config Folder   
-   if (topDir->cd(Folders::config.c_str()) == false) {
-      cerr << "No Folder named: " << Folders::config << " in data file" << endl;
+   if (topDir->cd("") == false) {
+      cerr << "No Folder named: " << "" << " in data file" << endl;
       return EXIT_FAILURE;
    }
    // -- Loop over all objects in folder and extract latest RunConfig
@@ -104,19 +104,19 @@ Int_t main(int argc, char **argv) {
    cout << "-------------------------------------------" << endl;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Create a Histogram Dir inside File
-   TDirectory* histDir = topDir->mkdir(Folders::histograms.c_str());
+   TDirectory* histDir = topDir->mkdir("");
    if (histDir == NULL) {
       // histogram folder already exists
-      topDir->cd(Folders::histograms.c_str());
+      topDir->cd("");
       histDir = gDirectory;
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // Create a list of all the valid states to be included in histogram
    vector<string> statenames;
-   statenames.push_back(Folders::propagating);
-   statenames.push_back(Folders::absorbed);
-   statenames.push_back(Folders::detected);
-   statenames.push_back(Folders::decayed);
+   statenames.push_back(States::propagating);
+   statenames.push_back(States::absorbed);
+   statenames.push_back(States::detected);
+   statenames.push_back(States::decayed);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Navigate to and store folder for each selected state
    //////////////////////////////////////////////////////////////////////////////////////

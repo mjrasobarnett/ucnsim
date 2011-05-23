@@ -14,7 +14,7 @@
 
 #include "Algorithms.h"
 #include "DataAnalysis.h"
-#include "DataFileHierarchy.h"
+#include "ValidStates.h"
 
 using namespace std;
 
@@ -64,10 +64,10 @@ Int_t main(int argc, char **argv)
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Create a Histogram Director if one doesn't already exist in File
-   TDirectory* histDir = file->mkdir(Folders::histograms.c_str());
+   TDirectory* histDir = file->mkdir("");
    if (histDir == NULL) {
       // histogram folder already exists
-      file->cd(Folders::histograms.c_str());
+      file->cd("");
       histDir = gDirectory;
    }
    //////////////////////////////////////////////////////////////////////////////////////

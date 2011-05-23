@@ -48,7 +48,7 @@ set(UCNLIB_HEADER_NAMES   Algorithms.h classes/BoolNode.h
                           classes/UniformElecField.h
                           classes/UniformMagField.h classes/VertexStack.h
                           classes/Volume.h Constants.h DataAnalysis.h
-                          DataFileHierarchy.h GeomParameters.h
+                          ValidStates.h GeomParameters.h
                           Materials.h Units.h )
 
 set(UCNLIB_DICT_HEADERS   classes/Box.h classes/Tube.h classes/Material.h
@@ -72,7 +72,7 @@ set(UCNLIB_DICT_HEADERS   classes/Box.h classes/Tube.h classes/Material.h
                           classes/Clock.h classes/UniformElecField.h
                           classes/ElecFieldArray.h Algorithms.h
                           Constants.h DataAnalysis.h
-                          DataFileHierarchy.h GeomParameters.h
+                          ValidStates.h GeomParameters.h
                           Materials.h Units.h )
                         
 # Append the source directory to each of these, so we have a direct link

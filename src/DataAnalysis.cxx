@@ -38,7 +38,7 @@
 #include "FieldData.h"
 
 #include "Algorithms.h"
-#include "DataFileHierarchy.h"
+#include "ValidStates.h"
 #include "Constants.h"
 #include "Units.h"
 
@@ -50,7 +50,6 @@ TFile* DataFile::OpenRootFile(const std::string filename, const std::string opti
 {
    // -- Simply open a Root file with the given name and option and return pointer to it.
    cout << "-------------------------------------------" << endl;
-   cout << "Loading Data File: " << filename << endl;
    TFile *file = NULL;
    file = TFile::Open(filename.c_str(), option.c_str());
    if (!file || file->IsZombie()) {
@@ -58,7 +57,6 @@ TFile* DataFile::OpenRootFile(const std::string filename, const std::string opti
       return NULL;
    }
    file->cd();
-   cout << "-------------------------------------------" << endl;
    cout << "Successfully Loaded Data File: " << filename << endl;
    cout << "-------------------------------------------" << endl;
    return file;
@@ -71,8 +69,8 @@ const RunConfig& DataFile::LoadRunConfig(TFile& file)
    // -- Throw an exception if this cannot be done.
    cout << "Attempting to load the RunConfig" << endl;
    // Navigate to Config Folder   
-   if (file.cd(Folders::config.c_str()) == false) {
-      cerr << "No Folder named: " << Folders::config << " in data file" << endl;
+   if (file.cd("") == false) {
+      cerr << "No Folder named: " << "" << " in data file" << endl;
       throw runtime_error("Cannot find config folder");
    }
    TDirectory* const configDir = gDirectory;
@@ -106,8 +104,8 @@ TGeoManager& DataFile::LoadGeometry(TFile& file)
 {
    // -- Attempt to navigate to the geometry folder of the supplied file and extract the Geometry
    // -- Throw an exception if this cannot be done.
-   if (file.cd(Folders::geometry.c_str()) == false) {
-      cerr << "No Folder named: " << Folders::geometry << " in data file" << endl;
+   if (file.cd("") == false) {
+      cerr << "No Folder named: " << "" << " in data file" << endl;
       throw runtime_error("Cannot find geometry folder");
    }
    // Loop over contents ("TKeys") of Geometry folder
@@ -153,13 +151,13 @@ bool DataFile::IsValidStateName(const vector<string>& statenames)
    vector<string>::const_iterator iter;
    for (iter = statenames.begin(); iter != statenames.end(); iter++) {
       // Check state-name
-      if (*iter != Folders::initial &&
-          *iter != Folders::propagating &&
-          *iter != Folders::absorbed &&
-          *iter != Folders::lost &&
-          *iter != Folders::decayed &&
-          *iter != Folders::detected &&
-          *iter != Folders::anomalous) {
+      if (*iter != States::initial &&
+          *iter != States::propagating &&
+          *iter != States::absorbed &&
+          *iter != States::lost &&
+          *iter != States::decayed &&
+          *iter != States::detected &&
+          *iter != States::anomalous) {
          cerr << "Argument, " << *iter << " is not a valid statename" << endl;
          return false;
       }
@@ -180,13 +178,13 @@ bool DataFile::IsValidStateName(const string statename)
    // -- Check that each statename in list is a valid state as defined
    // -- in DataFileHierarchy lvl 3 and is unique
    // Check state-name
-   if (statename != Folders::initial &&
-         statename != Folders::propagating &&
-         statename != Folders::absorbed &&
-         statename != Folders::lost &&
-         statename != Folders::decayed &&
-         statename != Folders::detected &&
-         statename != Folders::anomalous) {
+   if (statename != States::initial &&
+         statename != States::propagating &&
+         statename != States::absorbed &&
+         statename != States::lost &&
+         statename != States::decayed &&
+         statename != States::detected &&
+         statename != States::anomalous) {
       cerr << "Argument, " << statename << " is not a valid statename" << endl;
       return false;
    }
@@ -197,19 +195,19 @@ void DataFile::CountParticles(TDirectory * const particleDir)
 {
    // -- Given the particle state directory, count the number of particles
    // -- in each state subfolder
-   if (particleDir->cd(Folders::initial.c_str()) == false) return;
+   if (particleDir->cd(States::initial.c_str()) == false) return;
    int initial = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::propagating.c_str()) == false) return;
+   if (particleDir->cd(States::propagating.c_str()) == false) return;
    int propagating = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::absorbed.c_str()) == false) return;
+   if (particleDir->cd(States::absorbed.c_str()) == false) return;
    int absorbed = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::detected.c_str()) == false) return;
+   if (particleDir->cd(States::detected.c_str()) == false) return;
    int detected = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::decayed.c_str()) == false) return;
+   if (particleDir->cd(States::decayed.c_str()) == false) return;
    int decayed = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::lost.c_str()) == false) return;
+   if (particleDir->cd(States::lost.c_str()) == false) return;
    int lost = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::anomalous.c_str()) == false) return;
+   if (particleDir->cd(States::anomalous.c_str()) == false) return;
    int anomalous = gDirectory->GetNkeys();
    cout << "Initial Particles: " << initial << endl;
    cout << "Final Total: ";
@@ -228,8 +226,8 @@ bool DataFile::FetchStateDirectories(TFile& file, vector<string>& stateNames, ve
 {   
    // -- Navigate to and store folder for each selected state. Return false if any of the requested states
    // -- were not found in the file
-   if (file.cd(Folders::particles.c_str()) == false) {
-      cerr << "Cannot locate Folder: " << Folders::particles << endl;
+   if (file.cd("") == false) {
+      cerr << "Cannot locate Folder: " << "" << endl;
       return false;
    }
    TDirectory* particleDir = gDirectory;
@@ -269,8 +267,8 @@ TDirectory* DataFile::NavigateToHistDir(TFile& file)
 {
    // -- Create a Histogram Director if one doesn't already exist in File
    TDirectory* histDir = NULL;
-   if (file.cd(Folders::histograms.c_str()) == false) {
-      histDir = file.mkdir(Folders::histograms.c_str());
+   if (file.cd("") == false) {
+      histDir = file.mkdir("");
    } else {
       histDir = gDirectory;
    }

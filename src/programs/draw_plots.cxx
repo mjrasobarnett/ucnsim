@@ -36,7 +36,7 @@
 
 #include "Constants.h"
 #include "Units.h"
-#include "DataFileHierarchy.h"
+#include "ValidStates.h"
 #include "Algorithms.h"
 #include "DataAnalysis.h"
 
@@ -85,15 +85,15 @@ Int_t main(int argc, char **argv)
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Navigate to Histogram folder
    TDirectory * const topDir = gDirectory;
-   if (topDir->cd(Folders::histograms.c_str()) == false) {
-      cerr << "No Folder named: " << Folders::histograms << " in data file" << endl;
+   if (topDir->cd("") == false) {
+      cerr << "No Folder named: " << "" << " in data file" << endl;
       return EXIT_FAILURE;
    }
    TDirectory * const histDir = gDirectory;
    histDir->ls();
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Load the Geometry
-   if (topDir->cd(Folders::geometry.c_str()) == false) {return EXIT_FAILURE;}
+   if (topDir->cd("") == false) {return EXIT_FAILURE;}
    TDirectory* geomDir = gDirectory;
    TKey *geomKey;
    TIter geomIter(geomDir->GetListOfKeys());
