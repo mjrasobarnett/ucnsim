@@ -43,7 +43,6 @@ public:
    Data(const Data& other);
    virtual ~Data(void);
    
-   Bool_t               Initialise(const InitialConfig& initialConfig);
    Bool_t               Initialise(const RunConfig& runConfig);
    void                 CreateObservers(const RunConfig& runConfig, const Experiment& experiment);
    

@@ -65,34 +65,6 @@ Data::~Data()
 }
 
 //_____________________________________________________________________________
-Bool_t Data::Initialise(const InitialConfig& initialConfig)
-{
-   // -- Take the initialConfig, open the output file and necessary directories to store
-   // -- particles that being generated.
-   // Fetch the OutputFile name
-   const string outputFileName = initialConfig.OutputFileName();
-   if (outputFileName == "") { 
-      Error("Initialise","No Output file path specified in run configuration");
-      return kFALSE;
-   }
-   // Open and store pointer to File
-   TFile *file = TFile::Open(outputFileName.c_str(), "recreate");
-   if (!file || file->IsZombie()) {
-      Error("Initialise","Unable to open output file");
-      return kFALSE;
-   }
-   fOutputFile = file;
-   // Set up basic folder structure
-   fOutputFile->cd();
-   TDirectory* topDir = gDirectory;
-   // Need to create particles directory structure
-   fParticleStatesFolder = topDir->mkdir(Folders::particles.c_str());
-   // Create the initial states folder
-   fInitialStatesFolder = fParticleStatesFolder->mkdir(Folders::initial.c_str());
-   return kTRUE;
-}
-
-//_____________________________________________________________________________
 Bool_t Data::Initialise(const RunConfig& runConfig)
 {
    // -- Take the runConfig, open the output files and create directories to store
