@@ -39,6 +39,11 @@ namespace Analysis {
       std::string ConcatenateStateNames(const std::vector<TDirectory*>& stateDirs);
       //_____________________________________________________________________________
       TDirectory* NavigateToHistDir(TFile& file);
+      //_____________________________________________________________________________
+      void CopyDirectory(TDirectory* const sourceDir, TDirectory* const outputDir);
+      //_____________________________________________________________________________
+      void CopyDirectoryContents(TDirectory* const sourceDir, TDirectory* const outputDir);
+      
    }
    
    //_____________________________________________________________________________

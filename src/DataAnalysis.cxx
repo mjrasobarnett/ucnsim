@@ -276,6 +276,75 @@ TDirectory* DataFile::NavigateToHistDir(TFile& file)
 }
 
 //_____________________________________________________________________________
+void DataFile::CopyDirectory(TDirectory * const sourceDir, TDirectory * const outputDir) {
+   // Copy the source directory and all its subdirectories into the supplied output directory
+   // as a new subdirectory  
+   TDirectory* copiedDir = outputDir->mkdir(sourceDir->GetName());
+   copiedDir->cd();
+   // Loop on all entries of this directory
+   TKey *key;
+   TIter nextkey(sourceDir->GetListOfKeys());
+   while ((key = static_cast<TKey*>(nextkey.Next()))) {
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TDirectory")) {
+         // Copy subdirectory to a new subdirectoy in copiedDir
+         sourceDir->cd(key->GetName());
+         TDirectory *subdir = gDirectory;
+         copiedDir->cd();
+         CopyDirectory(subdir, copiedDir);
+         copiedDir->cd();
+      } else {
+         // Copy Object
+         sourceDir->cd();
+         TObject *obj = key->ReadObj();
+         copiedDir->cd();
+         obj->Write();
+         delete obj;
+     }
+  }
+  copiedDir->SaveSelf(kTRUE);
+  outputDir->cd();
+}
+
+//_____________________________________________________________________________
+void DataFile::CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * const outputDir) {
+   // -- Similar to CopyDirectory but here we only copy all the objects and subdirs of the source
+   // -- directory into the supplied output directory, not the source directory itself
+   outputDir->cd();
+   // Loop on all entries of this directory
+   TKey *key;
+   TIter nextkey(sourceDir->GetListOfKeys());
+   Int_t counter = 0;
+   while ((key = static_cast<TKey*>(nextkey.Next()))) {
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TDirectory")) {
+         // Copy subdirectory to a new subdirectoy in outputDir
+         sourceDir->cd(key->GetName());
+         TDirectory *subdir = gDirectory;
+         outputDir->cd();
+         TDirectory* outputSubDir = outputDir->mkdir(subdir->GetName());
+         CopyDirectoryContents(subdir, outputSubDir);
+         outputDir->cd();
+      } else {
+         // Copy Object
+         sourceDir->cd();
+         TObject *obj = key->ReadObj();
+         outputDir->cd();
+         obj->Write();
+         delete obj;
+      }
+      ++counter;
+      Algorithms::ProgressBar::PrintProgress(counter,sourceDir->GetNkeys(),1);
+   }
+   outputDir->SaveSelf(kTRUE);
+   outputDir->cd();
+}
+
+//_____________________________________________________________________________
 double FitFunctions::SpinPrecession(double *x, double *par)
 {
    double t = x[0];
@@ -490,7 +559,7 @@ bool FinalStates::PlotEmptyingTime(const vector<TDirectory*> stateDirs, const Ru
    // -- Run Time
    const double runTime = runConfig.RunTime();
    sprintf(histname,"%s:Time",stateName.c_str());
-   TH1F* timeHist = new TH1F(histname,"Time: Units of s", ((int)runTime), 0.0, runTime);
+   TH1F* timeHist = new TH1F(histname,"Time: Units of s", ((int)runTime), lLimit, uLimit);
    timeHist->SetXTitle("Time (s)");
    timeHist->SetYTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////
@@ -549,7 +618,7 @@ bool FinalStates::PlotEmptyingTime(const vector<TDirectory*> stateDirs, const Ru
    double t2error = expo->GetParError(1);
    
    cout << "Emptying Lifetime: " << t2 << "\t Error: " << t2error << endl;
-   
+   cout << "Chi-Sq: " << expo->GetChisquare() << "\t NDF: " << expo->GetNDF() << endl;
    timecanvas->SaveAs("lifetime.root");
    return true;
 }
@@ -1307,7 +1376,7 @@ void Bounces::PlotBounceCounters(TDirectory* const histDir, const vector<TDirect
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounces
    sprintf(histname,"%s:Bounces",stateName.c_str());
-   TH1F* bounceHist = new TH1F(histname,"Bounces", 100, 0.0, 100000.0);
+   TH1F* bounceHist = new TH1F(histname,"Bounces", 100, 0.0, 10000.0);
    bounceHist->SetXTitle("Bounces");
    bounceHist->SetYTitle("Neutrons");
    bounceHist->SetLineColor(kBlack);
