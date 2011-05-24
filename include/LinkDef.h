@@ -65,6 +65,7 @@
 #pragma link C++ class FieldData+;
 #pragma link C++ class UniformElecField+;
 #pragma link C++ class ElecFieldArray+;
+#pragma link C++ class ParticleManifest+;
 
 // ----------------------------------------------------------------------
 // -- Elements and Materials Namespaces are used for defining common material properties
