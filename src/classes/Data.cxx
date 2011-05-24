@@ -508,6 +508,6 @@ void Data::ExportData()
 {
    fOutputFile->cd();
    fOutputTree->Write();
-   fParticleManifest->Write();
+   fOutputManifest->Write();
 }
 
