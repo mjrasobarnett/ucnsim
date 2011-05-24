@@ -9,6 +9,7 @@
 #include "Box.h"
 #include "Tube.h"
 #include "Volume.h"
+#include "ParticleManifest.h"
 
 #include "TMath.h"
 #include "TGeoManager.h"
@@ -189,6 +190,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    TTree tree("Particles","Tree of Particle Data");
    Particle* particle = new Particle();
    TBranch* initialBranch = tree.Branch(States::initial.c_str(), particle->ClassName(), &particle);
+   ParticleManifest manifest;
    
    // -- Loop over the total number of particles to be created. 
    for (Int_t i = 1; i <= particles; i++) {
@@ -211,10 +213,12 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       positions->SetPoint(i-1, particle->X(), particle->Y(), particle->Z());
       // -- Add particle to data file
       initialBranch->Fill();
+      manifest.AddEntry(States::initial, particle->Id());
       // -- Update progress bar
       Algorithms::ProgressBar::PrintProgress(i,particles,1);
    }
    // -- Close the data
+   manifest.Write();
    tree.Write();
    file.Close();
    
