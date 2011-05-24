@@ -154,7 +154,8 @@ Bool_t Run::Start()
    // Loop over all particles stored in InitialParticles Tree
    for (Int_t index = 0; index < totalParticles; index++) {
       // Get Particle from list
-      Particle* particle = this->GetData()->RetrieveParticle();
+      Particle* particle = this->GetData()->RetrieveParticle(index);
+      assert(particle != NULL);
       // Reset the clock
       Clock::Instance()->Reset();
       // Determine whether we are restoring to the start of a previously propagated track.
@@ -196,7 +197,7 @@ Bool_t Run::Start()
          Algorithms::ProgressBar::PrintProgress(index, totalParticles, 2);
       #endif
       // Delete Particle
-      delete particle;
+//      delete particle;
    }
    ///////////////////////////////////////////////////////////////////////
    cout << "-------------------------------------------" << endl;
@@ -221,6 +222,8 @@ Bool_t Run::Finish()
       Error("Finish", "Number of initial states doesn't match final states.");
       return kFALSE;
    }
+   // Write the Particle Tree to file
+   fData->ExportData();
    // Write the geometry out to file
    fExperiment->ExportGeometry(*this);
    // Delete the experiment

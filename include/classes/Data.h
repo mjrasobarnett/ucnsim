@@ -5,24 +5,23 @@
 #include <map>
 #include <string>
 #include "TFile.h"
+#include "TTree.h"
 #include "TDirectory.h"
-#include "Particle.h"
 #include "Observer.h"
-#include "InitialConfig.h"
-#include "RunConfig.h"
+#include "ParticleManifest.h"
 
 class TGeoManager;
 class Experiment;
+class RunConfig;
+class Particle;
 
 class Data : public TNamed {
 private:
    // -- Data Files
    TFile *fOutputFile;
-   
-   TDirectory *fParticleStatesFolder;
-   TDirectory *fInitialStatesFolder;
-   
-   TIter *fCurrentParticleDir;
+   TTree *fOutputTree;
+   Particle* fCurrentParticle;
+   ParticleManifest* fOutputManifest;
    
    // -- Observers
    std::multimap<std::string, Observer*> fObservers;
@@ -32,10 +31,13 @@ private:
    void           RegisterObservers(Particle* particle);
    
    Bool_t         LoadParticles(const RunConfig& runConfig);
-   Particle*      LocateParticle(TDirectory * const particleDir);
+      
+   ParticleManifest* ReadInParticleManifest(TFile* file) const;
+   TTree*            ReadInParticleTree(TFile* file) const;
    
-   void           CopyDirectory(TDirectory * const sourceDir, TDirectory * const outputDir);
-   void           CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * const outputDir);
+   bool  CheckSelectedParticleIDs(std::vector<int>& selected_IDs, std::vector<int>& available_IDs) const;
+   bool  CopyAllParticles(TBranch* inputBranch, TBranch* outputBranch);
+   bool  CopySelectedParticles(const std::vector<int>& selected_IDs, TBranch* inputBranch, TBranch* outputBranch);
    
 public:
    // -- Constructors
@@ -50,7 +52,7 @@ public:
    Bool_t               SaveParticle(Particle* particle, const std::string& state);
    
    // Get a Particle
-   Particle* const      RetrieveParticle();
+   Particle* const      RetrieveParticle(unsigned int index);
    
    // Particle Counters
    Bool_t               ChecksOut() const;
@@ -65,6 +67,8 @@ public:
    
    // Geometry
    void                 SaveGeometry(TGeoManager* const geoManager);
+   
+   void                 ExportData();
    
    ClassDef(Data, 1) // UCN Data Object
 };

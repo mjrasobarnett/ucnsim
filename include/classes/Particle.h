@@ -41,6 +41,7 @@ class Boundary;
 class TGeoNode;
 class TGeoMatrix;
 class TGeoNavigator;
+class TTree;
 
 //class ParticleState;
 
@@ -145,7 +146,7 @@ public:
    
    // -- Output to file
    void                 SaveState(Run* run);
-   void                 WriteToFile(TDirectory* particleDir);
+   void                 WriteToTree(TTree* tree);
    
    ClassDef(Particle,1)   // Ultra-Cold Neutron
 };

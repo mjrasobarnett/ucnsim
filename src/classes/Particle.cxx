@@ -13,6 +13,7 @@
 #include "Observer.h"
 #include "Volume.h"
 #include "Clock.h"
+#include "ValidStates.h"
 
 #include "TMath.h"
 #include "TRandom.h"
@@ -23,6 +24,7 @@
 #include "TGeoShape.h"
 #include "TGeoMatrix.h"
 #include "TGeoVoxelFinder.h"
+#include "TTree.h"
 
 using namespace std;
 
@@ -69,6 +71,26 @@ Particle::Particle(const Particle& p)
    #endif
 }
 
+/*//_____________________________________________________________________________
+Particle& Particle::operator=(const Particle& other) 
+{
+   //assignment operator
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Particle", "Assignment");
+   #endif
+   if(this!=&other) {
+      TObject::operator=(other);
+      Observable::operator=(other);
+      fId = other.fId;
+      fPos = other.fPos;
+      fVel = other.fVel;
+      fRandomSeed = other.fRandomSeed;
+      fState = other.fState;
+      fSpin = other.fSpin;
+   }
+   return *this;
+}
+*/
 //______________________________________________________________________________
 Particle::~Particle()
 { 
@@ -135,7 +157,8 @@ Bool_t Particle::Propagate(Run* run)
 {
    // -- Call State-dependent propagate method
    if (!fState) fState = new Propagating();
-   return fState->Propagate(this,run);
+//   return fState->Propagate(this,run);
+   return true;
 }
 
 //_____________________________________________________________________________
@@ -258,8 +281,8 @@ void Particle::UpdateCoordinates(const TGeoNavigator* navigator)
 Bool_t Particle::WillDecay(const Double_t timeInterval)
 {
    // Calculate probability particle will decay within timeInterval, and then roll the dice!
-   Double_t probDecay = (timeInterval/Neutron::lifetime);
-   if (gRandom->Uniform(0.0, 1.0) < probDecay) { return kTRUE; }
+//   Double_t probDecay = (timeInterval/Neutron::lifetime);
+//   if (gRandom->Uniform(0.0, 1.0) < probDecay) { return kTRUE; }
    return kFALSE;
 }
 
@@ -322,18 +345,23 @@ void Particle::NotifyObservers(const Point& point, const TVector3& velocity, con
 }
 
 //_____________________________________________________________________________
-void Particle::WriteToFile(TDirectory* particleDir)
+void Particle::WriteToTree(TTree* tree)
 {
-   // -- Write particle to given directory. Also tell the observers to write out the particle's
-   // -- observables to the same directory.
-   particleDir->cd();
+   // -- Find the Output Branch of the Output Tree and write the particle to it
+   // -- Update the particle manifest with the final state of the particle
    // First write out the observers to file
-   this->WriteObserversToFile(particleDir);
+   this->WriteObserversToTree(tree);
    // Delete Observers
    this->DetachAll();
-   assert(this->CountObservers() == 0);
-   // Next write particle to file
-   this->Write("Particle",TObject::kOverwrite);
+   // Next write particle to Tree
+   Particle* particle = this;
+   TBranch* particleBranch = tree->GetBranch(States::final.c_str());
+   if (particleBranch == NULL) {
+      Info("WriteToTree","Creating Branch %s in output tree", States::final.c_str());
+      particleBranch = tree->Branch(States::final.c_str(), particle->ClassName(), &particle, 32000,0);
+   }
+   tree->SetBranchAddress(particleBranch->GetName(), &particle);
+   particleBranch->Fill();
 }
 
 //_____________________________________________________________________________

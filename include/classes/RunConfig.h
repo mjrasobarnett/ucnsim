@@ -52,7 +52,7 @@ private:
    std::map<std::string, std::string> fNames;
    std::map<std::string, bool> fOptions;
    std::map<std::string, double> fParams;
-   std::vector<std::string> fSelectedParticleIDs;
+   std::vector<int> fSelectedParticleIDs;
    
    void ReadInRunConfig(const ConfigFile& runConfigFile, const std::string folderpath);
    void CheckForOverrideParameters(const std::map<std::string, std::string> section);
@@ -89,7 +89,7 @@ public:
    double TrackMeasureInterval() const;
    double SpinMeasureInterval() const;
    double FieldMeasureInterval() const;;
-   std::vector<std::string> SelectedParticleIDs() const {return fSelectedParticleIDs;}
+   std::vector<int> SelectedParticleIDs() const {return fSelectedParticleIDs;}
    virtual void Print(Option_t* option = "") const;
 
    ClassDef(RunConfig,1);

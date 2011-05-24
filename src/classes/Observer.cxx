@@ -15,6 +15,8 @@
 
 #include "TKey.h"
 #include "TClass.h"
+#include "TTree.h"
+#include "TBranch.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -56,6 +58,20 @@ Observer::~Observer()
 {
    // Destructor
    Info("Observer","Destructor");
+}
+
+//_____________________________________________________________________________
+void Observer::WriteDataToTree(TTree* tree, TObject* data)
+{
+   // -- Write out the provided data to a branch on the provided tree, named after
+   // -- the classname of the data
+   TBranch* branch = tree->GetBranch(data->ClassName());
+   if (branch == NULL) {
+      // -- If there is no branch yet, create one
+      Info("WriteToTree","Creating Branch %s in output tree", data->ClassName());
+      branch = tree->Branch(data->ClassName(), data->ClassName(), &data, 32000,0);
+   }
+   branch->Fill();
 }
 
 
@@ -153,11 +169,10 @@ void SpinObserver::LoadExistingData(TDirectory* const particleDir)
 }
 
 //_____________________________________________________________________________
-void SpinObserver::WriteToFile(TDirectory* const particleDir)
+void SpinObserver::WriteToTree(TTree* tree)
 {
-   // -- Write out the current observable to the provided directory
-   particleDir->cd();
-   fSpinData->Write("SpinData",TObject::kOverwrite);
+   // -- Write out the current observer's data to the observer's branch on the tree
+   this->WriteDataToTree(tree, fSpinData);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -247,11 +262,10 @@ void BounceObserver::LoadExistingData(TDirectory* const particleDir)
 }
 
 //_____________________________________________________________________________
-void BounceObserver::WriteToFile(TDirectory* const particleDir)
+void BounceObserver::WriteToTree(TTree* tree)
 {
-   // -- Write out the current observable to the provided directory
-   particleDir->cd();
-   fBounceData->Write("BounceData",TObject::kOverwrite);
+   // -- Write out the current observer's data to the observer's branch on the tree
+   this->WriteDataToTree(tree, fBounceData);
 }
 
 
@@ -349,11 +363,10 @@ void TrackObserver::LoadExistingData(TDirectory* const particleDir)
 }
 
 //_____________________________________________________________________________
-void TrackObserver::WriteToFile(TDirectory* const particleDir)
+void TrackObserver::WriteToTree(TTree* tree)
 {
-   // -- Write out the current observable to the provided directory
-   particleDir->cd();
-   fTrack->Write("Track",TObject::kOverwrite);
+   // -- Write out the current observer's data to the observer's branch on the tree
+   this->WriteDataToTree(tree, fTrack);
 }
 
 
@@ -449,10 +462,9 @@ void FieldObserver::LoadExistingData(TDirectory* const particleDir)
 }
 
 //_____________________________________________________________________________
-void FieldObserver::WriteToFile(TDirectory* const particleDir)
+void FieldObserver::WriteToTree(TTree* tree)
 {
-   // -- Write out the current observable to the provided directory
-   particleDir->cd();
-   fFieldData->Write("FieldData");
+   // -- Write out the current observer's data to the observer's branch on the tree
+   this->WriteDataToTree(tree, fFieldData);
 }
 
