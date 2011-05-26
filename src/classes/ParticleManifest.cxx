@@ -116,34 +116,51 @@ ParticleManifest::~ParticleManifest()
 }
 
 //______________________________________________________________________________
-void ParticleManifest::AddEntry(const std::string state, const int id)
+void ParticleManifest::AddEntry(const string state, const int id, const int index)
 {
    string l_state = boost::to_lower_copy(state);
-   map<string, vector<int> >::iterator iter = fDictionary.find(l_state);
+   map<string, Listing>::iterator iter = fDictionary.find(l_state);
    if (iter == fDictionary.end()) {
-      vector<int> id_list(1,id);
-      fDictionary[l_state] = id_list;
+      Listing newListing(state);
+      newListing.AddEntry(id, index);
+      fDictionary[l_state] = newListing;
    } else {
-      iter->second.push_back(id);
+      iter->second.AddEntry(id, index);
    }
 }
 
 //______________________________________________________________________________
-std::vector<int> ParticleManifest::GetList(const std::string state) const
+Listing ParticleManifest::GetListing(const std::string state) const
 {
    string l_state = boost::to_lower_copy(state);
-   map<string, vector<int> >::const_iterator iter = fDictionary.find(l_state);
+   map<string, Listing>::const_iterator iter = fDictionary.find(l_state);
    if (iter == fDictionary.end()) {
-      return vector<int>();
+      return Listing(state);
    }
    return iter->second;
 }
 
 //______________________________________________________________________________
+Listing ParticleManifest::GetListing(const vector<string> states) const
+{
+   Listing newListing;
+   vector<string>::const_iterator stateIter;
+   for (stateIter = states.begin(); stateIter != states.end(); stateIter++) {
+      string l_state = boost::to_lower_copy(*stateIter);
+      map<string, Listing>::const_iterator iter = fDictionary.find(l_state);
+      if (iter != fDictionary.end()) {
+         const Listing& foundListing = iter->second;
+         newListing.Extend(foundListing);
+      }
+   }
+   return newListing;
+}
+
+//______________________________________________________________________________
 void ParticleManifest::Print() const
 {
-   map<string, vector<int> >::const_iterator iter;
+   map<string, Listing >::const_iterator iter;
    for (iter = fDictionary.begin(); iter != fDictionary.end(); iter++) {
-      cout << left << setw(20) << iter->first << ": \t" << iter->second.size() << endl;
+      cout << left << setw(20) << iter->first << ": \t" << iter->second.Entries() << endl;
    }
 }

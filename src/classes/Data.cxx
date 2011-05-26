@@ -251,53 +251,33 @@ bool Data::CopyAllParticles(TBranch* inputBranch, TBranch* outputBranch)
       int bytesCopied = inputBranch->GetEntry(id);
       if (bytesCopied <= 0) continue;
       outputBranch->Fill();
-      fOutputManifest->AddEntry(States::initial, fCurrentParticle->Id());
+      int branchIndex = outputBranch->GetEntries() - 1;
+      fOutputManifest->AddEntry(States::initial, fCurrentParticle->Id(), branchIndex);
       Algorithms::ProgressBar::PrintProgress(id, inputBranch->GetEntries(), 1);
    }
    return true;
 }
 
 //_____________________________________________________________________________
-bool Data::CopySelectedParticles(const std::vector<int>& selected_IDs, TBranch* inputBranch, TBranch* outputBranch)
+bool Data::CopySelectedParticles(const std::vector<int>& selectedIndexes, TBranch* inputBranch, TBranch* outputBranch)
 {
    ///////////////////////////////////////////////////////////////////////
    // -- Iterate over the chosen particle IDs and copy these particles to the 'Initial'
    // -- branch of the Output file
-   vector<int>::const_iterator id;
-   for (id = selected_IDs.begin(); id != selected_IDs.end(); id++) {
-      int index = *id - 1; // Index is offest 1 from the particle ID
-      int ulimit = inputBranch->GetEntries() - 1; // Upper limit index of the input branch 
-      int llimit = 0; // Lower limit index
-      // Fetch the particle at the current index (in case the particles are perfectly in
-      // order and thus the requested IDs correspond to their Index in the list)
+   vector<int>::const_iterator indexIter;
+   for (indexIter = selectedIndexes.begin(); indexIter != selectedIndexes.end(); indexIter++) {
+      int index = indexIter - selectedIndexes.begin(); 
+      // Fetch the particle at the current index
       int bytesCopied = inputBranch->GetEntry(index);
       if (bytesCopied <= 0) {
-         // If their was no particle at the previous index, fetch the last particle
-         // in the the current branch
-         index = ulimit;
-         bytesCopied = inputBranch->GetEntry(index);
-      }
-      // If we haven't found the right particle, do a bisection-type-algorithm, where
-      // we move to middle of our index range and determine if the particle we want is
-      // higher or lower than this mid-point. Keep going until we reach the limits.
-      while (fCurrentParticle->Id() != *id) {
-         if (fCurrentParticle->Id() > *id) {
-            index = (index - llimit) / 2;
-         } else {
-            index += (ulimit - index) / 2;
-         }
-         inputBranch->GetEntry(index);
-         if (index == llimit || index == ulimit) {break;}
-      }
-      // If we found the particle, copy to the output branch, or else raise an error
-      if (fCurrentParticle->Id() == *id) {
-         outputBranch->Fill();
-         fOutputManifest->AddEntry(States::initial, fCurrentParticle->Id());
-      } else {
-         Error("LoadParticles","Could not find particle %i in input branch",*id);
+         Error("LoadParticles","Could not find particle %i in input branch",index);
          return false;
       }
-      Algorithms::ProgressBar::PrintProgress((id - selected_IDs.begin()), selected_IDs.size(), 1);
+      // If we found the particle, copy to the output branch
+      outputBranch->Fill();
+      int branchIndex = outputBranch->GetEntries() - 1;
+      fOutputManifest->AddEntry(States::initial, fCurrentParticle->Id(), branchIndex);
+      Algorithms::ProgressBar::PrintProgress(index, selectedIndexes.size(), 1);
    }
    return true;
 }
@@ -418,7 +398,8 @@ Bool_t Data::SaveParticle(Particle* particle, const std::string& state)
    fOutputTree->SetBranchAddress(particleBranch->GetName(), &particle);
    particleBranch->Fill();
    // Update Manifest
-   fOutputManifest->AddEntry(state, particle->Id());
+   int branchIndex = particleBranch->GetEntries() - 1;
+   fOutputManifest->AddEntry(state, particle->Id(), branchIndex);
    return true;
 }
 
@@ -463,43 +444,43 @@ Bool_t Data::ChecksOut() const
 Int_t Data::InitialParticles() const
 {
    // -- Count the number of particle states in the Initial Particles folder
-   return fOutputManifest->GetList(States::initial).size();
+   return fOutputManifest->GetListing(States::initial).Entries();
 }
 
 //_____________________________________________________________________________
 Int_t Data::PropagatingParticles() const
 {
-   return fOutputManifest->GetList(States::propagating).size();
+   return fOutputManifest->GetListing(States::propagating).Entries();
 }
 
 //_____________________________________________________________________________
 Int_t Data::DetectedParticles() const
 {
-   return fOutputManifest->GetList(States::detected).size();
+   return fOutputManifest->GetListing(States::detected).Entries();
 }
 
 //_____________________________________________________________________________
 Int_t Data::DecayedParticles() const
 {
-   return fOutputManifest->GetList(States::decayed).size();
+   return fOutputManifest->GetListing(States::decayed).Entries();
 }
 
 //_____________________________________________________________________________
 Int_t Data::AbsorbedParticles() const
 {
-   return fOutputManifest->GetList(States::absorbed).size();
+   return fOutputManifest->GetListing(States::absorbed).Entries();
 }
 
 //_____________________________________________________________________________
 Int_t Data::LostParticles() const
 {
-   return fOutputManifest->GetList(States::lost).size();
+   return fOutputManifest->GetListing(States::lost).Entries();
 }
 
 //_____________________________________________________________________________
 Int_t Data::AnomalousParticles() const
 {
-   return fOutputManifest->GetList(States::anomalous).size();
+   return fOutputManifest->GetListing(States::anomalous).Entries();
 }
 
 //_____________________________________________________________________________

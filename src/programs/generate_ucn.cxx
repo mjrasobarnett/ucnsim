@@ -213,7 +213,8 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       positions->SetPoint(i-1, particle->X(), particle->Y(), particle->Z());
       // -- Add particle to data file
       initialBranch->Fill();
-      manifest.AddEntry(States::initial, particle->Id());
+      int branchIndex = initialBranch->GetEntries() - 1;
+      manifest.AddEntry(States::initial, particle->Id(), branchIndex);
       // -- Update progress bar
       Algorithms::ProgressBar::PrintProgress(i,particles,1);
    }

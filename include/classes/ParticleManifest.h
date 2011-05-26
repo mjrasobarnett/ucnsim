@@ -33,7 +33,7 @@ public:
 class ParticleManifest : public TNamed
 {
 private:
-   std::map<std::string, std::vector<int> > fDictionary;
+   std::map<std::string, Listing> fDictionary;
    
 public:
    // -- Constructors
@@ -43,13 +43,14 @@ public:
    // -- Destructor
    virtual ~ParticleManifest();
    
-   void AddEntry(const std::string state, const int id);
-   std::vector<int> GetList(const std::string state) const;
+   void AddEntry(const std::string state, const int id, const int index);
+   Listing GetListing(const std::string state) const;
+   Listing GetListing(const std::vector<std::string> states) const;
    void Print() const;
    
 
    
-   ClassDef(ParticleManifest,1)   // Ultra-Cold Neutron
+   ClassDef(ParticleManifest,1)
 };
 
 #endif  /*PARTICLEMANIFEST_H*/
