@@ -10,6 +10,7 @@ class TDirectory;
 class TFile;
 class TGeoManager;
 class TGraph;
+class TTree;
 
 class RunConfig;
 class Track;
@@ -29,6 +30,8 @@ namespace Analysis {
       TGeoManager& LoadGeometry(TFile& file);
       //_____________________________________________________________________________
       const ParticleManifest& LoadParticleManifest(TFile& file);
+      //_____________________________________________________________________________
+      TTree* LoadParticleDataTree(TFile& file);
       //_____________________________________________________________________________
       bool IsRootFile(const std::string filename);
       //_____________________________________________________________________________

@@ -29,6 +29,7 @@
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
 #include "TLine.h"
+#include "TTree.h"
 
 #include "Particle.h"
 #include "ConfigFile.h"
@@ -163,6 +164,35 @@ const ParticleManifest& DataFile::LoadParticleManifest(TFile& file)
    return *manifest;
 }
 
+//_____________________________________________________________________________
+TTree* DataFile::LoadParticleDataTree(TFile& file)
+{
+   // -- Attempt to read in the ParticleManifest from the top level directory
+   cout << "Attempting to load the Particle Data Tree" << endl;
+   TTree* tree = NULL;
+   TKey *key;
+   TIter folderIter(file.GetListOfKeys());
+   while ((key = dynamic_cast<TKey*>(folderIter.Next()))) {
+      // Check if current item is of Class TGeomanager
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TTree")) {
+         // Read TGeoManager into memory when found
+         tree = dynamic_cast<TTree*>(key->ReadObj());
+         break;
+      }
+   }
+   // Throw exception if we failed to find any TGeoManager in this folder
+   if (tree == NULL) {
+      throw runtime_error("Unable to load Particle Data Tree from file");
+   }
+   cout << "Successfully Loaded Particle Data Tree" << endl;
+   cout << "-------------------------------------------" << endl;
+   return tree;
+}
+
+//_____________________________________________________________________________
 bool DataFile::IsRootFile(const string filename)
 {
    // -- Check that the filename supplied has a .root extension

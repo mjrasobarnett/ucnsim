@@ -108,6 +108,7 @@
 #pragma link C++ function Analysis::DataFile::LoadRunConfig(TFile&);
 #pragma link C++ function Analysis::DataFile::LoadGeometry(TFile&);
 #pragma link C++ function Analysis::DataFile::LoadParticleManifest(TFile&);
+#pragma link C++ function Analysis::DataFile::LoadParticleDataTree(TFile&);
 #pragma link C++ function Analysis::DataFile::IsRootFile(const std::string);
 #pragma link C++ function Analysis::DataFile::IsValidStateName(const std::vector<std::string>&);
 #pragma link C++ function Analysis::DataFile::IsValidStateName(const std::string);
