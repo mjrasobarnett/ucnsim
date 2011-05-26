@@ -126,10 +126,8 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    // -- initial position
    Bool_t fromBeginning = runConfig.RestartFromBeginning();
    string selectedBranch;
-   // Can only continue propagation for particles that are still in the propagating State
-   // (i.e: only those ones that haven't been detected/absorbed/lost etc...)
-   if (fromBeginning == false && which_particle_state == States::propagating) {
-      selectedBranch = States::propagating;
+   if (fromBeginning == false) {
+      selectedBranch = States::final;
    } else {
       selectedBranch = States::initial;
    }
