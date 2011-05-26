@@ -44,6 +44,8 @@
 #include "Constants.h"
 #include "Units.h"
 
+#include <boost/foreach.hpp>
+
 using namespace Analysis;
 using namespace std;
 
@@ -239,16 +241,16 @@ bool DataFile::IsValidStateName(const string statename)
 }
 
 //_____________________________________________________________________________
-string DataFile::ConcatenateStateNames(const vector<TDirectory*>& stateDirs)
+string DataFile::ConcatenateStateNames(const vector<string>& states)
 {
-   // -- Return a string made up of the names of each state in the supplied list of state folders
-   string stateName;
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      if (stateName.empty() == false) stateName.append("+");
-      stateName.append((*dirIter)->GetName());
+   // -- Return a string made up of the names of each state in the supplied list
+   // -- separated by a '+'
+   string result;
+   BOOST_FOREACH(string name, states) {
+      if (result.empty() == false) result.append("+");
+      result.append(name);
    }
-   return stateName;
+   return result;
 }
 
 //_____________________________________________________________________________
@@ -357,7 +359,7 @@ void FinalStates::PlotFinalStates(TDirectory* const histDir, const vector<TDirec
    histDir->cd();
    Char_t histname[40];
    // -- Count total Neutrons, and define name of combined states
-   string stateName = DataFile::ConcatenateStateNames(stateDirs);
+   string stateName = "";//DataFile::ConcatenateStateNames(stateDirs);
    int total_neutrons = 0;
    vector<TDirectory*>::const_iterator dirIter;
    for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
@@ -538,7 +540,7 @@ bool FinalStates::PlotEmptyingTime(const vector<TDirectory*> stateDirs, const Ru
    //////////////////////////////////////////////////////////////////////////////////////
    Char_t histname[40];
    // -- Count total Neutrons, and define name of combined states
-   string stateName = DataFile::ConcatenateStateNames(stateDirs);
+   string stateName = "";//DataFile::ConcatenateStateNames(stateDirs);
    int total_neutrons = 0;
    vector<TDirectory*>::const_iterator dirIter;
    for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
@@ -1140,7 +1142,7 @@ bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNa
    cout << "Measurement intervals: " << intervals << endl;
    // Make a list of the folders for each state to be included in analysis
    vector<TDirectory*> stateDirs;
-   if (DataFile::FetchStateDirectories(dataFile, stateNames, stateDirs) == false) return false;
+//   if (DataFile::FetchStateDirectories(dataFile, stateNames, stateDirs) == false) return false;
    
    TGraph* alphaT2 = Polarisation::CreateT2AlphaGraph(stateDirs, runTime, intervals);
    // Draw graph
@@ -1182,7 +1184,7 @@ bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNa
 TGraph* Polarisation::CreateT2AlphaGraph(vector<TDirectory*> stateDirs, double runTime, unsigned int intervals)
 {
    // Define name of combined states
-   string stateName = DataFile::ConcatenateStateNames(stateDirs);
+   string stateName = "";//DataFile::ConcatenateStateNames(stateDirs);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Define Histograms
    // Define axes of coordinate system

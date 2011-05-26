@@ -38,7 +38,7 @@ namespace Analysis {
       bool IsValidStateName(const std::vector<std::string>& statenames);
       bool IsValidStateName(const std::string statename);
       //_____________________________________________________________________________
-      std::string ConcatenateStateNames(const std::vector<TDirectory*>& stateDirs);
+      std::string ConcatenateStateNames(const std::vector<std::string>& states);
       //_____________________________________________________________________________
       TDirectory* NavigateToHistDir(TFile& file);
       //_____________________________________________________________________________
