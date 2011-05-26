@@ -905,85 +905,54 @@ void Polarisation::PlotSpinPolarisation(const std::string state, const std::vect
 }
 
 //_____________________________________________________________________________
-void Polarisation::PlotField(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig)
+void Polarisation::PlotField(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig)
 {
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd into Histogram's dir
-   histDir->cd();
+   cout << "Preparing to draw particle field measurements over time..." << endl;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Define Histograms
-   Char_t histname[40];
    const double runTime = runConfig.RunTime();
-   // -- Define name of combined states
-   string stateName;
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      if (stateName.empty() == false) stateName += "/";
-      stateName += (*dirIter)->GetName();
-   }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bx
-   sprintf(histname,"%s:Field Bx",stateName.c_str());
+   Char_t histname[40];
+   sprintf(histname,"%s:Field Bx",state.c_str());
    TH2F* bxHist = new TH2F(histname,"Bx", 2000, -1000*Units::uT, 1000*Units::uT, 500, 0.0, runTime);
    bxHist->SetXTitle("Field measured (T)");
    bxHist->SetYTitle("Time (s)");
    bxHist->SetZTitle("Neutrons");
    // -- By
-   sprintf(histname,"%s:Field By",stateName.c_str());
+   sprintf(histname,"%s:Field By",state.c_str());
    TH2F* byHist = new TH2F(histname,"By", 2000, -100*Units::uT, 100*Units::uT, 500, 0.0, runTime);
    byHist->SetXTitle("Field measured (T)");
    byHist->SetYTitle("Time (s)");
    byHist->SetZTitle("Neutrons");
    // -- B`
-   sprintf(histname,"%s:Field Bz",stateName.c_str());
+   sprintf(histname,"%s:Field Bz",state.c_str());
    TH2F* bzHist = new TH2F(histname,"Bz", 2000, -100*Units::uT, 100*Units::uT, 500, 0.0, runTime);
    bzHist->SetXTitle("Field measured (T)");
    bzHist->SetYTitle("Time (s)");
    bzHist->SetZTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over each state to be included in histogram
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      // -- cd into the State's folder
-      (*dirIter)->cd();
-      //////////////////////////////////////////////////////////////////////////////////////
-      // -- Loop over all particle folders in the current state's folder
-      TKey *folderKey;
-      TIter folderIter((*dirIter)->GetListOfKeys());
-      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         const char *classname = folderKey->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // Loop over all objects in particle dir
-            (*dirIter)->cd(folderKey->GetName());
-            TDirectory* particleDir = gDirectory;
-            TKey *objKey;
-            TIter objIter(particleDir->GetListOfKeys());
-            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
-               // For Each object in the particle's directory, check its class name and what it
-               // inherits from to determine what to do.
-               classname = objKey->GetClassName();
-               cl = gROOT->GetClass(classname);
-               if (!cl) continue;
-               if (cl->InheritsFrom("FieldData")) {
-                  // -- Extract Spin Observer Data if recorded
-                  const FieldData* fieldData = dynamic_cast<const FieldData*>(objKey->ReadObj());
-                  if (strcmp(fieldData->GetName(),"MagFieldObserver") != 0) continue;
-                  FieldData::const_iterator dataIter;
-                  for (dataIter = fieldData->begin(); dataIter != fieldData->end(); dataIter++) {
-                     bxHist->Fill((*dataIter)->Fx(),(*dataIter)->T());
-                     byHist->Fill((*dataIter)->Fy(),(*dataIter)->T());
-                     bzHist->Fill((*dataIter)->Fz(),(*dataIter)->T());
-                  }
-                  delete fieldData;
-               }
-            }
-         }
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   FieldData* data = new FieldData();
+   TBranch* fieldBranch = dataTree->GetBranch(data->ClassName());
+   if (fieldBranch == NULL) {
+      cerr << "Error - Could not find branch: " << data->ClassName() << " in input tree" << endl;
+      throw runtime_error("Failed to find branch in input tree");
+   }
+   dataTree->SetBranchAddress(fieldBranch->GetName(), &data);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      fieldBranch->GetEntry(particleIndex);
+      FieldData::const_iterator dataIter;
+      for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
+         bxHist->Fill((*dataIter)->Fx(),(*dataIter)->T());
+         byHist->Fill((*dataIter)->Fy(),(*dataIter)->T());
+         bzHist->Fill((*dataIter)->Fz(),(*dataIter)->T());
       }
    }
+   delete data; data = NULL;
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd back into Histogram's dir
-   histDir->cd();
    TCanvas *bxcanvas = new TCanvas("BxField","Bx (T)",60,0,1200,800);
    bxcanvas->cd();
    bxHist->Draw("COLZ");
@@ -996,6 +965,8 @@ void Polarisation::PlotField(TDirectory* const histDir, const vector<TDirectory*
    bzcanvas->cd();
    bzHist->Draw("COLZ");
    bzHist->Write(bzHist->GetName(),TObject::kOverwrite);
+   cout << "Successfully drawn particle field measurements over time" << endl;
+   cout << "-------------------------------------------" << endl;
    return;
 }
 

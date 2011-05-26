@@ -71,7 +71,7 @@ namespace Analysis {
       //_____________________________________________________________________________
       void PlotSpinPolarisation(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig);
       //_____________________________________________________________________________
-      void PlotField(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig);
+      void PlotField(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig);
       //_____________________________________________________________________________
       bool CalculateT2(TFile& dataFile, std::vector<std::string> states, double& t2, double& t2error);
       //_____________________________________________________________________________
