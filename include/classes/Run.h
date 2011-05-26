@@ -22,7 +22,7 @@ class Run : public TNamed
 {
 private:
    RunConfig        fRunConfig;
-   Data*            fData;
+   Data             fData;
    Experiment*      fExperiment;
    
 public:
@@ -37,11 +37,11 @@ public:
    // -- methods
    
    // Get/Setters
-   Int_t                Neutrons() const        {return fData->InitialParticles();}
+   Int_t                Neutrons() const        {return fData.InitialParticles();}
    Double_t             RunTime() const         {return fRunConfig.RunTime();}
    Double_t             MaxStepTime() const     {return fRunConfig.MaxStepTime();}
    
-   Data*                GetData()            {return fData;}
+   Data&                GetData()             {return fData;}
    const Experiment&    GetExperiment() const {return *fExperiment;}
    const RunConfig&     GetRunConfig() const {return fRunConfig;}
    

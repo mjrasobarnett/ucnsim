@@ -30,23 +30,23 @@ ClassImp(Run)
 //_____________________________________________________________________________
 Run::Run()
         :TNamed(),
-         fRunConfig()
+         fRunConfig(),
+         fData()
 {
 // -- Default constructor
    Info("Run", "Default Constructor");
-   fData = NULL;
    fExperiment = NULL;
 } 
 
 //_____________________________________________________________________________
 Run::Run(const RunConfig& runConfig)
         :TNamed(),
-         fRunConfig(runConfig)
+         fRunConfig(runConfig),
+         fData()
 {
 // -- constructor
    Info("Run", "Constructor");
    this->SetName(this->GetRunConfig().RunName().c_str());
-   fData = new Data();
    fExperiment = new Experiment();
 }
 
@@ -68,8 +68,6 @@ Run& Run::operator=(const Run& other)
    if(this!=&other) {
       TNamed::operator=(other);
       fRunConfig = other.fRunConfig;
-      // deallocate previous memory if necessary
-      if (fData != NULL) delete fData; fData = NULL;
       fData = other.fData;
       // deallocate previous memory if necessary
       if (fExperiment != NULL) delete fExperiment; fExperiment = NULL;
@@ -83,7 +81,6 @@ Run::~Run()
 {
 // -- Destructor
    Info("Run", "Destructor");
-   if(fData) delete fData;
    if(fExperiment) delete fExperiment;
 }
 
@@ -112,12 +109,12 @@ Bool_t Run::Initialise()
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Initialise the DataFile and load initial particles
    ///////////////////////////////////////////////////////////////////////////////////////
-   if (this->GetData()->Initialise(this->GetRunConfig()) == kFALSE) {
+   if (this->GetData().Initialise(this->GetRunConfig()) == kFALSE) {
       Error("Initialise","Failed to Load the Initial Particle Distribution from File");
       return kFALSE;
    }
    // -- Create any observers selected by user
-   this->GetData()->CreateObservers(this->GetRunConfig(), this->GetExperiment());
+   this->GetData().CreateObservers(this->GetRunConfig(), this->GetExperiment());
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Check Run Parameters
    // Run Time
@@ -133,7 +130,7 @@ Bool_t Run::Initialise()
    ///////////////////////////////////////////////////////////////////////////////////////
    cout << "-------------------------------------------" << endl;
    cout << "Run successfully initialised" << endl;
-   cout << "Particles: " << this->GetData()->InitialParticles() << endl;
+   cout << "Particles to propagate: " << this->GetData().InitialParticles() << endl;
    cout << "RunTime(s): " << this->GetRunConfig().RunTime() << endl;
    cout << "MaxStepTime(s): " << this->GetRunConfig().MaxStepTime() << endl;
    cout << "WallLosses: " << this->GetRunConfig().WallLossesOn() << endl;
@@ -147,14 +144,14 @@ Bool_t Run::Start()
 // -- Propagate the particles stored in the Run's Data, specified by configFile
    cout << "-------------------------------------------" << endl;
    cout << "Starting Simulation of " << this->GetRunConfig().RunName() << endl;
-   cout << "Total Particles: " << this->GetData()->InitialParticles() << endl;
+   cout << "Total Particles: " << this->GetData().InitialParticles() << endl;
    cout << "-------------------------------------------" << endl;
-   Int_t totalParticles = this->GetData()->InitialParticles();
+   Int_t totalParticles = this->GetData().InitialParticles();
    ///////////////////////////////////////////////////////////////////////
    // Loop over all particles stored in InitialParticles Tree
    for (Int_t index = 0; index < totalParticles; index++) {
       // Get Particle from list
-      Particle* particle = this->GetData()->RetrieveParticle(index);
+      Particle* particle = this->GetData().RetrieveParticle(index);
       assert(particle != NULL);
       // Reset the clock
       Clock::Instance()->Reset();
@@ -202,13 +199,13 @@ Bool_t Run::Start()
    ///////////////////////////////////////////////////////////////////////
    cout << "-------------------------------------------" << endl;
    cout << "Propagation Results: " << endl;
-   cout << "Total Particles: " << this->GetData()->InitialParticles() << endl;
-   cout << "Number Still Propagating: " << this->GetData()->PropagatingParticles() << endl;
-   cout << "Number Detected: " << this->GetData()->DetectedParticles() << endl;
-   cout << "Number Absorbed by Boundary: " << this->GetData()->AbsorbedParticles() << endl;
-   cout << "Number Decayed: " << this->GetData()->DecayedParticles() << endl;
-   cout << "Number Lost To Outer Geometry: " << this->GetData()->LostParticles() << endl;
-   cout << "Number With Anomalous Behaviour: " << this->GetData()->AnomalousParticles() << endl;
+   cout << "Total Particles: " << this->GetData().FinalParticles() << endl;
+   cout << "Number Still Propagating: " << this->GetData().PropagatingParticles() << endl;
+   cout << "Number Detected: " << this->GetData().DetectedParticles() << endl;
+   cout << "Number Absorbed by Boundary: " << this->GetData().AbsorbedParticles() << endl;
+   cout << "Number Decayed: " << this->GetData().DecayedParticles() << endl;
+   cout << "Number Lost To Outer Geometry: " << this->GetData().LostParticles() << endl;
+   cout << "Number With Anomalous Behaviour: " << this->GetData().AnomalousParticles() << endl;
    cout << "-------------------------------------------" << endl;
    return kTRUE;
 }
@@ -218,18 +215,16 @@ Bool_t Run::Finish()
 {
    // -- Clean up the Run before exporting it to file
    // Check that Data 'checks out'
-   if (this->GetData()->ChecksOut() == kFALSE) {
+   if (this->GetData().ChecksOut() == kFALSE) {
       Error("Finish", "Number of initial states doesn't match final states.");
       return kFALSE;
    }
    // Write the Particle Tree to file
-   fData->ExportData();
+   this->GetData().ExportData();
    // Write the geometry out to file
    fExperiment->ExportGeometry(*this);
    // Delete the experiment
    if (fExperiment) delete fExperiment; fExperiment = NULL;
-   // Delete the Data
-   if (fData) delete fData; fData = NULL;
    return kTRUE;
 }
 
