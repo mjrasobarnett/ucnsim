@@ -139,7 +139,6 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    if (CopySelectedParticles(selectedIndexes, inputBranch, outputBranch) == false) {return false;}
    // -- Write Output Tree to file
    fOutputFile->cd();
-   fOutputTree->Print();
    fOutputTree->Write();
    // -- Clean up
    inputFile->Close();
