@@ -135,12 +135,16 @@ TGeoManager& DataFile::LoadGeometry(TFile& file)
 }
 
 //_____________________________________________________________________________
-bool DataFile::ValidateRootFile(const string filename)
+bool DataFile::IsRootFile(const string filename)
 {
    // -- Check that the filename supplied has a .root extension
    size_t found = filename.find_last_of(".");
-   if (found == string::npos) return false;
+   if (found == string::npos) {
+      cout << "Error - File: " << filename << "is not a valid Root file" << endl;
+      return false;
+   }
    if (filename.substr(found) == ".root") return true;
+   cout << "Error - File: " << filename << "is not a valid Root file" << endl;
    return false;
 }
 //_____________________________________________________________________________

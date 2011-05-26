@@ -106,7 +106,7 @@
 #pragma link C++ function Analysis::DataFile::OpenRootFile(std::string,std::string);
 #pragma link C++ function Analysis::DataFile::LoadRunConfig(TFile&);
 #pragma link C++ function Analysis::DataFile::LoadGeometry(TFile&);
-#pragma link C++ function Analysis::DataFile::ValidateRootFile(const std::string);
+#pragma link C++ function Analysis::DataFile::IsRootFile(const std::string);
 #pragma link C++ function Analysis::DataFile::IsValidStateName(const std::vector<std::string>&);
 #pragma link C++ function Analysis::DataFile::IsValidStateName(const std::string);
 #pragma link C++ function Analysis::DataFile::CountParticles(TDirectory* const);

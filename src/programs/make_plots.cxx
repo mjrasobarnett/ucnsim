@@ -31,10 +31,7 @@ Int_t main(int argc, char **argv)
    }
    // Read in Filename and check that it is a .root file
    string filename = argv[1];
-   if (Analysis::DataFile::ValidateRootFile(filename) == false) {
-      cerr << "Error: filename, " << filename << " does not have a .root extension" << endl;
-      return EXIT_FAILURE;
-   }
+   if (Analysis::DataFile::IsRootFile(filename) == false) {return EXIT_FAILURE;}
    // Read in list of states to be included in histogram and check that they are
    // valid state names
    vector<string> statenames;

@@ -27,7 +27,7 @@ namespace Analysis {
       //_____________________________________________________________________________
       TGeoManager& LoadGeometry(TFile& file);
       //_____________________________________________________________________________
-      bool ValidateRootFile(const std::string filename);
+      bool IsRootFile(const std::string filename);
       //_____________________________________________________________________________
       bool IsValidStateName(const std::vector<std::string>& statenames);
       bool IsValidStateName(const std::string statename);

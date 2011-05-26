@@ -52,7 +52,7 @@ Int_t main(Int_t argc,Char_t **argv)
    }
    // Read in Filename and check that it is a .root file
    string filename = argv[1];
-   if (Analysis::DataFile::ValidateRootFile(filename) == false) {
+   if (Analysis::DataFile::IsRootFile(filename) == false) {
       cerr << "Error: filename, " << filename << " does not have a .root extension" << endl;
       return EXIT_FAILURE;
    }
