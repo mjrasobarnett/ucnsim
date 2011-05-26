@@ -167,6 +167,31 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
 }
 
 //_____________________________________________________________________________
+vector<int> Data::GetSelectedParticleIndexes(const ParticleManifest& manifest, const RunConfig& runConfig) const
+{
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Check RunConfig for which particle state we should take our initial particles from
+   cout << "Determining which particles to load..." << endl;
+   string which_particle_state = runConfig.ParticlesToLoad();
+   vector<int> availableIndexes = manifest.GetListing(which_particle_state).GetTreeIndexes();
+   if (availableIndexes.empty() == true) {
+      Error("GetListOfSelectedParticles","Cannot find any Particles for state %s in input manifest",which_particle_state.c_str());
+      return availableIndexes;
+   }
+   ///////////////////////////////////////////////////////////////////////
+   // -- Check RunConfig for whether to load all the particles in this state, or 
+   // -- only a subset of these particles, chosen by the User
+   Bool_t loadAllParticles = runConfig.LoadAllParticles();
+   if (loadAllParticles != true) {
+      // Get the User-defined particle IDs they wish to propagte
+      vector<int> selectedIndexes = runConfig.SelectedParticleIDs();
+      CheckSelectedIndexList(selectedIndexes, availableIndexes);
+      return selectedIndexes;
+   }
+   return availableIndexes;
+}
+
+//_____________________________________________________________________________
 ParticleManifest* Data::ReadInParticleManifest(TFile* file) const
 {
    // Loop on all entries of this directory searching for the first

@@ -47,6 +47,7 @@ public:
    
    Bool_t               Initialise(const RunConfig& runConfig);
    void                 CreateObservers(const RunConfig& runConfig, const Experiment& experiment);
+   std::vector<int>     GetSelectedParticleIndexes(const ParticleManifest& manifest, const RunConfig& runConfig) const;
    
    // Add a Particle
    Bool_t               SaveParticle(Particle* particle, const std::string& state);
