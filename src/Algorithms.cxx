@@ -234,8 +234,6 @@ void ProgressBar::PrintProgress(int entry, float nEntriesF, int mintime)
      }
      return;
    }
-
-
    // How wide should we make the progress bar?
    const int width = 70;
    // How long is the string for entries?
