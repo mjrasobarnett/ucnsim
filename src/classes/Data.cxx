@@ -112,15 +112,6 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
       return false;
    }
    ///////////////////////////////////////////////////////////////////////
-   // -- Check RunConfig for which particle state we should take our initial particles from
-   cout << "Determining which particles to load..." << endl;
-   string which_particle_state = runConfig.ParticlesToLoad();
-   vector<int> available_IDs = manifest->GetList(which_particle_state);
-   if (available_IDs.empty() == true) {
-      Error("LoadParticles","Cannot find any Particles for state %s in input manifest",which_particle_state.c_str());
-      return false;
-   }
-   ///////////////////////////////////////////////////////////////////////
    // -- Check RunConfig for whether we are continuing to propagate particles from
    // -- their last recorded position, or whether we are restarting them from their
    // -- initial position
@@ -143,17 +134,9 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    // -- Set the output branch where we will write the initial particles to
    TBranch* outputBranch = fOutputTree->Branch(States::initial.c_str(), fCurrentParticle->ClassName(), &fCurrentParticle,32000,0);
    ///////////////////////////////////////////////////////////////////////
-   // -- Check RunConfig for whether to load all the particles in this state, or 
-   // -- only a subset of these particles, chosen by the User
-   Bool_t loadAllParticles = runConfig.LoadAllParticles();
-   if (loadAllParticles == true) {
-      CopyAllParticles(inputBranch, outputBranch);
-   } else {
-      // Get the User-defined particle IDs they wish to propagte
-      vector<int> selected_IDs = runConfig.SelectedParticleIDs();
-      if (CheckSelectedIndexList(selected_IDs, available_IDs) == false) return false;
-      if (CopySelectedParticles(selected_IDs, inputBranch, outputBranch) == false) return false;      
-   }
+   // -- Copy all particles from the input branch into the current Run's tree
+   vector<int> selectedIndexes = this->GetSelectedParticleIndexes(*manifest, runConfig);
+   if (CopySelectedParticles(selectedIndexes, inputBranch, outputBranch) == false) {return false;}
    // -- Write Output Tree to file
    fOutputFile->cd();
    fOutputTree->Print();
