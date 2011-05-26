@@ -151,7 +151,7 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    } else {
       // Get the User-defined particle IDs they wish to propagte
       vector<int> selected_IDs = runConfig.SelectedParticleIDs();
-      if (CheckSelectedParticleIDs(selected_IDs, available_IDs) == false) return false;
+      if (CheckSelectedIndexList(selected_IDs, available_IDs) == false) return false;
       if (CopySelectedParticles(selected_IDs, inputBranch, outputBranch) == false) return false;      
    }
    // -- Write Output Tree to file
@@ -209,28 +209,28 @@ TTree* Data::ReadInParticleTree(TFile* file) const
 }
 
 //_____________________________________________________________________________
-bool Data::CheckSelectedParticleIDs(vector<int>& selected_IDs, vector<int>& available_IDs) const
+bool Data::CheckSelectedIndexList(vector<int>& selectedIndexes, vector<int>& availableIndexes) const
 {
    // Take the intersection between ALL the particle IDs for the requested State
    // and those that have been selected by the User.
-   sort(selected_IDs.begin(), selected_IDs.end());
-   sort(available_IDs.begin(), available_IDs.end());
+   sort(selectedIndexes.begin(), selectedIndexes.end());
+   sort(availableIndexes.begin(), availableIndexes.end());
    vector<int>::iterator range;
    // Using the stl's set_intersection() algorithm for this. It requires both input vectors
    // to be SORTED. 
-   range = set_intersection(available_IDs.begin(), available_IDs.end(), selected_IDs.begin(), selected_IDs.end(), selected_IDs.begin());
+   range = set_intersection(availableIndexes.begin(), availableIndexes.end(), selectedIndexes.begin(), selectedIndexes.end(), selectedIndexes.begin());
    // Algorithm returns an iterator to the point in the output vector that is the end
    // of the elements that were in the interesection. We need to manually remove all 
    // the elements past the end of this point, to leave us with a vector of ONLY the
    // intersection elements 
-   selected_IDs.erase(range, selected_IDs.end());
-   if (selected_IDs.empty()) {
+   selectedIndexes.erase(range, selectedIndexes.end());
+   if (selectedIndexes.empty()) {
       Error("CheckSelectedParticleIDs","None of selected Particle IDs are available for current state");
       return false;
    }
    // Printing these elements to stdout
    cout << "Loading specific particles, Numbers: ";
-   copy(selected_IDs.begin(), selected_IDs.end(), ostream_iterator<int>(cout,","));
+   copy(selectedIndexes.begin(), selectedIndexes.end(), ostream_iterator<int>(cout,","));
    cout << endl;
    return true;
 }

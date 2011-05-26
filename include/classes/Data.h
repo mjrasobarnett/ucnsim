@@ -35,7 +35,7 @@ private:
    ParticleManifest* ReadInParticleManifest(TFile* file) const;
    TTree*            ReadInParticleTree(TFile* file) const;
    
-   bool  CheckSelectedParticleIDs(std::vector<int>& selected_IDs, std::vector<int>& available_IDs) const;
+   bool  CheckSelectedIndexList(std::vector<int>& selectedIndexes, std::vector<int>& availableIndexes) const;
    bool  CopyAllParticles(TBranch* inputBranch, TBranch* outputBranch);
    bool  CopySelectedParticles(const std::vector<int>& selected_IDs, TBranch* inputBranch, TBranch* outputBranch);
    
