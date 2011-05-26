@@ -345,26 +345,6 @@ void Particle::NotifyObservers(const Point& point, const TVector3& velocity, con
 }
 
 //_____________________________________________________________________________
-void Particle::WriteToTree(TTree* tree)
-{
-   // -- Find the Output Branch of the Output Tree and write the particle to it
-   // -- Update the particle manifest with the final state of the particle
-   // First write out the observers to file
-   this->WriteObserversToTree(tree);
-   // Delete Observers
-   this->DetachAll();
-   // Next write particle to Tree
-   Particle* particle = this;
-   TBranch* particleBranch = tree->GetBranch(States::final.c_str());
-   if (particleBranch == NULL) {
-      Info("WriteToTree","Creating Branch %s in output tree", States::final.c_str());
-      particleBranch = tree->Branch(States::final.c_str(), particle->ClassName(), &particle, 32000,0);
-   }
-   tree->SetBranchAddress(particleBranch->GetName(), &particle);
-   particleBranch->Fill();
-}
-
-//_____________________________________________________________________________
 Bool_t Particle::Reflect(const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath)
 {
    // -- Reflect particle

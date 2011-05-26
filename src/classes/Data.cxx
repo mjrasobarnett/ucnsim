@@ -398,8 +398,17 @@ void Data::RegisterObservers(Particle* particle)
 //_____________________________________________________________________________
 Bool_t Data::SaveParticle(Particle* particle, const std::string& state)
 {
-   // Write Current Particle to branch
-   particle->WriteToTree(fOutputTree);
+   // Write observers to Tree and then delete them
+   particle->WriteObserversToTree(fOutputTree);
+   particle->DetachAll();
+   // Write Particle to output branch
+   TBranch* particleBranch = fOutputTree->GetBranch(States::final.c_str());
+   if (particleBranch == NULL) {
+      Info("WriteToTree","Creating Branch %s in output tree", States::final.c_str());
+      particleBranch = fOutputTree->Branch(States::final.c_str(), particle->ClassName(), &particle, 32000,0);
+   }
+   fOutputTree->SetBranchAddress(particleBranch->GetName(), &particle);
+   particleBranch->Fill();
    // Update Manifest
    fOutputManifest->AddEntry(state, particle->Id());
    return true;
