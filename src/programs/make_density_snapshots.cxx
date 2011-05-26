@@ -35,7 +35,7 @@ void PlotDensitySnapshots(TFile* const file, const vector<TDirectory*> stateDirs
 
 // -------------------------------------------------------------------------------------- 
 Int_t main(int argc, char **argv) {
-   ///////////////////////////////////////////////////////////////////////////////////////
+/*   ///////////////////////////////////////////////////////////////////////////////////////
    if (argc < 2) {
       cerr << "Usage:" << endl;
       cerr << "make_densityplot <data.root>" << endl;
@@ -144,9 +144,9 @@ Int_t main(int argc, char **argv) {
    // -- Clean up and Finish
    cout << "Finished" << endl;
    theApp->Run();
-   return EXIT_SUCCESS;
+*/   return EXIT_SUCCESS;
 }
-
+/*
 //_____________________________________________________________________________
 void PlotDensitySnapshots(TFile* const file, const vector<TDirectory*> stateDirs, const RunConfig& runConfig)
 {
@@ -255,3 +255,4 @@ void PlotDensitySnapshots(TFile* const file, const vector<TDirectory*> stateDirs
    storageCanvas->Print("images/storageTime.png");
    return;
 }
+*/

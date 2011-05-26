@@ -21,6 +21,7 @@ using namespace std;
 //_____________________________________________________________________________
 Int_t main(int argc, char **argv)
 {
+/*
    ///////////////////////////////////////////////////////////////////////////////////////
    // Plot data needs a minimum of 2 arguments - a data file, and the name of the particle
    // 'state' you wish to include in your histograms.
@@ -94,6 +95,6 @@ Int_t main(int argc, char **argv)
    // -- Clean up and Finish
    cout << "Finished" << endl;
    theApp->Run();
-   return EXIT_SUCCESS;
+*/   return EXIT_SUCCESS;
 }
 

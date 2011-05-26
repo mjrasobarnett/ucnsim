@@ -50,7 +50,7 @@ void DrawField(TDirectory* const histDir);
 //_____________________________________________________________________________
 Int_t main(int argc, char **argv)
 {
-   ///////////////////////////////////////////////////////////////////////////////////////
+/*   ///////////////////////////////////////////////////////////////////////////////////////
    // Plot data needs a minimum of 2 arguments - a data file, and the name of the particle
    // 'state' you wish to include in your histograms.
    if (argc < 2) {
@@ -126,9 +126,9 @@ Int_t main(int argc, char **argv)
    // -- Clean up and Finish
    cout << "Finished" << endl;
    theApp->Run();
-   return EXIT_SUCCESS;
+*/   return EXIT_SUCCESS;
 }
-
+/*
 //_____________________________________________________________________________
 void DrawFinalStates(TDirectory* const histDir, TGeoManager* geoManager)
 {
@@ -481,4 +481,4 @@ void DrawField(TDirectory* const histDir)
    cout << "-------------------------------------------" << endl;
    return;
 }
-
+*/

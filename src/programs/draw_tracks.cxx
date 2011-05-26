@@ -42,7 +42,7 @@ void DrawTrack(Track* track, TPolyLine3D* line, TPolyMarker3D* startMarker, TPol
 //_____________________________________________________________________________
 Int_t main(Int_t argc,Char_t **argv)
 {
-   ///////////////////////////////////////////////////////////////////////////////////////
+/*   ///////////////////////////////////////////////////////////////////////////////////////
    // Draw tracks needs 2 arguments - a data file, and the name of the particle
    // 'state' you wish to pick a particle from.
    if (argc < 3) {
@@ -187,9 +187,9 @@ Int_t main(Int_t argc,Char_t **argv)
 
    file->Close();
    cout << "Finished" << endl;
-   return 0;
+*/   return 0;
 }
-
+/*
 //_____________________________________________________________________________
 void DrawTrack(Track* track, TPolyLine3D* line, TPolyMarker3D* startMarker, TPolyMarker3D* endMarker)
 {
@@ -264,4 +264,4 @@ void DrawTrack(Track* track, TPolyLine3D* line, TPolyMarker3D* startMarker, TPol
    glViewer->UpdateScene();
    return;
 }
-
+*/
