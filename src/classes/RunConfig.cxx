@@ -14,6 +14,7 @@
 
 #include "RunConfig.h"
 #include "ConfigFile.h"
+#include "ValidStates.h"
 
 using namespace std;
 
@@ -195,6 +196,9 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    }
    // -----------------------------------
    // Check for inconsistencies in RunConfig File
+   if (restartParticles == false && particlesToLoad != States::propagating) {
+      throw runtime_error("Incompatible options in RunConfig: Check RunFromBeginning and InputParticleState");
+   }
    if (fieldsFileName.empty() && (magField == true || elecField == true)) {
       throw runtime_error("Incompatible options in RunConfig: Check FieldsFile and Mag/ElecField");
    }
