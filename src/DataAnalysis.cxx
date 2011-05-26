@@ -67,27 +67,20 @@ TFile* DataFile::OpenRootFile(const std::string filename, const std::string opti
 //_____________________________________________________________________________
 const RunConfig& DataFile::LoadRunConfig(TFile& file)
 {
-   // -- Attempt to navigate to the config file folder in supplied file and extract the runconfig
-   // -- Throw an exception if this cannot be done.
+   // -- Attempt to read in the runconfig from the top level directory
    cout << "Attempting to load the RunConfig" << endl;
-   // Navigate to Config Folder   
-   if (file.cd("") == false) {
-      cerr << "No Folder named: " << "" << " in data file" << endl;
-      throw runtime_error("Cannot find config folder");
-   }
-   TDirectory* const configDir = gDirectory;
    // -- Loop over all objects in folder and extract latest RunConfig
    RunConfig* ptr_config = NULL;
-   TKey *configKey;
-   TIter configIter(configDir->GetListOfKeys());
-   while ((configKey = dynamic_cast<TKey*>(configIter.Next()))) {
+   TKey *key;
+   TIter folderIter(file.GetListOfKeys());
+   while ((key = dynamic_cast<TKey*>(folderIter.Next()))) {
       // Check if current item is of class RunConfig
-      const char *classname = configKey->GetClassName();
+      const char *classname = key->GetClassName();
       TClass *cl = gROOT->GetClass(classname);
       if (!cl) continue;
       if (cl->InheritsFrom("RunConfig")) {
          // Read RunConfig into memory when found
-         ptr_config = dynamic_cast<RunConfig*>(configKey->ReadObj());
+         ptr_config = dynamic_cast<RunConfig*>(key->ReadObj());
          break;
       }
    }
@@ -95,7 +88,6 @@ const RunConfig& DataFile::LoadRunConfig(TFile& file)
    if (ptr_config == NULL) {
       throw runtime_error("Unable to load RunConfig from config folder");
    }
-   cout << "-------------------------------------------" << endl;
    cout << "Successfully Loaded RunConfig" << endl;
    cout << "-------------------------------------------" << endl;
    return *ptr_config;
@@ -104,33 +96,26 @@ const RunConfig& DataFile::LoadRunConfig(TFile& file)
 //_____________________________________________________________________________
 TGeoManager& DataFile::LoadGeometry(TFile& file)
 {
-   // -- Attempt to navigate to the geometry folder of the supplied file and extract the Geometry
-   // -- Throw an exception if this cannot be done.
-   if (file.cd("") == false) {
-      cerr << "No Folder named: " << "" << " in data file" << endl;
-      throw runtime_error("Cannot find geometry folder");
-   }
-   // Loop over contents ("TKeys") of Geometry folder
+   // -- Attempt to read in the Geometry from the top level directory
+   cout << "Attempting to load the Geometry" << endl;
    TGeoManager* geoManager = NULL;
-   TDirectory* geomDir = gDirectory;
-   TKey *geomKey;
-   TIter geomIter(geomDir->GetListOfKeys());
-   while ((geomKey = dynamic_cast<TKey*>(geomIter.Next()))) {
+   TKey *key;
+   TIter folderIter(file.GetListOfKeys());
+   while ((key = dynamic_cast<TKey*>(folderIter.Next()))) {
       // Check if current item is of Class TGeomanager
-      const char *classname = geomKey->GetClassName();
+      const char *classname = key->GetClassName();
       TClass *cl = gROOT->GetClass(classname);
       if (!cl) continue;
       if (cl->InheritsFrom("TGeoManager")) {
          // Read TGeoManager into memory when found
-         geoManager = dynamic_cast<TGeoManager*>(geomKey->ReadObj());
+         geoManager = dynamic_cast<TGeoManager*>(key->ReadObj());
          break;
       }
    }
    // Throw exception if we failed to find any TGeoManager in this folder
    if (geoManager == NULL) {
-      throw runtime_error("Unable to load GeoManager from geometry folder");
+      throw runtime_error("Unable to load GeoManager from file");
    }
-   cout << "-------------------------------------------" << endl;
    cout << "Successfully Loaded Geometry" << endl;
    cout << "-------------------------------------------" << endl;
    return *geoManager;
