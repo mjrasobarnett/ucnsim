@@ -62,39 +62,33 @@ Int_t main(int argc, char **argv)
    vector<int> particleIndexes = manifest.GetListing(statenames).GetTreeIndexes();
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Create a Histogram Director if one doesn't already exist in File
-   TDirectory* histDir = file->mkdir("histograms");
-   if (histDir == NULL) {
-      // histogram folder already exists
-      file->cd("histograms");
-      histDir = gDirectory;
-   }
+   TDirectory* histDir = Analysis::DataFile::NavigateToHistDir(*file);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Get name of states used in plots
+   string state = Analysis::DataFile::ConcatenateStateNames(statenames);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Particle final state
-/*   Analysis::FinalStates::PlotFinalState(particleIndexes, dataTree, runConfig);
+   Analysis::FinalStates::PlotFinalState(state, particleIndexes, dataTree, runConfig);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Particle final state
-   Analysis::FinalStates::DrawFinalPositions(particleIndexes, dataTree, geoManager);
+   double cameraCentre[3] = {0.0,0.0,0.0};
+   Analysis::FinalStates::DrawFinalPositions(state, particleIndexes, dataTree, geoManager, cameraCentre);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Polarisation
    if (runConfig.ObserveSpin() == kTRUE) {
-      Analysis::Polarisation::PlotSpinPolarisation(histDir, stateDirs, runConfig);
+      Analysis::Polarisation::PlotSpinPolarisation(state, particleIndexes, dataTree, runConfig);
+   }
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Field Measured
+   if (runConfig.ObserveField() == kTRUE) {
+      Analysis::Polarisation::PlotField(state, particleIndexes, dataTree, runConfig);
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounce Data
    if (runConfig.ObserveBounces() == kTRUE) {
-      Analysis::Bounces::PlotBounceCounters(histDir, stateDirs);
+      Analysis::Bounces::PlotBounceCounters(state, particleIndexes, dataTree);
    }
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Track History
-   if (runConfig.ObserveTracks() == kTRUE) {
-//      Analysis::Tracks::PlotParticleHistories(histDir, stateDirs, geoManager);
-   }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Track History
-   if (runConfig.ObserveField() == kTRUE) {
-      Analysis::Polarisation::PlotField(histDir, stateDirs, runConfig);
-   }
-*/   //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
    cout << "Finished" << endl;
    theApp->Run();
