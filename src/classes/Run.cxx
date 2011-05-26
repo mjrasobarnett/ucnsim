@@ -195,8 +195,6 @@ Bool_t Run::Start()
       #ifndef VERBOSE_MODE
          Algorithms::ProgressBar::PrintProgress(index, totalParticles, 2);
       #endif
-      // Delete Particle
-//      delete particle;
    }
    ///////////////////////////////////////////////////////////////////////
    cout << "-------------------------------------------" << endl;
