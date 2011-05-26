@@ -36,6 +36,7 @@
 #include "SpinData.h"
 #include "BounceData.h"
 #include "FieldData.h"
+#include "ParticleManifest.h"
 
 #include "Algorithms.h"
 #include "ValidStates.h"
@@ -135,6 +136,33 @@ TGeoManager& DataFile::LoadGeometry(TFile& file)
 }
 
 //_____________________________________________________________________________
+const ParticleManifest& DataFile::LoadParticleManifest(TFile& file)
+{
+   // -- Attempt to read in the ParticleManifest from the top level directory
+   cout << "Attempting to load the ParticleManifest" << endl;
+   ParticleManifest* manifest = NULL;
+   TKey *key;
+   TIter folderIter(file.GetListOfKeys());
+   while ((key = dynamic_cast<TKey*>(folderIter.Next()))) {
+      // Check if current item is of Class TGeomanager
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("ParticleManifest")) {
+         // Read TGeoManager into memory when found
+         manifest = dynamic_cast<ParticleManifest*>(key->ReadObj());
+         break;
+      }
+   }
+   // Throw exception if we failed to find any TGeoManager in this folder
+   if (manifest == NULL) {
+      throw runtime_error("Unable to load ParticleManifest from file");
+   }
+   cout << "Successfully Loaded ParticleManifest" << endl;
+   cout << "-------------------------------------------" << endl;
+   return *manifest;
+}
+
 bool DataFile::IsRootFile(const string filename)
 {
    // -- Check that the filename supplied has a .root extension

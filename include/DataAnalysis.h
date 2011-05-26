@@ -13,6 +13,7 @@ class TGraph;
 
 class RunConfig;
 class Track;
+class ParticleManifest;
 
 namespace Analysis {
    //_____________________________________________________________________________
@@ -26,6 +27,8 @@ namespace Analysis {
       const RunConfig& LoadRunConfig(TFile& file);
       //_____________________________________________________________________________
       TGeoManager& LoadGeometry(TFile& file);
+      //_____________________________________________________________________________
+      const ParticleManifest& LoadParticleManifest(TFile& file);
       //_____________________________________________________________________________
       bool IsRootFile(const std::string filename);
       //_____________________________________________________________________________
