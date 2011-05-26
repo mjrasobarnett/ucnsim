@@ -617,14 +617,11 @@ bool FinalStates::PlotEmptyingTime(const vector<TDirectory*> stateDirs, const Ru
 }
 
 //_____________________________________________________________________________
-void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig) 
+void Polarisation::PlotSpinPolarisation(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig) 
 {
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd into Histogram's dir
-   histDir->cd();
-   //////////////////////////////////////////////////////////////////////////////////////
+   cout << "Preparing to draw particle spin polarisation over time..." << endl;
    // -- Define Histograms
-   Char_t histname[40];
    const double runTime = runConfig.RunTime();
    const double spinMeasInterval = runConfig.SpinMeasureInterval();
    const int nbins = ceil(runTime/spinMeasInterval);
@@ -632,15 +629,11 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    const TVector3 yAxis(0.0,1.0,0.0);
    const TVector3 zAxis(0.0,0.0,1.0);
    // -- Define name of combined states
-   string stateName;
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      if (stateName.empty() == false) stateName += "/";
-      stateName += (*dirIter)->GetName();
-   }
+
    //////////////////////////////////////////////////////////////////////////////////////
    // -- X Axis Spin Polarisation
-   sprintf(histname,"%s:SpinUp Along X",stateName.c_str());
+   Char_t histname[40];
+   sprintf(histname,"%s:SpinUp Along X",state.c_str());
    TH1F* spinUpAlongXHist = new TH1F(histname,"SpinUp Along X", nbins, 0.0, runTime);      
    spinUpAlongXHist->SetXTitle("Time (s)");
    spinUpAlongXHist->SetYTitle("Spin Up Neutrons");
@@ -648,7 +641,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinUpAlongXHist->SetFillColor(kBlue-7);
    spinUpAlongXHist->SetLineColor(kBlue-7);
 
-   sprintf(histname,"%s:SpinDown Along X",stateName.c_str());
+   sprintf(histname,"%s:SpinDown Along X",state.c_str());
    TH1F* spinDownAlongXHist = new TH1F(histname,"SpinDown Along X", nbins, 0.0, runTime);      
    spinDownAlongXHist->SetXTitle("Time (s)");
    spinDownAlongXHist->SetYTitle("Spin Down Neutrons");
@@ -656,7 +649,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinDownAlongXHist->SetFillColor(kRed-7);
    spinDownAlongXHist->SetLineColor(kRed-7);
    
-   sprintf(histname,"%s:SpinUp+Down Along X",stateName.c_str());
+   sprintf(histname,"%s:SpinUp+Down Along X",state.c_str());
    TH1F* spinUpDownAlongXHist  = new TH1F(histname,"SpinUp+Down Along X", nbins, 0.0, runTime);   
    spinUpDownAlongXHist->SetXTitle("Time (s)");
    spinUpDownAlongXHist->SetYTitle("Spin Up+Down Neutrons");
@@ -664,13 +657,13 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinUpDownAlongXHist->SetFillColor(kBlack);
    spinUpDownAlongXHist->SetLineColor(kBlack);
    
-   sprintf(histname,"%s:Polarisation Along X",stateName.c_str());
+   sprintf(histname,"%s:Polarisation Along X",state.c_str());
    TGraph* spinAlphaX = new TGraph(nbins);
    spinAlphaX->SetName(histname);
    
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Y Axis Spin Polarisation
-   sprintf(histname,"%s:SpinUp Along Y",stateName.c_str());
+   sprintf(histname,"%s:SpinUp Along Y",state.c_str());
    TH1F* spinUpAlongYHist = new TH1F(histname,"SpinUp Along Y", nbins, 0.0, runTime);      
    spinUpAlongYHist->SetXTitle("Time (s)");
    spinUpAlongYHist->SetYTitle("Spin Up Neutrons");
@@ -678,7 +671,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinUpAlongYHist->SetFillStyle(1001);
    spinUpAlongYHist->SetFillColor(kBlue-7);
 
-   sprintf(histname,"%s:SpinDown Along Y",stateName.c_str());
+   sprintf(histname,"%s:SpinDown Along Y",state.c_str());
    TH1F* spinDownAlongYHist = new TH1F(histname,"SpinDown Along Y", nbins, 0.0, runTime);      
    spinDownAlongYHist->SetXTitle("Time (s)");
    spinDownAlongYHist->SetYTitle("Spin Down Neutrons");
@@ -686,7 +679,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinDownAlongYHist->SetFillStyle(3001);
    spinDownAlongYHist->SetFillColor(kRed-7);
    
-   sprintf(histname,"%s:SpinUp+Down Along Y",stateName.c_str());
+   sprintf(histname,"%s:SpinUp+Down Along Y",state.c_str());
    TH1F* spinUpDownAlongYHist  = new TH1F(histname,"SpinUp+Down Along Y", nbins, 0.0, runTime);   
    spinUpDownAlongYHist->SetXTitle("Time (s)");
    spinUpDownAlongYHist->SetYTitle("Spin Up+Down Neutrons");
@@ -694,13 +687,13 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinUpDownAlongYHist->SetFillStyle(3001);
    spinUpDownAlongYHist->SetFillColor(kBlack);
    
-   sprintf(histname,"%s:Polarisation Along Y",stateName.c_str());
+   sprintf(histname,"%s:Polarisation Along Y",state.c_str());
    TGraph* spinAlphaY = new TGraph(nbins);
    spinAlphaY->SetName(histname);
    
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Z Axis Spin Polarisation
-   sprintf(histname,"%s:SpinUp Along Z",stateName.c_str());
+   sprintf(histname,"%s:SpinUp Along Z",state.c_str());
    TH1F* spinUpAlongZHist = new TH1F(histname,"SpinUp Along Z", nbins, 0.0, runTime);      
    spinUpAlongZHist->SetXTitle("Time (s)");
    spinUpAlongZHist->SetYTitle("Spin Up Neutrons");
@@ -708,7 +701,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinUpAlongZHist->SetFillStyle(1001);
    spinUpAlongZHist->SetFillColor(kBlue-7);
 
-   sprintf(histname,"%s:SpinDown Along Z",stateName.c_str());
+   sprintf(histname,"%s:SpinDown Along Z",state.c_str());
    TH1F* spinDownAlongZHist = new TH1F(histname,"SpinDown Along Z", nbins, 0.0, runTime);      
    spinDownAlongZHist->SetXTitle("Time (s)");
    spinDownAlongZHist->SetYTitle("Spin Down Neutrons");
@@ -716,7 +709,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinDownAlongZHist->SetFillStyle(3001);
    spinDownAlongZHist->SetFillColor(kRed-7);
    
-   sprintf(histname,"%s:SpinUp+Down Along Z",stateName.c_str());
+   sprintf(histname,"%s:SpinUp+Down Along Z",state.c_str());
    TH1F* spinUpDownAlongZHist  = new TH1F(histname,"SpinUp+Down Along Z", nbins, 0.0, runTime);   
    spinUpDownAlongZHist->SetXTitle("Time (s)");
    spinUpDownAlongZHist->SetYTitle("Spin Up+Down Neutrons");
@@ -724,83 +717,61 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinUpDownAlongZHist->SetFillStyle(3001);
    spinUpDownAlongZHist->SetFillColor(kBlack);
    
-   sprintf(histname,"%s:Polarisation Along Z",stateName.c_str());
+   sprintf(histname,"%s:Polarisation Along Z",state.c_str());
    TGraph* spinAlphaZ = new TGraph(nbins);
    spinAlphaZ->SetName(histname);
    
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over each state to be included in histogram
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      // -- cd into the State's folder
-      (*dirIter)->cd();
-      //////////////////////////////////////////////////////////////////////////////////////
-      // -- Loop over all particle folders in the current state's folder
-      TKey *folderKey;
-      TIter folderIter((*dirIter)->GetListOfKeys());
-      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         const char *classname = folderKey->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // Loop over all objects in particle dir
-            (*dirIter)->cd(folderKey->GetName());
-            TDirectory* particleDir = gDirectory;
-            TKey *objKey;
-            TIter objIter(particleDir->GetListOfKeys());
-            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
-               // For Each object in the particle's directory, check its class name and what it
-               // inherits from to determine what to do.
-               classname = objKey->GetClassName();
-               cl = gROOT->GetClass(classname);
-               if (!cl) continue;
-               if (cl->InheritsFrom("SpinData")) {
-                  // -- Extract Spin Observer Data if recorded
-                  const SpinData* data = dynamic_cast<const SpinData*>(objKey->ReadObj());
-                  // Loop over spin data recorded for particle
-                  SpinData::const_iterator dataIter;
-                  for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
-                     spinUpDownAlongXHist->Fill(dataIter->first);
-                     spinUpDownAlongYHist->Fill(dataIter->first);
-                     spinUpDownAlongZHist->Fill(dataIter->first);
-                     // For each data point, record the spin polarisation along each axis
-                     const Spin* spin = dataIter->second;
-                     // Measure polarisation along X
-                     if (spin->IsSpinUp(xAxis)) {
-                        // If spin up, bin the time
-                        if (spinUpAlongXHist) spinUpAlongXHist->Fill(dataIter->first);
-                     } else {
-                        // If spin down, bin the time
-                        if (spinUpAlongXHist) spinDownAlongXHist->Fill(dataIter->first);
-                     }
-                     // Measure polarisation along Y
-                     if (spin->IsSpinUp(yAxis)) {
-                        // If spin up, bin the time
-                        if (spinUpAlongYHist) spinUpAlongYHist->Fill(dataIter->first);
-                     } else {
-                        // If spin down, bin the time
-                        if (spinUpAlongYHist) spinDownAlongYHist->Fill(dataIter->first);
-                     }
-                     // Measure polarisation along Y
-                     if (spin->IsSpinUp(zAxis)) {
-                        // If spin up, bin the time
-                        if (spinUpAlongZHist) spinUpAlongZHist->Fill(dataIter->first);
-                     } else {
-                        // If spin down, bin the time
-                        if (spinUpAlongZHist) spinDownAlongZHist->Fill(dataIter->first);
-                     }
-                  }
-                  delete data;
-               }
-            }
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   SpinData* data = new SpinData();
+   TBranch* spinBranch = dataTree->GetBranch(data->ClassName());
+   if (spinBranch == NULL) {
+      cerr << "Error - Could not find branch: " << data->ClassName() << " in input tree" << endl;
+      throw runtime_error("Failed to find branch in input tree");
+   }
+   dataTree->SetBranchAddress(spinBranch->GetName(), &data);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      spinBranch->GetEntry(particleIndex);
+      // Loop over spin data recorded for particle
+      SpinData::const_iterator dataIter;
+      for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
+         spinUpDownAlongXHist->Fill(dataIter->first);
+         spinUpDownAlongYHist->Fill(dataIter->first);
+         spinUpDownAlongZHist->Fill(dataIter->first);
+         // For each data point, record the spin polarisation along each axis
+         const Spin* spin = dataIter->second;
+         // Measure polarisation along X
+         if (spin->IsSpinUp(xAxis)) {
+            // If spin up, bin the time
+            if (spinUpAlongXHist) spinUpAlongXHist->Fill(dataIter->first);
+         } else {
+            // If spin down, bin the time
+            if (spinUpAlongXHist) spinDownAlongXHist->Fill(dataIter->first);
+         }
+         // Measure polarisation along Y
+         if (spin->IsSpinUp(yAxis)) {
+            // If spin up, bin the time
+            if (spinUpAlongYHist) spinUpAlongYHist->Fill(dataIter->first);
+         } else {
+            // If spin down, bin the time
+            if (spinUpAlongYHist) spinDownAlongYHist->Fill(dataIter->first);
+         }
+         // Measure polarisation along Y
+         if (spin->IsSpinUp(zAxis)) {
+            // If spin up, bin the time
+            if (spinUpAlongZHist) spinUpAlongZHist->Fill(dataIter->first);
+         } else {
+            // If spin down, bin the time
+            if (spinUpAlongZHist) spinDownAlongZHist->Fill(dataIter->first);
          }
       }
    }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd back into Histogram's dir
-   histDir->cd();
+   delete data; data = NULL;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Spin Precession Plots
-   // -- Down
+   // -- X
    TCanvas *spinXcanvas = new TCanvas("SpinAlongX","Spin Polarisation Along X",60,0,1200,800);
    spinXcanvas->Divide(2,2);
    spinXcanvas->cd(1);
@@ -821,8 +792,6 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
       double downCounts = spinDownAlongXHist->GetBinContent(i);
       double totalCounts = upCounts + downCounts;
       double alpha = totalCounts == 0 ? 0.0 : (upCounts - downCounts) / totalCounts;
-//      cout << "Time: " << binCentre << "\t" << "Up: " << upCounts << "\t";
-//      cout << "Down: " << downCounts << "\t" << "Alpha: " << alpha << endl;
       spinAlphaX->SetPoint(i, binCentre, alpha);
    }
    spinAlphaX->SetMarkerStyle(7);
@@ -833,7 +802,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinAlphaX->GetYaxis()->SetRangeUser(-1.0,1.0);
    spinAlphaX->SetTitle("Polarisation along X");
    spinAlphaX->Write(spinAlphaX->GetName(),TObject::kOverwrite);
-
+   // -- Y
    TCanvas *spinYcanvas = new TCanvas("SpinAlongY","Spin Polarisation Along Y",60,0,1200,800);
    spinYcanvas->Divide(2,2);
    spinYcanvas->cd(1);
@@ -889,8 +858,6 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
       double downCounts = spinDownAlongYHist->GetBinContent(i);
       double totalCounts = upCounts + downCounts;
       double alpha = totalCounts == 0 ? 0.0 : (upCounts - downCounts) / totalCounts;
-//      cout << "Time: " << binCentre << "\t" << "Up: " << upCounts << "\t";
-//      cout << "Down: " << downCounts << "\t" << "Alpha: " << alpha << endl;
       spinAlphaY->SetPoint(i, binCentre, alpha);
    }
    spinAlphaY->SetMarkerStyle(7);
@@ -901,7 +868,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinAlphaY->GetYaxis()->SetRangeUser(-1.0,1.0);
    spinAlphaY->SetTitle("Polarisation along Y");
    spinAlphaY->Write(spinAlphaY->GetName(),TObject::kOverwrite);
-   
+   // -- Z
    TCanvas *spinZcanvas = new TCanvas("SpinAlongZ","Spin Polarisation Along Z",60,0,1200,800);
    spinZcanvas->Divide(2,2);
    spinZcanvas->cd(1);
@@ -922,8 +889,6 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
       double downCounts = spinDownAlongZHist->GetBinContent(i);
       double totalCounts = upCounts + downCounts;
       double alpha = totalCounts == 0 ? 0.0 : (upCounts - downCounts) / totalCounts;
-//      cout << "Time: " << binCentre << "\t" << "Up: " << upCounts << "\t";
-//      cout << "Down: " << downCounts << "\t" << "Alpha: " << alpha << endl;
       spinAlphaZ->SetPoint(i, binCentre, alpha);
    }
    spinAlphaZ->SetMarkerStyle(7);
@@ -934,6 +899,8 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinAlphaZ->GetYaxis()->SetRangeUser(-1.0,1.0);
    spinAlphaZ->SetTitle("Polarisation along Z");
    spinAlphaZ->Write(spinAlphaZ->GetName(),TObject::kOverwrite);
+   cout << "Successfully drawn particle spin polarisation over time" << endl;
+   cout << "-------------------------------------------" << endl;
    return;
 }
 

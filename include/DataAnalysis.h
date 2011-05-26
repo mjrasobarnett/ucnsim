@@ -69,7 +69,7 @@ namespace Analysis {
          double fTheta;
       } Coords;
       //_____________________________________________________________________________
-      void PlotSpinPolarisation(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig);
+      void PlotSpinPolarisation(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig);
       //_____________________________________________________________________________
       void PlotField(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig);
       //_____________________________________________________________________________
