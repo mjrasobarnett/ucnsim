@@ -38,7 +38,7 @@ Run::Run()
 
 //_____________________________________________________________________________
 Run::Run(const RunConfig& runConfig)
-        :TNamed(),
+        :TNamed(runConfig.RunName().c_str(), "The Run"),
          fRunConfig(runConfig),
          fData()
 {
@@ -135,6 +135,7 @@ Bool_t Run::Initialise()
    cout << "-------------------------------------------" << endl;
    return kTRUE;
 }
+
 
 //_____________________________________________________________________________
 Bool_t Run::Start()
