@@ -151,7 +151,10 @@ Bool_t Run::Start()
    for (Int_t index = 0; index < totalParticles; index++) {
       // Get Particle from list
       Particle* particle = this->GetData().RetrieveParticle(index);
-      assert(particle != NULL);
+      if (particle == NULL) {
+         Error("Start","Failed to retrieve particle from Data");
+         return false;
+      }
       // Reset the clock
       Clock::Instance()->Reset();
       // Determine whether we are restoring to the start of a previously propagated track.
