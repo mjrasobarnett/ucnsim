@@ -7,6 +7,29 @@
 
 #include "TNamed.h"
 
+class Listing : public TNamed {
+private:
+   std::vector<int> fTreeIndexes;
+   std::vector<int> fParticleIDs;
+
+public:
+   // -- Constructors
+   Listing();
+   Listing(std::string name);
+   Listing(const Listing& other);
+
+   // -- Destructor
+   virtual ~Listing();
+   
+   void AddEntry(const int id, const int index);
+   const std::vector<int>& GetTreeIndexes() const;
+   const std::vector<int>& GetParticleIDs() const;
+   size_t Entries() const {return fTreeIndexes.size();}
+   void Extend(const Listing& other);
+   
+   ClassDef(Listing,1)
+};
+
 class ParticleManifest : public TNamed
 {
 private:
