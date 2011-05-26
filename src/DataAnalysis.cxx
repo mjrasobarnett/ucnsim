@@ -256,10 +256,12 @@ string DataFile::ConcatenateStateNames(const vector<string>& states)
 //_____________________________________________________________________________
 TDirectory* DataFile::NavigateToHistDir(TFile& file)
 {
-   // -- Create a Histogram Director if one doesn't already exist in File
+   // -- Attempt to enter a folder called 'histograms' in the top level directory
+   // -- of the given file. If it doesn't exist, create it, and return folder
    TDirectory* histDir = NULL;
-   if (file.cd("") == false) {
-      histDir = file.mkdir("");
+   if (file.cd("histograms") == false) {
+      histDir = file.mkdir("histograms");
+      histDir->cd();
    } else {
       histDir = gDirectory;
    }
