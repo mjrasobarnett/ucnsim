@@ -237,64 +237,6 @@ bool DataFile::IsValidStateName(const string statename)
    }
    return true;
 }
-//_____________________________________________________________________________
-void DataFile::CountParticles(TDirectory * const particleDir)
-{
-   // -- Given the particle state directory, count the number of particles
-   // -- in each state subfolder
-   if (particleDir->cd(States::initial.c_str()) == false) return;
-   int initial = gDirectory->GetNkeys();
-   if (particleDir->cd(States::propagating.c_str()) == false) return;
-   int propagating = gDirectory->GetNkeys();
-   if (particleDir->cd(States::absorbed.c_str()) == false) return;
-   int absorbed = gDirectory->GetNkeys();
-   if (particleDir->cd(States::detected.c_str()) == false) return;
-   int detected = gDirectory->GetNkeys();
-   if (particleDir->cd(States::decayed.c_str()) == false) return;
-   int decayed = gDirectory->GetNkeys();
-   if (particleDir->cd(States::lost.c_str()) == false) return;
-   int lost = gDirectory->GetNkeys();
-   if (particleDir->cd(States::anomalous.c_str()) == false) return;
-   int anomalous = gDirectory->GetNkeys();
-   cout << "Initial Particles: " << initial << endl;
-   cout << "Final Total: ";
-   cout << propagating+detected+absorbed+decayed+lost+anomalous << endl;
-   cout << "Propagating: " << propagating << endl;
-   cout << "Detected: " << detected << endl;
-   cout << "Absorbed: " << absorbed << endl;
-   cout << "Decayed: " << decayed << endl;
-   cout << "Lost: " << lost << endl;
-   cout << "Anomalous: " << anomalous << endl;
-   return;
-}
-
-//_____________________________________________________________________________
-bool DataFile::FetchStateDirectories(TFile& file, vector<string>& stateNames, vector<TDirectory*>& stateDirs)
-{   
-   // -- Navigate to and store folder for each selected state. Return false if any of the requested states
-   // -- were not found in the file
-   if (file.cd("") == false) {
-      cerr << "Cannot locate Folder: " << "" << endl;
-      return false;
-   }
-   TDirectory* particleDir = gDirectory;
-   vector<string>::const_iterator stateIter;
-   for (stateIter = stateNames.begin(); stateIter != stateNames.end(); stateIter++) {
-      // Try to cd into state folder
-      if (particleDir->cd((*stateIter).c_str()) == false) {
-         cerr << "Error: State, " << *stateIter << " is not found in file" << endl;
-         return false;
-      }
-      // Store pointer to state folder
-      stateDirs.push_back(gDirectory);
-   }
-   cout << "-------------------------------------------" << endl;
-   cout << "Loading Particles from the Following states: ";
-   copy(stateNames.begin(),stateNames.end(),ostream_iterator<string>(cout,", "));
-   cout << endl;
-   cout << "-------------------------------------------" << endl;
-   return true;
-}
 
 //_____________________________________________________________________________
 string DataFile::ConcatenateStateNames(const vector<TDirectory*>& stateDirs)

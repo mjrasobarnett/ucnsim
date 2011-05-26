@@ -112,8 +112,6 @@
 #pragma link C++ function Analysis::DataFile::IsRootFile(const std::string);
 #pragma link C++ function Analysis::DataFile::IsValidStateName(const std::vector<std::string>&);
 #pragma link C++ function Analysis::DataFile::IsValidStateName(const std::string);
-#pragma link C++ function Analysis::DataFile::CountParticles(TDirectory* const);
-#pragma link C++ function Analysis::DataFile::FetchStateDirectories(TFile&, std::vector<std::string>&, std::vector<TDirectory*>&);
 #pragma link C++ function Analysis::DataFile::ConcatenateStateNames(std::vector<TDirectory*>&);
 #pragma link C++ function Analysis::DataFile::NavigateToHistDir(TFile&);
 #pragma link C++ function Analysis::DataFile::CopyDirectory(TDirectory* const, TDirectory* const);
