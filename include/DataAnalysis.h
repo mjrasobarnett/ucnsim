@@ -92,7 +92,7 @@ namespace Analysis {
    //_____________________________________________________________________________
    namespace Bounces {
       //_____________________________________________________________________________
-      void PlotBounceCounters(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs);
+      void PlotBounceCounters(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree);
       
    }
    

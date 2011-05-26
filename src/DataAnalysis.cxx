@@ -1289,38 +1289,27 @@ bool Polarisation::PlotT2_vs_Runs(string configFileName, string statename)
 }
 
 //_____________________________________________________________________________
-void Bounces::PlotBounceCounters(TDirectory* const histDir, const vector<TDirectory*> stateDirs)
+void Bounces::PlotBounceCounters(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree)
 {
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd into Histogram's dir
-   histDir->cd();
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Define Histograms
-   Char_t histname[40];
-   // -- Define name of combined states
-   string stateName;
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      if (stateName.empty() == false) stateName += "/";
-      stateName += (*dirIter)->GetName();
-   }
-   //////////////////////////////////////////////////////////////////////////////////////
+   cout << "Preparing to plot particle bounce statistics..." << endl;
    // -- Bounces
-   sprintf(histname,"%s:Bounces",stateName.c_str());
+   Char_t histname[40];
+   sprintf(histname,"%s:Bounces",state.c_str());
    TH1F* bounceHist = new TH1F(histname,"Bounces", 100, 0.0, 10000.0);
    bounceHist->SetXTitle("Bounces");
    bounceHist->SetYTitle("Neutrons");
    bounceHist->SetLineColor(kBlack);
    bounceHist->SetFillStyle(3001);
    bounceHist->SetFillColor(kBlack);
-   sprintf(histname,"%s:Specular",stateName.c_str());
+   sprintf(histname,"%s:Specular",state.c_str());
    TH1F* specHist = new TH1F(histname,"Specular", 100, 0.0, 100.0);
    specHist->SetXTitle("Percentage");
    specHist->SetYTitle("Neutrons");
    specHist->SetLineColor(kRed);
    specHist->SetFillStyle(3001);
    specHist->SetFillColor(kRed);
-   sprintf(histname,"%s:Diffuse",stateName.c_str());
+   sprintf(histname,"%s:Diffuse",state.c_str());
    TH1F* diffHist = new TH1F(histname,"Diffuse", 100, 0.0, 100.0);
    diffHist->SetXTitle("Percentage");
    diffHist->SetYTitle("Neutrons");
@@ -1328,45 +1317,23 @@ void Bounces::PlotBounceCounters(TDirectory* const histDir, const vector<TDirect
    diffHist->SetFillStyle(3001);
    diffHist->SetFillColor(kBlue);
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over each state to be included in histogram
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      // -- cd into the State's folder
-      (*dirIter)->cd();
-      //////////////////////////////////////////////////////////////////////////////////////
-      // -- Loop over all particle folders in the current state's folder
-      TKey *folderKey;
-      TIter folderIter((*dirIter)->GetListOfKeys());
-      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         const char *classname = folderKey->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // Loop over all objects in particle dir
-            (*dirIter)->cd(folderKey->GetName());
-            TDirectory* particleDir = gDirectory;
-            TKey *objKey;
-            TIter objIter(particleDir->GetListOfKeys());
-            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
-               // For Each object in the particle's directory, check its class name and what it
-               // inherits from to determine what to do.
-               classname = objKey->GetClassName();
-               cl = gROOT->GetClass(classname);
-               if (!cl) continue;
-               if (cl->InheritsFrom("BounceData")) {
-                  // -- Extract Bounce Observer Data if recorded
-                  BounceData* data =dynamic_cast<BounceData*>(objKey->ReadObj());
-                  bounceHist->Fill(data->CountTotal());
-                  specHist->Fill(data->CountSpecular()*100.0/data->CountTotal());
-                  diffHist->Fill(data->CountDiffuse()*100.0/data->CountTotal());
-                  delete data;
-               }
-            }
-         }
-      }
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   BounceData* data = new BounceData();
+   TBranch* bounceBranch = dataTree->GetBranch(data->ClassName());
+   if (bounceBranch == NULL) {
+      cerr << "Error - Could not find branch: " << data->ClassName() << " in input tree" << endl;
+      throw runtime_error("Failed to find branch in input tree");
    }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd back into Histogram's dir
-   histDir->cd();
+   dataTree->SetBranchAddress(bounceBranch->GetName(), &data);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      bounceBranch->GetEntry(particleIndex);
+      bounceHist->Fill(data->CountTotal());
+      specHist->Fill(data->CountSpecular()*100.0/data->CountTotal());
+      diffHist->Fill(data->CountDiffuse()*100.0/data->CountTotal());
+   }
+   delete data; data = NULL;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounce Counters
    TCanvas *bouncecanvas = new TCanvas("Bounces","Bounce counters",60,0,1200,800);
@@ -1380,6 +1347,8 @@ void Bounces::PlotBounceCounters(TDirectory* const histDir, const vector<TDirect
    bouncecanvas->cd(3);
    diffHist->Draw();
    diffHist->Write(diffHist->GetName(),TObject::kOverwrite);
+   cout << "Successfully drawn particle bounce counters" << endl;
+   cout << "-------------------------------------------" << endl;
    return;
 }
 

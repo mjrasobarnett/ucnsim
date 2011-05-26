@@ -131,7 +131,7 @@
 #pragma link C++ function Analysis::Polarisation::CalculateAlpha(std::vector<std::vector<Analysis::Polarisation::Coords> >& , const unsigned int , const double );
 
 #pragma link C++ namespace Analysis::Bounces;
-#pragma link C++ function Analysis::Bounces::PlotBounceCounters(TDirectory* const, const std::vector<TDirectory*>);
+#pragma link C++ function Analysis::Bounces::PlotBounceCounters(const std::string, const std::vector<int>, TTree*);
 
 #pragma link C++ namespace Analysis::FinalStates;
 #pragma link C++ function Analysis::FinalStates::PlotFinalState(const std::string, const std::vector<int>, TTree*, const RunConfig&);
