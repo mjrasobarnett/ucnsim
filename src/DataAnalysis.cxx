@@ -504,6 +504,7 @@ void FinalStates::DrawFinalPositions(const std::string state, const std::vector<
       points->SetPoint(pointNum, particle->X(), particle->Y(), particle->Z());
       pointNum++;
    }
+   delete particle; particle = NULL;
    //////////////////////////////////////////////////////////////////////////////////////
    // Final Positions
    TCanvas *poscanvas = new TCanvas("Positions","Neutron Positions",10,10,10,10);
