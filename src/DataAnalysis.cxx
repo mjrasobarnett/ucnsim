@@ -354,36 +354,20 @@ double FitFunctions::ExponentialDecay(double *x, double *par)
 }
 
 //_____________________________________________________________________________
-void FinalStates::PlotFinalStates(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig, TGeoManager& geoManager)
+void FinalStates::PlotFinalState(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig)
 {
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd into the Histogram's directory
-   histDir->cd();
-   Char_t histname[40];
-   // -- Count total Neutrons, and define name of combined states
-   string stateName = "";//DataFile::ConcatenateStateNames(stateDirs);
-   int total_neutrons = 0;
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      total_neutrons += (*dirIter)->GetNkeys();
-   }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Final Positions
-   TPolyMarker3D* points = new TPolyMarker3D(total_neutrons, 1); // 1 is marker style
-   sprintf(histname,"%s:NeutronPositions",stateName.c_str());
-   points->SetName(histname);
-   points->SetMarkerColor(2);
-   points->SetMarkerStyle(6);   
-   //////////////////////////////////////////////////////////////////////////////////////
+   cout << "Preparing to draw histograms for the final particle state..." << endl;
    // -- Angular Distribution
-   sprintf(histname,"%s:Theta",stateName.c_str());
+   Char_t histname[40];
+   sprintf(histname,"%s:Theta",state.c_str());
    TH1F* thetaHist = new TH1F(histname,"Direction: Theta, Degrees", 50, 0., 180.);
    thetaHist->SetXTitle("Degrees");
    thetaHist->SetYTitle("Neutrons");
    thetaHist->SetLineColor(kRed);
    thetaHist->SetFillStyle(3001);
    thetaHist->SetFillColor(kRed);
-   sprintf(histname,"%s:Phi",stateName.c_str());
+   sprintf(histname,"%s:Phi",state.c_str());
    TH1F* phiHist = new TH1F(histname,"Direction: Phi, Degrees", 50, -180.0, 180.0);
    phiHist->SetXTitle("Degrees");
    phiHist->SetYTitle("Neutrons");
@@ -393,29 +377,29 @@ void FinalStates::PlotFinalStates(TDirectory* const histDir, const vector<TDirec
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Energy/Momentum
    const double maximumVelocity = 8.0;
-   const int nbins = 50;   
-   sprintf(histname,"%s:Velocity",stateName.c_str());
-   TH1F* energyHist = new TH1F(histname,"Velocity: Units of m/s", nbins, 0.0, maximumVelocity);      
+   const int nbins = 50;
+   sprintf(histname,"%s:Velocity",state.c_str());
+   TH1F* energyHist = new TH1F(histname,"Velocity: Units of m/s", nbins, 0.0, maximumVelocity);
    energyHist->SetXTitle("Velocity (m/s)");
    energyHist->SetYTitle("Neutrons");
    energyHist->SetLineColor(kBlack);
    energyHist->SetFillStyle(3001);
    energyHist->SetFillColor(kBlack);
-   sprintf(histname,"%s:Vx",stateName.c_str());
+   sprintf(histname,"%s:Vx",state.c_str());
    TH1F* vxHist = new TH1F(histname,"Vx (m/s)", nbins, -maximumVelocity, maximumVelocity);
    vxHist->SetXTitle("Vx (m/s)");
    vxHist->SetYTitle("Neutrons");
    vxHist->SetLineColor(kBlue);
    vxHist->SetFillStyle(3001);
    vxHist->SetFillColor(kBlue);
-   sprintf(histname,"%s:Vy",stateName.c_str());
+   sprintf(histname,"%s:Vy",state.c_str());
    TH1F* vyHist = new TH1F(histname,"Vy (m/s)", nbins, -maximumVelocity, maximumVelocity);
    vyHist->SetXTitle("Vy (m/s)");
    vyHist->SetYTitle("Neutrons");
    vyHist->SetLineColor(kBlue);
    vyHist->SetFillStyle(3001);
    vyHist->SetFillColor(kBlue);
-   sprintf(histname,"%s:Vz",stateName.c_str());
+   sprintf(histname,"%s:Vz",state.c_str());
    TH1F* vzHist = new TH1F(histname,"Vz (m/s)", nbins, -maximumVelocity, maximumVelocity);
    vzHist->SetXTitle("Vz (m/s)");
    vzHist->SetYTitle("Neutrons");
@@ -425,66 +409,42 @@ void FinalStates::PlotFinalStates(TDirectory* const histDir, const vector<TDirec
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Run Time
    const double runTime = runConfig.RunTime();
-   sprintf(histname,"%s:Time",stateName.c_str());
+   sprintf(histname,"%s:Time",state.c_str());
    TH1F* timeHist = new TH1F(histname,"Time: Units of s", ((int)runTime), 0.0, runTime+1);
    timeHist->SetXTitle("Time (s)");
    timeHist->SetYTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over each state to be included in histogram
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      // -- cd into the State's folder
-      (*dirIter)->cd();
-      //////////////////////////////////////////////////////////////////////////////////////
-      // -- Loop over all particle folders in the current state's folder
-      TKey *folderKey;
-      TIter folderIter((*dirIter)->GetListOfKeys());
-      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         const char *classname = folderKey->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // Loop over all objects in particle dir
-            (*dirIter)->cd(folderKey->GetName());
-            TDirectory* particleDir = gDirectory;
-            TKey *objKey;
-            TIter objIter(particleDir->GetListOfKeys());
-            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
-               // For Each object in the particle's directory, check its class name and what it
-               // inherits from to determine what to do.
-               classname = objKey->GetClassName();
-               cl = gROOT->GetClass(classname);
-               if (!cl) continue;
-               if (cl->InheritsFrom("Particle")) {
-                  // -- Extract Final Particle State Data
-                  Particle* particle = dynamic_cast<Particle*>(objKey->ReadObj());
-                  // -- Fill Histograms
-                  points->SetPoint(particle->Id()-1, particle->X(), particle->Y(), particle->Z());
-                  thetaHist->Fill((particle->Theta()*180.0)/TMath::Pi());
-                  phiHist->Fill((particle->Phi()*180.0)/TMath::Pi());
-                  energyHist->Fill(particle->V());
-                  vxHist->Fill(particle->Vx());
-                  vyHist->Fill(particle->Vy());
-                  vzHist->Fill(particle->Vz());
-                  timeHist->Fill(particle->T());
-                  delete particle;
-               }
-            }
-         }
-      }
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   Particle* particle = new Particle();
+   TBranch* particleBranch = dataTree->GetBranch(States::final.c_str());
+   if (particleBranch == NULL) {
+      cerr << "Error - Could not find branch: " << States::final << " in input tree" << endl;
+      throw runtime_error("Failed to find particle branch in input tree");
    }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd back into Histogram's dir
-   histDir->cd();
+   dataTree->SetBranchAddress(particleBranch->GetName(), &particle);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      particleBranch->GetEntry(particleIndex);
+      // Fill Histograms
+      thetaHist->Fill((particle->Theta()*180.0)/TMath::Pi());
+      phiHist->Fill((particle->Phi()*180.0)/TMath::Pi());
+      energyHist->Fill(particle->V());
+      vxHist->Fill(particle->Vx());
+      vyHist->Fill(particle->Vy());
+      vzHist->Fill(particle->Vz());
+      timeHist->Fill(particle->T());
+   }
+   delete particle; particle = NULL;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Draw Histograms
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Time Distribution
+   // Time Distribution
    TCanvas *timecanvas = new TCanvas("Times","Final Time (s)",60,0,1200,800);
    timecanvas->cd();
    timeHist->Draw();
    timeHist->Write(timeHist->GetName(),TObject::kOverwrite);
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Velocity Distribution
+   // Velocity Distribution
    TCanvas *velcanvas = new TCanvas("Velocity","Velocity Space",60,0,1200,800);
    velcanvas->Divide(3,2);
    velcanvas->cd(1);
@@ -506,9 +466,47 @@ void FinalStates::PlotFinalStates(TDirectory* const histDir, const vector<TDirec
    velcanvas->cd(6);
    vzHist->Draw();
    vzHist->Write(vzHist->GetName(),TObject::kOverwrite);
+   cout << "Successfully created histograms for the final particle state" << endl;
+   cout << "-------------------------------------------" << endl;
+   return;
+}
+
+//_____________________________________________________________________________
+void FinalStates::DrawFinalPositions(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, TGeoManager& geoManager, double* cameraCentre)
+{
+   //////////////////////////////////////////////////////////////////////////////////////
+   cout << "Preparing to draw particle positions in the geometry..." << endl;
+   // -- Count total Neutrons, and define name of combined states
+   size_t totalNeutrons = particleIndexes.size();
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Final Positions
-   TCanvas *poscanvas = new TCanvas("Positions","Neutron Positions",10,10,50,50);
+   TPolyMarker3D* points = new TPolyMarker3D(totalNeutrons, 1); // 1 is marker style
+   Char_t histname[40];
+   sprintf(histname,"%s:NeutronPositions",state.c_str());
+   points->SetName(histname);
+   points->SetMarkerColor(2);
+   points->SetMarkerStyle(6);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   Particle* particle = new Particle();
+   TBranch* particleBranch = dataTree->GetBranch(States::final.c_str());
+   if (particleBranch == NULL) {
+      cerr << "Error - Could not find branch: " << States::final << " in input tree" << endl;
+      throw runtime_error("Failed to find particle branch in input tree");
+   }
+   dataTree->SetBranchAddress(particleBranch->GetName(), &particle);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      particleBranch->GetEntry(particleIndex);
+      // Fill Point array
+      static int pointNum = 0;
+      points->SetPoint(pointNum, particle->X(), particle->Y(), particle->Z());
+      pointNum++;
+   }
+   //////////////////////////////////////////////////////////////////////////////////////
+   // Final Positions
+   TCanvas *poscanvas = new TCanvas("Positions","Neutron Positions",10,10,10,10);
    poscanvas->cd();
    geoManager.GetTopVolume()->Draw("ogl");
    geoManager.SetVisLevel(4);
@@ -525,14 +523,16 @@ void FinalStates::PlotFinalStates(TDirectory* const histDir, const vector<TDirec
    TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
    glViewer->SetCurrentCamera(camera);
    glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   double cameraCentre[3] = {0,0,0};
-   glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
+   glViewer->SetPerspectiveCamera(camera,4,100, cameraCentre,0,0);
    // -- Draw Reference Point, Axes
+   // -- Options for SetGuideState:
+   // -- {int axesType = 0(Off), 1(EDGE), 2(ORIGIN)}, {Bool_t axesDepthTest}, {Bool_t referenceOn}, {const double referencePos[3]}
    double refPoint[3] = {0.,0.,0.};
-   // int axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const double referencePos[3]
-   glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
+   glViewer->SetGuideState(2, kFALSE, kFALSE, refPoint);
    glViewer->UpdateScene();
    glViewer = 0;
+   cout << "Successfully drawn particle positions in the geometry" << endl;
+   cout << "-------------------------------------------" << endl;
    return;
 }
 

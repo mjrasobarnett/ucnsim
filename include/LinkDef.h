@@ -134,7 +134,8 @@
 #pragma link C++ function Analysis::Bounces::PlotBounceCounters(TDirectory* const, const std::vector<TDirectory*>);
 
 #pragma link C++ namespace Analysis::FinalStates;
-#pragma link C++ function Analysis::FinalStates::PlotFinalStates(TDirectory* const, const std::vector<TDirectory*>, const RunConfig&, TGeoManager&);
+#pragma link C++ function Analysis::FinalStates::PlotFinalState(const std::string, const std::vector<int>, TTree*, const RunConfig&);
+#pragma link C++ function Analysis::FinalStates::DrawFinalPositions(const std::string, const std::vector<int>, TTree*, TGeoManager&, double*);
 #pragma link C++ function Analysis::FinalStates::PlotEmptyingTime(std::vector<TDirectory*>,const RunConfig&,const double,const double);
 
 #pragma link C++ namespace Analysis::Tracks;

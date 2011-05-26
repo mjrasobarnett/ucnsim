@@ -101,7 +101,9 @@ namespace Analysis {
    //_____________________________________________________________________________
    namespace FinalStates {
       //_____________________________________________________________________________
-      void PlotFinalStates(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig, TGeoManager& geoManager);
+      void PlotFinalState(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig);
+      //_____________________________________________________________________________
+      void DrawFinalPositions(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, TGeoManager& geoManager, double* cameraCentre);
       //_____________________________________________________________________________
       bool PlotEmptyingTime(const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig, const double lLimit, const double uLimit);   
    }
