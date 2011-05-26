@@ -19,9 +19,7 @@
 #include "Algorithms.h"
 #include "Units.h"
 
-using std::cout;
-using std::endl;
-using std::runtime_error;
+using namespace std;
 
 //#define VERBOSE_MODE
 
