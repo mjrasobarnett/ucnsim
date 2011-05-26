@@ -3,7 +3,7 @@
 Int_t plot_emptying_time(string filename, string statename) {
    ///////////////////////////////////////////////////////////////////////////////////////
    // Read in Filename and check that it is a .root file
-   if (Analysis::DataFile::ValidateRootFile(filename) == false) {
+   if (Analysis::DataFile::IsRootFile(filename) == false) {
       cerr << "Error: filename, " << filename << " does not have a .root extension" << endl;
       return -1;
    }
