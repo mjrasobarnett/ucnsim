@@ -34,6 +34,7 @@
 #include "ValidStates.h"
 #include "GeomParameters.h"
 #include "Algorithms.h"
+#include "DataAnalysis.h"
 
 using std::cin;
 using std::cout;
@@ -205,17 +206,11 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Create storage for the particles
    const string outputFileName = initialConfig.OutputFileName();
-   if (outputFileName == "") {
-      cout << "Error - No Output file path specified in initial configuration" << endl;
-      return false;
-   }
-   // Open and store pointer to File
-   TFile file(outputFileName.c_str(), "RECREATE");
+   TFile* file = Analysis::DataFile::OpenRootFile(outputFileName,"RECREATE");
    TTree tree("Particles","Tree of Particle Data");
    Particle* particle = new Particle();
    TBranch* initialBranch = tree.Branch(States::initial.c_str(), particle->ClassName(), &particle);
    ParticleManifest manifest;
-   
    // -- Loop over the total number of particles to be created. 
    for (Int_t i = 1; i <= particles; i++) {
       // -- Create particle at a random position inside beam volume
@@ -242,29 +237,41 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       // -- Update progress bar
       Algorithms::ProgressBar::PrintProgress(i,particles,1);
    }
-   // -- Close the data
+   // -- Write the tree and manifest to file
    manifest.Write();
    tree.Write();
-   file.Close();
-   
+   // -- Navigate to histogram folder
+   Analysis::DataFile::NavigateToHistDir(*file);
+   // -- Save initial state plots to histogram folder
    TCanvas *canvas1 = new TCanvas("InitialPhaseSpace","Initial Phase Space",60,0,1000,800);
    canvas1->Divide(4,2);
    canvas1->cd(1);
    initialXHist->Draw();
+   initialXHist->Write(initialXHist->GetName(),TObject::kOverwrite);
    canvas1->cd(2);
    initialYHist->Draw();
+   initialYHist->Write(initialYHist->GetName(),TObject::kOverwrite);
    canvas1->cd(3);
    initialZHist->Draw();
+   initialZHist->Write(initialZHist->GetName(),TObject::kOverwrite);
    canvas1->cd(4);
    initialTHist->Draw();
+   initialTHist->Write(initialTHist->GetName(),TObject::kOverwrite);
    canvas1->cd(5);
    initialVXHist->Draw();
+   initialVXHist->Write(initialVXHist->GetName(),TObject::kOverwrite);
    canvas1->cd(6);
    initialVYHist->Draw();
+   initialVYHist->Write(initialVYHist->GetName(),TObject::kOverwrite);
    canvas1->cd(7);
    initialVZHist->Draw();
+   initialVZHist->Write(initialVZHist->GetName(),TObject::kOverwrite);
    canvas1->cd(8);
    initialVHist->Draw();
+   initialVHist->Write(initialVHist->GetName(),TObject::kOverwrite);
+   // -- Close file
+   file->Close();
+   
    
    TCanvas* canvas2 = new TCanvas("InitialPositions","Positions",60,0,100,100);
    canvas2->cd();
