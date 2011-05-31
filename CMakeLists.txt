@@ -12,10 +12,15 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMake")
 # Set Build type
 set(CMAKE_BUILD_TYPE debug)
 
-# We want to use ROOT. This sets up all the root variables we need
+# Set Boost options
+set(Boost_USE_STATIC_LIBS        ON)
+set(Boost_USE_MULTITHREADED      ON)
+set(Boost_USE_STATIC_RUNTIME    OFF)
+
+# Find packages required by thi project
 find_package(ROOT REQUIRED)
 find_package(GSL REQUIRED)
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS program_options)
 
 # Store the path to the include directory
 set(UCNLIB_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/include")
@@ -27,7 +32,7 @@ set(INCLUDE_DIRECTORIES ${UCNLIB_INCLUDE_DIR}
                         ${GSL_INCLUDE_DIR}
                         ${Boost_INCLUDE_DIRS})
 include_directories( ${INCLUDE_DIRECTORIES} )
-link_directories( ${ROOT_LIBRARY_DIR} ${GSL_LINK_DIRECTORIES})
+link_directories( ${ROOT_LIBRARY_DIR} ${GSL_LINK_DIRECTORIES} ${Boost_LIBRARY_DIRS})
 
 # Save the location of LinkDef.h;
 set(UCNLIB_LINKDEF "${CMAKE_CURRENT_LIST_DIR}/include/LinkDef.h")
