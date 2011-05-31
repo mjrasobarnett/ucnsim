@@ -160,35 +160,35 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    
    // Create Histograms to view the initial particle distributions
    const Int_t nbins = 100;
-   TH1F* initialXHist = new TH1F("InitialXHist","X Position, Units of (m)", nbins, negBounds[0], posBounds[0]);
+   TH1F* initialXHist = new TH1F("initial:X","X (m)", nbins, negBounds[0], posBounds[0]);
    initialXHist->SetLineColor(kBlue);
    initialXHist->SetFillStyle(3001);
    initialXHist->SetFillColor(kBlue);
-   TH1F* initialYHist = new TH1F("InitialYHist","Y Position, Units of (m)", nbins, negBounds[1], posBounds[1]); 
+   TH1F* initialYHist = new TH1F("initial:Y","Y (m)", nbins, negBounds[1], posBounds[1]); 
    initialYHist->SetLineColor(kBlue);
    initialYHist->SetFillStyle(3001);
    initialYHist->SetFillColor(kBlue);
-   TH1F* initialZHist = new TH1F("InitialZHist","Z Position, Units of (m)", nbins, negBounds[2], posBounds[2]);
+   TH1F* initialZHist = new TH1F("initial:Z","Z (m)", nbins, negBounds[2], posBounds[2]);
    initialZHist->SetLineColor(kBlue);
    initialZHist->SetFillStyle(3001);
    initialZHist->SetFillColor(kBlue);
-   TH1F* initialVXHist = new TH1F("InitialVXHist","Initial VX velocity, Units of (m/s)", nbins, -vmax, vmax);
+   TH1F* initialVXHist = new TH1F("initial:Vx","Vx (m/s)", nbins, -vmax, vmax);
    initialVXHist->SetLineColor(kRed);
    initialVXHist->SetFillStyle(3001);
    initialVXHist->SetFillColor(kRed);
-   TH1F* initialVYHist = new TH1F("InitialVYHist","Initial VY velocity, Units of (m/s)", nbins, -vmax, vmax);
+   TH1F* initialVYHist = new TH1F("initial:Vy","Vy (m/s)", nbins, -vmax, vmax);
    initialVYHist->SetLineColor(kRed);
    initialVYHist->SetFillStyle(3001);
    initialVYHist->SetFillColor(kRed);
-   TH1F* initialVZHist = new TH1F("InitialVZHist","Initial VZ velocity, Units of (m/s)", nbins, -vmax, vmax);
+   TH1F* initialVZHist = new TH1F("initial:Vz","Vz (m/s)", nbins, -vmax, vmax);
    initialVZHist->SetLineColor(kRed);
    initialVZHist->SetFillStyle(3001);
    initialVZHist->SetFillColor(kRed);
-   TH1F* initialVHist = new TH1F("InitialVHist","Initial V velocity, Units of (m/s)", nbins, 0.0, vmax);
+   TH1F* initialVHist = new TH1F("initial:Velocity","Velocity (m/s)", nbins, 0.0, vmax);
    initialVHist->SetLineColor(kRed);
    initialVHist->SetFillStyle(3001);
    initialVHist->SetFillColor(kRed);
-   TH1F* initialTHist = new TH1F("InitialTHist","Initial T time, Units of s", nbins, 0.0, fillTime);
+   TH1F* initialTHist = new TH1F("initial:Time","Time (s)", nbins, 0.0, fillTime);
    
    TPolyMarker3D* positions = new TPolyMarker3D(particles, 1); // 1 is marker style
    positions->SetMarkerColor(2);
