@@ -100,6 +100,7 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    // -- Open the file holding the initial particle tree
    const string inputFileName = runConfig.InputFileName();
    TFile* inputFile = Analysis::DataFile::OpenRootFile(inputFileName, "READ");
+   if (inputFile == NULL) {return false;}
    inputFile->cd();
    ///////////////////////////////////////////////////////////////////////
    // -- Read into memory the input file's Particle Tree, 
