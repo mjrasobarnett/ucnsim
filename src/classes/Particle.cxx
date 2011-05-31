@@ -157,7 +157,7 @@ Bool_t Particle::Propagate(Run* run)
 {
    // -- Call State-dependent propagate method
    if (!fState) fState = new Propagating();
-//   return fState->Propagate(this,run);
+   return fState->Propagate(this,run);
    return true;
 }
 
