@@ -11,6 +11,7 @@ class TFile;
 class TGeoManager;
 class TGraph;
 class TTree;
+class TCanvas;
 
 class RunConfig;
 class Track;
@@ -117,6 +118,13 @@ namespace Analysis {
       //_____________________________________________________________________________
       std::vector<double> CalculateParticleHistory(const Track& track, TGeoManager& geoManager);
       
+   }
+   
+   //_____________________________________________________________________________
+   // Namespace holding functions relevant to datafile structure
+   //_____________________________________________________________________________
+   namespace Geometry {
+      void DrawGeometry(TCanvas& canvas, TGeoManager& geoManager, double* cameraCentre);
    }
 
 }

@@ -141,6 +141,9 @@
 #pragma link C++ namespace Analysis::Tracks;
 #pragma link C++ function Analysis::Tracks::PlotParticleHistories(TDirectory* const, const std::vector<TDirectory*>, TGeoManager&);
 #pragma link C++ function Analysis::Tracks::CalculateParticleHistory(const Track&, TGeoManager&);
+
+#pragma link C++ namespace Analysis::Geometry;
+#pragma link C++ function Analysis::Geometry::DrawGeometry(TCanvas&, TGeoManager&, double*);
 // ----------------------------------------------------------------------
 
 #endif

@@ -1520,4 +1520,31 @@ vector<double> Tracks::CalculateParticleHistory(const Track& track, TGeoManager&
    return times;
 }
 
-
+//_____________________________________________________________________________
+void Geometry::DrawGeometry(TCanvas& canvas, TGeoManager& geoManager, double* cameraCentre) 
+{
+   // Draw the provided Geometry on the canvas, centred on the cameraCentre coords given
+   canvas.cd();
+   geoManager.GetTopVolume()->Draw("ogl");
+   geoManager.SetVisLevel(4);
+   geoManager.SetVisOption(0);
+   // -- Get the GLViewer so we can manipulate the camera
+   TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
+   // -- Select Draw style 
+   glViewer->SetStyle(TGLRnrCtx::kFill);
+   // -- Set Background colour
+   glViewer->SetClearColor(kWhite);
+   // -- Set Camera type
+   TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
+   glViewer->SetCurrentCamera(camera);
+   glViewer->CurrentCamera().SetExternalCenter(kTRUE);
+   glViewer->SetPerspectiveCamera(camera,4,100, cameraCentre,0,0);
+   // -- Draw Reference Point, Axes
+   // -- Options for SetGuideState:
+   // -- {int axesType = 0(Off), 1(EDGE), 2(ORIGIN)}, {Bool_t axesDepthTest}, {Bool_t referenceOn}, {const double referencePos[3]}
+   double refPoint[3] = {0.,0.,0.};
+   glViewer->SetGuideState(2, kFALSE, kFALSE, refPoint);
+   glViewer->UpdateScene();
+   glViewer = 0;
+   return;
+}
