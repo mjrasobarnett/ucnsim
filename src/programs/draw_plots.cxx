@@ -40,219 +40,212 @@
 #include "Algorithms.h"
 #include "DataAnalysis.h"
 
+#include <boost/algorithm/string.hpp>
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
 using namespace std;
 
-void DrawFinalStates(TDirectory* const histDir, TGeoManager* geoManager);
-void DrawSpinPolarisation(TDirectory* const histDir);
-void DrawBounceCounters(TDirectory* const histDir);
-void DrawField(TDirectory* const histDir);
+bool draw_plots(const string& filename, const string& state);
+bool AttemptDrawingPositions(TFile& file, const string& stateName);
+bool AttemptDrawingVelocity(TFile& file, const string& stateName);
+bool AttemptDrawingPolarisation(TFile& file, const string& stateName);
+bool AttemptDrawingBounces(TFile& file, const string& stateName);
+bool AttemptDrawingFields(TFile& file, const string& stateName);
 
 //_____________________________________________________________________________
-Int_t main(int argc, char **argv)
+// A helper function to simplify the printing of command line options.
+template<class T>
+ostream& operator<<(ostream& os, const vector<T>& v)
 {
-/*   ///////////////////////////////////////////////////////////////////////////////////////
-   // Plot data needs a minimum of 2 arguments - a data file, and the name of the particle
-   // 'state' you wish to include in your histograms.
-   if (argc < 2) {
-      cerr << "Usage:" << endl;
-      cerr << "plot_data <data.root>" << endl;
-      return EXIT_FAILURE;
+    copy(v.begin(), v.end(), ostream_iterator<T>(cout, " ")); 
+    return os;
+}
+
+//_____________________________________________________________________________
+int main(int argc, char **argv)
+{
+   try {
+      // -- Create a description for all command-line options
+      po::options_description description("Allowed options");
+      description.add_options()
+        ("help", "produce help message")
+        ("file", po::value<string>(), "filename of the datafile to be examined")
+        ("state", po::value<string>(), "state to be searched for in histogram folder");
+      ;
+      
+      // -- Create a description for all command-line options
+      po::variables_map variables;
+      po::store(po::parse_command_line(argc, argv, description), variables);
+      po::notify(variables);
+      
+      // -- If user requests help, print the options description
+      if (variables.count("help")) {
+         cout << description << "\n";
+         return 1;
+      }
+      
+      // -- Check whether a datafile was given. If not, exit with a warning
+      if (variables.count("file")) {
+         cout << "DataFile name was set to: "
+              << variables["file"].as<string>() << "\n";
+      } else {
+         cout << "DataFile name was not set.\n";
+         return EXIT_FAILURE;
+      }
+      
+      // -- Check whether a list of states was given. If not, exit with a warning
+      if (variables.count("state")) {
+         cout << "State to be searched for is: " 
+              << variables["state"].as<string>() << "\n";
+      } else {
+         cout << "No states have been selected.\n";
+         return EXIT_FAILURE;
+      }
+      // -- Call draw_plots with filename and statename as args
+      draw_plots(variables["file"].as<string>(), variables["state"].as<string>());
    }
-   // Read in Filename and check that it is a .root file
-   string filename = argv[1];
-   if (Analysis::DataFile::IsRootFile(filename) == false) {
-      cerr << "Error: filename, " << filename << " does not have a .root extension" << endl;
-      return EXIT_FAILURE;
+   catch(exception& e) {
+      cerr << "error: " << e.what() << "\n";
+      return 1;
    }
-   cout << "-------------------------------------------" << endl;
-   cout << "Loading Data File: " << filename << endl;
-   cout << endl;
+   catch(...) {
+      cerr << "Exception of unknown type!\n";
+   }
+   return EXIT_SUCCESS;
+}
+
+//_____________________________________________________________________________
+bool draw_plots(const string& filename, const string& state)
+{
    // Start an interactive root session so we can view the plots as they are made
-   TRint *theApp = new TRint("FittingApp", &argc, argv);
+   TRint *theApp = new TRint("FittingApp", NULL, NULL);
+   // Read in Filename and check that it is a .root file
+   if (Analysis::DataFile::IsRootFile(filename) == false) {return false;}
+   // Read in list of states to be included in histogram and check that they are
+   // valid state names
+   if (Analysis::DataFile::IsValidStateName(state) == false) {return false;}
+   string stateName = boost::to_lower_copy(state);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Open Data File
-   //////////////////////////////////////////////////////////////////////////////////////
-   TFile *file = 0;
-   file = TFile::Open(filename.c_str(), "UPDATE");
-   if (!file || file->IsZombie()) {
-      cerr << "Cannot open file: " << filename << endl;
-      return -1;
-   }
-   file->cd();
-   cout << "-------------------------------------------" << endl;
-   cout << "Successfully Loaded Data File: " << filename << endl;
-   cout << "-------------------------------------------" << endl;
+   TFile* file = Analysis::DataFile::OpenRootFile(filename,"UPDATE");
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Navigate to Histogram folder
-   TDirectory * const topDir = gDirectory;
-   if (topDir->cd("") == false) {
-      cerr << "No Folder named: " << "" << " in data file" << endl;
-      return EXIT_FAILURE;
-   }
-   TDirectory * const histDir = gDirectory;
-   histDir->ls();
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Load the Geometry
-   if (topDir->cd("") == false) {return EXIT_FAILURE;}
-   TDirectory* geomDir = gDirectory;
-   TKey *geomKey;
-   TIter geomIter(geomDir->GetListOfKeys());
-   while ((geomKey = dynamic_cast<TKey*>(geomIter.Next()))) {
-      const char *classname = geomKey->GetClassName();
-      TClass *cl = gROOT->GetClass(classname);
-      if (!cl) continue;
-      if (cl->InheritsFrom("TGeoManager")) {
-         gGeoManager = dynamic_cast<TGeoManager*>(geomKey->ReadObj());
-         break;
-      }
-   }
-   TGeoManager* geoManager = gGeoManager;
-   if (geoManager == NULL) return EXIT_FAILURE;
-   cout << "-------------------------------------------" << endl;
-   cout << "Successfully Loaded Geometry" << endl;
-   cout << "-------------------------------------------" << endl;
+   AttemptDrawingPositions(*file, stateName);
+   AttemptDrawingVelocity(*file, stateName);
+   AttemptDrawingPolarisation(*file, stateName);
+   AttemptDrawingBounces(*file, stateName);
+   AttemptDrawingFields(*file, stateName);
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Particle final state
-   DrawFinalStates(histDir, geoManager);
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Polarisation
-   DrawSpinPolarisation(histDir);
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Bounce Data
-   DrawBounceCounters(histDir);
-   //////////////////////////////////////////////////////////////////////////////////////
-   DrawField(histDir);
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Clean up and Finish
-   cout << "Finished" << endl;
    theApp->Run();
-*/   return EXIT_SUCCESS;
+   return true;
 }
-/*
+
 //_____________________________________________________________________________
-void DrawFinalStates(TDirectory* const histDir, TGeoManager* geoManager)
+bool AttemptDrawingPositions(TFile& file, const string& stateName) 
 {
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd into the Histogram's directory
-   histDir->cd();
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Final Positions
-   TPolyMarker3D* points = NULL;
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Angular Distribution
-   TH1F* thetaHist = NULL;
-   TH1F* phiHist = NULL;
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Energy/Momentum
-   TH1F* vHist = NULL;
-   TH1F* vxHist = NULL;
-   TH1F* vyHist = NULL;
-   TH1F* vzHist = NULL;
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Run Time
-   TH1F* timeHist = NULL;
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over all histograms in folder
+   // -- Attempt to navigate to Histogram Directory
+   TDirectory* histDir = Analysis::DataFile::NavigateToHistDir(file);
+   // -- Loop over all objects in histogram folder
+   TPolyMarker3D* positions = NULL;
    TKey *key;
    TIter iter(histDir->GetListOfKeys());
    while ((key = dynamic_cast<TKey*>(iter.Next()))) {
-      string histName = key->GetName();
-      size_t position = histName.find_last_of(":");
-      if (position != string::npos) {
-         if (histName.substr(position+1) == "Time") {
-            timeHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "NeutronPositions") {
-            points = dynamic_cast<TPolyMarker3D*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "Theta") {
-            thetaHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "Phi") {
-            phiHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "Velocity") {
-            vHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "Vx") {
-            vxHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "Vy") {
-            vyHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "Vz") {
-            vzHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else {
-            continue;
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TPolyMarker3D")) {
+         // If we found a TPolyMarker3D object, check its name to see if it
+         // belongs to the requested state
+         string objectName = key->GetName();
+         vector<string> stringTokens = Algorithms::String::FactorString(objectName, ':');
+         if (stringTokens.empty() == false) {
+            if (stringTokens[0] == stateName) {
+               positions = dynamic_cast<TPolyMarker3D*>(key->ReadObj());
+               break;
+            }
          }
-      }   
+      }
    }
-   // -- check that all histograms were extracted
-   if (timeHist == NULL || points == NULL || thetaHist == NULL || phiHist == NULL ||
-       vHist == NULL || vxHist == NULL || vyHist == NULL || vzHist == NULL) {
-      cout << "-------------------------------------------" << endl;
-      cout << "Error: Could not extract Final States Histograms" << endl;
-      cout << "-------------------------------------------" << endl;
-      return;
+   // -- Check whether we retrieved anything for the requested state
+   if (positions == NULL) {
+      cerr << "No Positions saved for state: " << stateName << endl;
+      return false;
    }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd back into Histogram's dir
-   histDir->cd();
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Draw Histograms
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Time Distribution
-   TCanvas *timecanvas = new TCanvas("Times","Final Time (s)",60,0,1200,800);
-   timecanvas->cd();
-   timeHist->Draw();
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Velocity Distribution
-   TCanvas *velcanvas = new TCanvas("Velocity","Velocity Space",60,0,1200,800);
-   velcanvas->Divide(3,2);
-   velcanvas->cd(1);
-   vHist->Draw();
-   velcanvas->Update();
-   velcanvas->cd(2);
-   thetaHist->Draw();
-   velcanvas->cd(3);
-   phiHist->Draw();
-   velcanvas->cd(4);
-   vxHist->Draw();
-   velcanvas->cd(5);
-   vyHist->Draw();
-   velcanvas->cd(6);
-   vzHist->Draw();
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Final Positions
-   TCanvas *poscanvas = new TCanvas("Positions","Neutron Positions",10,10,50,50);
-   poscanvas->cd();
-   geoManager->GetTopVolume()->Draw("ogl");
-   geoManager->SetVisLevel(4);
-   geoManager->SetVisOption(0);
-   points->Draw();
-   // -- Get the GLViewer so we can manipulate the camera
-   TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
-   // -- Select Draw style 
-   glViewer->SetStyle(TGLRnrCtx::kFill);
-   // -- Set Background colour
-   glViewer->SetClearColor(kWhite);
-   // -- Set Camera type
-   TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
-   glViewer->SetCurrentCamera(camera);
-   glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   Double_t cameraCentre[3] = {0,0,0};
-   glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
-   // -- Draw Reference Point, Axes
-   Double_t refPoint[3] = {0.,0.,0.};
-   // Int_t axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const Double_t referencePos[3]
-   glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
-   glViewer->UpdateScene();
-   glViewer = 0;
-   cout << "-------------------------------------------" << endl;
-   cout << "Successfully Fetched Final State Histograms" << endl;
-   cout << "-------------------------------------------" << endl;
-   return;
+   // -- Fetch the geometry
+   TGeoManager& geoManager = Analysis::DataFile::LoadGeometry(file);
+   TCanvas* canvas = new TCanvas("Positions","Neutron Positions",10,10,10,10);
+   double camera[3] = {0.0,0.0,0.0};
+   Analysis::Geometry::DrawGeometry(*canvas, geoManager, camera);
+   positions->Draw();
+   return true;
 }
 
 //_____________________________________________________________________________
-void DrawSpinPolarisation(TDirectory* const histDir)
+bool AttemptDrawingVelocity(TFile& file, const string& stateName) 
+{
+   // -- Attempt to navigate to Histogram Directory
+   TDirectory* histDir = Analysis::DataFile::NavigateToHistDir(file);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Velocity
+   TH1F* vHist = NULL;
+   TH1F* vxHist = NULL;
+   TH1F* vyHist = NULL;
+   TH1F* vzHist = NULL;   
+   // -- Loop over all objects in histogram folder
+   TKey *key;
+   TIter iter(histDir->GetListOfKeys());
+   while ((key = dynamic_cast<TKey*>(iter.Next()))) {
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TH1F")) {
+         // If we found a Histogram object, check its name to see if it
+         // belongs to the requested state
+         string objectName = key->GetName();
+         vector<string> stringTokens = Algorithms::String::FactorString(objectName, ':');
+         if (stringTokens.size() == 2) {
+            if (stringTokens[0] == stateName) {
+               if (stringTokens[1] == "Velocity") {
+                  vHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "Vx") {
+                  vxHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "Vy") {
+                  vyHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "Vz") {
+                  vzHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else {
+                  continue;
+               }
+            }
+         }
+      }
+   }
+   // -- Check whether we retrieved anything for the requested state
+   if (vHist == NULL || vxHist == NULL || vyHist == NULL || vzHist == NULL) {
+      cerr << "One or more velocity histograms are missing for: " << stateName << endl;
+      return false;
+   }
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Draw Histograms
+   TCanvas* canvas = new TCanvas("Velocity","Velocity of particles",60,0,1200,800);
+   canvas->Divide(2,2);
+   canvas->cd(1);
+   vxHist->Draw();
+   canvas->cd(2);
+   vyHist->Draw();
+   canvas->cd(3);
+   vzHist->Draw();
+   canvas->cd(4);
+   vHist->Draw();
+   return true;
+}
+
+//_____________________________________________________________________________
+bool AttemptDrawingPolarisation(TFile& file, const string& stateName)
 {
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd into Histogram's dir
-   histDir->cd();
+   // -- Attempt to navigate to Histogram Directory
+   TDirectory* histDir = Analysis::DataFile::NavigateToHistDir(file);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- X Axis Spin Polarisation
    TH1F* spinUpAlongXHist = NULL;
@@ -271,45 +264,53 @@ void DrawSpinPolarisation(TDirectory* const histDir)
    TH1F* spinDownAlongZHist = NULL;
    TH1F* spinUpDownAlongZHist = NULL;
    TGraph* spinAlphaZ = NULL;
-   
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over all histograms in folder
+   // -- Loop over all objects in histogram folder
    TKey *key;
    TIter iter(histDir->GetListOfKeys());
    while ((key = dynamic_cast<TKey*>(iter.Next()))) {
-      string histName = key->GetName();
-      size_t position = histName.find_last_of(":");
-      if (position != string::npos) {
-         if (histName.substr(position+1) == "SpinUp Along X") {
-            spinUpAlongXHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "SpinDown Along X") {
-            spinDownAlongXHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "SpinUp+Down Along X") {
-            spinUpDownAlongXHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "SpinUp Along Y") {
-            spinUpAlongYHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "SpinDown Along Y") {
-            spinDownAlongYHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "SpinUp+Down Along Y") {
-            spinUpDownAlongYHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "SpinUp Along Z") {
-            spinUpAlongZHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "SpinDown Along Z") {
-            spinDownAlongZHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "SpinUp+Down Along Z") {
-            spinUpDownAlongZHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "Polarisation Along X") {
-            spinAlphaX = dynamic_cast<TGraph*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "Polarisation Along Y") {
-            spinAlphaY = dynamic_cast<TGraph*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "Polarisation Along Z") {
-            spinAlphaZ = dynamic_cast<TGraph*>(key->ReadObj());
-         } else {
-            continue;
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TH1F")) {
+         // If we found a Histogram object, check its name to see if it
+         // belongs to the requested state
+         string objectName = key->GetName();
+         vector<string> stringTokens = Algorithms::String::FactorString(objectName, ':');
+         if (stringTokens.size() == 2) {
+            if (stringTokens[0] == stateName) {
+               if (stringTokens[1] == "SpinUp Along X") {
+                  spinUpAlongXHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "SpinDown Along X") {
+                  spinDownAlongXHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "SpinUp+Down Along X") {
+                  spinUpDownAlongXHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "SpinUp Along Y") {
+                  spinUpAlongYHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "SpinDown Along Y") {
+                  spinDownAlongYHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "SpinUp+Down Along Y") {
+                  spinUpDownAlongYHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "SpinUp Along Z") {
+                  spinUpAlongZHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "SpinDown Along Z") {
+                  spinDownAlongZHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "SpinUp+Down Along Z") {
+                  spinUpDownAlongZHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "Polarisation Along X") {
+                  spinAlphaX = dynamic_cast<TGraph*>(key->ReadObj());
+               } else if (stringTokens[1] == "Polarisation Along Y") {
+                  spinAlphaY = dynamic_cast<TGraph*>(key->ReadObj());
+               } else if (stringTokens[1] == "Polarisation Along Z") {
+                  spinAlphaZ = dynamic_cast<TGraph*>(key->ReadObj());
+               } else {
+                  continue;
+               }
+            }
          }
-      }   
+      }
    }
-   
+   // -- Check whether we retrieved anything for the requested state
    if (spinUpAlongXHist == NULL ||
        spinDownAlongXHist == NULL ||
        spinUpDownAlongXHist == NULL ||
@@ -321,16 +322,11 @@ void DrawSpinPolarisation(TDirectory* const histDir)
        spinUpAlongZHist == NULL ||
        spinDownAlongZHist == NULL ||
        spinUpDownAlongZHist == NULL ||
-       spinAlphaZ == NULL) {
-      cout << "-------------------------------------------" << endl;
-      cout << "Error: Could not extract Spin Polarisation Histograms" << endl;
-      cout << "-------------------------------------------" << endl;
-      return;
+       spinAlphaZ == NULL) 
+   {
+      cerr << "One or more spin histograms are missing for: " << stateName << endl;
+      return false;
    }
-       
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd back into Histogram's dir
-   histDir->cd();
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Spin Precession Plots
    TCanvas *spinXcanvas = new TCanvas("SpinAlongX","Spin Polarisation Along X",60,0,1200,800);
@@ -365,56 +361,51 @@ void DrawSpinPolarisation(TDirectory* const histDir)
    spinUpDownAlongZHist->Draw();
    spinZcanvas->cd(4);
    spinAlphaZ->Draw("AP");
-   cout << "-------------------------------------------" << endl;
-   cout << "Successfully Fetched Spin Histograms" << endl;
-   cout << "-------------------------------------------" << endl;
-   return;
+   return true;
 }
 
-
 //_____________________________________________________________________________
-void DrawBounceCounters(TDirectory* const histDir)
+bool AttemptDrawingBounces(TFile& file, const string& stateName)
 {
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd into Histogram's dir
-   histDir->cd();
-   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Attempt to navigate to Histogram Directory
+   TDirectory* histDir = Analysis::DataFile::NavigateToHistDir(file);
    // -- Bounces
    TH1F* bounceHist = NULL;
    TH1F* specHist = NULL;
    TH1F* diffHist = NULL;
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over all histograms in folder
+   // -- Loop over all objects in histogram folder
    TKey *key;
    TIter iter(histDir->GetListOfKeys());
    while ((key = dynamic_cast<TKey*>(iter.Next()))) {
-      string histName = key->GetName();
-      size_t position = histName.find_last_of(":");
-      if (position != string::npos) {
-         if (histName.substr(position+1) == "Bounces") {
-            bounceHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "Specular") {
-            specHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "Diffuse") {
-            diffHist = dynamic_cast<TH1F*>(key->ReadObj());
-         } else {
-            continue;
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TH1F")) {
+         // If we found a Histogram object, check its name to see if it
+         // belongs to the requested state
+         string objectName = key->GetName();
+         vector<string> stringTokens = Algorithms::String::FactorString(objectName, ':');
+         if (stringTokens.size() == 2) {
+            if (stringTokens[0] == stateName) {
+               if (stringTokens[1] == "Bounces") {
+                  bounceHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "Specular") {
+                  specHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else if (stringTokens[1] == "Diffuse") {
+                  diffHist = dynamic_cast<TH1F*>(key->ReadObj());
+               } else {
+                  continue;
+               }
+            }
          }
-      }   
+      }
    }
-   
    if (bounceHist == NULL || specHist == NULL || diffHist == NULL) {
-      cout << "-------------------------------------------" << endl;
-      cout << "Error: Could not extract Bounce Histograms" << endl;
-      cout << "-------------------------------------------" << endl;
-      return;
+      cerr << "No Bounce Histograms found for state: " << stateName << endl;
+      return false;
    }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd back into Histogram's dir
-   histDir->cd();
-   //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounce Counters
-   TCanvas *bouncecanvas = new TCanvas("Bounces","Bounce counters",60,0,1200,800);
+   TCanvas *bouncecanvas = new TCanvas("Bounces","Bounce counters",60,0,800,600);
    bouncecanvas->Divide(3,1);
    bouncecanvas->cd(1);
    bounceHist->Draw();
@@ -425,60 +416,61 @@ void DrawBounceCounters(TDirectory* const histDir)
    cout << "-------------------------------------------" << endl;
    cout << "Successfully Fetched Bounce Histograms" << endl;
    cout << "-------------------------------------------" << endl;
-   return;
+   return true;
 }
 
 //_____________________________________________________________________________
-void DrawField(TDirectory* const histDir)
+bool AttemptDrawingFields(TFile& file, const string& stateName)
 {
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd into Histogram's dir
-   histDir->cd();
+   // -- Attempt to navigate to Histogram Directory
+   TDirectory* histDir = Analysis::DataFile::NavigateToHistDir(file);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- B Field
    TH2F* bxHist = NULL;
    TH2F* byHist = NULL;
    TH2F* bzHist = NULL;
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over all histograms in folder
+   // -- Loop over all objects in histogram folder
    TKey *key;
    TIter iter(histDir->GetListOfKeys());
    while ((key = dynamic_cast<TKey*>(iter.Next()))) {
-      string histName = key->GetName();
-      size_t position = histName.find_last_of(":");
-      if (position != string::npos) {
-         if (histName.substr(position+1) == "Field Bx") {
-            bxHist = dynamic_cast<TH2F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "Field By") {
-            byHist = dynamic_cast<TH2F*>(key->ReadObj());
-         } else if (histName.substr(position+1) == "Field Bz") {
-            bzHist = dynamic_cast<TH2F*>(key->ReadObj());
-         } else {
-            continue;
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TH1F")) {
+         // If we found a Histogram object, check its name to see if it
+         // belongs to the requested state
+         string objectName = key->GetName();
+         vector<string> stringTokens = Algorithms::String::FactorString(objectName, ':');
+         if (stringTokens.size() == 2) {
+            if (stringTokens[0] == stateName) {
+               if (stringTokens[1] == "Field Bx") {
+                  bxHist = dynamic_cast<TH2F*>(key->ReadObj());
+               } else if (stringTokens[1] == "Field By") {
+                  byHist = dynamic_cast<TH2F*>(key->ReadObj());
+               } else if (stringTokens[1] == "Field Bz") {
+                  bzHist = dynamic_cast<TH2F*>(key->ReadObj());
+               } else {
+                  continue;
+               }
+            }
          }
-      }   
+      }
    }
    if (bxHist == NULL || byHist == NULL || bzHist == NULL) {
-      cout << "-------------------------------------------" << endl;
-      cout << "Error: Could not extract Field Histograms" << endl;
-      cout << "-------------------------------------------" << endl;
-      return;
+      cerr << "No Field Histograms found for state: " << stateName << endl;
+      return false;
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- cd back into Histogram's dir
    histDir->cd();
-   TCanvas *bxcanvas = new TCanvas("BxField","Bx (T)",60,0,1200,800);
-   bxcanvas->cd();
+   TCanvas *canvas = new TCanvas("BxField","Bx (T)",60,0,1000,800);
+   canvas->Divide(3,1);
+   canvas->cd(1);
    bxHist->Draw("COLZ");
-   TCanvas *bycanvas = new TCanvas("ByField","By (T)",60,0,1200,800);
-   bycanvas->cd();
+   canvas->cd(2);
    byHist->Draw("COLZ");
-   TCanvas *bzcanvas = new TCanvas("BzFields","Bz (T)",60,0,1200,800);
-   bzcanvas->cd();
+   canvas->cd(3);
    bzHist->Draw("COLZ");
-   cout << "-------------------------------------------" << endl;
-   cout << "Successfully Fetched Field Histograms" << endl;
-   cout << "-------------------------------------------" << endl;
-   return;
+   return true;
 }
-*/
