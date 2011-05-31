@@ -185,7 +185,6 @@ Bool_t Run::Start()
          #endif
          // Add this particle to special tree for errorneous particles
          particle->SaveState(this);
-         delete particle;
          continue;
       }
       ///////////////////////////////////////////////////////////////////////
