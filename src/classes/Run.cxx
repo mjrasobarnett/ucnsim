@@ -178,11 +178,7 @@ Bool_t Run::Start()
          }
       } catch (...) {
          // Serious tracking errors (eg: particle cannot be located correctly) will be thrown
-         #ifdef VERBOSE_MODE
-            cout << "-------------------------------------------" << endl;
-            Error("Start","Exception thrown by particle %i. Propagation Failed.", index);
-            cout << "-------------------------------------------" << endl << endl;
-         #endif
+         Error("Start","Particle %i has failed to propagate properly.", index);
          // Add this particle to special tree for errorneous particles
          particle->SaveState(this);
          continue;
