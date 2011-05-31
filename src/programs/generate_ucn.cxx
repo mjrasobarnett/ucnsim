@@ -269,11 +269,9 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    canvas1->cd(8);
    initialVHist->Draw();
    initialVHist->Write(initialVHist->GetName(),TObject::kOverwrite);
-   // -- Close file
-   file->Close();
    
    
-   TCanvas* canvas2 = new TCanvas("InitialPositions","Positions",60,0,100,100);
+   TCanvas* canvas2 = new TCanvas("initial:Positions","Positions",60,0,100,100);
    canvas2->cd();
    string geomFileName = initialConfig.GeomVisFileName();
    if (geomFileName.empty()) geomFileName = initialConfig.GeomFileName();
@@ -304,9 +302,16 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
    glViewer->UpdateScene();
    glViewer = 0;
-   
    cout << "Successfully generated " << particles << " particles." << endl;
    cout << "-------------------------------------------" << endl;	
+   // -- Write the initial positions out to file
+   Analysis::DataFile::NavigateToHistDir(*file);
+   positions->Write("initial:Positions",TObject::kOverwrite);
+   // -- Write the geometry also to file
+   file->cd();
+   geoManager->Write("Geometry",TObject::kOverwrite);
+   // -- Close file
+   file->Close();
    return kTRUE;
 }
 
