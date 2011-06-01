@@ -128,7 +128,7 @@ int main(int argc, char **argv)
       
       // -- Check whether a list of states was given. If not, exit with a warning
       if (variables.count("state")) {
-        cout << "There are " << variables["states"].as< vector<string> >().size()
+        cout << "There are " << variables["state"].as< vector<string> >().size()
              << " included States which are: " 
              << variables["state"].as< vector<string> >() << "\n";
       } else {
