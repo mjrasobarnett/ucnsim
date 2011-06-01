@@ -116,6 +116,7 @@
 #pragma link C++ function Analysis::DataFile::NavigateToHistDir(TFile&);
 #pragma link C++ function Analysis::DataFile::CopyDirectory(TDirectory* const, TDirectory* const);
 #pragma link C++ function Analysis::DataFile::CopyDirectoryContents(TDirectory* const, TDirectory* const);
+#pragma link C++ function Analysis::DataFile::GetParticleBranch(const std::string&, TTree*);
 
 #pragma link C++ namespace Analysis::FitFunctions;
 

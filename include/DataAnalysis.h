@@ -12,6 +12,7 @@ class TGeoManager;
 class TGraph;
 class TTree;
 class TCanvas;
+class TBranch;
 
 class RunConfig;
 class Track;
@@ -46,7 +47,8 @@ namespace Analysis {
       void CopyDirectory(TDirectory* const sourceDir, TDirectory* const outputDir);
       //_____________________________________________________________________________
       void CopyDirectoryContents(TDirectory* const sourceDir, TDirectory* const outputDir);
-      
+      //_____________________________________________________________________________
+      TBranch* GetParticleBranch(const std::string& state, TTree* dataTree);
    }
    
    //_____________________________________________________________________________

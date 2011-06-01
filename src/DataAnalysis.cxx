@@ -338,6 +338,22 @@ void DataFile::CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * 
 }
 
 //_____________________________________________________________________________
+TBranch* DataFile::GetParticleBranch(const string& state, TTree* dataTree)
+{
+   TBranch* particleBranch = NULL;
+   if (state == States::initial) {
+      particleBranch = dataTree->GetBranch(States::initial.c_str());
+   } else {
+      particleBranch = dataTree->GetBranch(States::final.c_str());
+   }
+   if (particleBranch == NULL) {
+      cerr << "Error - Could not find correct branch in input tree" << endl;
+      throw runtime_error("Failed to find branch in input tree");
+   }
+   return particleBranch;
+}
+
+//_____________________________________________________________________________
 double FitFunctions::SpinPrecession(double *x, double *par)
 {
    double t = x[0];
@@ -416,11 +432,7 @@ void FinalStates::PlotFinalState(const std::string state, const std::vector<int>
    //////////////////////////////////////////////////////////////////////////////////////
    // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
    Particle* particle = new Particle();
-   TBranch* particleBranch = dataTree->GetBranch(States::final.c_str());
-   if (particleBranch == NULL) {
-      cerr << "Error - Could not find branch: " << States::final << " in input tree" << endl;
-      throw runtime_error("Failed to find particle branch in input tree");
-   }
+   TBranch* particleBranch = DataFile::GetParticleBranch(state, dataTree);
    dataTree->SetBranchAddress(particleBranch->GetName(), &particle);
    // Loop over all selected particles 
    BOOST_FOREACH(int particleIndex, particleIndexes) {
@@ -489,11 +501,7 @@ void FinalStates::DrawFinalPositions(const std::string state, const std::vector<
    //////////////////////////////////////////////////////////////////////////////////////
    // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
    Particle* particle = new Particle();
-   TBranch* particleBranch = dataTree->GetBranch(States::final.c_str());
-   if (particleBranch == NULL) {
-      cerr << "Error - Could not find branch: " << States::final << " in input tree" << endl;
-      throw runtime_error("Failed to find particle branch in input tree");
-   }
+   TBranch* particleBranch = DataFile::GetParticleBranch(state, dataTree);
    dataTree->SetBranchAddress(particleBranch->GetName(), &particle);
    // Loop over all selected particles 
    BOOST_FOREACH(int particleIndex, particleIndexes) {
