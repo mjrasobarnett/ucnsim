@@ -54,15 +54,6 @@ bool AttemptDrawingBounces(TFile& file, const string& stateName);
 bool AttemptDrawingFields(TFile& file, const string& stateName);
 
 //_____________________________________________________________________________
-// A helper function to simplify the printing of command line options.
-template<class T>
-ostream& operator<<(ostream& os, const vector<T>& v)
-{
-    copy(v.begin(), v.end(), ostream_iterator<T>(cout, " ")); 
-    return os;
-}
-
-//_____________________________________________________________________________
 int main(int argc, char **argv)
 {
    try {
