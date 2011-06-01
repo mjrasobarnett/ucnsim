@@ -22,12 +22,15 @@
 #include "TGLViewer.h"
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
+#include "TTree.h"
+#include "TBranch.h"
 
 #include "Particle.h"
 #include "ConfigFile.h"
 #include "InitialConfig.h"
 #include "RunConfig.h"
 #include "Track.h"
+#include "ParticleManifest.h"
 
 #include "Constants.h"
 #include "Units.h"
@@ -35,59 +38,105 @@
 #include "Algorithms.h"
 #include "DataAnalysis.h"
 
+#include <boost/algorithm/string.hpp>
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
 using namespace std;
 
+bool SelectTrackToDraw(const string& filename, const string& state);
 void DrawTrack(Track* track, TPolyLine3D* line, TPolyMarker3D* startMarker, TPolyMarker3D* endMarker);
+
+//_____________________________________________________________________________
+// A helper function to simplify the printing of command line options.
+template<class T>
+ostream& operator<<(ostream& os, const vector<T>& v)
+{
+    copy(v.begin(), v.end(), ostream_iterator<T>(cout, "\n")); 
+    return os;
+}
 
 //_____________________________________________________________________________
 Int_t main(Int_t argc,Char_t **argv)
 {
-/*   ///////////////////////////////////////////////////////////////////////////////////////
-   // Draw tracks needs 2 arguments - a data file, and the name of the particle
-   // 'state' you wish to pick a particle from.
-   if (argc < 3) {
-      cerr << "Usage:" << endl;
-      cerr << "plot_data <data.root> <statename>" << endl;
-      return EXIT_FAILURE;
+   try {
+      // -- Create a description for all command-line options
+      po::options_description description("Allowed options");
+      description.add_options()
+        ("help", "produce help message")
+        ("file", po::value<string>(), "filename of the datafile to be examined")
+        ("state", po::value<string>(), "state to be searched for in histogram folder");
+      ;
+      
+      // -- Create a description for all command-line options
+      po::variables_map variables;
+      po::store(po::parse_command_line(argc, argv, description), variables);
+      po::notify(variables);
+      
+      // -- If user requests help, print the options description
+      if (variables.count("help")) {
+         cout << description << "\n";
+         return 1;
+      }
+      
+      // -- Check whether a datafile was given. If not, exit with a warning
+      if (variables.count("file")) {
+         cout << "DataFile name was set to: "
+              << variables["file"].as<string>() << "\n";
+      } else {
+         cout << "DataFile name was not set.\n";
+         return EXIT_FAILURE;
+      }
+      
+      // -- Check whether a list of states was given. If not, exit with a warning
+      if (variables.count("state")) {
+         cout << "State to be searched for is: " 
+              << variables["state"].as<string>() << "\n";
+      } else {
+         cout << "No states have been selected.\n";
+         return EXIT_FAILURE;
+      }
+      // -- Call draw_plots with filename and statename as args
+      SelectTrackToDraw(variables["file"].as<string>(), variables["state"].as<string>());
    }
+   catch(exception& e) {
+      cerr << "error: " << e.what() << "\n";
+      return 1;
+   }
+   catch(...) {
+      cerr << "Exception of unknown type!\n";
+   }
+   return EXIT_SUCCESS;
+}
+
+//_____________________________________________________________________________
+bool SelectTrackToDraw(const string& filename, const string& state)
+{   
+   // Start an interactive root session so we can view the plots as they are made
+   TRint *theApp = new TRint("FittingApp", NULL, NULL);
    // Read in Filename and check that it is a .root file
-   string filename = argv[1];
-   if (Analysis::DataFile::IsRootFile(filename) == false) {
-      cerr << "Error: filename, " << filename << " does not have a .root extension" << endl;
-      return EXIT_FAILURE;
-   }
+   if (Analysis::DataFile::IsRootFile(filename) == false) {return false;}
    // Read in list of states to be included in histogram and check that they are
    // valid state names
-   vector<string> statenames;
-   statenames.push_back(argv[2]);
-   if (Analysis::DataFile::IsValidStateName(statenames) == false) {
-      cerr << "Error: statenames supplied are not valid" << endl;
-      return EXIT_FAILURE;
-   }
-   cout << "-------------------------------------------" << endl;
-   cout << "Loading Data File: " << filename << endl;
-   cout << endl;
-   // Start an interactive root session so we can view the plots as they are made
-   TRint *theApp = new TRint("FittingApp", &argc, argv);
+   if (Analysis::DataFile::IsValidStateName(state) == false) {return false;}
+   string stateName = boost::to_lower_copy(state);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Open Data File
-   //////////////////////////////////////////////////////////////////////////////////////
    TFile* file = Analysis::DataFile::OpenRootFile(filename,"UPDATE");
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
-   ///////////////////////////////////////////////////////////////////////////////////////
    const RunConfig& runConfig = Analysis::DataFile::LoadRunConfig(*file);
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Load the Geometry
    TGeoManager& geoManager = Analysis::DataFile::LoadGeometry(*file);
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Navigate to folder for selected state
-   vector<TDirectory*> stateDirs;
-   if (Analysis::DataFile::FetchStateDirectories(*file, statenames, stateDirs) == false) {
-      return EXIT_FAILURE;
-   }
-   TDirectory* const stateDir = stateDirs[0];
+   // Load the Particle Manifest
+   const ParticleManifest& manifest = Analysis::DataFile::LoadParticleManifest(*file);
+   manifest.Print();
+   vector<int> particleIndexes = manifest.GetListing(stateName).GetTreeIndexes();
    //////////////////////////////////////////////////////////////////////////////////////
+   // Load the Data Tree
+   TTree* dataTree = Analysis::DataFile::LoadParticleDataTree(*file);
    // Ask User to choose which Particle to draw
    cout << "Select which particle's track to draw: " << endl;
    cout << "Options: 'l' -- List all particles in directory" << endl;
@@ -97,7 +146,7 @@ Int_t main(Int_t argc,Char_t **argv)
    
    string userInput;
    
-   Track* track = NULL;
+   Track* track = new Track();
    TCanvas* canvas = NULL;
    TPolyLine3D* line = NULL;
    TPointSet3D* endMarker = NULL;
@@ -114,37 +163,27 @@ Int_t main(Int_t argc,Char_t **argv)
       if (line) delete line; line = NULL;
       
       if (userInput == "q") {break;}
-      if (userInput == "l") {stateDir->ls(); continue;}
-      // Loop over particle folders in stateDir for a folder that matches the provided ID
-      TKey *folderKey;
-      TIter folderIter(stateDir->GetListOfKeys());
-      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         istringstream s_ID(folderKey->GetName());
-         istringstream s_User(userInput);
-         int p_ID = 0;
-         int user = 0;
-         s_ID >> p_ID;
-         s_User >> user;
-         if (p_ID == user) {
-            // Loop over all objects in particle dir
-            stateDir->cd(folderKey->GetName());
-            TDirectory* particleDir = gDirectory;
-            TKey *objKey;
-            TIter objIter(particleDir->GetListOfKeys());
-            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
-               // For Each object in the particle's directory, check its class name and what it
-               // inherits from to determine what to do.
-               const char *classname = objKey->GetClassName();
-               TClass *cl = gROOT->GetClass(classname);
-               if (!cl) continue;
-               if (cl->InheritsFrom("Track")) {
-                  track = dynamic_cast<Track*>(objKey->ReadObj());
-                  break;
-               }
-            }
-            break;
-         }
+      if (userInput == "l") {
+         cout << "Available particle's: " << endl;
+         cout << particleIndexes;
+         continue;
       }
+      
+      int trackIndex = -1;
+      if (Algorithms::String::ConvertToInt(userInput, trackIndex) == false) return false;
+      
+      //////////////////////////////////////////////////////////////////////////////////////
+      // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+      TBranch* trackBranch = dataTree->GetBranch(track->ClassName());
+      if (trackBranch == NULL) {
+         cerr << "Error - Could not find branch: " << track->ClassName() << " in input tree" << endl;
+         throw runtime_error("Failed to find track branch in data tree");
+      }
+      dataTree->SetBranchAddress(trackBranch->GetName(), &track);
+      // Extract Final Particle State Data
+      int bytesCopied = trackBranch->GetEntry(trackIndex);
+      if (bytesCopied <= 0) return false;
+      
       // Check if we found a track for the request index
       if (track == NULL) {
          cout << endl;
@@ -187,9 +226,9 @@ Int_t main(Int_t argc,Char_t **argv)
 
    file->Close();
    cout << "Finished" << endl;
-*/   return 0;
+   return 0;
 }
-/*
+
 //_____________________________________________________________________________
 void DrawTrack(Track* track, TPolyLine3D* line, TPolyMarker3D* startMarker, TPolyMarker3D* endMarker)
 {
@@ -264,4 +303,4 @@ void DrawTrack(Track* track, TPolyLine3D* line, TPolyMarker3D* startMarker, TPol
    glViewer->UpdateScene();
    return;
 }
-*/
+
