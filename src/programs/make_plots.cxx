@@ -64,19 +64,22 @@ bool make_plots(string filename, vector<string> statenames) {
    double cameraCentre[3] = {0.0,0.0,0.0};
    Analysis::FinalStates::DrawFinalPositions(state, particleIndexes, dataTree, geoManager, cameraCentre);
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Polarisation
-   if (runConfig.ObserveSpin() == kTRUE) {
-      Analysis::Polarisation::PlotSpinPolarisation(state, particleIndexes, dataTree, runConfig);
-   }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Field Measured
-   if (runConfig.ObserveField() == kTRUE) {
-      Analysis::Polarisation::PlotField(state, particleIndexes, dataTree, runConfig);
-   }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Bounce Data
-   if (runConfig.ObserveBounces() == kTRUE) {
-      Analysis::Bounces::PlotBounceCounters(state, particleIndexes, dataTree);
+   if (state != States::initial) {
+      //////////////////////////////////////////////////////////////////////////////////////
+      // -- Polarisation
+      if (runConfig.ObserveSpin() == kTRUE) {
+         Analysis::Polarisation::PlotSpinPolarisation(state, particleIndexes, dataTree, runConfig);
+      }
+      //////////////////////////////////////////////////////////////////////////////////////
+      // -- Field Measured
+      if (runConfig.ObserveField() == kTRUE) {
+         Analysis::Polarisation::PlotField(state, particleIndexes, dataTree, runConfig);
+      }
+      //////////////////////////////////////////////////////////////////////////////////////
+      // -- Bounce Data
+      if (runConfig.ObserveBounces() == kTRUE) {
+         Analysis::Bounces::PlotBounceCounters(state, particleIndexes, dataTree);
+      }
    }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Clean up and Finish
