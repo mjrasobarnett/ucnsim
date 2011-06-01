@@ -102,8 +102,8 @@ int main(int argc, char **argv)
       po::options_description description("Allowed options");
       description.add_options()
         ("help", "produce help message")
-        ("datafile", po::value<string>(), "filename of the datafile to be plotted")
-        ("states", po::value< vector<string> >()->multitoken(), "list of states to be included in the plots");
+        ("file", po::value<string>(), "filename of the datafile to be plotted")
+        ("state", po::value< vector<string> >()->multitoken(), "list of states to be included in the plots");
       ;
       
       // -- Create a description for all command-line options
@@ -118,26 +118,26 @@ int main(int argc, char **argv)
       }
       
       // -- Check whether a datafile was given. If not, exit with a warning
-      if (variables.count("datafile")) {
+      if (variables.count("file")) {
         cout << "DataFile name was set to: "
-             << variables["datafile"].as<string>() << "\n";
+             << variables["file"].as<string>() << "\n";
       } else {
         cout << "DataFile name was not set.\n";
         return EXIT_FAILURE;
       }
       
       // -- Check whether a list of states was given. If not, exit with a warning
-      if (variables.count("states")) {
+      if (variables.count("state")) {
         cout << "There are " << variables["states"].as< vector<string> >().size()
              << " included States which are: " 
-             << variables["states"].as< vector<string> >() << "\n";
+             << variables["state"].as< vector<string> >() << "\n";
       } else {
        cout << "No states have been selected.\n";
        return EXIT_FAILURE;
       }
       
       // -- Call make_plots with the datafile and list of states as arguments
-      make_plots(variables["datafile"].as<string>(), variables["states"].as< vector<string> >());
+      make_plots(variables["file"].as<string>(), variables["state"].as< vector<string> >());
    }
    catch(exception& e) {
        cerr << "error: " << e.what() << "\n";
