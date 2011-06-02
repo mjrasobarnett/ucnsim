@@ -34,8 +34,7 @@ public:
    void           AddPoint(const Point& point);
    const Point&   GetPoint(unsigned int i) const;
    unsigned int   TotalPoints() const {return fPoints.size();}
-   
-   Track GetTrackSegment(const Double_t startTime, const Double_t endTime) const;
+   bool           Truncate(const Double_t startTime, const Double_t endTime);
    
    std::vector<Double_t> OutputPointsArray();
    

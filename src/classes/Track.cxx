@@ -92,7 +92,7 @@ const Point& Track::GetPoint(unsigned int i) const
 }
 
 //______________________________________________________________________________
-Track Track::GetTrackSegment(const Double_t startTime, const Double_t endTime) const
+bool Track::Truncate(const Double_t startTime, const Double_t endTime)
 {
    // Return a new Track object that only contains points whose times fall between the startTime
    // and the endTime
@@ -100,18 +100,26 @@ Track Track::GetTrackSegment(const Double_t startTime, const Double_t endTime) c
       cout << "Error - requested start/end times are outside of track's scope" << endl;
       cout << "Track Start: " << fPoints.front()->T() << "\t" << "Requested start: " << startTime << endl;
       cout << "Track End: " << fPoints.back()->T() << "\t" << "Requested end: " << endTime << endl;
-      return *this;
+      return false;
    }
-   // Create new track segment
-   Track trackSegment;
-   for (int pointNum = 0; pointNum < fPoints.size(); pointNum++) {
-      const Point& point = this->GetPoint(pointNum);
-      if (point.T() >= startTime && point.T() <= endTime) {
-         trackSegment.AddPoint(point);
+   if (startTime > endTime) {
+      cout << "Error - startTime is greater than endTime" << endl;
+      return false;
+   }
+   // Delete all points before startTime and all points after endTime
+   vector<Point*>::iterator pointIter, startIter=fPoints.begin(), endIter= fPoints.end();
+   for (pointIter = fPoints.begin(); pointIter != fPoints.end(); pointIter++) {
+      if (startIter == fPoints.begin() && (*pointIter)->T() > startTime) {
+         startIter = pointIter;
+      }
+      if (endIter == fPoints.end() && (*pointIter)->T() > endTime) {
+         endIter = pointIter;
       }
    }
-   cout << trackSegment.TotalPoints() << endl;
-   return trackSegment;
+   fPoints.erase(fPoints.begin(), startIter);
+   fPoints.erase(endIter, fPoints.end());
+   cout << "Points in Track segment: " << this->TotalPoints() << endl;
+   return true;
 }
 
 //______________________________________________________________________________
