@@ -140,7 +140,7 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    if (CopySelectedParticles(selectedIndexes, inputBranch, outputBranch) == false) {return false;}
    // -- Write Output Tree to file
    fOutputFile->cd();
-   fOutputTree->Write();
+   fOutputTree->Write(fOutputTree->GetName(),TObject::kOverwrite);
    // -- Clean up
    inputFile->Close();
    cout << "-------------------------------------------" << endl;
@@ -503,7 +503,7 @@ void Data::SaveGeometry(TGeoManager* const geoManager)
 void Data::ExportData()
 {
    fOutputFile->cd();
-   fOutputTree->Write();
-   fOutputManifest->Write();
+   fOutputTree->Write(fOutputTree->GetName(), TObject::kOverwrite);
+   fOutputManifest->Write(fOutputManifest->GetName(), TObject::kOverwrite);
 }
 
