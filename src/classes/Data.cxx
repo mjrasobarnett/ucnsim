@@ -264,6 +264,7 @@ bool Data::CopySelectedParticles(const std::vector<int>& selectedIndexes, TBranc
    ///////////////////////////////////////////////////////////////////////
    // -- Iterate over the chosen particle IDs and copy these particles to the 'Initial'
    // -- branch of the Output file
+   if (selectedIndexes.empty()) return false;
    vector<int>::const_iterator indexIter;
    for (indexIter = selectedIndexes.begin(); indexIter != selectedIndexes.end(); indexIter++) {
       int index = indexIter - selectedIndexes.begin(); 
