@@ -233,7 +233,7 @@ bool Data::CheckSelectedIndexList(vector<int>& selectedIndexes, vector<int>& ava
    // intersection elements 
    selectedIndexes.erase(range, selectedIndexes.end());
    if (selectedIndexes.empty()) {
-      Error("CheckSelectedParticleIDs","None of selected Particle IDs are available for current state");
+      Error("CheckSelectedIndexList","None of selected Particle IDs are available for current state");
       return false;
    }
    // Printing these elements to stdout
