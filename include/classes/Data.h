@@ -54,7 +54,8 @@ public:
    std::vector<int>     GetSelectedParticleIndexes(const ParticleManifest& manifest, const RunConfig& runConfig) const;
    
    // Add a Particle
-   Bool_t               SaveParticle(Particle* particle, const std::string& state);
+   Bool_t               SaveInitialParticle(Particle* particle);
+   Bool_t               SaveFinalParticle(Particle* particle, const std::string& state);
    
    // Get a Particle
    Particle* const      RetrieveParticle(unsigned int index);

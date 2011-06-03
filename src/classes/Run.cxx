@@ -174,6 +174,8 @@ Bool_t Run::Start()
          // Particle is 'restored' -> seed must be restored too
          gRandom->SetSeed(particle->GetRandomSeed());
       }
+      // Save Particle's initial state before propagating
+      fData.SaveInitialParticle(particle);
       ///////////////////////////////////////////////////////////////////////
       // Attempt to Propagate track
       try {

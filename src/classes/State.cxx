@@ -187,7 +187,7 @@ Propagating::~Propagating()
 Bool_t Propagating::SaveState(Run* run, Particle* particle)
 {
    // Register in Run what final state we are
-   run->GetData().SaveParticle(particle, States::propagating);
+   run->GetData().SaveFinalParticle(particle, States::propagating);
    return kTRUE;
 }
 
@@ -1130,7 +1130,7 @@ Decayed::~Decayed()
 Bool_t Decayed::SaveState(Run* run, Particle* particle)
 {
    // Register in Run what final state we are
-   run->GetData().SaveParticle(particle, States::decayed);
+   run->GetData().SaveFinalParticle(particle, States::decayed);
    return kTRUE;
 }
 
@@ -1181,7 +1181,7 @@ Absorbed::~Absorbed()
 Bool_t Absorbed::SaveState(Run* run, Particle* particle)
 {
    // Register in Run what final state we are
-   run->GetData().SaveParticle(particle, States::absorbed);
+   run->GetData().SaveFinalParticle(particle, States::absorbed);
    return kTRUE;
 }
 
@@ -1231,7 +1231,7 @@ Detected::~Detected()
 Bool_t Detected::SaveState(Run* run, Particle* particle)
 {
    // Register in Run what final state we are
-   run->GetData().SaveParticle(particle, States::detected);
+   run->GetData().SaveFinalParticle(particle, States::detected);
    return kTRUE;
 }
 
@@ -1281,7 +1281,7 @@ Lost::~Lost()
 Bool_t Lost::SaveState(Run* run, Particle* particle)
 {
    // Register in Run what final state we are
-   run->GetData().SaveParticle(particle, States::lost);
+   run->GetData().SaveFinalParticle(particle, States::lost);
    return kTRUE;
 }
 
@@ -1331,7 +1331,7 @@ Anomalous::~Anomalous()
 Bool_t Anomalous::SaveState(Run* run, Particle* particle)
 {
    // Register in Run what final state we are
-   run->GetData().SaveParticle(particle, States::anomalous);
+   run->GetData().SaveFinalParticle(particle, States::anomalous);
    return kTRUE;
 }
 

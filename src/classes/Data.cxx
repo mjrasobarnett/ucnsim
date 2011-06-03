@@ -380,7 +380,24 @@ void Data::RegisterObservers(Particle* particle)
 }
 
 //_____________________________________________________________________________
-Bool_t Data::SaveParticle(Particle* particle, const std::string& state)
+Bool_t Data::SaveInitialParticle(Particle* particle)
+{
+   // delete any observers first 
+   particle->DetachAll();
+   // Write Particle to output branch
+   TBranch* particleBranch = NULL;
+   particleBranch = fOutputTree->GetBranch(States::initial.c_str());
+   if (particleBranch == NULL) {particleBranch = fOutputTree->Branch(States::initial.c_str(), particle->ClassName(), &particle, 32000,0);}
+   fOutputTree->SetBranchAddress(particleBranch->GetName(), &particle);
+   particleBranch->Fill();
+   // Update Manifest
+   int branchIndex = particleBranch->GetEntries() - 1;
+   fOutputManifest->AddEntry(States::initial, particle->Id(), branchIndex);
+   return true;
+}
+
+//_____________________________________________________________________________
+Bool_t Data::SaveFinalParticle(Particle* particle, const std::string& state)
 {
    // Write observers to Tree and then delete them
    particle->WriteObserversToTree(fOutputTree);
