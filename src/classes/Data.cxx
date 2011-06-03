@@ -428,8 +428,6 @@ Particle* const Data::RetrieveParticle(unsigned int index)
       Error("RetrieveParticle","Requested index, %i, is larger than number of particles",index);
       return NULL;
    }
-   // Register Observers with Particle
-   this->RegisterObservers(fCurrentParticle);
    fInputBranch->GetEntry(index);
    return fCurrentParticle;
 }

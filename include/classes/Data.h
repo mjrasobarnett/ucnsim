@@ -33,7 +33,6 @@ private:
    
    void           PurgeObservers();
    void           AddObserver(std::string subject, Observer* observer);
-   void           RegisterObservers(Particle* particle);
    
       
    ParticleManifest* ReadInParticleManifest(TFile* file) const;
@@ -59,6 +58,7 @@ public:
    
    // Get a Particle
    Particle* const      RetrieveParticle(unsigned int index);
+   void                 RegisterObservers(Particle* particle);
    std::vector<int>     GetListOfParticlesToLoad(const RunConfig& runConfig);
    
    // Particle Counters

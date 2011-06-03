@@ -176,6 +176,8 @@ Bool_t Run::Start()
       }
       // Save Particle's initial state before propagating
       fData.SaveInitialParticle(particle);
+      // Register Observers with Particle
+      fData.RegisterObservers(particle);
       ///////////////////////////////////////////////////////////////////////
       // Attempt to Propagate track
       try {
