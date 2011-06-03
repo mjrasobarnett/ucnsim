@@ -225,6 +225,7 @@ Bool_t Run::Finish()
       return kFALSE;
    }
    // Write the Particle Tree to file
+   fData.SaveRunConfig(fRunConfig);
    // Write the Particle Tree to file
    fData.Save();
    // Write the geometry out to file

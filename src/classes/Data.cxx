@@ -517,3 +517,11 @@ void Data::Save()
    fOutputManifest->Write(fOutputManifest->GetName(), TObject::kOverwrite);
 }
 
+//_____________________________________________________________________________
+void Data::SaveRunConfig(const RunConfig& runConfig)
+{
+   // Write a copy of the RunConfig to File
+   fOutputFile->cd();
+   runConfig.Write("RunConfig",TObject::kOverwrite);
+   return;
+}

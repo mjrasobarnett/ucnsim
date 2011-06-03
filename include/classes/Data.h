@@ -72,9 +72,9 @@ public:
    Int_t                AnomalousParticles() const;
    Int_t                FinalParticles() const;
    
-   // Geometry
+   // Saving
    void                 SaveGeometry(TGeoManager* const geoManager);
-   
+   void                 SaveRunConfig(const RunConfig& runConfig);
    void                 Save();
    
    ClassDef(Data, 1) // UCN Data Object
