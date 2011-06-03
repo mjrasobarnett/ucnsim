@@ -33,8 +33,7 @@ private:
    
    void           PurgeObservers();
    void           AddObserver(std::string subject, Observer* observer);
-   
-      
+         
    ParticleManifest* ReadInParticleManifest(TFile* file) const;
    TTree*            ReadInParticleTree(TFile* file) const;
    
@@ -60,6 +59,7 @@ public:
    Particle* const      RetrieveParticle(unsigned int index);
    void                 RegisterObservers(Particle* particle);
    std::vector<int>     GetListOfParticlesToLoad(const RunConfig& runConfig);
+   
    
    // Particle Counters
    Bool_t               ChecksOut() const;
