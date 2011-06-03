@@ -49,11 +49,11 @@ class Particle : public TObject, public Observable
 {
 private:
    // -- Members
-   Int_t       fId;        // Particle's number (assigned when its created to help keep track of it)
+   unsigned int fId;        // Particle's number (assigned when its created to help keep track of it)
    Point       fPos;
    TVector3    fVel;
    
-   Int_t       fRandomSeed;         // The seed of TRandom when the particle began to propagate
+   unsigned int  fRandomSeed;  // The seed of TRandom when the particle began to propagate
    
    // State
    friend class State;
@@ -75,7 +75,7 @@ private:
 public:
    // -- Constructors
    Particle();
-   Particle(Int_t id, Point& position, TVector3& vel);
+   Particle(unsigned int id, Point& position, TVector3& vel);
    Particle(const Particle &part);
 
    // -- Destructor
@@ -84,7 +84,7 @@ public:
    // -- Methods
    //_____________________________________________________________________________
    // Get/Setters
-   Int_t                Id()     const {return fId;}
+   unsigned int         Id()     const {return fId;}
    Double_t             X()      const {return fPos.X();}
    Double_t             Y()      const {return fPos.Y();}
    Double_t             Z()      const {return fPos.Z();}
@@ -107,7 +107,7 @@ public:
    const Point&         GetPoint() const {return fPos;}
    const TVector3&      GetVelocity() const {return fVel;}
    
-   void                 SetId(const Int_t id) {fId = id;}
+   void                 SetId(const unsigned int id) {fId = id;}
    void                 SetPosition(const Double_t x, const Double_t y, const Double_t z, 
                                        const Double_t t);
    void                 SetVelocity(const Double_t vx, const Double_t vy, const Double_t vz);
@@ -117,7 +117,7 @@ public:
    // (Used for setting the random number generator to the exact point
    // when simulation was started)
    void                 SetRandomSeed(const Int_t seed)        {fRandomSeed = seed;}
-   Int_t                GetRandomSeed() const                  {return fRandomSeed;}
+   unsigned int         GetRandomSeed() const {return fRandomSeed;}
    
    // -- State
    const State*         GetState()     {return fState;}
