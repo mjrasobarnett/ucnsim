@@ -266,7 +266,7 @@ bool Data::CopySelectedParticles(const std::vector<int>& selectedIndexes, TBranc
       // Fetch the particle at the current index
       int bytesCopied = inputBranch->GetEntry(index);
       if (bytesCopied <= 0) {
-         Error("LoadParticles","Could not find particle %i in input branch",index);
+         Error("CopySelectedParticles","Could not find particle %i in input branch",index);
          return false;
       }
       // If we found the particle, copy to the output branch
