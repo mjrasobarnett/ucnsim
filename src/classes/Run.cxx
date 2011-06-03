@@ -140,17 +140,23 @@ Bool_t Run::Initialise()
 //_____________________________________________________________________________
 Bool_t Run::Start()
 {
-// -- Propagate the particles stored in the Run's Data, specified by configFile
+   // -- Propagate the particles stored in the Run's Data, specified by configFile
+   vector<int> selectedParticles = fData.GetListOfParticlesToLoad(fRunConfig);
+   size_t totalParticles = selectedParticles.size();
    cout << "-------------------------------------------" << endl;
    cout << "Starting Simulation of " << this->GetRunConfig().RunName() << endl;
-   cout << "Total Particles: " << this->GetData().InitialParticles() << endl;
+   cout << "Particles to propagate: " << totalParticles << endl;
+   cout << "RunTime(s): " << this->GetRunConfig().RunTime() << endl;
+   cout << "MaxStepTime(s): " << this->GetRunConfig().MaxStepTime() << endl;
+   cout << "WallLosses: " << this->GetRunConfig().WallLossesOn() << endl;
    cout << "-------------------------------------------" << endl;
-   Int_t totalParticles = this->GetData().InitialParticles();
    ///////////////////////////////////////////////////////////////////////
    // Loop over all particles stored in InitialParticles Tree
-   for (Int_t index = 0; index < totalParticles; index++) {
+   vector<int>::const_iterator indexIter;
+   for (indexIter = selectedParticles.begin(); indexIter != selectedParticles.end(); indexIter++) {
+      const int particleNumber = indexIter - selectedParticles.begin();
       // Get Particle from list
-      Particle* particle = this->GetData().RetrieveParticle(index);
+      Particle* particle = fData.RetrieveParticle(*indexIter);
       if (particle == NULL) {
          Error("Start","Failed to retrieve particle from Data");
          return false;
@@ -178,7 +184,7 @@ Bool_t Run::Start()
          }
       } catch (...) {
          // Serious tracking errors (eg: particle cannot be located correctly) will be thrown
-         Error("Start","Particle %i has failed to propagate properly.", index);
+         Error("Start","Particle %i has failed to propagate properly.", particleNumber);
          // Add this particle to special tree for errorneous particles
          particle->SaveState(this);
          continue;
@@ -188,7 +194,7 @@ Bool_t Run::Start()
       particle->SaveState(this);
       // Print Progress Bar to Screen
       #ifndef VERBOSE_MODE
-         Algorithms::ProgressBar::PrintProgress(index, totalParticles, 2);
+         Algorithms::ProgressBar::PrintProgress(particleNumber, totalParticles, 2);
       #endif
    }
    ///////////////////////////////////////////////////////////////////////

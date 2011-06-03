@@ -4,8 +4,10 @@
 #include "TNamed.h"
 #include <map>
 #include <string>
+#include <vector>
 #include "TFile.h"
 #include "TTree.h"
+#include "TBranch.h"
 #include "TDirectory.h"
 #include "Observer.h"
 #include "ParticleManifest.h"
@@ -18,8 +20,11 @@ class Particle;
 class Data : public TNamed {
 private:
    // -- Data Files
+   TFile *fInputFile;
    TFile *fOutputFile;
+   TTree *fInputTree;
    TTree *fOutputTree;
+   TBranch* fInputBranch;
    Particle* fCurrentParticle;
    ParticleManifest* fOutputManifest;
    
@@ -30,7 +35,6 @@ private:
    void           AddObserver(std::string subject, Observer* observer);
    void           RegisterObservers(Particle* particle);
    
-   Bool_t         LoadParticles(const RunConfig& runConfig);
       
    ParticleManifest* ReadInParticleManifest(TFile* file) const;
    TTree*            ReadInParticleTree(TFile* file) const;
@@ -54,6 +58,7 @@ public:
    
    // Get a Particle
    Particle* const      RetrieveParticle(unsigned int index);
+   std::vector<int>     GetListOfParticlesToLoad(const RunConfig& runConfig);
    
    // Particle Counters
    Bool_t               ChecksOut() const;

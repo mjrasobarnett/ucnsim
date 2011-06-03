@@ -35,8 +35,11 @@ Data::Data()
    // -- Default Constructor
    Info("Data","Default Constructor");
    // -- Create the Trees
+   fInputFile = NULL;
    fOutputFile = NULL;
+   fInputTree = NULL;
    fOutputTree = NULL;
+   fInputBranch = NULL;
    fCurrentParticle = NULL;
    fOutputManifest = NULL;
 }
@@ -44,8 +47,11 @@ Data::Data()
 //_____________________________________________________________________________
 Data::Data(const Data& other)
          :TNamed(other), 
+          fInputFile(other.fInputFile),
           fOutputFile(other.fOutputFile),
+          fInputTree(other.fInputTree),
           fOutputTree(other.fOutputTree),
+          fInputBranch(other.fInputBranch),
           fCurrentParticle(other.fCurrentParticle),
           fOutputManifest(other.fOutputManifest),
           fObservers(other.fObservers)
@@ -59,9 +65,12 @@ Data::~Data()
 {
    // -- Destructor
    Info("Data","Destructor");
+   fInputBranch = NULL; // Dont delete the branch, let the Tree clean it up
+   if (fInputTree) fInputTree->Delete(); fInputTree = NULL;
    if (fOutputTree) fOutputTree->Delete(); fOutputTree = NULL;
    if (fCurrentParticle) delete fCurrentParticle; fCurrentParticle = NULL;
    if (fOutputManifest) delete fOutputManifest; fOutputManifest = NULL;
+   if (fInputFile) fInputFile->Close(); delete fInputFile; fInputFile = NULL;
    if (fOutputFile) fOutputFile->Close(); delete fOutputFile; fOutputFile = NULL;
    PurgeObservers();
 }
@@ -72,6 +81,21 @@ Bool_t Data::Initialise(const RunConfig& runConfig)
    // -- Open the output file, load the initial particles from the input file
    // -- and write the particle tree, as well as a copy of the runconfig to the
    // -- output file
+   
+   ///////////////////////////////////////////////////////////////////////
+   // -- Open the file holding the initial particle tree
+   const string inputFileName = runConfig.InputFileName();
+   fInputFile = Analysis::DataFile::OpenRootFile(inputFileName, "READ");
+   if (fInputFile == NULL) {return false;}
+   ///////////////////////////////////////////////////////////////////////
+   // -- Read into memory the input file's Particle Tree, 
+   // -- and the input file's particle manifest
+   fInputTree = this->ReadInParticleTree(fInputFile);
+   // Check that we actually read both these objects into memory
+   if (fInputTree == NULL) {
+      Error("Initialise","Cannot find Particle Tree input file");
+      return false;
+   }
    // Open Output File
    const string outputFileName = runConfig.OutputFileName();
    fOutputFile = Analysis::DataFile::OpenRootFile(outputFileName, "RECREATE");
@@ -81,37 +105,14 @@ Bool_t Data::Initialise(const RunConfig& runConfig)
    fOutputManifest = new ParticleManifest();
    // Store pointer to the current 'in-memory' Particle
    fCurrentParticle = new Particle();
-   // Write a copy of the RunConfig to File
-   runConfig.Write("RunConfig",TObject::kOverwrite);
-   // Load initial particles into output file
-   if (this->LoadParticles(runConfig) == false) return false;
    return true;
 }
 
 //_____________________________________________________________________________
-Bool_t Data::LoadParticles(const RunConfig& runConfig)
+vector<int> Data::GetListOfParticlesToLoad(const RunConfig& runConfig)
 {
    // -- Locate particles designated as 'initial' in the run config. Copy all of these
    // -- particles into the output file ready for propagation.
-   cout << "-------------------------------------------" << endl;
-   cout << "Loading the Particles" << endl;
-   cout << "-------------------------------------------" << endl;
-   ///////////////////////////////////////////////////////////////////////
-   // -- Open the file holding the initial particle tree
-   const string inputFileName = runConfig.InputFileName();
-   TFile* inputFile = Analysis::DataFile::OpenRootFile(inputFileName, "READ");
-   if (inputFile == NULL) {return false;}
-   inputFile->cd();
-   ///////////////////////////////////////////////////////////////////////
-   // -- Read into memory the input file's Particle Tree, 
-   // -- and the input file's particle manifest
-   TTree* inputTree = ReadInParticleTree(inputFile);
-   ParticleManifest* manifest = ReadInParticleManifest(inputFile);
-   // Check that we actually read both these objects into memory
-   if (inputTree == NULL || manifest == NULL) {
-      Error("LoadParticles","Cannot find Particle Tree or Particle Manifest in input file");
-      return false;
-   }
    ///////////////////////////////////////////////////////////////////////
    // -- Check RunConfig for whether we are continuing to propagate particles from
    // -- their last recorded position, or whether we are restarting them from their
@@ -125,28 +126,22 @@ Bool_t Data::LoadParticles(const RunConfig& runConfig)
    }
    ///////////////////////////////////////////////////////////////////////
    // -- Set the input branch from where we will read the particles
-   TBranch* inputBranch = inputTree->GetBranch(selectedBranch.c_str());
-   if (inputBranch == NULL) {
-      Error("LoadParticles","Could not find branch %s in input tree",selectedBranch.c_str());
-      return false;
+   fInputBranch = fInputTree->GetBranch(selectedBranch.c_str());
+   if (fInputBranch == NULL) {
+      Error("GetListOfParticlesToLoad","Could not find branch %s in input tree",selectedBranch.c_str());
+      return vector<int>();
    }
-   inputTree->SetBranchAddress(inputBranch->GetName(), &fCurrentParticle);
-   ///////////////////////////////////////////////////////////////////////
-   // -- Set the output branch where we will write the initial particles to
-   TBranch* outputBranch = fOutputTree->Branch(States::initial.c_str(), fCurrentParticle->ClassName(), &fCurrentParticle,32000,0);
+   fInputTree->SetBranchAddress(fInputBranch->GetName(), &fCurrentParticle);
+   // -- Read in the input manifest from file
+   ParticleManifest* inputManifest = this->ReadInParticleManifest(fInputFile);
+   if (inputManifest == NULL) {
+      Error("Initialise","Cannot find Particle Manifest in input file");
+      return vector<int>();
+   }
    ///////////////////////////////////////////////////////////////////////
    // -- Copy all particles from the input branch into the current Run's tree
-   vector<int> selectedIndexes = this->GetSelectedParticleIndexes(*manifest, runConfig);
-   if (CopySelectedParticles(selectedIndexes, inputBranch, outputBranch) == false) {return false;}
-   // -- Write Output Tree to file
-   fOutputFile->cd();
-   fOutputTree->Write(fOutputTree->GetName(),TObject::kOverwrite);
-   // -- Clean up
-   inputFile->Close();
-   cout << "-------------------------------------------" << endl;
-   cout << this->InitialParticles() << " particles have been loaded succesfully" << endl;
-   cout << "-------------------------------------------" << endl;
-   return true;
+   vector<int> selectedIndexes = this->GetSelectedParticleIndexes(*inputManifest, runConfig);
+   return selectedIndexes;
 }
 
 //_____________________________________________________________________________
@@ -407,19 +402,18 @@ Bool_t Data::SaveParticle(Particle* particle, const std::string& state)
 //_____________________________________________________________________________
 Particle* const Data::RetrieveParticle(unsigned int index)
 {
-   TBranch* inputBranch = fOutputTree->GetBranch(States::initial.c_str());
-   if (inputBranch == NULL) {
-      Error("RetrieveParticle","Could not find branch %s in input tree",States::initial.c_str());
+   if (fInputBranch == NULL) {
+      Error("RetrieveParticle","No input branch set");
       return NULL;
    }
-   fOutputTree->SetBranchAddress(inputBranch->GetName(), &fCurrentParticle);
-   if (index >= inputBranch->GetEntries()) {
+   fInputTree->SetBranchAddress(fInputBranch->GetName(), &fCurrentParticle);
+   if (index >= fInputBranch->GetEntries()) {
       Error("RetrieveParticle","Requested index, %i, is larger than number of particles",index);
       return NULL;
    }
-   inputBranch->GetEntry(index);
    // Register Observers with Particle
    this->RegisterObservers(fCurrentParticle);
+   fInputBranch->GetEntry(index);
    return fCurrentParticle;
 }
 
