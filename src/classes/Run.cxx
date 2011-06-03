@@ -128,10 +128,6 @@ Bool_t Run::Initialise()
    ///////////////////////////////////////////////////////////////////////////////////////
    cout << "-------------------------------------------" << endl;
    cout << "Run successfully initialised" << endl;
-   cout << "Particles to propagate: " << this->GetData().InitialParticles() << endl;
-   cout << "RunTime(s): " << this->GetRunConfig().RunTime() << endl;
-   cout << "MaxStepTime(s): " << this->GetRunConfig().MaxStepTime() << endl;
-   cout << "WallLosses: " << this->GetRunConfig().WallLossesOn() << endl;
    cout << "-------------------------------------------" << endl;
    return kTRUE;
 }
