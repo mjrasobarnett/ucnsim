@@ -510,7 +510,7 @@ void Data::SaveGeometry(TGeoManager* const geoManager)
 }
 
 //_____________________________________________________________________________
-void Data::ExportData()
+void Data::Save()
 {
    fOutputFile->cd();
    fOutputTree->Write(fOutputTree->GetName(), TObject::kOverwrite);

@@ -225,7 +225,8 @@ Bool_t Run::Finish()
       return kFALSE;
    }
    // Write the Particle Tree to file
-   this->GetData().ExportData();
+   // Write the Particle Tree to file
+   fData.Save();
    // Write the geometry out to file
    fExperiment->ExportGeometry(*this);
    // Delete the experiment
