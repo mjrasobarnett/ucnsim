@@ -136,6 +136,9 @@ Bool_t Run::Initialise()
 //_____________________________________________________________________________
 Bool_t Run::Start()
 {
+   // -- Initialise the Random number generator to a TRandom3a
+   gRandom = new TRandom3a();
+   TRandom3a* rndGenerator = dynamic_cast<TRandom3a*>(gRandom);
    // -- Propagate the particles stored in the Run's Data, specified by configFile
    vector<int> selectedParticles = fData.GetListOfParticlesToLoad(fRunConfig);
    size_t totalParticles = selectedParticles.size();
@@ -159,19 +162,13 @@ Bool_t Run::Start()
       }
       // Reset the clock
       Clock::Instance()->Reset();
-      // Determine whether we are restoring to the start of a previously propagated track.
-      // If so we want to set the Random Generator's seed back to what it was at the start of this
-      // particle's propagation. This seed is stored (currently) in the particle itself. Otherwise
-      // just store the seed in the new particle.
-      if (particle->GetRandomSeed() == 0) {
-         // Particle is 'new', store current random seed in particle
-         particle->SetRandomSeed(gRandom->GetSeed());
-      } else {
-         // Particle is 'restored' -> seed must be restored too
-         gRandom->SetSeed(particle->GetRandomSeed());
-      }
-      // Save Particle's initial state before propagating
-      fData.SaveInitialParticle(particle);
+      // If the particle has stored a previous random generator state, load it
+      const TRandom3State* previousRndState = particle->GetRandomGeneratorState();
+      if (previousRndState != NULL) {rndGenerator->SetState(*previousRndState);}
+      // Hold a copy of the Random Generator's state before particle's propagation
+      TRandom3State initialRndState = rndGenerator->GetState();
+      // Hold a copy of Particle's initial state before propagating
+      Particle initialParticle(*particle);
       // Register Observers with Particle
       fData.RegisterObservers(particle);
       ///////////////////////////////////////////////////////////////////////
@@ -185,10 +182,12 @@ Bool_t Run::Start()
       } catch (...) {
          // Serious tracking errors (eg: particle cannot be located correctly) will be thrown
          Error("Start","Particle %i has failed to propagate properly.", particleNumber);
-         // Add this particle to special tree for errorneous particles
-         particle->SaveState(this);
-         continue;
+         // Store the initial random generator's state for this particle
+         initialParticle.SaveRandomGeneratorState(initialRndState);
       }
+      ///////////////////////////////////////////////////////////////////////
+      // Add Initial Particle State to data tree
+      fData.SaveInitialParticle(&initialParticle);
       ///////////////////////////////////////////////////////////////////////
       // Add Final Particle State to data tree
       particle->SaveState(this);

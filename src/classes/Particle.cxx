@@ -37,7 +37,7 @@ ClassImp(Particle)
 Particle::Particle()
              :TObject(), Observable(),
               fId(0), fPos(), fVel(),
-              fRandomSeed(0), fState(NULL), fSpin()
+              fState(NULL), fSpin(), fRndState(NULL)
 {
    // -- Default constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -50,7 +50,7 @@ Particle::Particle()
 Particle::Particle(unsigned int id, Point& pos, TVector3& vel)
              :TObject(), Observable(),
               fId(id), fPos(pos), fVel(vel),
-              fRandomSeed(0), fSpin()
+              fSpin(), fRndState(NULL)
 {
    // -- Constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -63,15 +63,17 @@ Particle::Particle(unsigned int id, Point& pos, TVector3& vel)
 Particle::Particle(const Particle& p)
              :TObject(p), Observable(p),
               fId(p.fId), fPos(p.fPos), fVel(p.fVel),
-              fRandomSeed(p.fRandomSeed), fState(p.fState), fSpin(p.fSpin)
+              fSpin(p.fSpin), fRndState(NULL)
 {
    // -- Copy Constructor
    #ifdef PRINT_CONSTRUCTORS
       Info("Particle","Copy Constructor");
    #endif
+      fState = new Propagating();
+      if (p.fRndState != NULL) fRndState = new TRandom3State(*(p.fRndState));
 }
 
-/*//_____________________________________________________________________________
+//_____________________________________________________________________________
 Particle& Particle::operator=(const Particle& other) 
 {
    //assignment operator
@@ -84,13 +86,14 @@ Particle& Particle::operator=(const Particle& other)
       fId = other.fId;
       fPos = other.fPos;
       fVel = other.fVel;
-      fRandomSeed = other.fRandomSeed;
-      fState = other.fState;
       fSpin = other.fSpin;
+      if (fState) delete fState;
+      fState = new Propagating();
+      if (fRndState) delete fRndState;
    }
    return *this;
 }
-*/
+
 //______________________________________________________________________________
 Particle::~Particle()
 { 
@@ -99,6 +102,7 @@ Particle::~Particle()
       Info("Particle","Destructor");
    #endif
    if (fState) delete fState;
+   if (fRndState) delete fRndState;
 }
 
 //______________________________________________________________________________
@@ -545,4 +549,8 @@ Double_t Particle::DiffuseProbability(const Boundary* boundary, const Double_t* 
    return diffProb;
 }
 
-
+//______________________________________________________________________________
+void Particle::SaveRandomGeneratorState(const TRandom3State& rndState)
+{
+   fRndState = new TRandom3State(rndState);
+}

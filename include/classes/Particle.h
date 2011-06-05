@@ -16,6 +16,7 @@
 #include "Spin.h"
 #include "State.h"
 #include "Observable.h"
+#include "TRandom3a.h"
 
 #include "Constants.h"
 
@@ -49,11 +50,9 @@ class Particle : public TObject, public Observable
 {
 private:
    // -- Members
-   unsigned int fId;        // Particle's number (assigned when its created to help keep track of it)
+   unsigned int fId; // Particle's number (assigned when its created to help keep track of it)
    Point       fPos;
    TVector3    fVel;
-   
-   unsigned int  fRandomSeed;  // The seed of TRandom when the particle began to propagate
    
    // State
    friend class State;
@@ -61,6 +60,9 @@ private:
    
    // Spin
    Spin         fSpin;
+   
+   // Random Generator State
+   TRandom3State* fRndState; // State of random generator at the beginning of particle's propagation
    
    // State Change
    void     ChangeState(State* state);
@@ -76,6 +78,7 @@ public:
    // -- Constructors
    Particle();
    Particle(unsigned int id, Point& position, TVector3& vel);
+   Particle& operator=(const Particle& other);
    Particle(const Particle &part);
 
    // -- Destructor
@@ -116,8 +119,8 @@ public:
    // Random Seed Storage 
    // (Used for setting the random number generator to the exact point
    // when simulation was started)
-   void                 SetRandomSeed(const Int_t seed)        {fRandomSeed = seed;}
-   unsigned int         GetRandomSeed() const {return fRandomSeed;}
+   void                 SaveRandomGeneratorState(const TRandom3State& rndState);
+   const TRandom3State* GetRandomGeneratorState() const {return fRndState;}
    
    // -- State
    const State*         GetState()     {return fState;}
