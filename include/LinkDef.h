@@ -67,6 +67,8 @@
 #pragma link C++ class ElecFieldArray+;
 #pragma link C++ class ParticleManifest+;
 #pragma link C++ class Listing+;
+#pragma link C++ class TRandom3a;
+#pragma link C++ class TRandom3State+;
 
 // ----------------------------------------------------------------------
 // -- Elements and Materials Namespaces are used for defining common material properties
