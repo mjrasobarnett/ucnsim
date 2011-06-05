@@ -225,8 +225,6 @@ Bool_t Run::Finish()
    fData.Save();
    // Write the geometry out to file
    fExperiment->ExportGeometry(*this);
-   // Delete the experiment
-   if (fExperiment) delete fExperiment; fExperiment = NULL;
    return kTRUE;
 }
 
