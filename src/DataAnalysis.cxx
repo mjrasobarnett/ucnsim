@@ -370,6 +370,16 @@ double FitFunctions::ExponentialDecay(double *x, double *par)
 }
 
 //_____________________________________________________________________________
+double FitFunctions::MaxwellBoltzmann(double *x, double *par)
+{
+   double v = x[0];
+   double T = par[0];
+   double alpha = (Neutron::mass_Kg/(Constants::boltzmann*T));
+   double f = par[1]*TMath::Sqrt((2.0/TMath::Pi())*TMath::Power(alpha,3.0))*v*v*TMath::Exp(-alpha*v*v/2.0);
+   return f;
+}
+
+//_____________________________________________________________________________
 void FinalStates::PlotFinalState(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig)
 {
    //////////////////////////////////////////////////////////////////////////////////////

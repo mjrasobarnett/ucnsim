@@ -59,6 +59,8 @@ namespace Analysis {
       double SpinPrecession(double *x, double *par);
       //_____________________________________________________________________________
       double ExponentialDecay(double *x, double *par);
+      //_____________________________________________________________________________
+      double MaxwellBoltzmann(double *x, double *par);
    }
    
    //_____________________________________________________________________________

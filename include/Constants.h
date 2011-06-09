@@ -43,6 +43,10 @@ namespace Constants
    //
    //
    static const Double_t avagadro_number = 6.02214E+23/mole;
+   
+   //
+   //
+   static const Double_t boltzmann = 1.3806488E-23; // J/K
 }
 
 namespace Neutron {
