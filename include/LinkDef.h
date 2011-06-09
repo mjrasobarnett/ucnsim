@@ -121,6 +121,9 @@
 #pragma link C++ function Analysis::DataFile::GetParticleBranch(const std::string&, TTree*);
 
 #pragma link C++ namespace Analysis::FitFunctions;
+#pragma link C++ function Analysis::FitFunctions::SpinPrecession(double*, double*);
+#pragma link C++ function Analysis::FitFunctions::ExponentialDecay(double*, double*);
+#pragma link C++ function Analysis::FitFunctions::MaxwellBoltzmann(double*, double*);
 
 #pragma link C++ namespace Analysis::Polarisation;
 #pragma link C++ struct Analysis::Polarisation::Coords;
