@@ -163,36 +163,6 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    chamber->AddNode(valveVol, 1, new TGeoHMatrix(valveVolMat));
    Double_t valveVolCapacity = valveVolShape->Capacity();
    
-/* // -- Define the valve in its open state 
-   Double_t openValveRMin = 0., openValveRMax = 36.0*Units::mm, openValveHalfLength = 1.375*Units::mm;
-   TGeoVolume *openValve = Builder::UCNInstance(geoManager)->MakeUCNTube("OpenValve", boundary, openValveRMin, openValveRMax, openValveHalfLength);
-   Double_t openValveAngle = 90.0;
-   Double_t openValveYPos = valveVolBackHalfLength - openValveHalfLength;
-   TGeoRotation openValveRot("ValveVolBackRot",0,openValveAngle,0); // phi, theta, psi
-   TGeoTranslation openValveTra("ValveVolBackTra",0.,openValveYPos,0.); // x, y, z
-   TGeoCombiTrans openValveCom(openValveTra,openValveRot);
-   TGeoHMatrix openValveMat = openValveCom;
-   openValve->SetLineColor(kBlue+3);
-   openValve->SetLineWidth(1);
-   openValve->SetVisibility(kTRUE);
-   openValve->SetTransparency(20);
-   
-   // -- Define the valve in its closed state 
-   Double_t closedValveRMin = 0., closedValveRMax = 36.0*Units::mm, closedValveHalfLength = 1.375*Units::mm;
-   TGeoVolume *closedValve = Builder::UCNInstance(geoManager)->MakeUCNTube("OpenValve", vacuum, closedValveRMin, closedValveRMax, closedValveHalfLength);
-   Double_t closedValveAngle = 90.0;
-   Double_t closedValveYPos = closedValveHalfLength - valveVolBackHalfLength;
-   TGeoRotation closedValveRot("ValveVolBackRot",0,closedValveAngle,0); // phi, theta, psi
-   TGeoTranslation closedValveTra("ValveVolBackTra",0.,closedValveYPos,0.); // x, y, z
-   TGeoCombiTrans closedValveCom(closedValveTra,closedValveRot);
-   TGeoHMatrix closedValveMat = closedValveCom;
-   closedValve->SetLineColor(kBlue+3);
-   closedValve->SetLineWidth(1);
-   closedValve->SetVisibility(kTRUE);
-   closedValve->SetTransparency(20);
-   valveVol->AddNode(closedValve,1,new TGeoHMatrix(closedValveMat));
-   valveVol->AddNode(openValve,1,new TGeoHMatrix(openValveMat));
-*/ 
    // -------------------------------------
    // -- BEND
    Tube *circleBendShape = new Tube("CircleBend", bendRMin, bendRMax, bendHalfLength);
@@ -331,9 +301,6 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
       // Calculate guide's volume
       guideCapacity += guideSegShape->Capacity();
    }
-   
-   Double_t totalVolume = sourceCapacity + valveVolEntraceCapacity + valveVolFrontCapacity + valveVolCapacity + bendCapacity + detectorValveVolCapacity + detectorTubeTopCapacity + guideCapacity;
-   
    
    // -------------------------------------
    // -- RAMSEY CELL PRE-VOLUME SECTION

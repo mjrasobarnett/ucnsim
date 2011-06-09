@@ -589,8 +589,9 @@ Double_t Union::TimeFromInside(const Double_t* point, const Double_t* velocity, 
 // Refering to 'left' shape and 'right' shape, I am refering to the two terms in the equation for
 // this particular BoolNode: left + right. 
    #ifdef VERBOSE_MODE
-      Info("TimeFromInside","Start");
-      cout << "Initial X: " << point[0] << "\t" << "V: " << point[1] << "\t" << "Z: " << point[2] << endl;
+      cout << "-----------------------------" << endl;
+		cout << "-- Union::TimeFromInside -- " << endl;
+      cout << "Initial X: " << point[0] << "\t" << "Y: " << point[1] << "\t" << "Z: " << point[2] << endl;
       cout << "Initial Vx: " << velocity[0] << "\t" << "Vy: " << velocity[1] << "\t" << "Vz: " << velocity[2] << endl;
       cout << "Field Gx: " << field[0] << "\t" << "Gy: " << field[1] << "\t" << "Gz: " << field[2] << "\t" << endl;
    #endif
@@ -619,20 +620,20 @@ Double_t Union::TimeFromInside(const Double_t* point, const Double_t* velocity, 
    if (insideRight) rightTime = dynamic_cast<Box*>(fRight)->TimeFromInside(rightPoint, rightVel, \
                                                                                     rightField, stepTime, onBoundary);
    #ifdef VERBOSE_MODE
-      Info("TimeFromInside","Are we Inside Left? %i. Are we inside Right? %i",insideLeft,insideRight);
-      Info("TimeFromInside","LeftTime: %f. RightTime: %f",leftTime,rightTime);
+      cout << "Are we Inside Left? " << insideLeft << "\t Are we inside Right? " << insideRight << endl;
+      cout << "LeftTime: " << leftTime << "\t RightTime: " << rightTime << endl;
    #endif
    while (insideLeft || insideRight) {
       if (insideLeft && insideRight) {
          #ifdef VERBOSE_MODE
-            Info("TimeFromInside","We are inside both Left and Right. Determining which we exit first.");
+            cout << "We are inside both Left and Right. Determining which we exit first..." << endl;
          #endif
          if (leftTime < rightTime) {      
             finalTime += leftTime;
             node->SetSelected(1);
             // propagate to exit of left shape
             #ifdef VERBOSE_MODE
-               Info("TimeFromInside","Exit Left First. Propagating outside Left.");
+               cout << "Exit Left First. Propagating outside Left..." << endl;
             #endif
             insideLeft = kFALSE;
             for (i=0; i<3; i++) {
@@ -644,18 +645,18 @@ Double_t Union::TimeFromInside(const Double_t* point, const Double_t* velocity, 
             fRightMat->MasterToLocalVect(masterVel, rightVel);
             insideRight = fRight->Contains(rightPoint);
             #ifdef VERBOSE_MODE
-               Info("TimeFromInside","Propagated Point inside Right? %i",insideRight);
+               cout << "Propagated Point inside Right? " << insideRight << endl;
             #endif
             if (!insideRight) {
                #ifdef VERBOSE_MODE
-                  Info("TimeFromInside","Returning finalTime: %f",finalTime);
+                  cout << "Returning finalTime: " << finalTime << endl;
                #endif
                return finalTime;
             }
             rightTime = dynamic_cast<Box*>(fRight)->TimeFromInside(rightPoint, rightVel, \
                                                                            rightField, stepTime, onBoundary);
             #ifdef VERBOSE_MODE
-               Info("TimeFromInside","Time to Exit Right: %f",rightTime);
+               cout << "Time to Exit Right: " << rightTime << endl;
             #endif
             if (rightTime < TGeoShape::Tolerance()) return finalTime;
          } else {
@@ -663,7 +664,7 @@ Double_t Union::TimeFromInside(const Double_t* point, const Double_t* velocity, 
             node->SetSelected(2);
             // propagate to exit of right shape
             #ifdef VERBOSE_MODE
-               Info("TimeFromInside","Exit Right First. Propagating outside Right.");
+               cout << "Exit Right First. Propagating outside Right." << endl;
             #endif
             insideRight = kFALSE;
             for (i=0; i<3; i++) {
@@ -675,18 +676,18 @@ Double_t Union::TimeFromInside(const Double_t* point, const Double_t* velocity, 
             fLeftMat->MasterToLocalVect(masterVel, leftVel);
             insideLeft = fLeft->Contains(leftPoint);
             #ifdef VERBOSE_MODE
-               Info("TimeFromInside","Propagated Point inside Left? %i",insideLeft);
+               cout << "Propagated Point inside Left? " << insideLeft << endl;
             #endif
             if (!insideLeft) {
                #ifdef VERBOSE_MODE
-                  Info("TimeFromInside","Returning finalTime: %f",finalTime);
+                  cout << "Returning finalTime: " << finalTime << endl;
                #endif
                return finalTime;
             }
             leftTime = dynamic_cast<Box*>(fLeft)->TimeFromInside(leftPoint, leftVel, \
                                                                            leftField, stepTime, onBoundary);
             #ifdef VERBOSE_MODE
-               Info("TimeFromInside","Time to Exit Left? %f",leftTime);
+               cout << "Time to Exit Left? " << leftTime << endl;
             #endif
             if (leftTime < TGeoShape::Tolerance()) return finalTime;
          }
@@ -696,7 +697,7 @@ Double_t Union::TimeFromInside(const Double_t* point, const Double_t* velocity, 
          node->SetSelected(1);
          // propagate to exit of left shape
          #ifdef VERBOSE_MODE
-            Info("TimeFromInside","Currently Only Inside Left. Propagating to Exit Left.");
+            cout << "Currently Only Inside Left. Propagating to Exit Left." << endl;
             cout << "Final: " << finalTime << endl;
          #endif
          insideLeft = kFALSE;
@@ -720,30 +721,29 @@ Double_t Union::TimeFromInside(const Double_t* point, const Double_t* velocity, 
             cout << "Pushed X: " << pushedPoint[0] << "\t" << "Y: " << pushedPoint[1] << "\t" << "Z: " << pushedPoint[2] << endl;
             cout << "Pushed Vx: " << pushedVel[0] << "\t" << "Vy: " << pushedVel[1] << "\t" << "Vz: " << pushedVel[2] << endl;
             cout << "Pushed Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(pushedPoint[0],2) + TMath::Power(pushedPoint[2],2)) << endl;
-            Info("TimeFromInside","Propagated Point inside Right? %i",insideRight);
+            cout << "Propagated Point inside Right? " << insideRight << endl;
          #endif
          if (!insideRight) {
             #ifdef VERBOSE_MODE
-               cout << "Final: " << finalTime << endl;
-               Info("TimeFromInside","Returning finalTime: %f",finalTime);
+               cout << "Final Time: " << finalTime << endl;
             #endif
             return finalTime;
          }
          #ifdef VERBOSE_MODE
-            Info("TimeFromInside","Still Inside Right therefore find time to exit right");
+            cout << "Still Inside Right therefore find time to exit right" << endl;
          #endif
          rightTime = dynamic_cast<Box*>(fRight)->TimeFromInside(rightPoint, rightVel, \
                                                                            rightField, stepTime, onBoundary);
          if (rightTime < TGeoShape::Tolerance()) {
             #ifdef VERBOSE_MODE
-               Info("TimeFromInside","Time to right is very small. Returning finalTime: %f",finalTime);
+               cout << "Time to right is very small. Returning finalTime: " << finalTime << endl;
             #endif
             return finalTime;
          }
          rightTime += (1.+leftTime)*TGeoShape::Tolerance();
          #ifdef VERBOSE_MODE
             cout << "Incrementing Right Time by (1.+leftTime)*TGeoShape::Tolerance(): " << rightTime << endl;
-            Info("TimeFromInside","Time to Exit Right? %f",rightTime);
+            cout << "Time to Exit Right? " << rightTime << endl;
          #endif
       }   
       if (insideRight) {
@@ -751,7 +751,7 @@ Double_t Union::TimeFromInside(const Double_t* point, const Double_t* velocity, 
          node->SetSelected(2);
          // propagate to exit of right shape
          #ifdef VERBOSE_MODE
-            Info("TimeFromInside","Currently Only Inside Right. Propagating to Exit Right.");
+            cout << "Currently Only Inside Right. Propagating to Exit Right." << endl;
             cout << "Final: " << finalTime << endl;
          #endif
          insideRight = kFALSE;
@@ -775,36 +775,34 @@ Double_t Union::TimeFromInside(const Double_t* point, const Double_t* velocity, 
             cout << "Pushed X: " << pushedPoint[0] << "\t" << "Y: " << pushedPoint[1] << "\t" << "Z: " << pushedPoint[2] << endl;
             cout << "Pushed Vx: " << pushedVel[0] << "\t" << "Vy: " << pushedVel[1] << "\t" << "Vz: " << pushedVel[2] << endl;
             cout << "Pushed Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(pushedPoint[0],2) + TMath::Power(pushedPoint[2],2)) << endl;
-            Info("TimeFromInside","Propagated Point inside Left? %i",insideLeft);
+            cout << "Propagated Point inside Left? " << insideLeft << endl;
          #endif
          if (!insideLeft) {
             #ifdef VERBOSE_MODE
-               cout << "Final: " << finalTime << endl;
-               Info("TimeFromInside","Returning finalTime: %f",finalTime);
+               cout << "Final Time: " << finalTime << endl;
             #endif
             return finalTime;
          }
          #ifdef VERBOSE_MODE
-            Info("TimeFromInside","Still Inside Left therefore find time to exit left");
+            cout << "Still Inside Left therefore find time to exit left" << endl;
          #endif
          leftTime = dynamic_cast<Box*>(fLeft)->TimeFromInside(leftPoint, leftVel, \
                                                                         leftField, stepTime, onBoundary);
          if (leftTime < TGeoShape::Tolerance()) {
             #ifdef VERBOSE_MODE
-               cout << "Final: " << finalTime << endl;
-               Info("TimeFromInside","Returning finalTime: %f",finalTime);
+               cout << "Final Time: " << finalTime << endl;
             #endif
             return finalTime;
          }
          leftTime += (1.+rightTime)*TGeoShape::Tolerance();
          #ifdef VERBOSE_MODE
             cout << "Incrementing Left Time by (1.+rightTime)*TGeoShape::Tolerance(): " << leftTime << endl;
-            Info("TimeFromInside","Time to Exit Left? %f",leftTime);
+            cout << "Time to Exit Left? " << leftTime << endl;
          #endif
       }
    }
    #ifdef VERBOSE_MODE
-      Info("TimeFromInside","FinalTime: %f",finalTime);
+      cout << "FinalTime: " << finalTime << endl;
    #endif      
    return finalTime;
 }

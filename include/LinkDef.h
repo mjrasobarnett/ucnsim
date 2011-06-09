@@ -65,6 +65,10 @@
 #pragma link C++ class FieldData+;
 #pragma link C++ class UniformElecField+;
 #pragma link C++ class ElecFieldArray+;
+#pragma link C++ class ParticleManifest+;
+#pragma link C++ class Listing+;
+#pragma link C++ class TRandom3a;
+#pragma link C++ class TRandom3State+;
 
 // ----------------------------------------------------------------------
 // -- Elements and Materials Namespaces are used for defining common material properties
@@ -105,20 +109,23 @@
 #pragma link C++ function Analysis::DataFile::OpenRootFile(std::string,std::string);
 #pragma link C++ function Analysis::DataFile::LoadRunConfig(TFile&);
 #pragma link C++ function Analysis::DataFile::LoadGeometry(TFile&);
-#pragma link C++ function Analysis::DataFile::ValidateRootFile(const std::string);
+#pragma link C++ function Analysis::DataFile::LoadParticleManifest(TFile&);
+#pragma link C++ function Analysis::DataFile::LoadParticleDataTree(TFile&);
+#pragma link C++ function Analysis::DataFile::IsRootFile(const std::string);
 #pragma link C++ function Analysis::DataFile::IsValidStateName(const std::vector<std::string>&);
 #pragma link C++ function Analysis::DataFile::IsValidStateName(const std::string);
-#pragma link C++ function Analysis::DataFile::CountParticles(TDirectory* const);
-#pragma link C++ function Analysis::DataFile::FetchStateDirectories(TFile&, std::vector<std::string>&, std::vector<TDirectory*>&);
-#pragma link C++ function Analysis::DataFile::ConcatenateStateNames(std::vector<TDirectory*>&);
+#pragma link C++ function Analysis::DataFile::ConcatenateStateNames(std::vector<std::string>&);
 #pragma link C++ function Analysis::DataFile::NavigateToHistDir(TFile&);
+#pragma link C++ function Analysis::DataFile::CopyDirectory(TDirectory* const, TDirectory* const);
+#pragma link C++ function Analysis::DataFile::CopyDirectoryContents(TDirectory* const, TDirectory* const);
+#pragma link C++ function Analysis::DataFile::GetParticleBranch(const std::string&, TTree*);
 
 #pragma link C++ namespace Analysis::FitFunctions;
 
 #pragma link C++ namespace Analysis::Polarisation;
 #pragma link C++ struct Analysis::Polarisation::Coords;
-#pragma link C++ function Analysis::Polarisation::PlotSpinPolarisation(TDirectory* const, const std::vector<TDirectory*>, const RunConfig&);
-#pragma link C++ function Analysis::Polarisation::PlotField(TDirectory* const, const std::vector<TDirectory*> , const RunConfig&);
+#pragma link C++ function Analysis::Polarisation::PlotSpinPolarisation(const std::string, const std::vector<int>, TTree*, const RunConfig&);
+#pragma link C++ function Analysis::Polarisation::PlotField(const std::string, const std::vector<int>, TTree*, const RunConfig&);
 #pragma link C++ function Analysis::Polarisation::CalculateT2(TFile&, std::vector<std::string>, double&, double&);
 #pragma link C++ function Analysis::Polarisation::CreateT2AlphaGraph(std::vector<TDirectory*>, double, unsigned int);
 #pragma link C++ function Analysis::Polarisation::PlotPhaseAngleSnapShots(std::vector<std::vector<Analysis::Polarisation::Coords> >& , const unsigned int );
@@ -127,15 +134,20 @@
 #pragma link C++ function Analysis::Polarisation::CalculateAlpha(std::vector<std::vector<Analysis::Polarisation::Coords> >& , const unsigned int , const double );
 
 #pragma link C++ namespace Analysis::Bounces;
-#pragma link C++ function Analysis::Bounces::PlotBounceCounters(TDirectory* const, const std::vector<TDirectory*>);
+#pragma link C++ function Analysis::Bounces::PlotBounceCounters(const std::string, const std::vector<int>, TTree*);
 
 #pragma link C++ namespace Analysis::FinalStates;
-#pragma link C++ function Analysis::FinalStates::PlotFinalStates(TDirectory* const, const std::vector<TDirectory*>, const RunConfig&, TGeoManager&);
-#pragma link C++ function Analysis::FinalStates::PlotEmptyingTime(std::vector<TDirectory*>,const RunConfig&,const double,const double);
+#pragma link C++ function Analysis::FinalStates::PlotFinalState(const std::string, const std::vector<int>, TTree*, const RunConfig&);
+#pragma link C++ function Analysis::FinalStates::DrawFinalPositions(const std::string, const std::vector<int>, TTree*, TGeoManager&, double*);
+#pragma link C++ function Analysis::FinalStates::PlotEmptyingTime(const std::string, const std::vector<int>, TTree*, const RunConfig&, const double, const double);   
+
 
 #pragma link C++ namespace Analysis::Tracks;
 #pragma link C++ function Analysis::Tracks::PlotParticleHistories(TDirectory* const, const std::vector<TDirectory*>, TGeoManager&);
 #pragma link C++ function Analysis::Tracks::CalculateParticleHistory(const Track&, TGeoManager&);
+
+#pragma link C++ namespace Analysis::Geometry;
+#pragma link C++ function Analysis::Geometry::DrawGeometry(TCanvas&, TGeoManager&, double*);
 // ----------------------------------------------------------------------
 
 #endif

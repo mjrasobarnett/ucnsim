@@ -42,11 +42,14 @@ namespace Context {
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 class Point;
+class TTree;
 
 class Observer : public TNamed
 {
 protected:
    const TObject* fSubject;
+   
+   void WriteDataToTree(TTree* tree, TObject* data);
    
 public:
    Observer();
@@ -58,8 +61,8 @@ public:
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context) = 0;
    virtual void ResetData() = 0;
    virtual void LoadExistingData(TDirectory* const particleDir) = 0;
-   virtual void WriteToFile(TDirectory* particleDir) = 0;
-      
+   virtual void WriteToTree(TTree* tree) = 0;
+   
    ClassDef(Observer, 1)
 };
 
@@ -85,7 +88,7 @@ public:
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
    virtual void ResetData();
    virtual void LoadExistingData(TDirectory* const particleDir);
-   virtual void WriteToFile(TDirectory* const particleDir);
+   virtual void WriteToTree(TTree* tree);
    
    ClassDef(SpinObserver, 1)
 };
@@ -111,7 +114,7 @@ public:
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
    virtual void ResetData();
    virtual void LoadExistingData(TDirectory* const particleDir);
-   virtual void WriteToFile(TDirectory* const particleDir);
+   virtual void WriteToTree(TTree* tree);
    
    ClassDef(BounceObserver, 1)
 };
@@ -138,7 +141,7 @@ public:
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
    virtual void ResetData();
    virtual void LoadExistingData(TDirectory* const particleDir);
-   virtual void WriteToFile(TDirectory* const particleDir);
+   virtual void WriteToTree(TTree* tree);
    
    ClassDef(TrackObserver, 1)
 };
@@ -165,7 +168,7 @@ public:
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
    virtual void ResetData();
    virtual void LoadExistingData(TDirectory* const particleDir);
-   virtual void WriteToFile(TDirectory* const particleDir);
+   virtual void WriteToTree(TTree* tree);
    
    ClassDef(FieldObserver, 1)
 };

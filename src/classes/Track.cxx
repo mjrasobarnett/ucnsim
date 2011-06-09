@@ -33,6 +33,13 @@ Track::Track(const Track& other)
    #ifdef PRINT_CONSTRUCTORS
       Info("Track", "Copy Constructor");
    #endif
+   // Have to copy every point in container
+   if (other.TotalPoints() > 0) {
+      for (int pointNum = 0; pointNum < other.TotalPoints(); pointNum++) {
+         const Point& point = other.GetPoint(pointNum);
+         this->AddPoint(point);
+      }
+   }
 }
 
 //_____________________________________________________________________________
@@ -69,10 +76,10 @@ void Track::PurgeContainer()
 }
 
 //______________________________________________________________________________
-void Track::AddPoint(const Double_t x, const Double_t y, const Double_t z, const Double_t t)
+void Track::AddPoint(const Point& point)
 {
    // -- Add point to track
-   fPoints.push_back(new Point(x,y,z,t));
+   fPoints.push_back(new Point(point));
 }
 
 //______________________________________________________________________________
@@ -82,6 +89,37 @@ const Point& Track::GetPoint(unsigned int i) const
    // Check for requests past bounds of storage
    if (i >= fPoints.size()) {return *(fPoints.back());}
    return *(fPoints[i]);
+}
+
+//______________________________________________________________________________
+bool Track::Truncate(const Double_t startTime, const Double_t endTime)
+{
+   // Return a new Track object that only contains points whose times fall between the startTime
+   // and the endTime
+   if (startTime < fPoints.front()->T() || endTime > fPoints.back()->T()) {
+      cout << "Error - requested start/end times are outside of track's scope" << endl;
+      cout << "Track Start: " << fPoints.front()->T() << "\t" << "Requested start: " << startTime << endl;
+      cout << "Track End: " << fPoints.back()->T() << "\t" << "Requested end: " << endTime << endl;
+      return false;
+   }
+   if (startTime > endTime) {
+      cout << "Error - startTime is greater than endTime" << endl;
+      return false;
+   }
+   // Delete all points before startTime and all points after endTime
+   vector<Point*>::iterator pointIter, startIter=fPoints.begin(), endIter= fPoints.end();
+   for (pointIter = fPoints.begin(); pointIter != fPoints.end(); pointIter++) {
+      if (startIter == fPoints.begin() && (*pointIter)->T() > startTime) {
+         startIter = pointIter;
+      }
+      if (endIter == fPoints.end() && (*pointIter)->T() > endTime) {
+         endIter = pointIter;
+      }
+   }
+   fPoints.erase(fPoints.begin(), startIter);
+   fPoints.erase(endIter, fPoints.end());
+   cout << "Points in Track segment: " << this->TotalPoints() << endl;
+   return true;
 }
 
 //______________________________________________________________________________

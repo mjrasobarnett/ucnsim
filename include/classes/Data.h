@@ -4,38 +4,42 @@
 #include "TNamed.h"
 #include <map>
 #include <string>
+#include <vector>
 #include "TFile.h"
+#include "TTree.h"
+#include "TBranch.h"
 #include "TDirectory.h"
-#include "Particle.h"
 #include "Observer.h"
-#include "InitialConfig.h"
-#include "RunConfig.h"
+#include "ParticleManifest.h"
 
 class TGeoManager;
 class Experiment;
+class RunConfig;
+class Particle;
 
 class Data : public TNamed {
 private:
    // -- Data Files
+   TFile *fInputFile;
    TFile *fOutputFile;
-   
-   TDirectory *fParticleStatesFolder;
-   TDirectory *fInitialStatesFolder;
-   
-   TIter *fCurrentParticleDir;
+   TTree *fInputTree;
+   TTree *fOutputTree;
+   TBranch* fInputBranch;
+   Particle* fCurrentParticle;
+   ParticleManifest* fOutputManifest;
    
    // -- Observers
    std::multimap<std::string, Observer*> fObservers;
    
    void           PurgeObservers();
    void           AddObserver(std::string subject, Observer* observer);
-   void           RegisterObservers(Particle* particle);
+         
+   ParticleManifest* ReadInParticleManifest(TFile* file) const;
+   TTree*            ReadInParticleTree(TFile* file) const;
    
-   Bool_t         LoadParticles(const RunConfig& runConfig);
-   Particle*      LocateParticle(TDirectory * const particleDir);
-   
-   void           CopyDirectory(TDirectory * const sourceDir, TDirectory * const outputDir);
-   void           CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * const outputDir);
+   bool  CheckSelectedIndexList(std::vector<int>& selectedIndexes, std::vector<int>& availableIndexes) const;
+   bool  CopyAllParticles(TBranch* inputBranch, TBranch* outputBranch);
+   bool  CopySelectedParticles(const std::vector<int>& selected_IDs, TBranch* inputBranch, TBranch* outputBranch);
    
 public:
    // -- Constructors
@@ -43,15 +47,19 @@ public:
    Data(const Data& other);
    virtual ~Data(void);
    
-   Bool_t               Initialise(const InitialConfig& initialConfig);
    Bool_t               Initialise(const RunConfig& runConfig);
    void                 CreateObservers(const RunConfig& runConfig, const Experiment& experiment);
+   std::vector<int>     GetSelectedParticleIndexes(const ParticleManifest& manifest, const RunConfig& runConfig) const;
    
    // Add a Particle
-   Bool_t               SaveParticle(Particle* particle, const std::string& state);
+   Bool_t               SaveInitialParticle(Particle* particle);
+   Bool_t               SaveFinalParticle(Particle* particle, const std::string& state);
    
    // Get a Particle
-   Particle* const      RetrieveParticle();
+   Particle* const      RetrieveParticle(unsigned int index);
+   void                 RegisterObservers(Particle* particle);
+   std::vector<int>     GetListOfParticlesToLoad(const RunConfig& runConfig);
+   
    
    // Particle Counters
    Bool_t               ChecksOut() const;
@@ -64,8 +72,10 @@ public:
    Int_t                AnomalousParticles() const;
    Int_t                FinalParticles() const;
    
-   // Geometry
+   // Saving
    void                 SaveGeometry(TGeoManager* const geoManager);
+   void                 SaveRunConfig(const RunConfig& runConfig);
+   void                 Save();
    
    ClassDef(Data, 1) // UCN Data Object
 };

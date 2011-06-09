@@ -44,21 +44,21 @@ fi
 # ROOT & UCN_DIR PATHS
 #------------------------------------------------------------------------------
 if [[ -n "${LD_LIBRARY_PATH}" ]] ; then
-	export LD_LIBRARY_PATH=${UCN_DIR}/lib:${ROOTSYS}/lib:${LD_LIBRARY_PATH}
+	export LD_LIBRARY_PATH=${BOOST}/stage/lib:${UCN_DIR}/lib:${ROOTSYS}/lib:${LD_LIBRARY_PATH}
 else
-	export LD_LIBRARY_PATH=${UCN_DIR}/lib:${ROOTSYS}/lib
+	export LD_LIBRARY_PATH=${BOOST}/stage/lib:${UCN_DIR}/lib:${ROOTSYS}/lib
 fi
 
 if [[ `uname` == Darwin ]] ; then
   if [[ -n "${DYLD_LIBRARY_PATH}" ]] ; then
-   export DYLD_LIBRARY_PATH=${UCN_DIR}/lib:${ROOTSYS}/lib:${DYLD_LIBRARY_PATH}
+   export DYLD_LIBRARY_PATH=${BOOST}/stage/lib:${UCN_DIR}/lib:${ROOTSYS}/lib:${DYLD_LIBRARY_PATH}
   else
-   export DYLD_LIBRARY_PATH=${UCN_DIR}/lib:${ROOTSYS}/lib
+   export DYLD_LIBRARY_PATH=${BOOST}/stage/lib:${UCN_DIR}/lib:${ROOTSYS}/lib
   fi
 fi
 
 export ROOTMACROS=${UCN_DIR}/macros:${ROOTSYS}/macros
-export ROOTALIAS=${UCN_DIR}/config/ucn_rootalias.C
+#export ROOTALIAS=${UCN_DIR}/config/ucn_rootalias.C
 export ROOTLOGON=${UCN_DIR}/config/ucn_rootlogon.C
 export ROOTLOGOFF=${UCN_DIR}/config/ucn_rootlogoff.C
 

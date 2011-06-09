@@ -50,13 +50,12 @@ void Observable::DetachAll()
 }
 
 //_____________________________________________________________________________
-void Observable::WriteObserversToFile(TDirectory* particleDir)
+void Observable::WriteObserversToTree(TTree* tree)
 {
-   // -- Get Observers to write their data to file
-   particleDir->cd();
+   // -- Get Observers to write their data to the tree
    vector<Observer*>::iterator it;
    for(it = fObservers.begin(); it != fObservers.end(); it++) {
-      // Write out
-      (*it)->WriteToFile(particleDir);
+      // Write out to Tree
+      (*it)->WriteToTree(tree);
    }
 }

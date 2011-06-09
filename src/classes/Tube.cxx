@@ -72,9 +72,9 @@ Tube::~Tube()
 Double_t Tube::TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
 {
 	// Compute time from inside point to surface of the tube
-	#ifdef VERBOSE_MODE				
-		cout << "Tube::TimeFromInside" << endl;
-		cout << "TimeFromInside - Calling TimeFromInsideS" << endl;
+	#ifdef VERBOSE_MODE
+		cout << "-----------------------------" << endl;
+      cout << "-- " << this->GetName() << " -- Starting Tube::TimeFromInside --" << endl;
 	#endif
 	// compute time to surface
 	return TimeFromInsideS(point, velocity, field, fRmin, fRmax, fDz, onBoundary);
@@ -84,10 +84,17 @@ Double_t Tube::TimeFromInside(const Double_t* point, const Double_t* velocity, c
 Double_t Tube::TimeFromInsideS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t onBoundary)
 {
 	// Compute time from inside point to surface of the tube	
-	#ifdef VERBOSE_MODE				
-		cout << "TimeFromInsideS" << "\t" <<  "Local Field - X: " <<  field[0] << " Y: " << field[1] << " Z: " << field[2] << endl;
-		cout << "TimeFromInsideS" << "\t" <<  "Local Point - X: " <<  point[0] << " Y: " << point[1] << " Z: " << point[2] << endl;
-		cout << "TimeFromInsideS" << "\t" <<  "Local Vel - X: " <<  velocity[0] << " Y: " << velocity[1] << " Z: " << velocity[2] << endl;
+   #ifdef VERBOSE_MODE
+      cout << "-- Tube::TimeFromInsideS -- " << endl;
+      cout << setw(20) << "Local Field - " << setw(4) << "X: " << setw(10) << field[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << field[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << field[2] << endl;
+      cout << setw(20) << "Local Point - " << setw(4) << "X: " << setw(10) << point[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << point[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << point[2] << endl;
+      cout << setw(20) << "Local Velocity - " << setw(4) << "X: " << setw(10) << velocity[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << velocity[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << velocity[2] << endl;
 	#endif
 	// --------------------------------------------------------------------------------------
    // -- Storage for the overall smallest, non-zero time to the nearest boundary
@@ -100,10 +107,12 @@ Double_t Tube::TimeFromInsideS(const Double_t* point, const Double_t* velocity, 
 		return 0.0;
 	} else {
 		// -- Solution found. Setting as the current smallest time
-		#ifdef VERBOSE_MODE				
+		#ifdef VERBOSE_MODE
 			cout << "Particle will reach first z-boundary in: " << tmin << endl;
 		#endif
-		tfinal = tmin;
+      if (tfinal == 0. || tmin < tfinal) {
+         tfinal = tmin;
+      }
 	}
 	
 	// --------------------------------------------------------------------------------------
@@ -112,15 +121,15 @@ Double_t Tube::TimeFromInsideS(const Double_t* point, const Double_t* velocity, 
 	// -- CASE 1 - Inner Cylinder
 	tmin = InsideTimeToRBoundary(point, velocity, field, rmin, onBoundary);
 	if (tmin == 0.0) {
-		#ifdef VERBOSE_MODE				
+		#ifdef VERBOSE_MODE
 			cout << "Warning: Particle has failed to hit rmin boundary from Inside. " << endl;
 		#endif
 	} else {
 		// -- Solution found. Check to see if it is smaller than the current smallest.
-		#ifdef VERBOSE_MODE				
+		#ifdef VERBOSE_MODE
 			cout << "Particle will reach rmin-boundary in: " << tmin << endl;
 		#endif
-		if (tmin < tfinal) {
+		if (tfinal == 0. || tmin < tfinal) {
 			tfinal = tmin;
 		}
 	}
@@ -129,17 +138,17 @@ Double_t Tube::TimeFromInsideS(const Double_t* point, const Double_t* velocity, 
 	// -- CASE 2 - Outer Cylinder
 	tmin = InsideTimeToRBoundary(point, velocity, field, rmax, onBoundary);
 	if (tmin == 0.0) {
-		#ifdef VERBOSE_MODE				
+		#ifdef VERBOSE_MODE
 			cout << "Error: Particle has failed to hit rmax boundary from Inside. " << endl;
 		#endif
 		// Particle should always hit the outer tube boundary at least at some positive time
 		return 0.0;
 	} else {
 		// -- Solution found. Check to see if it is smaller than the current smallest.
-		#ifdef VERBOSE_MODE				
+		#ifdef VERBOSE_MODE
 			cout << "Particle will reach rmax-boundary in: " << tmin << endl;
 		#endif
-		if (tmin < tfinal) {
+		if (tfinal == 0. || tmin < tfinal) {
 			tfinal = tmin;
 		}
 	}
@@ -147,14 +156,17 @@ Double_t Tube::TimeFromInsideS(const Double_t* point, const Double_t* velocity, 
 	// --------------------------------------------------------------------------------------
    // Return the smallest time
 	if (tfinal > 0.) { 
-		#ifdef VERBOSE_MODE		
-			cout << "TimeFromInsideS - Time to nearest boundary: " <<  tfinal << endl; 
+		#ifdef VERBOSE_MODE
+			cout << "Final Time to nearest boundary from inside: " <<  tfinal << endl; 
+		   cout << "-----------------------------" << endl;
 		#endif
 		return tfinal;
 	} else {
-		#ifdef VERBOSE_MODE				
-			cout << "Error - Particle has failed to hit any boundary: " << tfinal << endl;
-		#endif
+		#ifdef VERBOSE_MODE
+			cout << "-----------------------------" << endl;
+   		cout << "Warning - Particle has failed to hit any boundary. Final Time from Inside: " << tfinal << endl;
+			cout << "-----------------------------" << endl;
+   	#endif
 		return 0.;
 	}	
 }
@@ -165,14 +177,15 @@ Double_t Tube::TimeFromOutside(const Double_t* point, const Double_t* velocity, 
 	// Compute time from outside point to surface of the tube and safe distance
 	// Boundary safe algorithm.
 	// first localize point w.r.t tube
-	#ifdef VERBOSE_MODE				
-		cout << "Tube::TimeFromOutside" << endl;
-		cout << "TimeFromOutside - Check if Bounding box is within maximum step distance" << endl;
+	#ifdef VERBOSE_MODE
+		cout << "-----------------------------" << endl;
+	   cout << "-- " << this->GetName() << " -- Starting Tube::TimeFromOutside -- " << endl;
+		cout << "Checking if Bounding box is within maximum step distance..." << endl;
 	#endif
 	// Check if the bounding box is crossed within the requested distance
    Double_t tBox = Box::TimeFromOutsideS(point, velocity, field, fDX, fDY, fDZ, fOrigin, onBoundary);
-   #ifdef VERBOSE_MODE				
-		cout << "TimeFromOutside - Time to Box: " << tBox << endl;
+   #ifdef VERBOSE_MODE
+		cout << "Time to Boundary Box: " << tBox << endl;
 	#endif
 	if (tBox > stepTime + TGeoShape::Tolerance()) return TGeoShape::Big();
    // find time to shape
@@ -183,10 +196,17 @@ Double_t Tube::TimeFromOutside(const Double_t* point, const Double_t* velocity, 
 Double_t Tube::TimeFromOutsideS(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmin, const Double_t rmax, const Double_t dz, const Bool_t onBoundary)
 {
 	// Compute time from outside point to the surface of the tube
-	#ifdef VERBOSE_MODE				
-		cout << "TimeFromOutsideS" << "\t" <<  "Local Field - X: " <<  field[0] << " Y: " << field[1] << " Z: " << field[2] << endl;
-		cout << "TimeFromOutsideS" << "\t" <<  "Local Point - X: " <<  point[0] << " Y: " << point[1] << " Z: " << point[2] << endl;
-		cout << "TimeFromOutsideS" << "\t" <<  "Local Vel - X: " <<  velocity[0] << " Y: " << velocity[1] << " Z: " << velocity[2] << endl;
+	#ifdef VERBOSE_MODE
+      cout << " -- Tube::TimeFromOutsideS -- " << endl;
+	   cout << setw(20) << "Local Field - " << setw(4) << "X: " << setw(10) << field[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << field[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << field[2] << endl;
+      cout << setw(20) << "Local Point - " << setw(4) << "X: " << setw(10) << point[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << point[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << point[2] << endl;
+      cout << setw(20) << "Local Velocity - " << setw(4) << "X: " << setw(10) << velocity[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << velocity[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << velocity[2] << endl;
 	#endif
 	// --------------------------------------------------------------------------------------
    // -- Storage for the overall smallest, non-zero time to the nearest boundary
@@ -197,15 +217,17 @@ Double_t Tube::TimeFromOutsideS(const Double_t* point, const Double_t* velocity,
 	Double_t tmin = Tube::OutsideTimeToZBoundary(point, velocity, field, rmax, dz, onBoundary);
 	if (tmin == 0.0) {
 		// -- Failed to hit either of the z-boundaries
-		#ifdef VERBOSE_MODE				
-			cout << "Particle has failed to hit either z-boundary from Inside." << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Particle has failed to hit either z-boundary from Outside." << endl;
 		#endif
 	} else {
 		// -- Solution found. Setting as the current smallest time
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideS - Particle has reached first z-boundary in: " << tmin << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Particle has reached first z-boundary in: " << tmin << endl;
 		#endif
-		tfinal = tmin;
+      if (tfinal == 0. || tmin < tfinal) {
+         tfinal = tmin;
+      }
 	}
 	
 	// --------------------------------------------------------------------------------------
@@ -214,15 +236,15 @@ Double_t Tube::TimeFromOutsideS(const Double_t* point, const Double_t* velocity,
 	// -- CASE 1 - Inner Cylinder
 	tmin = OutsideTimeToRBoundary(point, velocity, field, rmin, dz, onBoundary);
 	if (tmin == 0.0) {
-		#ifdef VERBOSE_MODE				
+		#ifdef VERBOSE_MODE
 			cout << "Warning: Particle has failed to hit rmin boundary from Outside. " << endl;
 		#endif
 	} else {
 		// -- Solution found. Check to see if it is smaller than the current smallest.
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideS - Particle will reach rmin-boundary in: " << tmin << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Particle will reach rmin-boundary in: " << tmin << endl;
 		#endif
-		if (tmin < tfinal) {
+      if (tfinal == 0. || tmin < tfinal) {
 			tfinal = tmin;
 		}
 	}
@@ -231,15 +253,15 @@ Double_t Tube::TimeFromOutsideS(const Double_t* point, const Double_t* velocity,
 	// -- CASE 2 - Outer Cylinder
 	tmin = OutsideTimeToRBoundary(point, velocity, field, rmax, dz, onBoundary);
 	if (tmin == 0.0) {
-		#ifdef VERBOSE_MODE				
+		#ifdef VERBOSE_MODE
 			cout << "Warning: Particle has failed to hit rmax boundary from Outside. " << endl;
 		#endif
 	} else {
 		// -- Solution found. Check to see if it is smaller than the current smallest.
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideS - Particle will reach rmax-boundary in: " << tmin << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Particle will reach rmax-boundary in: " << tmin << endl;
 		#endif
-		if (tmin < tfinal) {
+		if (tfinal == 0. || tmin < tfinal) {
 			tfinal = tmin;
 		}
 	}
@@ -247,19 +269,22 @@ Double_t Tube::TimeFromOutsideS(const Double_t* point, const Double_t* velocity,
 	// --------------------------------------------------------------------------------------
    // -- Return the smallest time to boundary (if any were hit)
 	if (tfinal > 0.) { 
-		#ifdef VERBOSE_MODE		
-			cout << "TimeFromInsideS - Time to nearest boundary: " <<  tfinal << endl; 
-		#endif
+		#ifdef VERBOSE_MODE
+			cout << "Final Time to nearest boundary from Outside: " <<  tfinal << endl; 
+			cout << "-----------------------------" << endl;
+   	#endif
 		return tfinal;
 	} else if (tfinal == 0.) {
-		#ifdef VERBOSE_MODE				
-			cout << "TimeFromOutsideS - Particle has failed to hit any boundary: " << tfinal << endl;
-		#endif
+		#ifdef VERBOSE_MODE
+   		cout << "Warning: Particle has failed to hit any boundary. Final time from Outside " << tfinal << endl;
+			cout << "-----------------------------" << endl;
+   	#endif
 		return TGeoShape::Big();
 	} else {
-		#ifdef VERBOSE_MODE				
+		#ifdef VERBOSE_MODE
 			cout << "Error - TimeFromOutsideS - Calculation has failed" << tfinal << endl;
-		#endif
+			cout << "-----------------------------" << endl;
+   	#endif
 		return 0.;
 	}
 }
@@ -269,8 +294,10 @@ Bool_t Tube::IsNextPointOnTube(const Double_t* point, const Double_t* velocity, 
 {
 	// Calculate the proposed intersection point given a time, starting point, direction and local field. 
 	// Check that this intersection is actually located on the surface of the tube. 
-	#ifdef VERBOSE_MODE		
-		cout << "IsNextPointOnTube - Calling method. t: " <<  t << endl;
+	#ifdef VERBOSE_MODE
+		cout << "-----------------------------" << endl;
+		cout << "-- Tube::IsNextPointOnTube --" << endl;
+		cout << "Step Time: " <<  t << endl;
 	#endif
 	
 	Double_t rBoundary = radius + 1.e-10; // Including a tolerance factor
@@ -280,28 +307,32 @@ Bool_t Tube::IsNextPointOnTube(const Double_t* point, const Double_t* velocity, 
 	Double_t crossedpoint[3] = {0.,0.,0.};
 	for (Int_t i = 0; i < 3; ++i) {
 		crossedpoint[i] = point[i] + velocity[i]*t + 0.5*field[i]*t*t;
-		#ifdef VERBOSE_MODE		
-			cout << "IsNextPointOnTube - Crossing Point: i: " << i << "  -  " << crossedpoint[i] << endl;
-		#endif
 	}
+	#ifdef VERBOSE_MODE
+      cout << setw(20) << "Intersection - " << setw(4) << "X: " << setw(10) << crossedpoint[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << crossedpoint[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << crossedpoint[2] << endl;
+	#endif
 	
 	// Check point is within +/- dz, the endcaps
 	if (TMath::Abs(crossedpoint[2]) > zBoundary) {
-		#ifdef VERBOSE_MODE		
-			cout << "IsNextPointOnTube - Point not within tube endcaps. Returning false" << endl;
-		#endif
+		#ifdef VERBOSE_MODE
+			cout << "Point not within tube endcaps. Not On Tube." << endl;
+			cout << "-----------------------------" << endl;
+   	#endif
 		return kFALSE;
 	}
 	// Check point is within the radius of the tube
 	if (TMath::Sqrt(crossedpoint[0]*crossedpoint[0] + crossedpoint[1]*crossedpoint[1]) > rBoundary) {
-		#ifdef VERBOSE_MODE		
-			cout << "IsNextPointOnTube - Point not within tube radius. Returning false" << endl;
-		#endif
+		#ifdef VERBOSE_MODE
+			cout << "Point not within tube radius. Not On Tube." << endl;
+			cout << "-----------------------------" << endl;
+   	#endif
 		return kFALSE;
 	}
-	
-	#ifdef VERBOSE_MODE		
-		cout << "IsNextPointOnTube - Point on surface of tube. Return true" << endl;
+	#ifdef VERBOSE_MODE
+		cout << "Point Is On Tube." << endl;
+		cout << "-----------------------------" << endl;
 	#endif
 	return kTRUE;
 }
@@ -310,8 +341,9 @@ Bool_t Tube::IsNextPointOnTube(const Double_t* point, const Double_t* velocity, 
 Double_t Tube::InsideTimeToZBoundary(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t dz, const Bool_t onBoundary)
 {
 	// -- Find the smallest, non-zero, positive time to one of the tube end caps
-	#ifdef VERBOSE_MODE				
-		cout << "InsideTimeToZBoundary" << "\t" <<  "Solve for +/- Z Boundaries" << endl;
+	#ifdef VERBOSE_MODE
+		cout << "-----------------------------" << endl;
+      cout << "-- InsideTimeToZBoundary --" << endl;
 	#endif
 	Double_t tfinal = 0.0;
 	Double_t boundary = dz;
@@ -344,14 +376,18 @@ Double_t Tube::InsideTimeToZBoundary(const Double_t* point, const Double_t* velo
 		Double_t roots[2] = {0., 0.};
 		Int_t solutions = Polynomial::Instance()->QuadraticRootFinder(&params[0], &roots[0]);
 
-		#ifdef VERBOSE_MODE		
-			cout << j << "\t" << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
-			cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
+		#ifdef VERBOSE_MODE
+         cout << "Boundary " << TMath::Power(-1,j) << "z" << endl;
+         cout << "Polynomial -- " << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
+         cout << "Num Solutions: " << solutions << endl;
+         cout << "Solution 1: " << roots[0] << "\t" << "Solution 2: " << roots[1] << endl;
 		#endif
 		
 		// -- Store the smallest non-zero root to the CURRENT boundary
 		Double_t tmin = Box::SmallestInsideTime(solutions, &roots[0], onBoundary);
-		
+      #ifdef VERBOSE_MODE
+		   cout << "Time to boundary: " << tmin << endl;
+		#endif
 		if (tmin > 0.0 && tfinal == 0.0) {
 			// -- If the current overall smallest time to any boundary is zero, initialise it to the first non-zero time to a boundary
 			tfinal = tmin;
@@ -360,30 +396,36 @@ Double_t Tube::InsideTimeToZBoundary(const Double_t* point, const Double_t* velo
 			tfinal = tmin;
 		} else if (tmin <= 0.0) {
 			// -- The returned time to the boundary was zero/negative
-			#ifdef VERBOSE_MODE				
-				cout << "InsideTimeToZBoundary" << "\t" <<  "Time to Boundary: " << TMath::Power(-1,j) << "z, is negative or zero: " << tmin << endl;
+			#ifdef VERBOSE_MODE
+				cout << "Time is negative or zero" << endl;
 			#endif
 		} else {
 			// -- The time is larger than the current smallest time to z-boundary.
-			#ifdef VERBOSE_MODE				
-				cout << "InsideTimeToZBoundary" << "\t" <<  "Time to current boundary is larger than current smallest: " << tmin << endl;
+			#ifdef VERBOSE_MODE
+				cout << "Time is larger than current smallest: " << tmin << endl;
 			#endif
 		}
-		#ifdef VERBOSE_MODE				
-			cout << "InsideTimeToZBoundary" << "\t" <<  "Current tfinal: " <<  tfinal << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Current smallest solution: " <<  tfinal << endl;
 		#endif
 	}
 	
 	// -- If either of the z-boundaries were hit, tfinal should be non-zero. Since we are coming from Inside, and 
 	// -- the end-caps are effectively infinite planes here, we should always hit at least one of the boundaries.
 	if (tfinal <= 0.0) {
-		#ifdef VERBOSE_MODE				
-			cout << "Error - InsideTimeToZBoundary has not found an intersection with either boundary: " <<  tfinal << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Error - Not found a single intersection with either z boundary from Inside!" << endl;
+		   cout << "-----------------------------" << endl;
 		#endif
 		return 0.0;
 	}
 	
 	// -- Return the smallest time to the z-boundaries
+   #ifdef VERBOSE_MODE
+      cout << "Time to nearest Z-boundary from Inside: " << tfinal << endl;
+      cout << "-----------------------------" << endl;
+   #endif
+
 	return tfinal;
 }
 
@@ -391,8 +433,9 @@ Double_t Tube::InsideTimeToZBoundary(const Double_t* point, const Double_t* velo
 Double_t Tube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rmax, const Double_t dz, const Bool_t onBoundary)
 {
 	// -- Find the smallest, non-zero, positive time to one of the tube end caps from Outside
-	#ifdef VERBOSE_MODE				
-		cout << "OutsideTimeToZBoundary" << "\t" <<  "Solve for +/- Z Boundaries" << endl;
+	#ifdef VERBOSE_MODE
+      cout << "-----------------------------" << endl;
+      cout << "-- Tube::OutsideTimeToZBoundary -- " << endl;
 	#endif
 	Double_t tfinal = 0.0;
 	Double_t boundary = dz;
@@ -425,9 +468,11 @@ Double_t Tube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* vel
 		Double_t roots[2] = {0., 0.};
 		Int_t solutions = Polynomial::Instance()->QuadraticRootFinder(&params[0], &roots[0]);
 
-		#ifdef VERBOSE_MODE		
-			cout << j << "\t" << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
-			cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
+		#ifdef VERBOSE_MODE
+         cout << "Boundary " << TMath::Power(-1,j) << "z" << endl;
+         cout << "Polynomial -- " << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
+         cout << "Num Solutions: " << solutions << endl;
+         cout << "Solution 1: " << roots[0] << "\t" << "Solution 2: " << roots[1] << endl;
 		#endif
 
 		// First check if we are sitting on a boundary
@@ -440,13 +485,12 @@ Double_t Tube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* vel
 			// corner of a box, where the next boundary is very very close by. 
 			if (solutions == 2) {
 				if (TMath::Abs(roots[0]) < 1.E-8 && TMath::Abs(roots[1]) < 1.E-8) {
-					cout << "OutsideTimeToZBoundary - Two roots are both very small" << endl;
-					cout << "Root 1: " << roots[0] << "\t" << "Root 2: " << roots[1] << endl;
+					cout << "Error::OutsideTimeToZBoundary: Both roots are both abnormally small!!" << endl;
 					throw runtime_error("Two very small roots encountered. Unsure how to proceed.");
 				}
 				for (Int_t i = 0; i < 2; i++) {
 					if (TMath::Abs(roots[i]) < 1.E-8) {
-						cout << "OutsideTimeToZBoundary - Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
+						cout << "Warning::OutsideTimeToZBoundary - Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
 						roots[i] = 0.0;
 					}
 				}
@@ -458,7 +502,11 @@ Double_t Tube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* vel
 				// produce two intersections in this case).
 				// We could also be very very close to another boundary, say if we are sitting right in the corner of a box.
 				// In any case, we have a single solution which should be correct and not need setting to zero.
-				if (TMath::Abs(roots[0]) < 1.E-8) cout << "OutsideTimeToZBoundary - Single Root found to be < 1.E-8 : " << roots[0] << endl;
+				if (TMath::Abs(roots[0]) < 1.E-8) {
+				   #ifdef VERBOSE_MODE
+         		   cout << "Warning::OutsideTimeToZBoundary - Single Root found to be < 1.E-8 : " << roots[0] << endl;
+			      #endif
+			   }
 			} else {
 				// Nothing to be done - both roots should be zero anyway - no solutions found
 			}
@@ -467,6 +515,9 @@ Double_t Tube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* vel
 		// -- Store the smallest non-zero root to the CURRENT boundary
 		Double_t tmin = 0.0;
 		// -- Determing number of roots, and select the smallest, real, non-zero value. 
+		#ifdef VERBOSE_MODE
+		   cout << "Determining smallest, positive solution..." << tmin << endl;
+		#endif
 		if (solutions == 2) {
 			// -- Two roots
 			// -- Check first root to see if it is positive and corresponds to a point actually on the surface of the tube
@@ -482,10 +533,9 @@ Double_t Tube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* vel
 					// -- If both roots are valid, then compare the two roots and pick the smallest value. 
 					tmin = roots[1];
 				} else {
-					#ifdef VERBOSE_MODE		
-						cout << "OutsideTimeToZBoundary - Both roots are negative, zero or invalid" << endl; 
+					#ifdef VERBOSE_MODE
+						cout << "Both roots are negative, zero or invalid" << endl; 
 					#endif
-					return 0;
 				}
 			}
 		} else if (solutions == 1) {
@@ -494,20 +544,21 @@ Double_t Tube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* vel
 				tmin = roots[0];
 			} else {
 				//-- Only Root is negative or zero
-				#ifdef VERBOSE_MODE		
-					cout << "OutsideTimeToZBoundary - Only root is negative, zero or invalid" << endl; 
+				#ifdef VERBOSE_MODE
+					cout << "Only root is negative, zero or invalid" << endl; 
 				#endif
-				return 0;
 			}
 		} else {
 			// -- No Real Roots
-			#ifdef VERBOSE_MODE		
-				cout << "OutsideTimeToZBoundary - No solutions" << endl; 
+			#ifdef VERBOSE_MODE
+				cout << "No solutions" << endl; 
 			#endif
-			return 0;
 		}
 		
-		if (tmin > 0.0 && tfinal == 0.0) {
+		#ifdef VERBOSE_MODE
+		   cout << "Time to Boundary " << TMath::Power(-1,j) << "z: " << tmin << endl;
+		#endif
+   	if (tmin > 0.0 && tfinal == 0.0) {
 			// -- If the current overall smallest time to any boundary is zero, initialise it to the first non-zero time to a boundary
 			tfinal = tmin;
 		} else if (tmin > 0.0 && tmin < tfinal) {
@@ -515,30 +566,35 @@ Double_t Tube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* vel
 			tfinal = tmin;
 		} else if (tmin <= 0.0) {
 			// -- The returned time to the boundary was zero/negative
-			#ifdef VERBOSE_MODE				
-				cout << "OutsideTimeToZBoundary - Time to Boundary: " << TMath::Power(-1,j) << "z, is negative or zero: " << tmin << endl;
+			#ifdef VERBOSE_MODE
+				cout << "Time is negative or zero. Ignoring. " << endl;
 			#endif
 		} else {
 			// -- The time is larger than the current smallest time to z-boundary.
-			#ifdef VERBOSE_MODE				
-				cout << "OutsideTimeToZBoundary - Time to current boundary is larger than current smallest: " << tmin << endl;
+			#ifdef VERBOSE_MODE
+				cout << "Time to current boundary is larger than current smallest solution: " << tmin << endl;
 			#endif
 		}
-		#ifdef VERBOSE_MODE				
-			cout << "OutsideTimeToZBoundary" << "\t" <<  "Boundary: " << TMath::Power(-1,j) << "z, --- current tfinal: " <<  tfinal << endl;
+		#ifdef VERBOSE_MODE
+         cout << "Current smallest solution: " <<  tfinal << endl;
 		#endif
 	}
 	
 	// -- If either of the z-boundaries were hit, tfinal should be non-zero. Since we are coming from Inside, and 
 	// -- the end-caps are effectively infinite planes here, we should always hit at least one of the boundaries.
 	if (tfinal <= 0.0) {
-		#ifdef VERBOSE_MODE				
-			cout << "OutsideTimeToZBoundary has not found an intersection with either boundary" << endl;
-		#endif
+		#ifdef VERBOSE_MODE
+			cout << "No intersection found with either Z boundary" << endl;
+		   cout << "-----------------------------" << endl;
+      #endif
 		return 0.0;
 	}
 	
 	// -- Return the smallest time to the z-boundaries -- (may be zero, i.e: neither z-boundary was hit)
+		#ifdef VERBOSE_MODE
+         cout << "Time to nearest Z-boundary from outside: " << tfinal << endl;
+         cout << "-----------------------------" << endl;
+      #endif
 	return tfinal;
 }
 
@@ -546,6 +602,11 @@ Double_t Tube::OutsideTimeToZBoundary(const Double_t* point, const Double_t* vel
 Double_t Tube::InsideTimeToRBoundary(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rBoundary, const Bool_t onBoundary) 
 {
 	// -- Calculate the time to reach the circular boundary of the tube.
+	#ifdef VERBOSE_MODE
+		cout << "-----------------------------" << endl;
+      cout << "-- InsideTimeToRBoundary --" << endl;
+      cout << "R Boundary: " << rBoundary << endl;
+	#endif
 	if (rBoundary <= 0.0) {
 		// -- No intersection possible since there is no boundary to cross!
 		return 0.0;
@@ -568,14 +629,14 @@ Double_t Tube::InsideTimeToRBoundary(const Double_t* point, const Double_t* velo
 	// Now if the onBoundary flag is set, and our current radius is within 1E-9 of the boundary,
 	// we will put this down to being the case of sitting on this boundary, and therefore set e = 0;
 	if (TMath::Abs(rCurrent - rBoundary) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
-		#ifdef VERBOSE_MODE				
-			cout << "InsideTimeToRBoundary - Rounding Down  e: " << e << " to zero." << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Rounding Down  e: " << e << " to zero." << endl;
 		#endif
 		e = 0.0;
 	}
 	if (TMath::Abs(e) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
-		#ifdef VERBOSE_MODE				
-			cout << "InsideTimeToRBoundary - Rounding Down  e: " << e << " to zero." << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Rounding Down  e: " << e << " to zero." << endl;
 		#endif
 		e = 0.0;
 	}
@@ -586,29 +647,29 @@ Double_t Tube::InsideTimeToRBoundary(const Double_t* point, const Double_t* velo
 	if (TMath::Abs(a) < TGeoShape::Tolerance()) {
 		// a = 0 if the field component in the x-y plane is zero
 		// This happens if the tube is not rotated and is aligned with the field (conventially set along the z-axis)
-		#ifdef VERBOSE_MODE				
-			cout << "InsideTimeToRBoundary - Rounding Down a: " << a << " to zero." << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Rounding Down a: " << a << " to zero." << endl;
 		#endif
 		a = 0.;
 	}
 	if (TMath::Abs(b) < TGeoShape::Tolerance()) {
 		// b = 0 if the velocity or field component in the x-y plane is zero (i.e it wont hit the boundary anyway)
-		#ifdef VERBOSE_MODE				
-			cout << "InsideTimeToRBoundary - Rounding Down b: " << b << " to zero." << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Rounding Down b: " << b << " to zero." << endl;
 		#endif
 		b = 0.;
 	}
 	if (TMath::Abs(c) < TGeoShape::Tolerance()) {
 		// c = 0 if the velocity and field components in the x-y plane are zero (i.e it wont hit the boundary anyway)
-		#ifdef VERBOSE_MODE				
-			cout << "InsideTimeToRBoundary - Rounding Down c: " << c << " to zero." << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Rounding Down c: " << c << " to zero." << endl;
 		#endif
 		c = 0.;
 	}
 	if (TMath::Abs(d) < TGeoShape::Tolerance()) {
 		// d = 0 if the velocity components in the x-y plane are zero (i.e it wont hit the boundary anyway)
-		#ifdef VERBOSE_MODE				
-			cout << "InsideTimeToRBoundary - Rounding Down d: " << d << " to zero." << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Rounding Down d: " << d << " to zero." << endl;
 		#endif
 		d = 0.;
 	}
@@ -632,9 +693,9 @@ Double_t Tube::InsideTimeToRBoundary(const Double_t* point, const Double_t* velo
 	
 	// --------------------------------------------------------------------------------------
    // -- Solve the quartic equation to find the intersections of the parabola with the inner cylinder
-	#ifdef VERBOSE_MODE				
-		cout << "InsideTimeToRBoundary - Quartic Eqn - a: " <<  a << "  b: " << b << "  c: " << c << "  d: " << d << "  e: " << e << endl;
-		cout << "InsideTimeToRBoundary - Polynomial Order: " <<  order << endl;
+	#ifdef VERBOSE_MODE
+		cout << "Polynomial Order: " <<  order << endl;
+		cout << "Eqn - a: " <<  a << "  b: " << b << "  c: " << c << "  d: " << d << "  e: " << e << endl;
 	#endif
 	
 	Int_t solutions = 0; // Counts the number of possible solutions
@@ -705,8 +766,8 @@ Double_t Tube::InsideTimeToRBoundary(const Double_t* point, const Double_t* velo
 		}
 	}
 	
-	#ifdef VERBOSE_MODE				
-		cout << "InsideTimeToRBoundary" << "\t" <<  "Solutions: " <<  solutions << endl;
+	#ifdef VERBOSE_MODE
+		cout << "Solutions: " <<  solutions << endl;
 	#endif
 	// -- Define the smallest non-zero time to boundary
 	Double_t tmin = 0.0;
@@ -726,20 +787,19 @@ Double_t Tube::InsideTimeToRBoundary(const Double_t* point, const Double_t* velo
 			continue;
 		}
 	}
-	#ifdef VERBOSE_MODE				
-		cout << "InsideTimeToRBoundary - Smallest Time to Boundary: " <<  tmin << endl;
+	#ifdef VERBOSE_MODE
+		cout << "Time to R Boundary from inside: " <<  tmin << endl;
+	   cout << "-----------------------------" << endl;
 	#endif
-	
 	// -- Since we are coming from Inside, we would expect at least one solution, unless we have no 
 	// -- horizontal velocity (which is checked above) or we are sitting on the boundary that we are looking
 	// -- for intersections with.
 	if (tmin <= 0.0) {
-		#ifdef VERBOSE_MODE				
-			cout << "Warning - InsideTimeToRBoundary has not found an positive intersection!" << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Warning - Not found a single intersection with R boundary from inside!" << endl;
 		#endif
 		return 0.0;
 	}
-	
 	return tmin;
 }
 
@@ -747,6 +807,11 @@ Double_t Tube::InsideTimeToRBoundary(const Double_t* point, const Double_t* velo
 Double_t Tube::OutsideTimeToRBoundary(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t rBoundary, const Double_t dz, const Bool_t onBoundary) 
 {
 	// -- Calculate the time to reach the circular boundary of the tube from outside.
+	#ifdef VERBOSE_MODE
+		cout << "-----------------------------" << endl;
+      cout << "-- OutsideTimeToRBoundary --" << endl;
+      cout << "R Boundary: " << rBoundary << endl;
+	#endif
 	if (rBoundary <= 0.0) {
 		// -- No intersection possible since there is no boundary to cross!
 		return 0.0;
@@ -769,9 +834,15 @@ Double_t Tube::OutsideTimeToRBoundary(const Double_t* point, const Double_t* vel
 	// Now if the onBoundary flag is set, and our current radius is within 1E-9 of the boundary,
 	// we will put this down to being the case of sitting on this boundary, and therefore set e = 0;
 	if (TMath::Abs(rCurrent - rBoundary) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+		#ifdef VERBOSE_MODE
+			cout << "Rounding Down  e: " << e << " to zero." << endl;
+		#endif
 		e = 0.0;
 	}
 	if (TMath::Abs(e) < 10.*TGeoShape::Tolerance() && onBoundary == kTRUE) {
+		#ifdef VERBOSE_MODE
+			cout << "Rounding Down  e: " << e << " to zero." << endl;
+		#endif
 		e = 0.0;
 	}
 	
@@ -781,18 +852,30 @@ Double_t Tube::OutsideTimeToRBoundary(const Double_t* point, const Double_t* vel
 	if (TMath::Abs(a) < TGeoShape::Tolerance()) {
 		// a = 0 if the field component in the x-y plane is zero
 		// This happens if the tube is not rotated and is aligned with the field (conventially set along the z-axis)
+		#ifdef VERBOSE_MODE
+			cout << "Rounding Down  a: " << a << " to zero." << endl;
+		#endif
 		a = 0.;
 	}
 	if (TMath::Abs(b) < TGeoShape::Tolerance()) {
 		// b = 0 if the velocity or field component in the x-y plane is zero (i.e it wont hit the boundary anyway)
+		#ifdef VERBOSE_MODE
+			cout << "Rounding Down  b: " << b << " to zero." << endl;
+		#endif
 		b = 0.;
 	}
 	if (TMath::Abs(c) < TGeoShape::Tolerance()) {
 		// c = 0 if the velocity and field components in the x-y plane are zero (i.e it wont hit the boundary anyway)
+		#ifdef VERBOSE_MODE
+			cout << "Rounding Down  c: " << c << " to zero." << endl;
+		#endif
 		c = 0.;
 	}
 	if (TMath::Abs(d) < TGeoShape::Tolerance()) {
 		// d = 0 if the velocity components in the x-y plane are zero (i.e it wont hit the boundary anyway)
+		#ifdef VERBOSE_MODE
+			cout << "Rounding Down  d: " << d << " to zero." << endl;
+		#endif
 		d = 0.;
 	}
 	
@@ -815,9 +898,9 @@ Double_t Tube::OutsideTimeToRBoundary(const Double_t* point, const Double_t* vel
 	
 	// --------------------------------------------------------------------------------------
    // -- Solve the quartic equation to find the intersections of the parabola with the inner cylinder
-	#ifdef VERBOSE_MODE				
-		cout << "OutsideTimeToRBoundary - Quartic Eqn - a: " <<  a << "  b: " << b << "  c: " << c << "  d: " << d << "  e: " << e << endl;
-		cout << "OutsideTimeToRBoundary - Polynomial Order: " <<  order << endl;
+	#ifdef VERBOSE_MODE
+   	cout << "Polynomial Order: " <<  order << endl;
+   	cout << "Eqn - a: " <<  a << "  b: " << b << "  c: " << c << "  d: " << d << "  e: " << e << endl;
 	#endif
 	
 	Int_t solutions = 0; // Counts the number of possible solutions
@@ -888,8 +971,8 @@ Double_t Tube::OutsideTimeToRBoundary(const Double_t* point, const Double_t* vel
 		}
 	}
 	
-	#ifdef VERBOSE_MODE				
-		cout << "OutsideTimeToRBoundary" << "\t" <<  "Solutions: " <<  solutions << endl;
+	#ifdef VERBOSE_MODE
+		cout << "Solutions: " <<  solutions << endl;
 	#endif
 	// -- Define the smallest non-zero time to boundary
 	Double_t tmin = 0.0;
@@ -910,13 +993,14 @@ Double_t Tube::OutsideTimeToRBoundary(const Double_t* point, const Double_t* vel
 		}
 	}
 	
-	#ifdef VERBOSE_MODE				
-		cout << "OutsideTimeToRBoundary - Smallest Time to Boundary: " <<  tmin << endl;
+	#ifdef VERBOSE_MODE
+      cout << "Time to R Boundary from outside: " <<  tmin << endl;
+      cout << "-----------------------------" << endl;
 	#endif
 	// -- Since we are coming from Outside, there are no guarentees we will hit anything. 
 	if (tmin <= 0.0) {
-		#ifdef VERBOSE_MODE				
-			cout << "Warning - OusideTimeToRBoundary has not found an positive intersection!" << endl;
+		#ifdef VERBOSE_MODE
+			cout << "Warning - not found a single intersection!" << endl;
 		#endif
 		return 0.0;
 	}	

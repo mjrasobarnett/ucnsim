@@ -29,6 +29,7 @@
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
 #include "TLine.h"
+#include "TTree.h"
 
 #include "Particle.h"
 #include "ConfigFile.h"
@@ -36,11 +37,14 @@
 #include "SpinData.h"
 #include "BounceData.h"
 #include "FieldData.h"
+#include "ParticleManifest.h"
 
 #include "Algorithms.h"
-#include "DataFileHierarchy.h"
+#include "ValidStates.h"
 #include "Constants.h"
 #include "Units.h"
+
+#include <boost/foreach.hpp>
 
 using namespace Analysis;
 using namespace std;
@@ -50,7 +54,6 @@ TFile* DataFile::OpenRootFile(const std::string filename, const std::string opti
 {
    // -- Simply open a Root file with the given name and option and return pointer to it.
    cout << "-------------------------------------------" << endl;
-   cout << "Loading Data File: " << filename << endl;
    TFile *file = NULL;
    file = TFile::Open(filename.c_str(), option.c_str());
    if (!file || file->IsZombie()) {
@@ -58,7 +61,6 @@ TFile* DataFile::OpenRootFile(const std::string filename, const std::string opti
       return NULL;
    }
    file->cd();
-   cout << "-------------------------------------------" << endl;
    cout << "Successfully Loaded Data File: " << filename << endl;
    cout << "-------------------------------------------" << endl;
    return file;
@@ -67,27 +69,20 @@ TFile* DataFile::OpenRootFile(const std::string filename, const std::string opti
 //_____________________________________________________________________________
 const RunConfig& DataFile::LoadRunConfig(TFile& file)
 {
-   // -- Attempt to navigate to the config file folder in supplied file and extract the runconfig
-   // -- Throw an exception if this cannot be done.
+   // -- Attempt to read in the runconfig from the top level directory
    cout << "Attempting to load the RunConfig" << endl;
-   // Navigate to Config Folder   
-   if (file.cd(Folders::config.c_str()) == false) {
-      cerr << "No Folder named: " << Folders::config << " in data file" << endl;
-      throw runtime_error("Cannot find config folder");
-   }
-   TDirectory* const configDir = gDirectory;
    // -- Loop over all objects in folder and extract latest RunConfig
    RunConfig* ptr_config = NULL;
-   TKey *configKey;
-   TIter configIter(configDir->GetListOfKeys());
-   while ((configKey = dynamic_cast<TKey*>(configIter.Next()))) {
+   TKey *key;
+   TIter folderIter(file.GetListOfKeys());
+   while ((key = dynamic_cast<TKey*>(folderIter.Next()))) {
       // Check if current item is of class RunConfig
-      const char *classname = configKey->GetClassName();
+      const char *classname = key->GetClassName();
       TClass *cl = gROOT->GetClass(classname);
       if (!cl) continue;
       if (cl->InheritsFrom("RunConfig")) {
          // Read RunConfig into memory when found
-         ptr_config = dynamic_cast<RunConfig*>(configKey->ReadObj());
+         ptr_config = dynamic_cast<RunConfig*>(key->ReadObj());
          break;
       }
    }
@@ -95,7 +90,6 @@ const RunConfig& DataFile::LoadRunConfig(TFile& file)
    if (ptr_config == NULL) {
       throw runtime_error("Unable to load RunConfig from config folder");
    }
-   cout << "-------------------------------------------" << endl;
    cout << "Successfully Loaded RunConfig" << endl;
    cout << "-------------------------------------------" << endl;
    return *ptr_config;
@@ -104,45 +98,98 @@ const RunConfig& DataFile::LoadRunConfig(TFile& file)
 //_____________________________________________________________________________
 TGeoManager& DataFile::LoadGeometry(TFile& file)
 {
-   // -- Attempt to navigate to the geometry folder of the supplied file and extract the Geometry
-   // -- Throw an exception if this cannot be done.
-   if (file.cd(Folders::geometry.c_str()) == false) {
-      cerr << "No Folder named: " << Folders::geometry << " in data file" << endl;
-      throw runtime_error("Cannot find geometry folder");
-   }
-   // Loop over contents ("TKeys") of Geometry folder
+   // -- Attempt to read in the Geometry from the top level directory
+   cout << "Attempting to load the Geometry" << endl;
    TGeoManager* geoManager = NULL;
-   TDirectory* geomDir = gDirectory;
-   TKey *geomKey;
-   TIter geomIter(geomDir->GetListOfKeys());
-   while ((geomKey = dynamic_cast<TKey*>(geomIter.Next()))) {
+   TKey *key;
+   TIter folderIter(file.GetListOfKeys());
+   while ((key = dynamic_cast<TKey*>(folderIter.Next()))) {
       // Check if current item is of Class TGeomanager
-      const char *classname = geomKey->GetClassName();
+      const char *classname = key->GetClassName();
       TClass *cl = gROOT->GetClass(classname);
       if (!cl) continue;
       if (cl->InheritsFrom("TGeoManager")) {
          // Read TGeoManager into memory when found
-         geoManager = dynamic_cast<TGeoManager*>(geomKey->ReadObj());
+         geoManager = dynamic_cast<TGeoManager*>(key->ReadObj());
          break;
       }
    }
    // Throw exception if we failed to find any TGeoManager in this folder
    if (geoManager == NULL) {
-      throw runtime_error("Unable to load GeoManager from geometry folder");
+      throw runtime_error("Unable to load GeoManager from file");
    }
-   cout << "-------------------------------------------" << endl;
    cout << "Successfully Loaded Geometry" << endl;
    cout << "-------------------------------------------" << endl;
    return *geoManager;
 }
 
 //_____________________________________________________________________________
-bool DataFile::ValidateRootFile(const string filename)
+const ParticleManifest& DataFile::LoadParticleManifest(TFile& file)
+{
+   // -- Attempt to read in the ParticleManifest from the top level directory
+   cout << "Attempting to load the ParticleManifest" << endl;
+   ParticleManifest* manifest = NULL;
+   TKey *key;
+   TIter folderIter(file.GetListOfKeys());
+   while ((key = dynamic_cast<TKey*>(folderIter.Next()))) {
+      // Check if current item is of Class TGeomanager
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("ParticleManifest")) {
+         // Read TGeoManager into memory when found
+         manifest = dynamic_cast<ParticleManifest*>(key->ReadObj());
+         break;
+      }
+   }
+   // Throw exception if we failed to find any TGeoManager in this folder
+   if (manifest == NULL) {
+      throw runtime_error("Unable to load ParticleManifest from file");
+   }
+   cout << "Successfully Loaded ParticleManifest" << endl;
+   cout << "-------------------------------------------" << endl;
+   return *manifest;
+}
+
+//_____________________________________________________________________________
+TTree* DataFile::LoadParticleDataTree(TFile& file)
+{
+   // -- Attempt to read in the ParticleManifest from the top level directory
+   cout << "Attempting to load the Particle Data Tree" << endl;
+   TTree* tree = NULL;
+   TKey *key;
+   TIter folderIter(file.GetListOfKeys());
+   while ((key = dynamic_cast<TKey*>(folderIter.Next()))) {
+      // Check if current item is of Class TGeomanager
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TTree")) {
+         // Read TGeoManager into memory when found
+         tree = dynamic_cast<TTree*>(key->ReadObj());
+         break;
+      }
+   }
+   // Throw exception if we failed to find any TGeoManager in this folder
+   if (tree == NULL) {
+      throw runtime_error("Unable to load Particle Data Tree from file");
+   }
+   cout << "Successfully Loaded Particle Data Tree" << endl;
+   cout << "-------------------------------------------" << endl;
+   return tree;
+}
+
+//_____________________________________________________________________________
+bool DataFile::IsRootFile(const string filename)
 {
    // -- Check that the filename supplied has a .root extension
    size_t found = filename.find_last_of(".");
-   if (found == string::npos) return false;
+   if (found == string::npos) {
+      cout << "Error - File: " << filename << "is not a valid Root file" << endl;
+      return false;
+   }
    if (filename.substr(found) == ".root") return true;
+   cout << "Error - File: " << filename << "is not a valid Root file" << endl;
    return false;
 }
 //_____________________________________________________________________________
@@ -153,13 +200,13 @@ bool DataFile::IsValidStateName(const vector<string>& statenames)
    vector<string>::const_iterator iter;
    for (iter = statenames.begin(); iter != statenames.end(); iter++) {
       // Check state-name
-      if (*iter != Folders::initial &&
-          *iter != Folders::propagating &&
-          *iter != Folders::absorbed &&
-          *iter != Folders::lost &&
-          *iter != Folders::decayed &&
-          *iter != Folders::detected &&
-          *iter != Folders::anomalous) {
+      if (*iter != States::initial &&
+          *iter != States::propagating &&
+          *iter != States::absorbed &&
+          *iter != States::lost &&
+          *iter != States::decayed &&
+          *iter != States::detected &&
+          *iter != States::anomalous) {
          cerr << "Argument, " << *iter << " is not a valid statename" << endl;
          return false;
       }
@@ -180,101 +227,130 @@ bool DataFile::IsValidStateName(const string statename)
    // -- Check that each statename in list is a valid state as defined
    // -- in DataFileHierarchy lvl 3 and is unique
    // Check state-name
-   if (statename != Folders::initial &&
-         statename != Folders::propagating &&
-         statename != Folders::absorbed &&
-         statename != Folders::lost &&
-         statename != Folders::decayed &&
-         statename != Folders::detected &&
-         statename != Folders::anomalous) {
+   if (statename != States::initial &&
+         statename != States::propagating &&
+         statename != States::absorbed &&
+         statename != States::lost &&
+         statename != States::decayed &&
+         statename != States::detected &&
+         statename != States::anomalous) {
       cerr << "Argument, " << statename << " is not a valid statename" << endl;
       return false;
    }
    return true;
 }
-//_____________________________________________________________________________
-void DataFile::CountParticles(TDirectory * const particleDir)
-{
-   // -- Given the particle state directory, count the number of particles
-   // -- in each state subfolder
-   if (particleDir->cd(Folders::initial.c_str()) == false) return;
-   int initial = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::propagating.c_str()) == false) return;
-   int propagating = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::absorbed.c_str()) == false) return;
-   int absorbed = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::detected.c_str()) == false) return;
-   int detected = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::decayed.c_str()) == false) return;
-   int decayed = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::lost.c_str()) == false) return;
-   int lost = gDirectory->GetNkeys();
-   if (particleDir->cd(Folders::anomalous.c_str()) == false) return;
-   int anomalous = gDirectory->GetNkeys();
-   cout << "Initial Particles: " << initial << endl;
-   cout << "Final Total: ";
-   cout << propagating+detected+absorbed+decayed+lost+anomalous << endl;
-   cout << "Propagating: " << propagating << endl;
-   cout << "Detected: " << detected << endl;
-   cout << "Absorbed: " << absorbed << endl;
-   cout << "Decayed: " << decayed << endl;
-   cout << "Lost: " << lost << endl;
-   cout << "Anomalous: " << anomalous << endl;
-   return;
-}
 
 //_____________________________________________________________________________
-bool DataFile::FetchStateDirectories(TFile& file, vector<string>& stateNames, vector<TDirectory*>& stateDirs)
-{   
-   // -- Navigate to and store folder for each selected state. Return false if any of the requested states
-   // -- were not found in the file
-   if (file.cd(Folders::particles.c_str()) == false) {
-      cerr << "Cannot locate Folder: " << Folders::particles << endl;
-      return false;
-   }
-   TDirectory* particleDir = gDirectory;
-   vector<string>::const_iterator stateIter;
-   for (stateIter = stateNames.begin(); stateIter != stateNames.end(); stateIter++) {
-      // Try to cd into state folder
-      if (particleDir->cd((*stateIter).c_str()) == false) {
-         cerr << "Error: State, " << *stateIter << " is not found in file" << endl;
-         return false;
-      }
-      // Store pointer to state folder
-      stateDirs.push_back(gDirectory);
-   }
-   cout << "-------------------------------------------" << endl;
-   cout << "Loading Particles from the Following states: ";
-   copy(stateNames.begin(),stateNames.end(),ostream_iterator<string>(cout,", "));
-   cout << endl;
-   cout << "-------------------------------------------" << endl;
-   return true;
-}
-
-//_____________________________________________________________________________
-string DataFile::ConcatenateStateNames(const vector<TDirectory*>& stateDirs)
+string DataFile::ConcatenateStateNames(const vector<string>& states)
 {
-   // -- Return a string made up of the names of each state in the supplied list of state folders
-   string stateName;
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      if (stateName.empty() == false) stateName.append("+");
-      stateName.append((*dirIter)->GetName());
+   // -- Return a string made up of the names of each state in the supplied list
+   // -- separated by a '+'
+   string result;
+   BOOST_FOREACH(string name, states) {
+      if (result.empty() == false) result.append("+");
+      result.append(name);
    }
-   return stateName;
+   return result;
 }
 
 //_____________________________________________________________________________
 TDirectory* DataFile::NavigateToHistDir(TFile& file)
 {
-   // -- Create a Histogram Director if one doesn't already exist in File
+   // -- Attempt to enter a folder called 'histograms' in the top level directory
+   // -- of the given file. If it doesn't exist, create it, and return folder
    TDirectory* histDir = NULL;
-   if (file.cd(Folders::histograms.c_str()) == false) {
-      histDir = file.mkdir(Folders::histograms.c_str());
+   if (file.cd("histograms") == false) {
+      histDir = file.mkdir("histograms");
+      histDir->cd();
    } else {
       histDir = gDirectory;
    }
    return histDir;
+}
+
+//_____________________________________________________________________________
+void DataFile::CopyDirectory(TDirectory * const sourceDir, TDirectory * const outputDir) {
+   // Copy the source directory and all its subdirectories into the supplied output directory
+   // as a new subdirectory  
+   TDirectory* copiedDir = outputDir->mkdir(sourceDir->GetName());
+   copiedDir->cd();
+   // Loop on all entries of this directory
+   TKey *key;
+   TIter nextkey(sourceDir->GetListOfKeys());
+   while ((key = static_cast<TKey*>(nextkey.Next()))) {
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TDirectory")) {
+         // Copy subdirectory to a new subdirectoy in copiedDir
+         sourceDir->cd(key->GetName());
+         TDirectory *subdir = gDirectory;
+         copiedDir->cd();
+         CopyDirectory(subdir, copiedDir);
+         copiedDir->cd();
+      } else {
+         // Copy Object
+         sourceDir->cd();
+         TObject *obj = key->ReadObj();
+         copiedDir->cd();
+         obj->Write();
+         delete obj;
+     }
+  }
+  copiedDir->SaveSelf(kTRUE);
+  outputDir->cd();
+}
+
+//_____________________________________________________________________________
+void DataFile::CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * const outputDir) {
+   // -- Similar to CopyDirectory but here we only copy all the objects and subdirs of the source
+   // -- directory into the supplied output directory, not the source directory itself
+   outputDir->cd();
+   // Loop on all entries of this directory
+   TKey *key;
+   TIter nextkey(sourceDir->GetListOfKeys());
+   Int_t counter = 0;
+   while ((key = static_cast<TKey*>(nextkey.Next()))) {
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TDirectory")) {
+         // Copy subdirectory to a new subdirectoy in outputDir
+         sourceDir->cd(key->GetName());
+         TDirectory *subdir = gDirectory;
+         outputDir->cd();
+         TDirectory* outputSubDir = outputDir->mkdir(subdir->GetName());
+         CopyDirectoryContents(subdir, outputSubDir);
+         outputDir->cd();
+      } else {
+         // Copy Object
+         sourceDir->cd();
+         TObject *obj = key->ReadObj();
+         outputDir->cd();
+         obj->Write();
+         delete obj;
+      }
+      ++counter;
+      Algorithms::ProgressBar::PrintProgress(counter,sourceDir->GetNkeys(),1);
+   }
+   outputDir->SaveSelf(kTRUE);
+   outputDir->cd();
+}
+
+//_____________________________________________________________________________
+TBranch* DataFile::GetParticleBranch(const string& state, TTree* dataTree)
+{
+   TBranch* particleBranch = NULL;
+   if (state == States::initial) {
+      particleBranch = dataTree->GetBranch(States::initial.c_str());
+   } else {
+      particleBranch = dataTree->GetBranch(States::final.c_str());
+   }
+   if (particleBranch == NULL) {
+      cerr << "Error - Could not find correct branch in input tree" << endl;
+      throw runtime_error("Failed to find branch in input tree");
+   }
+   return particleBranch;
 }
 
 //_____________________________________________________________________________
@@ -294,36 +370,20 @@ double FitFunctions::ExponentialDecay(double *x, double *par)
 }
 
 //_____________________________________________________________________________
-void FinalStates::PlotFinalStates(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig, TGeoManager& geoManager)
+void FinalStates::PlotFinalState(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig)
 {
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd into the Histogram's directory
-   histDir->cd();
-   Char_t histname[40];
-   // -- Count total Neutrons, and define name of combined states
-   string stateName = DataFile::ConcatenateStateNames(stateDirs);
-   int total_neutrons = 0;
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      total_neutrons += (*dirIter)->GetNkeys();
-   }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Final Positions
-   TPolyMarker3D* points = new TPolyMarker3D(total_neutrons, 1); // 1 is marker style
-   sprintf(histname,"%s:NeutronPositions",stateName.c_str());
-   points->SetName(histname);
-   points->SetMarkerColor(2);
-   points->SetMarkerStyle(6);   
-   //////////////////////////////////////////////////////////////////////////////////////
+   cout << "Preparing to draw histograms for the final particle state..." << endl;
    // -- Angular Distribution
-   sprintf(histname,"%s:Theta",stateName.c_str());
+   Char_t histname[40];
+   sprintf(histname,"%s:Theta",state.c_str());
    TH1F* thetaHist = new TH1F(histname,"Direction: Theta, Degrees", 50, 0., 180.);
    thetaHist->SetXTitle("Degrees");
    thetaHist->SetYTitle("Neutrons");
    thetaHist->SetLineColor(kRed);
    thetaHist->SetFillStyle(3001);
    thetaHist->SetFillColor(kRed);
-   sprintf(histname,"%s:Phi",stateName.c_str());
+   sprintf(histname,"%s:Phi",state.c_str());
    TH1F* phiHist = new TH1F(histname,"Direction: Phi, Degrees", 50, -180.0, 180.0);
    phiHist->SetXTitle("Degrees");
    phiHist->SetYTitle("Neutrons");
@@ -333,29 +393,29 @@ void FinalStates::PlotFinalStates(TDirectory* const histDir, const vector<TDirec
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Energy/Momentum
    const double maximumVelocity = 8.0;
-   const int nbins = 50;   
-   sprintf(histname,"%s:Velocity",stateName.c_str());
-   TH1F* energyHist = new TH1F(histname,"Velocity: Units of m/s", nbins, 0.0, maximumVelocity);      
+   const int nbins = 50;
+   sprintf(histname,"%s:Velocity",state.c_str());
+   TH1F* energyHist = new TH1F(histname,"Velocity: Units of m/s", nbins, 0.0, maximumVelocity);
    energyHist->SetXTitle("Velocity (m/s)");
    energyHist->SetYTitle("Neutrons");
    energyHist->SetLineColor(kBlack);
    energyHist->SetFillStyle(3001);
    energyHist->SetFillColor(kBlack);
-   sprintf(histname,"%s:Vx",stateName.c_str());
+   sprintf(histname,"%s:Vx",state.c_str());
    TH1F* vxHist = new TH1F(histname,"Vx (m/s)", nbins, -maximumVelocity, maximumVelocity);
    vxHist->SetXTitle("Vx (m/s)");
    vxHist->SetYTitle("Neutrons");
    vxHist->SetLineColor(kBlue);
    vxHist->SetFillStyle(3001);
    vxHist->SetFillColor(kBlue);
-   sprintf(histname,"%s:Vy",stateName.c_str());
+   sprintf(histname,"%s:Vy",state.c_str());
    TH1F* vyHist = new TH1F(histname,"Vy (m/s)", nbins, -maximumVelocity, maximumVelocity);
    vyHist->SetXTitle("Vy (m/s)");
    vyHist->SetYTitle("Neutrons");
    vyHist->SetLineColor(kBlue);
    vyHist->SetFillStyle(3001);
    vyHist->SetFillColor(kBlue);
-   sprintf(histname,"%s:Vz",stateName.c_str());
+   sprintf(histname,"%s:Vz",state.c_str());
    TH1F* vzHist = new TH1F(histname,"Vz (m/s)", nbins, -maximumVelocity, maximumVelocity);
    vzHist->SetXTitle("Vz (m/s)");
    vzHist->SetYTitle("Neutrons");
@@ -365,66 +425,38 @@ void FinalStates::PlotFinalStates(TDirectory* const histDir, const vector<TDirec
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Run Time
    const double runTime = runConfig.RunTime();
-   sprintf(histname,"%s:Time",stateName.c_str());
+   sprintf(histname,"%s:Time",state.c_str());
    TH1F* timeHist = new TH1F(histname,"Time: Units of s", ((int)runTime), 0.0, runTime+1);
    timeHist->SetXTitle("Time (s)");
    timeHist->SetYTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over each state to be included in histogram
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      // -- cd into the State's folder
-      (*dirIter)->cd();
-      //////////////////////////////////////////////////////////////////////////////////////
-      // -- Loop over all particle folders in the current state's folder
-      TKey *folderKey;
-      TIter folderIter((*dirIter)->GetListOfKeys());
-      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         const char *classname = folderKey->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // Loop over all objects in particle dir
-            (*dirIter)->cd(folderKey->GetName());
-            TDirectory* particleDir = gDirectory;
-            TKey *objKey;
-            TIter objIter(particleDir->GetListOfKeys());
-            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
-               // For Each object in the particle's directory, check its class name and what it
-               // inherits from to determine what to do.
-               classname = objKey->GetClassName();
-               cl = gROOT->GetClass(classname);
-               if (!cl) continue;
-               if (cl->InheritsFrom("Particle")) {
-                  // -- Extract Final Particle State Data
-                  Particle* particle = dynamic_cast<Particle*>(objKey->ReadObj());
-                  // -- Fill Histograms
-                  points->SetPoint(particle->Id()-1, particle->X(), particle->Y(), particle->Z());
-                  thetaHist->Fill((particle->Theta()*180.0)/TMath::Pi());
-                  phiHist->Fill((particle->Phi()*180.0)/TMath::Pi());
-                  energyHist->Fill(particle->V());
-                  vxHist->Fill(particle->Vx());
-                  vyHist->Fill(particle->Vy());
-                  vzHist->Fill(particle->Vz());
-                  timeHist->Fill(particle->T());
-                  delete particle;
-               }
-            }
-         }
-      }
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   Particle* particle = new Particle();
+   TBranch* particleBranch = DataFile::GetParticleBranch(state, dataTree);
+   dataTree->SetBranchAddress(particleBranch->GetName(), &particle);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      particleBranch->GetEntry(particleIndex);
+      // Fill Histograms
+      thetaHist->Fill((particle->Theta()*180.0)/TMath::Pi());
+      phiHist->Fill((particle->Phi()*180.0)/TMath::Pi());
+      energyHist->Fill(particle->V());
+      vxHist->Fill(particle->Vx());
+      vyHist->Fill(particle->Vy());
+      vzHist->Fill(particle->Vz());
+      timeHist->Fill(particle->T());
    }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd back into Histogram's dir
-   histDir->cd();
+   delete particle; particle = NULL;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Draw Histograms
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Time Distribution
+   // Time Distribution
    TCanvas *timecanvas = new TCanvas("Times","Final Time (s)",60,0,1200,800);
    timecanvas->cd();
    timeHist->Draw();
    timeHist->Write(timeHist->GetName(),TObject::kOverwrite);
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Velocity Distribution
+   // Velocity Distribution
    TCanvas *velcanvas = new TCanvas("Velocity","Velocity Space",60,0,1200,800);
    velcanvas->Divide(3,2);
    velcanvas->cd(1);
@@ -446,125 +478,107 @@ void FinalStates::PlotFinalStates(TDirectory* const histDir, const vector<TDirec
    velcanvas->cd(6);
    vzHist->Draw();
    vzHist->Write(vzHist->GetName(),TObject::kOverwrite);
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Final Positions
-   TCanvas *poscanvas = new TCanvas("Positions","Neutron Positions",10,10,50,50);
-   poscanvas->cd();
-   geoManager.GetTopVolume()->Draw("ogl");
-   geoManager.SetVisLevel(4);
-   geoManager.SetVisOption(0);
-   points->Draw();
-   points->Write(points->GetName(),TObject::kOverwrite);
-   // -- Get the GLViewer so we can manipulate the camera
-   TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
-   // -- Select Draw style 
-   glViewer->SetStyle(TGLRnrCtx::kFill);
-   // -- Set Background colour
-   glViewer->SetClearColor(kWhite);
-   // -- Set Camera type
-   TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
-   glViewer->SetCurrentCamera(camera);
-   glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   double cameraCentre[3] = {0,0,0};
-   glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
-   // -- Draw Reference Point, Axes
-   double refPoint[3] = {0.,0.,0.};
-   // int axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const double referencePos[3]
-   glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
-   glViewer->UpdateScene();
-   glViewer = 0;
+   cout << "Successfully created histograms for the final particle state" << endl;
+   cout << "-------------------------------------------" << endl;
    return;
 }
 
 //_____________________________________________________________________________
-bool FinalStates::PlotEmptyingTime(const vector<TDirectory*> stateDirs, const RunConfig& runConfig, const double lLimit, const double uLimit)
+void FinalStates::DrawFinalPositions(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, TGeoManager& geoManager, double* cameraCentre)
 {
    //////////////////////////////////////////////////////////////////////////////////////
-   Char_t histname[40];
+   cout << "Preparing to draw particle positions in the geometry..." << endl;
    // -- Count total Neutrons, and define name of combined states
-   string stateName = DataFile::ConcatenateStateNames(stateDirs);
-   int total_neutrons = 0;
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      total_neutrons += (*dirIter)->GetNkeys();
+   size_t totalNeutrons = particleIndexes.size();
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Final Positions
+   TPolyMarker3D* points = new TPolyMarker3D(totalNeutrons, 1); // 1 is marker style
+   Char_t histname[40];
+   sprintf(histname,"%s:NeutronPositions",state.c_str());
+   points->SetName(histname);
+   points->SetMarkerColor(2);
+   points->SetMarkerStyle(6);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   Particle* particle = new Particle();
+   TBranch* particleBranch = DataFile::GetParticleBranch(state, dataTree);
+   dataTree->SetBranchAddress(particleBranch->GetName(), &particle);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      particleBranch->GetEntry(particleIndex);
+      // Fill Point array
+      static int pointNum = 0;
+      points->SetPoint(pointNum, particle->X(), particle->Y(), particle->Z());
+      pointNum++;
    }
+   delete particle; particle = NULL;
+   points->Write(points->GetName(),TObject::kOverwrite);
+   //////////////////////////////////////////////////////////////////////////////////////
+   // Final Positions
+   TCanvas *canvas = new TCanvas("Positions","Neutron Positions",10,10,10,10);
+   Geometry::DrawGeometry(*canvas, geoManager, cameraCentre);
+   points->Draw();
+   cout << "Successfully drawn particle positions in the geometry" << endl;
+   cout << "-------------------------------------------" << endl;
+   return;
+}
+
+//_____________________________________________________________________________
+bool FinalStates::PlotEmptyingTime(const std::string state,
+                                   const std::vector<int> particleIndexes,
+                                   TTree* dataTree,
+                                   const RunConfig& runConfig,
+                                   const double lLimit,
+                                   const double uLimit)
+{
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Run Time
-   const double runTime = runConfig.RunTime();
-   sprintf(histname,"%s:Time",stateName.c_str());
-   TH1F* timeHist = new TH1F(histname,"Time: Units of s", ((int)runTime), 0.0, runTime);
+   Char_t histname[40];
+   sprintf(histname,"%s:Time",state.c_str());
+   TH1F* timeHist = new TH1F(histname,"Time: Units of s", 100, lLimit, uLimit);
    timeHist->SetXTitle("Time (s)");
    timeHist->SetYTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over each state to be included in histogram
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      // -- cd into the State's folder
-      (*dirIter)->cd();
-      //////////////////////////////////////////////////////////////////////////////////////
-      // -- Loop over all particle folders in the current state's folder
-      TKey *folderKey;
-      TIter folderIter((*dirIter)->GetListOfKeys());
-      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         const char *classname = folderKey->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // Loop over all objects in particle dir
-            (*dirIter)->cd(folderKey->GetName());
-            TDirectory* particleDir = gDirectory;
-            TKey *objKey;
-            TIter objIter(particleDir->GetListOfKeys());
-            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
-               // For Each object in the particle's directory, check its class name and what it
-               // inherits from to determine what to do.
-               classname = objKey->GetClassName();
-               cl = gROOT->GetClass(classname);
-               if (!cl) continue;
-               if (cl->InheritsFrom("Particle")) {
-                  // -- Extract Final Particle State Data
-                  Particle* particle = dynamic_cast<Particle*>(objKey->ReadObj());
-                  // -- Fill Histograms
-                  timeHist->Fill(particle->T());
-                  delete particle;
-               }
-            }
-         }
-      }
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   Particle* particle = new Particle();
+   TBranch* particleBranch = DataFile::GetParticleBranch(state, dataTree);
+   dataTree->SetBranchAddress(particleBranch->GetName(), &particle);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      particleBranch->GetEntry(particleIndex);
+      // Fill Histograms
+      timeHist->Fill(particle->T());
    }
+   delete particle; particle = NULL;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Draw Histograms
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Time Distribution
-   TCanvas *timecanvas = new TCanvas("Times","Final Time (s)",60,0,600,600);
+   // Time Distribution
+   TCanvas *timecanvas = new TCanvas("Times","Final Time (s)",60,0,1200,800);
    timecanvas->cd();
-   timeHist->Draw("E1");
-   
+   timeHist->Draw("P E1 X0");
    // Fit exponential to Graph
    int numParams = 2;
    TF1* expo = new TF1("Exponential", FitFunctions::ExponentialDecay, lLimit, uLimit, numParams);
    expo->SetParNames("Amplitude","Decay lifetime");
-   expo->SetParameters(1.0,1.0);
-   timeHist->Fit(expo, "R 0");
+   expo->SetParameters(10.0,50.0);
+   timeHist->Fit(expo, "R P 0");
    expo->Draw("SAME");
    // Extract Emptying Time
    double t2 = expo->GetParameter(1);
    double t2error = expo->GetParError(1);
-   
-   cout << "Emptying Lifetime: " << t2 << "\t Error: " << t2error << endl;
-   
-   timecanvas->SaveAs("lifetime.root");
+   cout << "Decay Lifetime: " << t2 << "\t Error: " << t2error << endl;
+   cout << "Chi-Sq: " << expo->GetChisquare() << "\t NDF: " << expo->GetNDF() << endl;
    return true;
 }
 
 //_____________________________________________________________________________
-void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig) 
+void Polarisation::PlotSpinPolarisation(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig) 
 {
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd into Histogram's dir
-   histDir->cd();
-   //////////////////////////////////////////////////////////////////////////////////////
+   cout << "Preparing to draw particle spin polarisation over time..." << endl;
    // -- Define Histograms
-   Char_t histname[40];
    const double runTime = runConfig.RunTime();
    const double spinMeasInterval = runConfig.SpinMeasureInterval();
    const int nbins = ceil(runTime/spinMeasInterval);
@@ -572,15 +586,11 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    const TVector3 yAxis(0.0,1.0,0.0);
    const TVector3 zAxis(0.0,0.0,1.0);
    // -- Define name of combined states
-   string stateName;
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      if (stateName.empty() == false) stateName += "/";
-      stateName += (*dirIter)->GetName();
-   }
+
    //////////////////////////////////////////////////////////////////////////////////////
    // -- X Axis Spin Polarisation
-   sprintf(histname,"%s:SpinUp Along X",stateName.c_str());
+   Char_t histname[40];
+   sprintf(histname,"%s:SpinUp Along X",state.c_str());
    TH1F* spinUpAlongXHist = new TH1F(histname,"SpinUp Along X", nbins, 0.0, runTime);      
    spinUpAlongXHist->SetXTitle("Time (s)");
    spinUpAlongXHist->SetYTitle("Spin Up Neutrons");
@@ -588,7 +598,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinUpAlongXHist->SetFillColor(kBlue-7);
    spinUpAlongXHist->SetLineColor(kBlue-7);
 
-   sprintf(histname,"%s:SpinDown Along X",stateName.c_str());
+   sprintf(histname,"%s:SpinDown Along X",state.c_str());
    TH1F* spinDownAlongXHist = new TH1F(histname,"SpinDown Along X", nbins, 0.0, runTime);      
    spinDownAlongXHist->SetXTitle("Time (s)");
    spinDownAlongXHist->SetYTitle("Spin Down Neutrons");
@@ -596,7 +606,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinDownAlongXHist->SetFillColor(kRed-7);
    spinDownAlongXHist->SetLineColor(kRed-7);
    
-   sprintf(histname,"%s:SpinUp+Down Along X",stateName.c_str());
+   sprintf(histname,"%s:SpinUp+Down Along X",state.c_str());
    TH1F* spinUpDownAlongXHist  = new TH1F(histname,"SpinUp+Down Along X", nbins, 0.0, runTime);   
    spinUpDownAlongXHist->SetXTitle("Time (s)");
    spinUpDownAlongXHist->SetYTitle("Spin Up+Down Neutrons");
@@ -604,13 +614,13 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinUpDownAlongXHist->SetFillColor(kBlack);
    spinUpDownAlongXHist->SetLineColor(kBlack);
    
-   sprintf(histname,"%s:Polarisation Along X",stateName.c_str());
+   sprintf(histname,"%s:Polarisation Along X",state.c_str());
    TGraph* spinAlphaX = new TGraph(nbins);
    spinAlphaX->SetName(histname);
    
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Y Axis Spin Polarisation
-   sprintf(histname,"%s:SpinUp Along Y",stateName.c_str());
+   sprintf(histname,"%s:SpinUp Along Y",state.c_str());
    TH1F* spinUpAlongYHist = new TH1F(histname,"SpinUp Along Y", nbins, 0.0, runTime);      
    spinUpAlongYHist->SetXTitle("Time (s)");
    spinUpAlongYHist->SetYTitle("Spin Up Neutrons");
@@ -618,7 +628,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinUpAlongYHist->SetFillStyle(1001);
    spinUpAlongYHist->SetFillColor(kBlue-7);
 
-   sprintf(histname,"%s:SpinDown Along Y",stateName.c_str());
+   sprintf(histname,"%s:SpinDown Along Y",state.c_str());
    TH1F* spinDownAlongYHist = new TH1F(histname,"SpinDown Along Y", nbins, 0.0, runTime);      
    spinDownAlongYHist->SetXTitle("Time (s)");
    spinDownAlongYHist->SetYTitle("Spin Down Neutrons");
@@ -626,7 +636,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinDownAlongYHist->SetFillStyle(3001);
    spinDownAlongYHist->SetFillColor(kRed-7);
    
-   sprintf(histname,"%s:SpinUp+Down Along Y",stateName.c_str());
+   sprintf(histname,"%s:SpinUp+Down Along Y",state.c_str());
    TH1F* spinUpDownAlongYHist  = new TH1F(histname,"SpinUp+Down Along Y", nbins, 0.0, runTime);   
    spinUpDownAlongYHist->SetXTitle("Time (s)");
    spinUpDownAlongYHist->SetYTitle("Spin Up+Down Neutrons");
@@ -634,13 +644,13 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinUpDownAlongYHist->SetFillStyle(3001);
    spinUpDownAlongYHist->SetFillColor(kBlack);
    
-   sprintf(histname,"%s:Polarisation Along Y",stateName.c_str());
+   sprintf(histname,"%s:Polarisation Along Y",state.c_str());
    TGraph* spinAlphaY = new TGraph(nbins);
    spinAlphaY->SetName(histname);
    
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Z Axis Spin Polarisation
-   sprintf(histname,"%s:SpinUp Along Z",stateName.c_str());
+   sprintf(histname,"%s:SpinUp Along Z",state.c_str());
    TH1F* spinUpAlongZHist = new TH1F(histname,"SpinUp Along Z", nbins, 0.0, runTime);      
    spinUpAlongZHist->SetXTitle("Time (s)");
    spinUpAlongZHist->SetYTitle("Spin Up Neutrons");
@@ -648,7 +658,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinUpAlongZHist->SetFillStyle(1001);
    spinUpAlongZHist->SetFillColor(kBlue-7);
 
-   sprintf(histname,"%s:SpinDown Along Z",stateName.c_str());
+   sprintf(histname,"%s:SpinDown Along Z",state.c_str());
    TH1F* spinDownAlongZHist = new TH1F(histname,"SpinDown Along Z", nbins, 0.0, runTime);      
    spinDownAlongZHist->SetXTitle("Time (s)");
    spinDownAlongZHist->SetYTitle("Spin Down Neutrons");
@@ -656,7 +666,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinDownAlongZHist->SetFillStyle(3001);
    spinDownAlongZHist->SetFillColor(kRed-7);
    
-   sprintf(histname,"%s:SpinUp+Down Along Z",stateName.c_str());
+   sprintf(histname,"%s:SpinUp+Down Along Z",state.c_str());
    TH1F* spinUpDownAlongZHist  = new TH1F(histname,"SpinUp+Down Along Z", nbins, 0.0, runTime);   
    spinUpDownAlongZHist->SetXTitle("Time (s)");
    spinUpDownAlongZHist->SetYTitle("Spin Up+Down Neutrons");
@@ -664,83 +674,61 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinUpDownAlongZHist->SetFillStyle(3001);
    spinUpDownAlongZHist->SetFillColor(kBlack);
    
-   sprintf(histname,"%s:Polarisation Along Z",stateName.c_str());
+   sprintf(histname,"%s:Polarisation Along Z",state.c_str());
    TGraph* spinAlphaZ = new TGraph(nbins);
    spinAlphaZ->SetName(histname);
    
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over each state to be included in histogram
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      // -- cd into the State's folder
-      (*dirIter)->cd();
-      //////////////////////////////////////////////////////////////////////////////////////
-      // -- Loop over all particle folders in the current state's folder
-      TKey *folderKey;
-      TIter folderIter((*dirIter)->GetListOfKeys());
-      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         const char *classname = folderKey->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // Loop over all objects in particle dir
-            (*dirIter)->cd(folderKey->GetName());
-            TDirectory* particleDir = gDirectory;
-            TKey *objKey;
-            TIter objIter(particleDir->GetListOfKeys());
-            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
-               // For Each object in the particle's directory, check its class name and what it
-               // inherits from to determine what to do.
-               classname = objKey->GetClassName();
-               cl = gROOT->GetClass(classname);
-               if (!cl) continue;
-               if (cl->InheritsFrom("SpinData")) {
-                  // -- Extract Spin Observer Data if recorded
-                  const SpinData* data = dynamic_cast<const SpinData*>(objKey->ReadObj());
-                  // Loop over spin data recorded for particle
-                  SpinData::const_iterator dataIter;
-                  for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
-                     spinUpDownAlongXHist->Fill(dataIter->first);
-                     spinUpDownAlongYHist->Fill(dataIter->first);
-                     spinUpDownAlongZHist->Fill(dataIter->first);
-                     // For each data point, record the spin polarisation along each axis
-                     const Spin* spin = dataIter->second;
-                     // Measure polarisation along X
-                     if (spin->IsSpinUp(xAxis)) {
-                        // If spin up, bin the time
-                        if (spinUpAlongXHist) spinUpAlongXHist->Fill(dataIter->first);
-                     } else {
-                        // If spin down, bin the time
-                        if (spinUpAlongXHist) spinDownAlongXHist->Fill(dataIter->first);
-                     }
-                     // Measure polarisation along Y
-                     if (spin->IsSpinUp(yAxis)) {
-                        // If spin up, bin the time
-                        if (spinUpAlongYHist) spinUpAlongYHist->Fill(dataIter->first);
-                     } else {
-                        // If spin down, bin the time
-                        if (spinUpAlongYHist) spinDownAlongYHist->Fill(dataIter->first);
-                     }
-                     // Measure polarisation along Y
-                     if (spin->IsSpinUp(zAxis)) {
-                        // If spin up, bin the time
-                        if (spinUpAlongZHist) spinUpAlongZHist->Fill(dataIter->first);
-                     } else {
-                        // If spin down, bin the time
-                        if (spinUpAlongZHist) spinDownAlongZHist->Fill(dataIter->first);
-                     }
-                  }
-                  delete data;
-               }
-            }
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   SpinData* data = new SpinData();
+   TBranch* spinBranch = dataTree->GetBranch(data->ClassName());
+   if (spinBranch == NULL) {
+      cerr << "Error - Could not find branch: " << data->ClassName() << " in input tree" << endl;
+      throw runtime_error("Failed to find branch in input tree");
+   }
+   dataTree->SetBranchAddress(spinBranch->GetName(), &data);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      spinBranch->GetEntry(particleIndex);
+      // Loop over spin data recorded for particle
+      SpinData::const_iterator dataIter;
+      for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
+         spinUpDownAlongXHist->Fill(dataIter->first);
+         spinUpDownAlongYHist->Fill(dataIter->first);
+         spinUpDownAlongZHist->Fill(dataIter->first);
+         // For each data point, record the spin polarisation along each axis
+         const Spin* spin = dataIter->second;
+         // Measure polarisation along X
+         if (spin->IsSpinUp(xAxis)) {
+            // If spin up, bin the time
+            if (spinUpAlongXHist) spinUpAlongXHist->Fill(dataIter->first);
+         } else {
+            // If spin down, bin the time
+            if (spinUpAlongXHist) spinDownAlongXHist->Fill(dataIter->first);
+         }
+         // Measure polarisation along Y
+         if (spin->IsSpinUp(yAxis)) {
+            // If spin up, bin the time
+            if (spinUpAlongYHist) spinUpAlongYHist->Fill(dataIter->first);
+         } else {
+            // If spin down, bin the time
+            if (spinUpAlongYHist) spinDownAlongYHist->Fill(dataIter->first);
+         }
+         // Measure polarisation along Y
+         if (spin->IsSpinUp(zAxis)) {
+            // If spin up, bin the time
+            if (spinUpAlongZHist) spinUpAlongZHist->Fill(dataIter->first);
+         } else {
+            // If spin down, bin the time
+            if (spinUpAlongZHist) spinDownAlongZHist->Fill(dataIter->first);
          }
       }
    }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd back into Histogram's dir
-   histDir->cd();
+   delete data; data = NULL;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Spin Precession Plots
-   // -- Down
+   // -- X
    TCanvas *spinXcanvas = new TCanvas("SpinAlongX","Spin Polarisation Along X",60,0,1200,800);
    spinXcanvas->Divide(2,2);
    spinXcanvas->cd(1);
@@ -761,8 +749,6 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
       double downCounts = spinDownAlongXHist->GetBinContent(i);
       double totalCounts = upCounts + downCounts;
       double alpha = totalCounts == 0 ? 0.0 : (upCounts - downCounts) / totalCounts;
-//      cout << "Time: " << binCentre << "\t" << "Up: " << upCounts << "\t";
-//      cout << "Down: " << downCounts << "\t" << "Alpha: " << alpha << endl;
       spinAlphaX->SetPoint(i, binCentre, alpha);
    }
    spinAlphaX->SetMarkerStyle(7);
@@ -773,7 +759,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinAlphaX->GetYaxis()->SetRangeUser(-1.0,1.0);
    spinAlphaX->SetTitle("Polarisation along X");
    spinAlphaX->Write(spinAlphaX->GetName(),TObject::kOverwrite);
-
+   // -- Y
    TCanvas *spinYcanvas = new TCanvas("SpinAlongY","Spin Polarisation Along Y",60,0,1200,800);
    spinYcanvas->Divide(2,2);
    spinYcanvas->cd(1);
@@ -829,8 +815,6 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
       double downCounts = spinDownAlongYHist->GetBinContent(i);
       double totalCounts = upCounts + downCounts;
       double alpha = totalCounts == 0 ? 0.0 : (upCounts - downCounts) / totalCounts;
-//      cout << "Time: " << binCentre << "\t" << "Up: " << upCounts << "\t";
-//      cout << "Down: " << downCounts << "\t" << "Alpha: " << alpha << endl;
       spinAlphaY->SetPoint(i, binCentre, alpha);
    }
    spinAlphaY->SetMarkerStyle(7);
@@ -841,7 +825,7 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinAlphaY->GetYaxis()->SetRangeUser(-1.0,1.0);
    spinAlphaY->SetTitle("Polarisation along Y");
    spinAlphaY->Write(spinAlphaY->GetName(),TObject::kOverwrite);
-   
+   // -- Z
    TCanvas *spinZcanvas = new TCanvas("SpinAlongZ","Spin Polarisation Along Z",60,0,1200,800);
    spinZcanvas->Divide(2,2);
    spinZcanvas->cd(1);
@@ -862,8 +846,6 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
       double downCounts = spinDownAlongZHist->GetBinContent(i);
       double totalCounts = upCounts + downCounts;
       double alpha = totalCounts == 0 ? 0.0 : (upCounts - downCounts) / totalCounts;
-//      cout << "Time: " << binCentre << "\t" << "Up: " << upCounts << "\t";
-//      cout << "Down: " << downCounts << "\t" << "Alpha: " << alpha << endl;
       spinAlphaZ->SetPoint(i, binCentre, alpha);
    }
    spinAlphaZ->SetMarkerStyle(7);
@@ -874,89 +856,60 @@ void Polarisation::PlotSpinPolarisation(TDirectory* const histDir, const vector<
    spinAlphaZ->GetYaxis()->SetRangeUser(-1.0,1.0);
    spinAlphaZ->SetTitle("Polarisation along Z");
    spinAlphaZ->Write(spinAlphaZ->GetName(),TObject::kOverwrite);
+   cout << "Successfully drawn particle spin polarisation over time" << endl;
+   cout << "-------------------------------------------" << endl;
    return;
 }
 
 //_____________________________________________________________________________
-void Polarisation::PlotField(TDirectory* const histDir, const vector<TDirectory*> stateDirs, const RunConfig& runConfig)
+void Polarisation::PlotField(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig)
 {
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd into Histogram's dir
-   histDir->cd();
+   cout << "Preparing to draw particle field measurements over time..." << endl;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Define Histograms
-   Char_t histname[40];
    const double runTime = runConfig.RunTime();
-   // -- Define name of combined states
-   string stateName;
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      if (stateName.empty() == false) stateName += "/";
-      stateName += (*dirIter)->GetName();
-   }
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bx
-   sprintf(histname,"%s:Field Bx",stateName.c_str());
-   TH2F* bxHist = new TH2F(histname,"Bx", 500, 4.998*Units::uT, 5.002*Units::uT, 500, 0.0, runTime);
+   Char_t histname[40];
+   sprintf(histname,"%s:Field Bx",state.c_str());
+   TH2F* bxHist = new TH2F(histname,"Bx", 2000, -1000*Units::uT, 1000*Units::uT, 500, 0.0, runTime);
    bxHist->SetXTitle("Field measured (T)");
    bxHist->SetYTitle("Time (s)");
    bxHist->SetZTitle("Neutrons");
    // -- By
-   sprintf(histname,"%s:Field By",stateName.c_str());
-   TH2F* byHist = new TH2F(histname,"By", 500, -5.5*Units::uT, 5.5*Units::uT, 500, 0.0, runTime);
+   sprintf(histname,"%s:Field By",state.c_str());
+   TH2F* byHist = new TH2F(histname,"By", 2000, -100*Units::uT, 100*Units::uT, 500, 0.0, runTime);
    byHist->SetXTitle("Field measured (T)");
    byHist->SetYTitle("Time (s)");
    byHist->SetZTitle("Neutrons");
    // -- B`
-   sprintf(histname,"%s:Field Bz",stateName.c_str());
-   TH2F* bzHist = new TH2F(histname,"Bz", 500, -5.5*Units::uT, 5.5*Units::uT, 500, 0.0, runTime);
+   sprintf(histname,"%s:Field Bz",state.c_str());
+   TH2F* bzHist = new TH2F(histname,"Bz", 2000, -100*Units::uT, 100*Units::uT, 500, 0.0, runTime);
    bzHist->SetXTitle("Field measured (T)");
    bzHist->SetYTitle("Time (s)");
    bzHist->SetZTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over each state to be included in histogram
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      // -- cd into the State's folder
-      (*dirIter)->cd();
-      //////////////////////////////////////////////////////////////////////////////////////
-      // -- Loop over all particle folders in the current state's folder
-      TKey *folderKey;
-      TIter folderIter((*dirIter)->GetListOfKeys());
-      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         const char *classname = folderKey->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // Loop over all objects in particle dir
-            (*dirIter)->cd(folderKey->GetName());
-            TDirectory* particleDir = gDirectory;
-            TKey *objKey;
-            TIter objIter(particleDir->GetListOfKeys());
-            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
-               // For Each object in the particle's directory, check its class name and what it
-               // inherits from to determine what to do.
-               classname = objKey->GetClassName();
-               cl = gROOT->GetClass(classname);
-               if (!cl) continue;
-               if (cl->InheritsFrom("FieldData")) {
-                  // -- Extract Spin Observer Data if recorded
-                  const FieldData* fieldData = dynamic_cast<const FieldData*>(objKey->ReadObj());
-                  if (strcmp(fieldData->GetName(),"MagFieldObserver") != 0) continue;
-                  FieldData::const_iterator dataIter;
-                  for (dataIter = fieldData->begin(); dataIter != fieldData->end(); dataIter++) {
-                     bxHist->Fill((*dataIter)->Fx(),(*dataIter)->T());
-                     byHist->Fill((*dataIter)->Fy(),(*dataIter)->T());
-                     bzHist->Fill((*dataIter)->Fz(),(*dataIter)->T());
-                  }
-                  delete fieldData;
-               }
-            }
-         }
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   FieldData* data = new FieldData();
+   TBranch* fieldBranch = dataTree->GetBranch(data->ClassName());
+   if (fieldBranch == NULL) {
+      cerr << "Error - Could not find branch: " << data->ClassName() << " in input tree" << endl;
+      throw runtime_error("Failed to find branch in input tree");
+   }
+   dataTree->SetBranchAddress(fieldBranch->GetName(), &data);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      fieldBranch->GetEntry(particleIndex);
+      FieldData::const_iterator dataIter;
+      for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
+         bxHist->Fill((*dataIter)->Fx(),(*dataIter)->T());
+         byHist->Fill((*dataIter)->Fy(),(*dataIter)->T());
+         bzHist->Fill((*dataIter)->Fz(),(*dataIter)->T());
       }
    }
+   delete data; data = NULL;
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd back into Histogram's dir
-   histDir->cd();
    TCanvas *bxcanvas = new TCanvas("BxField","Bx (T)",60,0,1200,800);
    bxcanvas->cd();
    bxHist->Draw("COLZ");
@@ -969,6 +922,8 @@ void Polarisation::PlotField(TDirectory* const histDir, const vector<TDirectory*
    bzcanvas->cd();
    bzHist->Draw("COLZ");
    bzHist->Write(bzHist->GetName(),TObject::kOverwrite);
+   cout << "Successfully drawn particle field measurements over time" << endl;
+   cout << "-------------------------------------------" << endl;
    return;
 }
 
@@ -1084,7 +1039,7 @@ bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNa
    cout << "Measurement intervals: " << intervals << endl;
    // Make a list of the folders for each state to be included in analysis
    vector<TDirectory*> stateDirs;
-   if (DataFile::FetchStateDirectories(dataFile, stateNames, stateDirs) == false) return false;
+//   if (DataFile::FetchStateDirectories(dataFile, stateNames, stateDirs) == false) return false;
    
    TGraph* alphaT2 = Polarisation::CreateT2AlphaGraph(stateDirs, runTime, intervals);
    // Draw graph
@@ -1126,7 +1081,7 @@ bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNa
 TGraph* Polarisation::CreateT2AlphaGraph(vector<TDirectory*> stateDirs, double runTime, unsigned int intervals)
 {
    // Define name of combined states
-   string stateName = DataFile::ConcatenateStateNames(stateDirs);
+   string stateName = "";//DataFile::ConcatenateStateNames(stateDirs);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Define Histograms
    // Define axes of coordinate system
@@ -1291,38 +1246,27 @@ bool Polarisation::PlotT2_vs_Runs(string configFileName, string statename)
 }
 
 //_____________________________________________________________________________
-void Bounces::PlotBounceCounters(TDirectory* const histDir, const vector<TDirectory*> stateDirs)
+void Bounces::PlotBounceCounters(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree)
 {
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd into Histogram's dir
-   histDir->cd();
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Define Histograms
-   Char_t histname[40];
-   // -- Define name of combined states
-   string stateName;
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      if (stateName.empty() == false) stateName += "/";
-      stateName += (*dirIter)->GetName();
-   }
-   //////////////////////////////////////////////////////////////////////////////////////
+   cout << "Preparing to plot particle bounce statistics..." << endl;
    // -- Bounces
-   sprintf(histname,"%s:Bounces",stateName.c_str());
-   TH1F* bounceHist = new TH1F(histname,"Bounces", 100, 0.0, 100000.0);
+   Char_t histname[40];
+   sprintf(histname,"%s:Bounces",state.c_str());
+   TH1F* bounceHist = new TH1F(histname,"Bounces", 100, 0.0, 10000.0);
    bounceHist->SetXTitle("Bounces");
    bounceHist->SetYTitle("Neutrons");
    bounceHist->SetLineColor(kBlack);
    bounceHist->SetFillStyle(3001);
    bounceHist->SetFillColor(kBlack);
-   sprintf(histname,"%s:Specular",stateName.c_str());
+   sprintf(histname,"%s:Specular",state.c_str());
    TH1F* specHist = new TH1F(histname,"Specular", 100, 0.0, 100.0);
    specHist->SetXTitle("Percentage");
    specHist->SetYTitle("Neutrons");
    specHist->SetLineColor(kRed);
    specHist->SetFillStyle(3001);
    specHist->SetFillColor(kRed);
-   sprintf(histname,"%s:Diffuse",stateName.c_str());
+   sprintf(histname,"%s:Diffuse",state.c_str());
    TH1F* diffHist = new TH1F(histname,"Diffuse", 100, 0.0, 100.0);
    diffHist->SetXTitle("Percentage");
    diffHist->SetYTitle("Neutrons");
@@ -1330,45 +1274,23 @@ void Bounces::PlotBounceCounters(TDirectory* const histDir, const vector<TDirect
    diffHist->SetFillStyle(3001);
    diffHist->SetFillColor(kBlue);
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over each state to be included in histogram
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      // -- cd into the State's folder
-      (*dirIter)->cd();
-      //////////////////////////////////////////////////////////////////////////////////////
-      // -- Loop over all particle folders in the current state's folder
-      TKey *folderKey;
-      TIter folderIter((*dirIter)->GetListOfKeys());
-      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         const char *classname = folderKey->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // Loop over all objects in particle dir
-            (*dirIter)->cd(folderKey->GetName());
-            TDirectory* particleDir = gDirectory;
-            TKey *objKey;
-            TIter objIter(particleDir->GetListOfKeys());
-            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
-               // For Each object in the particle's directory, check its class name and what it
-               // inherits from to determine what to do.
-               classname = objKey->GetClassName();
-               cl = gROOT->GetClass(classname);
-               if (!cl) continue;
-               if (cl->InheritsFrom("BounceData")) {
-                  // -- Extract Bounce Observer Data if recorded
-                  BounceData* data =dynamic_cast<BounceData*>(objKey->ReadObj());
-                  bounceHist->Fill(data->CountTotal());
-                  specHist->Fill(data->CountSpecular()*100.0/data->CountTotal());
-                  diffHist->Fill(data->CountDiffuse()*100.0/data->CountTotal());
-                  delete data;
-               }
-            }
-         }
-      }
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   BounceData* data = new BounceData();
+   TBranch* bounceBranch = dataTree->GetBranch(data->ClassName());
+   if (bounceBranch == NULL) {
+      cerr << "Error - Could not find branch: " << data->ClassName() << " in input tree" << endl;
+      throw runtime_error("Failed to find branch in input tree");
    }
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- cd back into Histogram's dir
-   histDir->cd();
+   dataTree->SetBranchAddress(bounceBranch->GetName(), &data);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      bounceBranch->GetEntry(particleIndex);
+      bounceHist->Fill(data->CountTotal());
+      specHist->Fill(data->CountSpecular()*100.0/data->CountTotal());
+      diffHist->Fill(data->CountDiffuse()*100.0/data->CountTotal());
+   }
+   delete data; data = NULL;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Bounce Counters
    TCanvas *bouncecanvas = new TCanvas("Bounces","Bounce counters",60,0,1200,800);
@@ -1382,6 +1304,8 @@ void Bounces::PlotBounceCounters(TDirectory* const histDir, const vector<TDirect
    bouncecanvas->cd(3);
    diffHist->Draw();
    diffHist->Write(diffHist->GetName(),TObject::kOverwrite);
+   cout << "Successfully drawn particle bounce counters" << endl;
+   cout << "-------------------------------------------" << endl;
    return;
 }
 
@@ -1552,4 +1476,31 @@ vector<double> Tracks::CalculateParticleHistory(const Track& track, TGeoManager&
    return times;
 }
 
-
+//_____________________________________________________________________________
+void Geometry::DrawGeometry(TCanvas& canvas, TGeoManager& geoManager, double* cameraCentre) 
+{
+   // Draw the provided Geometry on the canvas, centred on the cameraCentre coords given
+   canvas.cd();
+   geoManager.GetTopVolume()->Draw("ogl");
+   geoManager.SetVisLevel(4);
+   geoManager.SetVisOption(0);
+   // -- Get the GLViewer so we can manipulate the camera
+   TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
+   // -- Select Draw style 
+   glViewer->SetStyle(TGLRnrCtx::kFill);
+   // -- Set Background colour
+   glViewer->SetClearColor(kWhite);
+   // -- Set Camera type
+   TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
+   glViewer->SetCurrentCamera(camera);
+   glViewer->CurrentCamera().SetExternalCenter(kTRUE);
+   glViewer->SetPerspectiveCamera(camera,4,100, cameraCentre,0,0);
+   // -- Draw Reference Point, Axes
+   // -- Options for SetGuideState:
+   // -- {int axesType = 0(Off), 1(EDGE), 2(ORIGIN)}, {Bool_t axesDepthTest}, {Bool_t referenceOn}, {const double referencePos[3]}
+   double refPoint[3] = {0.,0.,0.};
+   glViewer->SetGuideState(2, kFALSE, kFALSE, refPoint);
+   glViewer->UpdateScene();
+   glViewer = 0;
+   return;
+}

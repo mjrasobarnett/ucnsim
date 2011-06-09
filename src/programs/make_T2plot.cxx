@@ -25,7 +25,7 @@
 
 #include "Constants.h"
 #include "Units.h"
-#include "DataFileHierarchy.h"
+#include "ValidStates.h"
 #include "Algorithms.h"
 #include "DataAnalysis.h"
 
@@ -33,7 +33,7 @@ using namespace std;
 
 //_____________________________________________________________________________
 Int_t main(int argc, char **argv) {
-   ///////////////////////////////////////////////////////////////////////////////////////
+/*   ///////////////////////////////////////////////////////////////////////////////////////
    // Plot data needs a minimum of 2 arguments - a data file, and the name of the particle
    // 'state' you wish to include in your histograms.
    if (argc < 3) {
@@ -44,7 +44,7 @@ Int_t main(int argc, char **argv) {
    // Read in Filename and check that it is a .root file
    string filename = argv[1];
    // Read in Filename and check that it is a .root file
-   if (Analysis::DataFile::ValidateRootFile(filename) == false) {
+   if (Analysis::DataFile::IsRootFile(filename) == false) {
       cerr << "Error: filename, " << filename << " does not have a .root extension" << endl;
       return EXIT_FAILURE;
    }
@@ -66,8 +66,8 @@ Int_t main(int argc, char **argv) {
    //////////////////////////////////////////////////////////////////////////////////////
    TFile* file = Analysis::DataFile::OpenRootFile(filename,"UPDATE");
    TDirectory * const topDir = gDirectory;
-   if (topDir->cd(Folders::particles.c_str()) == false) {
-      cerr << "No Folder named: " << Folders::particles << " in data file" << endl;
+   if (topDir->cd("") == false) {
+      cerr << "No Folder named: " << "" << " in data file" << endl;
       return EXIT_FAILURE;
    }
    TDirectory * const particleDir = gDirectory;
@@ -78,10 +78,10 @@ Int_t main(int argc, char **argv) {
    const RunConfig& runConfig = Analysis::DataFile::LoadRunConfig(*file);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Create a Histogram Dir inside File
-   TDirectory* histDir = topDir->mkdir(Folders::histograms.c_str());
+   TDirectory* histDir = topDir->mkdir("");
    if (histDir == NULL) {
       // histogram folder already exists
-      topDir->cd(Folders::histograms.c_str());
+      topDir->cd("");
       histDir = gDirectory;
    }
    //////////////////////////////////////////////////////////////////////////////////////
@@ -113,6 +113,6 @@ Int_t main(int argc, char **argv) {
    // -- Clean up and Finish
    cout << "Finished" << endl;
    theApp->Run();
-   return EXIT_SUCCESS;
+*/   return EXIT_SUCCESS;
 }
 

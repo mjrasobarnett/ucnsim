@@ -16,6 +16,7 @@
 #include "Spin.h"
 #include "State.h"
 #include "Observable.h"
+#include "TRandom3a.h"
 
 #include "Constants.h"
 
@@ -41,6 +42,7 @@ class Boundary;
 class TGeoNode;
 class TGeoMatrix;
 class TGeoNavigator;
+class TTree;
 
 //class ParticleState;
 
@@ -48,11 +50,9 @@ class Particle : public TObject, public Observable
 {
 private:
    // -- Members
-   Int_t       fId;        // Particle's number (assigned when its created to help keep track of it)
+   unsigned int fId; // Particle's number (assigned when its created to help keep track of it)
    Point       fPos;
    TVector3    fVel;
-   
-   Int_t       fRandomSeed;         // The seed of TRandom when the particle began to propagate
    
    // State
    friend class State;
@@ -60,6 +60,9 @@ private:
    
    // Spin
    Spin         fSpin;
+   
+   // Random Generator State
+   TRandom3State* fRndState; // State of random generator at the beginning of particle's propagation
    
    // State Change
    void     ChangeState(State* state);
@@ -74,7 +77,8 @@ private:
 public:
    // -- Constructors
    Particle();
-   Particle(Int_t id, Point& position, TVector3& vel);
+   Particle(unsigned int id, Point& position, TVector3& vel);
+   Particle& operator=(const Particle& other);
    Particle(const Particle &part);
 
    // -- Destructor
@@ -83,7 +87,7 @@ public:
    // -- Methods
    //_____________________________________________________________________________
    // Get/Setters
-   Int_t                Id()     const {return fId;}
+   unsigned int         Id()     const {return fId;}
    Double_t             X()      const {return fPos.X();}
    Double_t             Y()      const {return fPos.Y();}
    Double_t             Z()      const {return fPos.Z();}
@@ -106,7 +110,7 @@ public:
    const Point&         GetPoint() const {return fPos;}
    const TVector3&      GetVelocity() const {return fVel;}
    
-   void                 SetId(const Int_t id) {fId = id;}
+   void                 SetId(const unsigned int id) {fId = id;}
    void                 SetPosition(const Double_t x, const Double_t y, const Double_t z, 
                                        const Double_t t);
    void                 SetVelocity(const Double_t vx, const Double_t vy, const Double_t vz);
@@ -115,8 +119,8 @@ public:
    // Random Seed Storage 
    // (Used for setting the random number generator to the exact point
    // when simulation was started)
-   void                 SetRandomSeed(const Int_t seed)        {fRandomSeed = seed;}
-   Int_t                GetRandomSeed() const                  {return fRandomSeed;}
+   void                 SaveRandomGeneratorState(const TRandom3State& rndState);
+   const TRandom3State* GetRandomGeneratorState() const {return fRndState;}
    
    // -- State
    const State*         GetState()     {return fState;}
@@ -141,11 +145,10 @@ public:
    void                 IsAnomalous();
    
    // -- Observers
-   virtual void NotifyObservers(const Point& point, const TVector3& velocity, const std::string& context);
+   virtual void         NotifyObservers(const Point& point, const TVector3& velocity, const std::string& context);
    
    // -- Output to file
    void                 SaveState(Run* run);
-   void                 WriteToFile(TDirectory* particleDir);
    
    ClassDef(Particle,1)   // Ultra-Cold Neutron
 };

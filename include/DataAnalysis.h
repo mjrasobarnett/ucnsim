@@ -10,9 +10,13 @@ class TDirectory;
 class TFile;
 class TGeoManager;
 class TGraph;
+class TTree;
+class TCanvas;
+class TBranch;
 
 class RunConfig;
 class Track;
+class ParticleManifest;
 
 namespace Analysis {
    //_____________________________________________________________________________
@@ -27,18 +31,24 @@ namespace Analysis {
       //_____________________________________________________________________________
       TGeoManager& LoadGeometry(TFile& file);
       //_____________________________________________________________________________
-      bool ValidateRootFile(const std::string filename);
+      const ParticleManifest& LoadParticleManifest(TFile& file);
+      //_____________________________________________________________________________
+      TTree* LoadParticleDataTree(TFile& file);
+      //_____________________________________________________________________________
+      bool IsRootFile(const std::string filename);
       //_____________________________________________________________________________
       bool IsValidStateName(const std::vector<std::string>& statenames);
       bool IsValidStateName(const std::string statename);
       //_____________________________________________________________________________
-      void CountParticles(TDirectory * const particleDir);
-      //_____________________________________________________________________________
-      bool FetchStateDirectories(TFile& file, std::vector<std::string>& stateNames, std::vector<TDirectory*>& stateDirs);
-      //_____________________________________________________________________________
-      std::string ConcatenateStateNames(const std::vector<TDirectory*>& stateDirs);
+      std::string ConcatenateStateNames(const std::vector<std::string>& states);
       //_____________________________________________________________________________
       TDirectory* NavigateToHistDir(TFile& file);
+      //_____________________________________________________________________________
+      void CopyDirectory(TDirectory* const sourceDir, TDirectory* const outputDir);
+      //_____________________________________________________________________________
+      void CopyDirectoryContents(TDirectory* const sourceDir, TDirectory* const outputDir);
+      //_____________________________________________________________________________
+      TBranch* GetParticleBranch(const std::string& state, TTree* dataTree);
    }
    
    //_____________________________________________________________________________
@@ -62,9 +72,9 @@ namespace Analysis {
          double fTheta;
       } Coords;
       //_____________________________________________________________________________
-      void PlotSpinPolarisation(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig);
+      void PlotSpinPolarisation(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig);
       //_____________________________________________________________________________
-      void PlotField(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig);
+      void PlotField(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig);
       //_____________________________________________________________________________
       bool CalculateT2(TFile& dataFile, std::vector<std::string> states, double& t2, double& t2error);
       //_____________________________________________________________________________
@@ -85,7 +95,7 @@ namespace Analysis {
    //_____________________________________________________________________________
    namespace Bounces {
       //_____________________________________________________________________________
-      void PlotBounceCounters(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs);
+      void PlotBounceCounters(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree);
       
    }
    
@@ -94,9 +104,11 @@ namespace Analysis {
    //_____________________________________________________________________________
    namespace FinalStates {
       //_____________________________________________________________________________
-      void PlotFinalStates(TDirectory* const histDir, const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig, TGeoManager& geoManager);
+      void PlotFinalState(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig);
       //_____________________________________________________________________________
-      bool PlotEmptyingTime(const std::vector<TDirectory*> stateDirs, const RunConfig& runConfig, const double lLimit, const double uLimit);   
+      void DrawFinalPositions(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, TGeoManager& geoManager, double* cameraCentre);
+      //_____________________________________________________________________________
+      bool PlotEmptyingTime(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig, const double lLimit, const double uLimit);   
    }
    
    //_____________________________________________________________________________
@@ -108,6 +120,13 @@ namespace Analysis {
       //_____________________________________________________________________________
       std::vector<double> CalculateParticleHistory(const Track& track, TGeoManager& geoManager);
       
+   }
+   
+   //_____________________________________________________________________________
+   // Namespace holding functions relevant to datafile structure
+   //_____________________________________________________________________________
+   namespace Geometry {
+      void DrawGeometry(TCanvas& canvas, TGeoManager& geoManager, double* cameraCentre);
    }
 
 }

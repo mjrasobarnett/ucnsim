@@ -10,7 +10,7 @@
 #include "Algorithms.h"
 
 #include "TDirectory.h"
-#include "DataFileHierarchy.h"
+#include "ValidStates.h"
 
 using namespace Algorithms;
 using namespace std;
@@ -234,8 +234,6 @@ void ProgressBar::PrintProgress(int entry, float nEntriesF, int mintime)
      }
      return;
    }
-
-
    // How wide should we make the progress bar?
    const int width = 70;
    // How long is the string for entries?
