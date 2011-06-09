@@ -139,7 +139,8 @@
 #pragma link C++ namespace Analysis::FinalStates;
 #pragma link C++ function Analysis::FinalStates::PlotFinalState(const std::string, const std::vector<int>, TTree*, const RunConfig&);
 #pragma link C++ function Analysis::FinalStates::DrawFinalPositions(const std::string, const std::vector<int>, TTree*, TGeoManager&, double*);
-#pragma link C++ function Analysis::FinalStates::PlotEmptyingTime(std::vector<TDirectory*>,const RunConfig&,const double,const double);
+#pragma link C++ function Analysis::FinalStates::PlotEmptyingTime(const std::string, const std::vector<int>, TTree*, const RunConfig&, const double, const double);   
+
 
 #pragma link C++ namespace Analysis::Tracks;
 #pragma link C++ function Analysis::Tracks::PlotParticleHistories(TDirectory* const, const std::vector<TDirectory*>, TGeoManager&);

@@ -525,82 +525,51 @@ void FinalStates::DrawFinalPositions(const std::string state, const std::vector<
 }
 
 //_____________________________________________________________________________
-bool FinalStates::PlotEmptyingTime(const vector<TDirectory*> stateDirs, const RunConfig& runConfig, const double lLimit, const double uLimit)
+bool FinalStates::PlotEmptyingTime(const std::string state,
+                                   const std::vector<int> particleIndexes,
+                                   TTree* dataTree,
+                                   const RunConfig& runConfig,
+                                   const double lLimit,
+                                   const double uLimit)
 {
    //////////////////////////////////////////////////////////////////////////////////////
-   Char_t histname[40];
-   // -- Count total Neutrons, and define name of combined states
-   string stateName = "";//DataFile::ConcatenateStateNames(stateDirs);
-   int totalNeutrons = 0;
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      totalNeutrons += (*dirIter)->GetNkeys();
-   }
-   //////////////////////////////////////////////////////////////////////////////////////
    // -- Run Time
-   const double runTime = runConfig.RunTime();
-   sprintf(histname,"%s:Time",stateName.c_str());
-   TH1F* timeHist = new TH1F(histname,"Time: Units of s", ((int)runTime), lLimit, uLimit);
+   Char_t histname[40];
+   sprintf(histname,"%s:Time",state.c_str());
+   TH1F* timeHist = new TH1F(histname,"Time: Units of s", 100, lLimit, uLimit);
    timeHist->SetXTitle("Time (s)");
    timeHist->SetYTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over each state to be included in histogram
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      // -- cd into the State's folder
-      (*dirIter)->cd();
-      //////////////////////////////////////////////////////////////////////////////////////
-      // -- Loop over all particle folders in the current state's folder
-      TKey *folderKey;
-      TIter folderIter((*dirIter)->GetListOfKeys());
-      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         const char *classname = folderKey->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // Loop over all objects in particle dir
-            (*dirIter)->cd(folderKey->GetName());
-            TDirectory* particleDir = gDirectory;
-            TKey *objKey;
-            TIter objIter(particleDir->GetListOfKeys());
-            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
-               // For Each object in the particle's directory, check its class name and what it
-               // inherits from to determine what to do.
-               classname = objKey->GetClassName();
-               cl = gROOT->GetClass(classname);
-               if (!cl) continue;
-               if (cl->InheritsFrom("Particle")) {
-                  // -- Extract Final Particle State Data
-                  Particle* particle = dynamic_cast<Particle*>(objKey->ReadObj());
-                  // -- Fill Histograms
-                  timeHist->Fill(particle->T());
-                  delete particle;
-               }
-            }
-         }
-      }
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   Particle* particle = new Particle();
+   TBranch* particleBranch = DataFile::GetParticleBranch(state, dataTree);
+   dataTree->SetBranchAddress(particleBranch->GetName(), &particle);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      particleBranch->GetEntry(particleIndex);
+      // Fill Histograms
+      timeHist->Fill(particle->T());
    }
+   delete particle; particle = NULL;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Draw Histograms
-   //////////////////////////////////////////////////////////////////////////////////////
-   // -- Time Distribution
-   TCanvas *timecanvas = new TCanvas("Times","Final Time (s)",60,0,600,600);
+   // Time Distribution
+   TCanvas *timecanvas = new TCanvas("Times","Final Time (s)",60,0,1200,800);
    timecanvas->cd();
-   timeHist->Draw("PE1 X0");
-   
+   timeHist->Draw("P E1 X0");
    // Fit exponential to Graph
    int numParams = 2;
    TF1* expo = new TF1("Exponential", FitFunctions::ExponentialDecay, lLimit, uLimit, numParams);
    expo->SetParNames("Amplitude","Decay lifetime");
-   expo->SetParameters(1.0,1.0);
-   timeHist->Fit(expo, "R 0");
+   expo->SetParameters(10.0,50.0);
+   timeHist->Fit(expo, "R P 0");
    expo->Draw("SAME");
    // Extract Emptying Time
    double t2 = expo->GetParameter(1);
    double t2error = expo->GetParError(1);
-   
-   cout << "Emptying Lifetime: " << t2 << "\t Error: " << t2error << endl;
+   cout << "Decay Lifetime: " << t2 << "\t Error: " << t2error << endl;
    cout << "Chi-Sq: " << expo->GetChisquare() << "\t NDF: " << expo->GetNDF() << endl;
-   timecanvas->SaveAs("lifetime.root");
    return true;
 }
 
