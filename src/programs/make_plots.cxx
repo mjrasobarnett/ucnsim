@@ -34,6 +34,7 @@ bool make_plots(string filename, vector<string> statenames) {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Open Data File
    TFile* file = Analysis::DataFile::OpenRootFile(filename,"UPDATE");
+   if (file == NULL) return EXIT_FAILURE;
    ///////////////////////////////////////////////////////////////////////////////////////
    // Build the ConfigFile
    const RunConfig& runConfig = Analysis::DataFile::LoadRunConfig(*file);

@@ -120,6 +120,7 @@ bool draw_plots(const string& filename, const string& state)
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Open Data File
    TFile* file = Analysis::DataFile::OpenRootFile(filename,"UPDATE");
+   if (file == NULL) return EXIT_FAILURE;
    ///////////////////////////////////////////////////////////////////////////////////////
    AttemptDrawingPositions(*file, stateName);
    AttemptDrawingVelocity(*file, stateName);
