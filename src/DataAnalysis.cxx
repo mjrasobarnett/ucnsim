@@ -1511,6 +1511,5 @@ void Geometry::DrawGeometry(TCanvas& canvas, TGeoManager& geoManager, double* ca
    double refPoint[3] = {0.,0.,0.};
    glViewer->SetGuideState(2, kFALSE, kFALSE, refPoint);
    glViewer->UpdateScene();
-   glViewer = 0;
    return;
 }
