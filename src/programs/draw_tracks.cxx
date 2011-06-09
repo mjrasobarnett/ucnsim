@@ -157,12 +157,14 @@ bool SelectTrackToDraw(const string& filename, const string& state)
    line.SetLineColor(kRed);
    line.SetLineWidth(3);
 
-   TPointSet3D startMarker(1,24);
    // Start is BLUE
-   startMarker.SetMarkerColor(kBlue);
+   TPointSet3D startMarker(1,24);
+   startMarker.SetMarkerColor(kBlue+2);
+   startMarker.SetMarkerSize(3);
+   // End is ORANGE
    TPointSet3D endMarker(1,24);
-   // End is GREEN
-   endMarker.SetMarkerColor(kGreen-3);
+   endMarker.SetMarkerColor(kOrange-3);
+   endMarker.SetMarkerSize(3);
    
    // Draw the line, and start/end markers on current pad
    line.Draw();
