@@ -211,6 +211,10 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    Particle* particle = new Particle();
    TBranch* initialBranch = tree.Branch(States::initial.c_str(), particle->ClassName(), &particle);
    ParticleManifest manifest;
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Initialise random number generator with a unique state
+   gRandom->SetSeed(0);
+   //////////////////////////////////////////////////////////////////////////////////////
    // -- Loop over the total number of particles to be created. 
    for (Int_t i = 1; i <= particles; i++) {
       // -- Create particle at a random position inside beam volume
