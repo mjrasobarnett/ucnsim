@@ -1,6 +1,5 @@
 {
-   cout << "rootlogon.C for UCNSIM" << endl;
-   cout << "-------------------------------------" << endl;
+   cout <<"==================================================="<< endl;
    if ( gSystem->Load("libPhysics") == 0 ) {
       cout << "Successfully loaded libPhysics.so" << endl;
    } 
@@ -22,19 +21,14 @@
    if ( gSystem->Load("libRGL.so") == 0 ) {
        cout << "Successfully loaded libMathCore.so" << endl;
    }
+   
    TString ucnsim = gSystem->Getenv("UCN_DIR");
    if ( ucnsim.Length() == 0 ) {
-      cerr << "-------------------------------------" << endl;
-      cerr << "Warning: Failed to find env. variable UCNSIM" << endl;
-      cerr << "-------------------------------------" << endl;
-   }
-   else {
+      cerr << "Error: Failed to find env. variable UCN_DIR" << endl;
+   } else {
       TString ucnlib = ucnsim + "/lib/libUCN.so";
-      cerr << ucnlib.Data() << endl;
-      if ( gSystem->Load(ucnlib.Data()) == 0 ) {
-         cout << "Successfully loaded libUCN.so" << endl;
-      }
+      load_library(ucnlib);
    }
-   cout << "-------------------------------------" << endl;
+   
    set_my_style();
 } 
