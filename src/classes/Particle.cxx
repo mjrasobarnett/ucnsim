@@ -285,8 +285,8 @@ void Particle::UpdateCoordinates(const TGeoNavigator* navigator)
 Bool_t Particle::WillDecay(const Double_t timeInterval)
 {
    // Calculate probability particle will decay within timeInterval, and then roll the dice!
-//   Double_t probDecay = (timeInterval/Neutron::lifetime);
-//   if (gRandom->Uniform(0.0, 1.0) < probDecay) { return kTRUE; }
+   Double_t probDecay = (timeInterval/Neutron::lifetime);
+   if (gRandom->Uniform(0.0, 1.0) < probDecay) { return kTRUE; }
    return kFALSE;
 }
 

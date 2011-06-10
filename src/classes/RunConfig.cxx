@@ -142,6 +142,9 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    // Option for whether wall losses are turned on
    bool wallLosses = runConfigFile.GetBool(RunParams::wallLosses,"Properties");
    fOptions.insert(OptionPair(RunParams::wallLosses, wallLosses));
+   // Option for whether wall losses are turned on
+   bool betaDecay = runConfigFile.GetBool(RunParams::betaDecay,"Properties");
+   fOptions.insert(OptionPair(RunParams::betaDecay, betaDecay));
    // Option for whether magnetic field is turned on
    bool magField = runConfigFile.GetBool(RunParams::magField,"Properties");
    fOptions.insert(OptionPair(RunParams::magField, magField));
@@ -383,6 +386,13 @@ bool RunConfig::ElecFieldOn() const
 bool RunConfig::WallLossesOn() const
 {
    map<string, bool>::const_iterator it = fOptions.find(RunParams::wallLosses);
+   return (it == fOptions.end()) ? true : it->second;
+}
+
+//__________________________________________________________________________
+bool RunConfig::BetaDecayOn() const
+{
+   map<string, bool>::const_iterator it = fOptions.find(RunParams::betaDecay);
    return (it == fOptions.end()) ? true : it->second;
 }
 

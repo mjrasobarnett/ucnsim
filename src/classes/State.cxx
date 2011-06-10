@@ -362,10 +362,12 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
    // -- Determine whether we collided with a wall, decayed, or any other
    // -- state change occured
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Check whether particle has decayed in the last step
-   if(particle->WillDecay(stepTime) == kTRUE) {
-      this->IsDecayed(particle);
-      return kFALSE;
+   if (run->GetRunConfig().BetaDecayOn() == true) {
+      // -- Check whether particle has decayed in the last step
+      if(particle->WillDecay(stepTime) == kTRUE) {
+         this->IsDecayed(particle);
+         return kFALSE;
+      }
    }
    // -- Get the normal vector to the boundary
    Double_t normal[3] = {0.,0.,0.};

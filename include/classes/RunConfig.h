@@ -28,6 +28,7 @@ namespace RunParams {
    static const std::string magField = "MagFields";
    static const std::string elecField = "ElecFields";
    static const std::string wallLosses = "WallLosses";
+   static const std::string betaDecay = "BetaDecay";
    static const std::string recordSpin = "RecordSpin";
    static const std::string recordBounces = "RecordBounces";
    static const std::string recordTracks = "RecordTracks";
@@ -82,6 +83,7 @@ public:
    bool MagFieldOn() const;
    bool ElecFieldOn() const;
    bool WallLossesOn() const;
+   bool BetaDecayOn() const;
    bool ObserveSpin() const;
    bool ObserveBounces() const;
    bool ObserveTracks() const;
