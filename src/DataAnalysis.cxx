@@ -568,6 +568,8 @@ bool FinalStates::PlotEmptyingTime(const std::string state,
    // Time Distribution
    TCanvas *timecanvas = new TCanvas("Times","Final Time (s)",60,0,1200,800);
    timecanvas->cd();
+   timeHist->SetMarkerSize(0.8);
+   timeHist->SetMarkerStyle(8);
    timeHist->Draw("P E1 X0");
    // Fit exponential to Graph
    int numParams = 2;
@@ -575,6 +577,10 @@ bool FinalStates::PlotEmptyingTime(const std::string state,
    expo->SetParNames("Amplitude","Decay lifetime");
    expo->SetParameters(10.0,50.0);
    timeHist->Fit(expo, "R P 0");
+   
+   expo->SetLineWidth(3);
+   expo->SetLineStyle(2); // Dashed
+   expo->SetLineColor(kRed);
    expo->Draw("SAME");
    // Extract Emptying Time
    double t2 = expo->GetParameter(1);
