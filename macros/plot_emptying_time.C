@@ -20,9 +20,12 @@ Int_t plot_emptying_time(string filename, string statename) {
    vector<int> particleIndexes = manifest.GetListing(statename).GetTreeIndexes();
    // Create a Histogram Director if one doesn't already exist in File
    TDirectory* histDir = Analysis::DataFile::NavigateToHistDir(*file);
-   // -- Get name of states used in plots
    // Plot Emptying Time
-   Analysis::FinalStates::PlotEmptyingTime(statename, particleIndexes, dataTree, runConfig,0.0,100.0);
+   int bins = 100;
+   double lLimit = 5.0;
+   double uLimit = 200.0;
+   Analysis::FinalStates::PlotEmptyingTime(statename, particleIndexes, dataTree, runConfig, bins, lLimit, uLimit);
+   
    return 0;
 }
 

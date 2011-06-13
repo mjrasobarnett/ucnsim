@@ -539,6 +539,7 @@ bool FinalStates::PlotEmptyingTime(const std::string state,
                                    const std::vector<int> particleIndexes,
                                    TTree* dataTree,
                                    const RunConfig& runConfig,
+                                   const int nbins,
                                    const double lLimit,
                                    const double uLimit)
 {
@@ -546,7 +547,7 @@ bool FinalStates::PlotEmptyingTime(const std::string state,
    // -- Run Time
    Char_t histname[40];
    sprintf(histname,"%s:Time",state.c_str());
-   TH1F* timeHist = new TH1F(histname,"Time: Units of s", 100, lLimit, uLimit);
+   TH1F* timeHist = new TH1F(histname,"Time: Units of s", nbins, lLimit, uLimit);
    timeHist->SetXTitle("Time (s)");
    timeHist->SetYTitle("Neutrons");
    //////////////////////////////////////////////////////////////////////////////////////

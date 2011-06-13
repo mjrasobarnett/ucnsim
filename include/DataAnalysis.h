@@ -110,7 +110,13 @@ namespace Analysis {
       //_____________________________________________________________________________
       void DrawFinalPositions(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, TGeoManager& geoManager, double* cameraCentre);
       //_____________________________________________________________________________
-      bool PlotEmptyingTime(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig, const double lLimit, const double uLimit);   
+      bool PlotEmptyingTime(const std::string states,
+                            const std::vector<int> particleIndexes,
+                            TTree* dataTree,
+                            const RunConfig& runConfig,
+                            const int nbins,
+                            const double lLimit,
+                            const double uLimit);
    }
    
    //_____________________________________________________________________________
