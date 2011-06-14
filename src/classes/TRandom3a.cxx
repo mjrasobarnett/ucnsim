@@ -70,6 +70,11 @@ TRandom3State::~TRandom3State()
 
 }
 
+//______________________________________________________________________________
+TRandom3State* TRandom3State::Clone() const
+{
+   return new TRandom3State(*this);
+}
 
 ClassImp(TRandom3a)
 

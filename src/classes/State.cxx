@@ -184,6 +184,12 @@ Propagating::~Propagating()
 }
 
 //______________________________________________________________________________
+Propagating* Propagating::Clone() const
+{
+   return new Propagating(*this);
+}
+
+//______________________________________________________________________________
 Bool_t Propagating::SaveState(Run* run, Particle* particle)
 {
    // Register in Run what final state we are
@@ -1128,6 +1134,13 @@ Decayed::~Decayed()
 //   Info("Decayed","Destructor");
 }
 
+
+//______________________________________________________________________________
+Decayed* Decayed::Clone() const
+{
+   return new Decayed(*this);
+}
+
 //______________________________________________________________________________
 Bool_t Decayed::SaveState(Run* run, Particle* particle)
 {
@@ -1177,6 +1190,12 @@ Absorbed::~Absorbed()
 {
    // Destructor
 //   Info("Absorbed","Destructor");
+}
+
+//______________________________________________________________________________
+Absorbed* Absorbed::Clone() const
+{
+   return new Absorbed(*this);
 }
 
 //______________________________________________________________________________
@@ -1230,6 +1249,12 @@ Detected::~Detected()
 }
 
 //______________________________________________________________________________
+Detected* Detected::Clone() const
+{
+   return new Detected(*this);
+}
+
+//______________________________________________________________________________
 Bool_t Detected::SaveState(Run* run, Particle* particle)
 {
    // Register in Run what final state we are
@@ -1277,6 +1302,13 @@ Lost::~Lost()
 {
    // Destructor
 //   Info("Lost","Destructor");
+}
+
+
+//______________________________________________________________________________
+Lost* Lost::Clone() const
+{
+   return new Lost(*this);
 }
 
 //______________________________________________________________________________
@@ -1327,6 +1359,13 @@ Anomalous::~Anomalous()
 {
    // Destructor
 //   Info("Lost","Destructor");
+}
+
+
+//______________________________________________________________________________
+Anomalous* Anomalous::Clone() const
+{
+   return new Anomalous(*this);
 }
 
 //______________________________________________________________________________

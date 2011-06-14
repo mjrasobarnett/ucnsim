@@ -32,6 +32,8 @@ public:
    TRandom3State(const UInt_t* mt, const Int_t count624);
    virtual ~TRandom3State();
    
+   virtual TRandom3State* Clone() const;
+   
    ClassDef(TRandom3State,1)
 };
 

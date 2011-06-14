@@ -36,6 +36,9 @@ public:
    State& operator=(const State&);
    virtual ~State();
    
+   // -- Factory Method for copying a state object
+   virtual State*    Clone() const = 0;
+   
    // -- Propagation
    virtual Bool_t    Propagate(Particle* particle, Run* run);
    virtual Bool_t    LocateInGeometry(Particle* particle, TGeoNavigator* navigator,
@@ -95,6 +98,9 @@ public:
    Propagating& operator=(const Propagating&);
    virtual ~Propagating();
    
+   // -- Factory Method for copying a state object
+   virtual Propagating* Clone() const;
+   
    // -- Propagation
    virtual Bool_t    Propagate(Particle* particle, Run* run);
    virtual Bool_t    LocateInGeometry(Particle* particle, TGeoNavigator* navigator,
@@ -127,6 +133,9 @@ public:
    Decayed& operator=(const Decayed&);
    virtual ~Decayed();
    
+   // -- Factory Method for copying a state object
+   virtual Decayed* Clone() const;
+   
    // -- Propagation
    virtual Bool_t    SaveState(Run* run, Particle* particle);
    
@@ -148,6 +157,9 @@ public:
    Absorbed(const Absorbed&);
    Absorbed& operator=(const Absorbed&);
    virtual ~Absorbed();
+   
+   // -- Factory Method for copying a state object
+   virtual Absorbed* Clone() const;
    
    // -- Propagation
    virtual Bool_t    SaveState(Run* run, Particle* particle);
@@ -171,6 +183,9 @@ public:
    Detected& operator=(const Detected&);
    virtual ~Detected();
    
+   // -- Factory Method for copying a state object
+   virtual Detected* Clone() const;
+   
    // -- Propagation
    virtual Bool_t    SaveState(Run* run, Particle* particle);   
    
@@ -193,6 +208,9 @@ public:
    Lost& operator=(const Lost&);
    virtual ~Lost();
    
+   // -- Factory Method for copying a state object
+   virtual Lost* Clone() const;
+   
    // -- Propagation
    virtual Bool_t    SaveState(Run* run, Particle* particle);
    
@@ -214,6 +232,9 @@ public:
    Anomalous(const Anomalous&);
    Anomalous& operator=(const Anomalous&);
    virtual ~Anomalous();
+   
+   // -- Factory Method for copying a state object
+   virtual Anomalous* Clone() const;
    
    // -- Propagation
    virtual Bool_t    SaveState(Run* run, Particle* particle);

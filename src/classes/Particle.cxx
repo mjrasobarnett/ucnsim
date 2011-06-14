@@ -69,8 +69,10 @@ Particle::Particle(const Particle& p)
    #ifdef PRINT_CONSTRUCTORS
       Info("Particle","Copy Constructor");
    #endif
-      fState = new Propagating();
-      if (p.fRndState != NULL) fRndState = new TRandom3State(*(p.fRndState));
+      if (fState) delete fState;
+      fState = p.fState->Clone();
+      if (fRndState) delete fRndState;
+      if (p.fRndState) fRndState = p.fRndState->Clone();
 }
 
 //_____________________________________________________________________________
@@ -88,8 +90,9 @@ Particle& Particle::operator=(const Particle& other)
       fVel = other.fVel;
       fSpin = other.fSpin;
       if (fState) delete fState;
-      fState = new Propagating();
+      fState = other.fState->Clone();
       if (fRndState) delete fRndState;
+      if (other.fRndState) fRndState = other.fRndState->Clone();
    }
    return *this;
 }
