@@ -76,7 +76,7 @@ TRandom3State* TRandom3State::Clone() const
    return new TRandom3State(*this);
 }
 
-ClassImp(TRandom3a)
+ClassImp(TRandom3a);
 
 //______________________________________________________________________________
 TRandom3a::TRandom3a(UInt_t seed)
