@@ -38,20 +38,21 @@ RunConfig::RunConfig(const ConfigFile& masterConfig, int runNumber)
    #endif
    //////////////////////////////////////////////////////////////////
    // -- Extract full path to directory containing configuration files 
-   const string compressedfolderpath = masterConfig.GetString("Path","Folder");
+   const string compressedfolderpath = masterConfig.GetString(RunParams::folderPath,"Folder");
    const string folderpath = Algorithms::FileSystem::ExpandFilePath(compressedfolderpath);
+   fNames.insert(NamePair(RunParams::folderPath, folderpath));
    //////////////////////////////////////////////////////////////////
    // -- Use full folder path to find and build the run-config file
    ostringstream runID;
    runID << "Run" << runNumber; 
-   string runConfigFileName = folderpath + masterConfig.GetString("Config", runID.str());
+   string runConfigFileName = FolderPath() + masterConfig.GetString("Config", runID.str());
    if (runConfigFileName.empty() == kTRUE) {
       cout << "Error: Run Configuration file name specified is either empty of invalid" << endl;
       throw runtime_error("Error fetching name of Run Config file");
    }
    ConfigFile runConfigFile(runConfigFileName);
    // -----------------------------------
-   ReadInRunConfig(runConfigFile, folderpath);
+   ReadInRunConfig(runConfigFile);
    // -- Check for Override parameters
    // Get the section of the master config file containing this run's configfile and override params
    map<string,string> section = masterConfig.GetSection(runID.str());
@@ -80,7 +81,7 @@ RunConfig::~RunConfig()
 }
 
 //__________________________________________________________________________
-void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string folderpath)
+void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile)
 {
    //////////////////////////////////////////////////////////////////
    // -- Search the Run Config file for parameters
@@ -95,29 +96,29 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile, const string fo
    if (geomFileName.empty() == true) {
       throw runtime_error("No GeomFile specified in runconfig");
    }
-   fNames.insert(NamePair(RunParams::geomFile, folderpath + geomFileName));
+   fNames.insert(NamePair(RunParams::geomFile, geomFileName));
    // Name of Visualisation Geometry
    string geomVisFileName = runConfigFile.GetString(RunParams::geomVisFile,"Files");
    if (geomVisFileName.empty() == true) {
       geomVisFileName = geomFileName;
    }
-   fNames.insert(NamePair(RunParams::geomVisFile, folderpath + geomVisFileName));
+   fNames.insert(NamePair(RunParams::geomVisFile, geomVisFileName));
    // Name of Input particle data file 
    string inputDataFileName = runConfigFile.GetString(RunParams::inputFile,"Files");
    if (inputDataFileName.empty() == true) {
       throw runtime_error("No InputDataFile specified in runconfig");
    }
-   fNames.insert(NamePair(RunParams::inputFile, folderpath + inputDataFileName));
+   fNames.insert(NamePair(RunParams::inputFile, inputDataFileName));
    // Name of Output data file
    string outputDataFileName = runConfigFile.GetString(RunParams::outputFile,"Files");
    if (outputDataFileName.empty() == true) {
       throw runtime_error("No OutputDataFile specified in runconfig");
    }
-   fNames.insert(NamePair(RunParams::outputFile, folderpath + outputDataFileName));
+   fNames.insert(NamePair(RunParams::outputFile, outputDataFileName));
    // Name of Fields input file -- Not required to be set
    string fieldsFileName = runConfigFile.GetString(RunParams::fieldsFile,"Files");
    if (fieldsFileName.empty() == false) {
-      fNames.insert(NamePair(RunParams::fieldsFile, folderpath + fieldsFileName));
+      fNames.insert(NamePair(RunParams::fieldsFile, fieldsFileName));
    }
    // -----------------------------------
    // -- Input Particles options
@@ -278,38 +279,45 @@ string RunConfig::RunName() const
 }
 
 //__________________________________________________________________________
+string RunConfig::FolderPath() const
+{
+   map<string, string>::const_iterator it = fNames.find(RunParams::folderPath);
+   return (it == fNames.end()) ? "" : it->second;
+}
+
+//__________________________________________________________________________
 string RunConfig::GeomFileName() const
 {
    map<string, string>::const_iterator it = fNames.find(RunParams::geomFile);
-   return (it == fNames.end()) ? "" : it->second;
+   return (it == fNames.end()) ? "" : FolderPath() + it->second;
 }
 
 //__________________________________________________________________________
 string RunConfig::GeomVisFileName() const
 {
    map<string, string>::const_iterator it = fNames.find(RunParams::geomVisFile);
-   return (it == fNames.end()) ? "" : it->second;
+   return (it == fNames.end()) ? "" : FolderPath() + it->second;
 }
 
 //__________________________________________________________________________
 string RunConfig::FieldsFileName() const
 {
    map<string, string>::const_iterator it = fNames.find(RunParams::fieldsFile);
-   return (it == fNames.end()) ? "" : it->second;
+   return (it == fNames.end()) ? "" : FolderPath() + it->second;
 }
 
 //__________________________________________________________________________
 string RunConfig::InputFileName() const
 {
    map<string, string>::const_iterator it = fNames.find(RunParams::inputFile);
-   return (it == fNames.end()) ? "" : it->second;
+   return (it == fNames.end()) ? "" : FolderPath() + it->second;
 }
 
 //__________________________________________________________________________
 string RunConfig::OutputFileName() const
 {
    map<string, string>::const_iterator it = fNames.find(RunParams::outputFile);
-   return (it == fNames.end()) ? "" : it->second;
+   return (it == fNames.end()) ? "" : FolderPath() + it->second;
 }
 
 //__________________________________________________________________________

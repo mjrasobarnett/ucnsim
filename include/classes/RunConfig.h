@@ -13,6 +13,7 @@
 namespace RunParams {
    // -- Names
    static const std::string runName = "RunName";
+   static const std::string folderPath = "Path";
    static const std::string geomFile = "GeomFile";
    static const std::string geomVisFile = "GeomVisFile";
    static const std::string inputFile = "InputDataFile";
@@ -55,7 +56,7 @@ private:
    std::map<std::string, double> fParams;
    std::vector<int> fSelectedParticleIDs;
    
-   void ReadInRunConfig(const ConfigFile& runConfigFile, const std::string folderpath);
+   void ReadInRunConfig(const ConfigFile& runConfigFile);
    void CheckForOverrideParameters(const std::map<std::string, std::string> section);
 
 public:
@@ -67,6 +68,7 @@ public:
    
    // Methods
    std::string RunName() const;
+   std::string FolderPath() const;
    std::string GeomFileName() const;
    std::string GeomVisFileName() const;
    std::string FieldsFileName() const;
