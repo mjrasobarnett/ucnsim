@@ -60,19 +60,19 @@ Particle::Particle(unsigned int id, Point& pos, TVector3& vel)
 }
 
 //_____________________________________________________________________________
-Particle::Particle(const Particle& p)
-             :TObject(p), Observable(p),
-              fId(p.fId), fPos(p.fPos), fVel(p.fVel),
-              fSpin(p.fSpin), fRndState(NULL)
+Particle::Particle(const Particle& other)
+             :TObject(other), Observable(other),
+              fId(other.fId), fPos(other.fPos), fVel(other.fVel),
+              fSpin(other.fSpin), fRndState(NULL)
 {
    // -- Copy Constructor
    #ifdef PRINT_CONSTRUCTORS
       Info("Particle","Copy Constructor");
    #endif
       if (fState) delete fState;
-      fState = p.fState->Clone();
+      fState = other.fState->Clone();
       if (fRndState) delete fRndState;
-      if (p.fRndState) fRndState = p.fRndState->Clone();
+      if (other.fRndState) fRndState = other.fRndState->Clone();
 }
 
 //_____________________________________________________________________________
