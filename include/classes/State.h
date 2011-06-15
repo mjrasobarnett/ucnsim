@@ -5,7 +5,10 @@
 #ifndef STATE_H
 #define STATE_H
 
+#include <string>
+
 #include "TObject.h"
+#include "ValidStates.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -39,12 +42,14 @@ public:
    // -- Factory Method for copying a state object
    virtual State*    Clone() const = 0;
    
+   virtual const char* GetName() const = 0;
+   
    // -- Propagation
    virtual Bool_t    Propagate(Particle* particle, Run* run);
    virtual Bool_t    LocateInGeometry(Particle* particle, TGeoNavigator* navigator,
                            const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
                            const TGeoNode* crossedNode);
-   virtual Bool_t    SaveState(Run* run, Particle* particle) = 0;
+   // -- State mutators
    virtual void      IsDetected(Particle* particle);
    virtual void      IsDecayed(Particle* particle);
    virtual void      IsLost(Particle* particle);
@@ -101,13 +106,15 @@ public:
    // -- Factory Method for copying a state object
    virtual Propagating* Clone() const;
    
+   virtual const char* GetName() const {return States::propagating.c_str();}
+   
    // -- Propagation
    virtual Bool_t    Propagate(Particle* particle, Run* run);
    virtual Bool_t    LocateInGeometry(Particle* particle, TGeoNavigator* navigator,
                            const TGeoNode* initialNode, const TGeoMatrix* initialMatrix,
                            const TGeoNode* crossedNode);
    
-   virtual Bool_t    SaveState(Run* run, Particle* particle);
+   // -- State Mutators
    virtual void      IsDetected(Particle* particle);
    virtual void      IsDecayed(Particle* particle);
    virtual void      IsLost(Particle* particle);
@@ -136,8 +143,7 @@ public:
    // -- Factory Method for copying a state object
    virtual Decayed* Clone() const;
    
-   // -- Propagation
-   virtual Bool_t    SaveState(Run* run, Particle* particle);
+   virtual const char* GetName() const {return States::decayed.c_str();}
    
    ClassDef(Decayed,1)
 };
@@ -161,8 +167,7 @@ public:
    // -- Factory Method for copying a state object
    virtual Absorbed* Clone() const;
    
-   // -- Propagation
-   virtual Bool_t    SaveState(Run* run, Particle* particle);
+   virtual const char* GetName() const {return States::absorbed.c_str();}
    
    ClassDef(Absorbed,1)
 };
@@ -186,8 +191,7 @@ public:
    // -- Factory Method for copying a state object
    virtual Detected* Clone() const;
    
-   // -- Propagation
-   virtual Bool_t    SaveState(Run* run, Particle* particle);   
+   virtual const char* GetName() const {return States::detected.c_str();}
    
    ClassDef(Detected,1)
 };
@@ -211,8 +215,7 @@ public:
    // -- Factory Method for copying a state object
    virtual Lost* Clone() const;
    
-   // -- Propagation
-   virtual Bool_t    SaveState(Run* run, Particle* particle);
+   virtual const char* GetName() const {return States::lost.c_str();}
    
    ClassDef(Lost,1)
 };
@@ -236,8 +239,7 @@ public:
    // -- Factory Method for copying a state object
    virtual Anomalous* Clone() const;
    
-   // -- Propagation
-   virtual Bool_t    SaveState(Run* run, Particle* particle);
+   virtual const char* GetName() const {return States::anomalous.c_str();}
    
    ClassDef(Anomalous,1)
 };

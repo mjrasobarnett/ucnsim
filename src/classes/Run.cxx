@@ -190,7 +190,7 @@ Bool_t Run::Start()
       fData.SaveInitialParticle(&initialParticle);
       ///////////////////////////////////////////////////////////////////////
       // Add Final Particle State to data tree
-      particle->SaveState(this);
+      particle->SaveState(fData);
       // Print Progress Bar to Screen
       #ifndef VERBOSE_MODE
          Algorithms::ProgressBar::PrintProgress(particleNumber, totalParticles, 2);

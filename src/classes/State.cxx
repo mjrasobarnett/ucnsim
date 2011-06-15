@@ -189,14 +189,6 @@ Propagating* Propagating::Clone() const
    return new Propagating(*this);
 }
 
-//______________________________________________________________________________
-Bool_t Propagating::SaveState(Run* run, Particle* particle)
-{
-   // Register in Run what final state we are
-   run->GetData().SaveFinalParticle(particle, States::propagating);
-   return kTRUE;
-}
-
 //_____________________________________________________________________________
 Bool_t Propagating::Propagate(Particle* particle, Run* run)
 {
@@ -1141,15 +1133,6 @@ Decayed* Decayed::Clone() const
    return new Decayed(*this);
 }
 
-//______________________________________________________________________________
-Bool_t Decayed::SaveState(Run* run, Particle* particle)
-{
-   // Register in Run what final state we are
-   run->GetData().SaveFinalParticle(particle, States::decayed);
-   return kTRUE;
-}
-
-
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
 //    Absorbed                                                         //
@@ -1198,14 +1181,6 @@ Absorbed* Absorbed::Clone() const
    return new Absorbed(*this);
 }
 
-//______________________________________________________________________________
-Bool_t Absorbed::SaveState(Run* run, Particle* particle)
-{
-   // Register in Run what final state we are
-   run->GetData().SaveFinalParticle(particle, States::absorbed);
-   return kTRUE;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
 //    Detected                                                         //
@@ -1252,14 +1227,6 @@ Detected::~Detected()
 Detected* Detected::Clone() const
 {
    return new Detected(*this);
-}
-
-//______________________________________________________________________________
-Bool_t Detected::SaveState(Run* run, Particle* particle)
-{
-   // Register in Run what final state we are
-   run->GetData().SaveFinalParticle(particle, States::detected);
-   return kTRUE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1311,14 +1278,6 @@ Lost* Lost::Clone() const
    return new Lost(*this);
 }
 
-//______________________________________________________________________________
-Bool_t Lost::SaveState(Run* run, Particle* particle)
-{
-   // Register in Run what final state we are
-   run->GetData().SaveFinalParticle(particle, States::lost);
-   return kTRUE;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
 //    Anomalous                                                                  //
@@ -1366,13 +1325,5 @@ Anomalous::~Anomalous()
 Anomalous* Anomalous::Clone() const
 {
    return new Anomalous(*this);
-}
-
-//______________________________________________________________________________
-Bool_t Anomalous::SaveState(Run* run, Particle* particle)
-{
-   // Register in Run what final state we are
-   run->GetData().SaveFinalParticle(particle, States::anomalous);
-   return kTRUE;
 }
 

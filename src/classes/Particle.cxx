@@ -10,6 +10,7 @@
 
 #include "Particle.h"
 #include "Run.h"
+#include "Data.h"
 #include "Observer.h"
 #include "Volume.h"
 #include "Clock.h"
@@ -116,10 +117,10 @@ void Particle::ChangeState(State* state)
 }
 
 //______________________________________________________________________________
-void Particle::SaveState(Run* run)
+void Particle::SaveState(Data& data)
 {
    // Ask States to register themselves in the run to keep track of numbers
-   fState->SaveState(run, this);
+   data.SaveFinalParticle(this, fState->GetName());
 }
 
 //______________________________________________________________________________

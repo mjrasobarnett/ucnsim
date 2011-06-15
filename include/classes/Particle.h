@@ -37,6 +37,7 @@
 class FieldManager;
 class GravField;
 class Run;
+class Data;
 class Boundary;
 
 class TGeoNode;
@@ -148,7 +149,7 @@ public:
    virtual void         NotifyObservers(const Point& point, const TVector3& velocity, const std::string& context);
    
    // -- Output to file
-   void                 SaveState(Run* run);
+   void                 SaveState(Data& data);
    
    ClassDef(Particle,1)   // Ultra-Cold Neutron
 };
