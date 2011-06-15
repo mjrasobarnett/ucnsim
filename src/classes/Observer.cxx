@@ -149,26 +149,6 @@ void SpinObserver::ResetData()
 }
 
 //_____________________________________________________________________________
-void SpinObserver::LoadExistingData(TDirectory* const particleDir)
-{
-   // -- Look for a SpinData object and if so load into memory
-   particleDir->cd();
-   // -- Loop on all entries of this directory
-   TKey *key;
-   TIter nextkey(particleDir->GetListOfKeys());
-   while ((key = static_cast<TKey*>(nextkey.Next()))) {
-      const char *classname = key->GetClassName();
-      TClass *cl = gROOT->GetClass(classname);
-      if (!cl) continue;
-      if (cl->InheritsFrom("SpinData")) {
-         if (fSpinData != NULL) delete fSpinData; fSpinData = NULL;
-         fSpinData = dynamic_cast<SpinData*>(key->ReadObj());
-         break;
-      }
-   }
-}
-
-//_____________________________________________________________________________
 void SpinObserver::WriteToTree(TTree* tree)
 {
    // -- Write out the current observer's data to the observer's branch on the tree
@@ -239,26 +219,6 @@ void BounceObserver::ResetData()
    // -- Delete current observables and create a new version in its place
    if (fBounceData != NULL) delete fBounceData; fBounceData = NULL;
    fBounceData = new BounceData();
-}
-
-//_____________________________________________________________________________
-void BounceObserver::LoadExistingData(TDirectory* const particleDir)
-{
-   // -- Look for a SpinData object and if so load into memory
-   particleDir->cd();
-   // -- Loop on all entries of this directory
-   TKey *key;
-   TIter nextkey(particleDir->GetListOfKeys());
-   while ((key = static_cast<TKey*>(nextkey.Next()))) {
-      const char *classname = key->GetClassName();
-      TClass *cl = gROOT->GetClass(classname);
-      if (!cl) continue;
-      if (cl->InheritsFrom("BounceData")) {
-         if (fBounceData != NULL) delete fBounceData; fBounceData = NULL;
-         fBounceData = dynamic_cast<BounceData*>(key->ReadObj());
-         break;
-      }
-   }
 }
 
 //_____________________________________________________________________________
@@ -343,26 +303,6 @@ void TrackObserver::ResetData()
 }
 
 //_____________________________________________________________________________
-void TrackObserver::LoadExistingData(TDirectory* const particleDir)
-{
-   // -- Look for a SpinData object and if so load into memory
-   particleDir->cd();
-   // -- Loop on all entries of this directory
-   TKey *key;
-   TIter nextkey(particleDir->GetListOfKeys());
-   while ((key = static_cast<TKey*>(nextkey.Next()))) {
-      const char *classname = key->GetClassName();
-      TClass *cl = gROOT->GetClass(classname);
-      if (!cl) continue;
-      if (cl->InheritsFrom("Track")) {
-         if (fTrack != NULL) delete fTrack; fTrack = NULL;
-         fTrack = dynamic_cast<Track*>(key->ReadObj());
-         break;
-      }
-   }
-}
-
-//_____________________________________________________________________________
 void TrackObserver::WriteToTree(TTree* tree)
 {
    // -- Write out the current observer's data to the observer's branch on the tree
@@ -439,26 +379,6 @@ void FieldObserver::ResetData()
    fLastMeasurementTime = 0.0;
    if (fFieldData != NULL) delete fFieldData; fFieldData = NULL;
    fFieldData = new FieldData(this->GetName());
-}
-
-//_____________________________________________________________________________
-void FieldObserver::LoadExistingData(TDirectory* const particleDir)
-{
-   // -- Look for a SpinData object and if so load into memory
-   particleDir->cd();
-   // -- Loop on all entries of this directory
-   TKey *key;
-   TIter nextkey(particleDir->GetListOfKeys());
-   while ((key = static_cast<TKey*>(nextkey.Next()))) {
-      const char *classname = key->GetClassName();
-      TClass *cl = gROOT->GetClass(classname);
-      if (!cl) continue;
-      if (cl->InheritsFrom("FieldData")) {
-         if (fFieldData != NULL) delete fFieldData; fFieldData = NULL;
-         fFieldData = dynamic_cast<FieldData*>(key->ReadObj());
-         break;
-      }
-   }
 }
 
 //_____________________________________________________________________________
