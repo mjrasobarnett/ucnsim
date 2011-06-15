@@ -30,7 +30,7 @@ public:
    void      Attach(Observer* observer);
    void      DetachAll();
    Observer* GetObserver(int index) {return fObservers[index];}
-   void      WriteObserversToTree(TTree* tree);
+   void      WriteObservers(Data& data);
    
    virtual void NotifyObservers(const Point& point, const TVector3& velocity, const std::string& context) = 0;
 

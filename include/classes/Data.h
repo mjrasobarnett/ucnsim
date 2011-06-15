@@ -73,9 +73,9 @@ public:
    Int_t                FinalParticles() const;
    
    // Saving
-   void                 SaveGeometry(TGeoManager* const geoManager);
-   void                 SaveRunConfig(const RunConfig& runConfig);
-   void                 Save();
+   void                 Export();
+   int                  WriteObjectToFile(TObject* object);
+   int                  WriteObjectToTree(TObject* object, const char* branchName);
    
    ClassDef(Data, 1) // UCN Data Object
 };

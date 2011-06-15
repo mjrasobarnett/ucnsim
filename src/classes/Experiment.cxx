@@ -107,7 +107,7 @@ Bool_t Experiment::ExportGeometry(Run& run)
       if (fGeoManager == NULL) return kFALSE;
    }
    // Write Geomanger to file
-   run.GetData().SaveGeometry(fGeoManager);
+   run.GetData().WriteObjectToFile(fGeoManager);
    return kTRUE;
 }
 

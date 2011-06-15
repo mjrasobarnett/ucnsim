@@ -382,16 +382,12 @@ void Data::RegisterObservers(Particle* particle)
 //_____________________________________________________________________________
 Bool_t Data::SaveInitialParticle(Particle* particle)
 {
-   // delete any observers first 
+   // Delete any observers first
    particle->DetachAll();
    // Write Particle to output branch
-   TBranch* particleBranch = NULL;
-   particleBranch = fOutputTree->GetBranch(States::initial.c_str());
-   if (particleBranch == NULL) {particleBranch = fOutputTree->Branch(States::initial.c_str(), particle->ClassName(), &particle, 32000,0);}
-   fOutputTree->SetBranchAddress(particleBranch->GetName(), &particle);
-   particleBranch->Fill();
+   this->WriteObjectToTree(particle, States::initial.c_str());
    // Update Manifest
-   int branchIndex = particleBranch->GetEntries() - 1;
+   int branchIndex = fOutputTree->GetBranch(States::initial.c_str())->GetEntries() - 1;
    fOutputManifest->AddEntry(States::initial, particle->Id(), branchIndex);
    return true;
 }
@@ -400,18 +396,12 @@ Bool_t Data::SaveInitialParticle(Particle* particle)
 Bool_t Data::SaveFinalParticle(Particle* particle, const std::string& state)
 {
    // Write observers to Tree and then delete them
-   particle->WriteObserversToTree(fOutputTree);
+   particle->WriteObservers(*this);
    particle->DetachAll();
    // Write Particle to output branch
-   TBranch* particleBranch = fOutputTree->GetBranch(States::final.c_str());
-   if (particleBranch == NULL) {
-      Info("WriteToTree","Creating Branch %s in output tree", States::final.c_str());
-      particleBranch = fOutputTree->Branch(States::final.c_str(), particle->ClassName(), &particle, 32000,0);
-   }
-   fOutputTree->SetBranchAddress(particleBranch->GetName(), &particle);
-   particleBranch->Fill();
+   this->WriteObjectToTree(particle, States::final.c_str());
    // Update Manifest
-   int branchIndex = particleBranch->GetEntries() - 1;
+   int branchIndex = fOutputTree->GetBranch(States::final.c_str())->GetEntries() - 1;
    fOutputManifest->AddEntry(state, particle->Id(), branchIndex);
    return true;
 }
@@ -501,27 +491,33 @@ Int_t Data::FinalParticles() const
 }
 
 //_____________________________________________________________________________
-void Data::SaveGeometry(TGeoManager* const geoManager)
+void Data::Export()
 {
-   // -- Write copy of Geometry to data file
-   fOutputFile->cd();
-   geoManager->Write("Geometry",TObject::kOverwrite);
-   return;
+   this->WriteObjectToFile(fOutputTree);
+   this->WriteObjectToFile(fOutputManifest);
 }
 
 //_____________________________________________________________________________
-void Data::Save()
+int Data::WriteObjectToFile(TObject* object)
 {
+   // -- Write a copy of the object to the top level directory of the File
    fOutputFile->cd();
-   fOutputTree->Write(fOutputTree->GetName(), TObject::kOverwrite);
-   fOutputManifest->Write(fOutputManifest->GetName(), TObject::kOverwrite);
+   int bytesCopied = object->Write(object->GetName(),TObject::kOverwrite);
+   return bytesCopied;
 }
 
 //_____________________________________________________________________________
-void Data::SaveRunConfig(const RunConfig& runConfig)
+int Data::WriteObjectToTree(TObject* object, const char* branchName)
 {
-   // Write a copy of the RunConfig to File
-   fOutputFile->cd();
-   runConfig.Write("RunConfig",TObject::kOverwrite);
-   return;
+   // -- Write out the provided data to a branch on the provided tree, named after
+   // -- the classname of the data
+   TBranch* branch = fOutputTree->GetBranch(branchName);
+   if (branch == NULL) {
+      // -- If there is no branch yet, create one
+      Info("WriteObjectToTree","Creating Branch %s in output tree", branchName);
+      branch = fOutputTree->Branch(branchName, object->ClassName(), &object, 32000,0);
+   }
+   fOutputTree->SetBranchAddress(branchName, &object);
+   int bytesCopied = branch->Fill();
+   return bytesCopied;
 }

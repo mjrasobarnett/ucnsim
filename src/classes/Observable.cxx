@@ -50,12 +50,12 @@ void Observable::DetachAll()
 }
 
 //_____________________________________________________________________________
-void Observable::WriteObserversToTree(TTree* tree)
+void Observable::WriteObservers(Data& data)
 {
    // -- Get Observers to write their data to the tree
    vector<Observer*>::iterator it;
    for(it = fObservers.begin(); it != fObservers.end(); it++) {
       // Write out to Tree
-      (*it)->WriteToTree(tree);
+      (*it)->WriteToFile(data);
    }
 }

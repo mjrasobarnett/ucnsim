@@ -13,11 +13,6 @@
 #include "Clock.h"
 #include "Algorithms.h"
 
-#include "TKey.h"
-#include "TClass.h"
-#include "TTree.h"
-#include "TBranch.h"
-
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
 //    Observer                                                         //
@@ -59,21 +54,6 @@ Observer::~Observer()
    // Destructor
    Info("Observer","Destructor");
 }
-
-//_____________________________________________________________________________
-void Observer::WriteDataToTree(TTree* tree, TObject* data)
-{
-   // -- Write out the provided data to a branch on the provided tree, named after
-   // -- the classname of the data
-   TBranch* branch = tree->GetBranch(data->ClassName());
-   if (branch == NULL) {
-      // -- If there is no branch yet, create one
-      Info("WriteToTree","Creating Branch %s in output tree", data->ClassName());
-      branch = tree->Branch(data->ClassName(), data->ClassName(), &data, 32000,0);
-   }
-   branch->Fill();
-}
-
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -149,10 +129,10 @@ void SpinObserver::ResetData()
 }
 
 //_____________________________________________________________________________
-void SpinObserver::WriteToTree(TTree* tree)
+void SpinObserver::WriteToFile(Data& data)
 {
    // -- Write out the current observer's data to the observer's branch on the tree
-   this->WriteDataToTree(tree, fSpinData);
+   data.WriteObjectToTree(fSpinData, fSpinData->GetName());
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -222,11 +202,12 @@ void BounceObserver::ResetData()
 }
 
 //_____________________________________________________________________________
-void BounceObserver::WriteToTree(TTree* tree)
+void BounceObserver::WriteToFile(Data& data)
 {
    // -- Write out the current observer's data to the observer's branch on the tree
-   this->WriteDataToTree(tree, fBounceData);
+   data.WriteObjectToTree(fBounceData, fBounceData->GetName());
 }
+
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -303,10 +284,10 @@ void TrackObserver::ResetData()
 }
 
 //_____________________________________________________________________________
-void TrackObserver::WriteToTree(TTree* tree)
+void TrackObserver::WriteToFile(Data& data)
 {
    // -- Write out the current observer's data to the observer's branch on the tree
-   this->WriteDataToTree(tree, fTrack);
+   data.WriteObjectToTree(fTrack, fTrack->GetName());
 }
 
 
@@ -382,9 +363,9 @@ void FieldObserver::ResetData()
 }
 
 //_____________________________________________________________________________
-void FieldObserver::WriteToTree(TTree* tree)
+void FieldObserver::WriteToFile(Data& data)
 {
    // -- Write out the current observer's data to the observer's branch on the tree
-   this->WriteDataToTree(tree, fFieldData);
+   data.WriteObjectToTree(fFieldData, fFieldData->GetName());
 }
 

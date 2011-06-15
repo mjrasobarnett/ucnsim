@@ -220,11 +220,11 @@ Bool_t Run::Finish()
       return kFALSE;
    }
    // Write the Particle Tree to file
-   fData.SaveRunConfig(fRunConfig);
-   // Write the Particle Tree to file
-   fData.Save();
+   fData.WriteObjectToFile(&fRunConfig);
    // Write the geometry out to file
    fExperiment->ExportGeometry(*this);
+   // Write the Particle Tree to file
+   fData.Export();
    return kTRUE;
 }
 
