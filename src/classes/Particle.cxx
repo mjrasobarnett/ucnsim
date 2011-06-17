@@ -343,16 +343,6 @@ Bool_t Particle::IsSpinUp(const TVector3& axis) const
 }
 
 //_____________________________________________________________________________
-void Particle::NotifyObservers(const Point& point, const TVector3& velocity, const std::string& context)
-{
-   // -- Notify Observers of change
-   for(int i = 0; i < this->CountObservers(); i++) {
-      Observer* observer = this->GetObserver(i);
-      observer->RecordEvent(point, velocity, context);
-   }
-}
-
-//_____________________________________________________________________________
 Bool_t Particle::Reflect(const Double_t* normal, TGeoNavigator* navigator, TGeoNode* crossedNode, const char* initialPath)
 {
    // -- Reflect particle

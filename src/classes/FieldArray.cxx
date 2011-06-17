@@ -82,13 +82,3 @@ const TVector3 FieldArray::GetField(const Point& point, const string /*volume*/)
    return TVector3(0.,0.,0.);
 }
 
-//_____________________________________________________________________________
-void FieldArray::NotifyObservers(const Point& point, const TVector3& velocity, const std::string& context)
-{
-   // -- Notify Observers of change
-   for(int i = 0; i < this->CountObservers(); i++) {
-      Observer* observer = this->GetObserver(i);
-      observer->RecordEvent(point, velocity, context);
-   }
-}
-
