@@ -73,7 +73,7 @@ Observer::~Observer()
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
-ClassImp(SpinObserver)
+ClassImp(SpinObserver);
 
 //_____________________________________________________________________________
 SpinObserver::SpinObserver(const std::string name, double measureInterval)
@@ -149,7 +149,7 @@ void SpinObserver::RecordEvent(const Point& /*point*/, const TVector3& /*velocit
 }
 
 //_____________________________________________________________________________
-void SpinObserver::ResetData()
+void SpinObserver::Reset()
 {
    // -- Delete current observables and create a new version in its place
    fLastMeasurementTime = 0.0;
@@ -170,7 +170,7 @@ void SpinObserver::WriteToFile(Data& data)
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
-ClassImp(BounceObserver)
+ClassImp(BounceObserver);
 
 //_____________________________________________________________________________
 BounceObserver::BounceObserver(const std::string name)
@@ -226,7 +226,7 @@ void BounceObserver::RecordEvent(const Point& /*point*/, const TVector3& /*veloc
 }
 
 //_____________________________________________________________________________
-void BounceObserver::ResetData()
+void BounceObserver::Reset()
 {
    // -- Delete current observables and create a new version in its place
    if (fBounceData != NULL) delete fBounceData; fBounceData = NULL;
@@ -248,7 +248,7 @@ void BounceObserver::WriteToFile(Data& data)
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
-ClassImp(TrackObserver)
+ClassImp(TrackObserver);
 
 //_____________________________________________________________________________
 TrackObserver::TrackObserver(const std::string name, double measInterval)
@@ -325,7 +325,7 @@ void TrackObserver::RecordEvent(const Point& /*point*/, const TVector3& /*veloci
 }
 
 //_____________________________________________________________________________
-void TrackObserver::ResetData()
+void TrackObserver::Reset()
 {
    // -- Delete current observables and create a new version in its place
    fLastMeasurementTime = 0.0;
@@ -347,7 +347,7 @@ void TrackObserver::WriteToFile(Data& data)
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
-ClassImp(FieldObserver)
+ClassImp(FieldObserver);
 
 //_____________________________________________________________________________
 FieldObserver::FieldObserver(const std::string name, const double measureInterval)
@@ -421,7 +421,7 @@ void FieldObserver::RecordEvent(const Point& point, const TVector3& velocity, co
 }
 
 //_____________________________________________________________________________
-void FieldObserver::ResetData()
+void FieldObserver::Reset()
 {
    // -- Delete current observables and create a new version in its place
    fLastMeasurementTime = 0.0;
@@ -518,7 +518,7 @@ void PopulationObserver::RecordEvent(const Point& point, const TVector3& velocit
 }
 
 //_____________________________________________________________________________
-void PopulationObserver::ResetData()
+void PopulationObserver::Reset()
 {
    // -- Reset the time of the last measurement to the beginning
    fLastMeasurementTime = 0.0;

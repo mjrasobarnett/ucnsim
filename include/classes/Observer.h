@@ -58,7 +58,7 @@ public:
    
    virtual void DefineSubject(const TObject* subject) {fSubject = subject;}
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context) = 0;
-   virtual void ResetData() = 0;
+   virtual void Reset() = 0;
    virtual void WriteToFile(Data& data) = 0;
    
    ClassDef(Observer, 1)
@@ -85,7 +85,7 @@ public:
    virtual ~SpinObserver();
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
-   virtual void ResetData();
+   virtual void Reset();
    virtual void WriteToFile(Data& data);
    
    ClassDef(SpinObserver, 1)
@@ -110,7 +110,7 @@ public:
    virtual ~BounceObserver();
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
-   virtual void ResetData();
+   virtual void Reset();
    virtual void WriteToFile(Data& data);
    
    ClassDef(BounceObserver, 1)
@@ -137,7 +137,7 @@ public:
    virtual ~TrackObserver();
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
-   virtual void ResetData();
+   virtual void Reset();
    virtual void WriteToFile(Data& data);
    
    ClassDef(TrackObserver, 1)
@@ -164,7 +164,7 @@ public:
    virtual ~FieldObserver();
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
-   virtual void ResetData();
+   virtual void Reset();
    virtual void WriteToFile(Data& data);
    
    ClassDef(FieldObserver, 1)
@@ -191,7 +191,7 @@ public:
    virtual ~PopulationObserver();
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
-   virtual void ResetData();
+   virtual void Reset();
    virtual void WriteToFile(Data& data);
    
    ClassDef(PopulationObserver, 1)

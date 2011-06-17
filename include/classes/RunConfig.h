@@ -95,7 +95,7 @@ public:
    bool ObservePopulation() const;
    double TrackMeasureInterval() const;
    double SpinMeasureInterval() const;
-   double FieldMeasureInterval() const;;
+   double FieldMeasureInterval() const;
    double PopulationMeasureInterval() const;
    std::vector<int> SelectedParticleIDs() const {return fSelectedParticleIDs;}
    virtual void Print(Option_t* option = "") const;

@@ -372,10 +372,10 @@ void Data::RegisterObservers(Particle* particle)
    for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
       string subject = obsIter->first;
       Observer* observer = obsIter->second;
+      observer->Reset();
       if (subject == "Particles") {
          // If observer's ONLY subject is the particle, then reset previous particle's
          // data and define Observer's subject to be current particle
-         observer->ResetData();
          observer->DefineSubject(particle);
          particle->Attach(observer);
       } else if (subject == "Fields") {
@@ -384,7 +384,6 @@ void Data::RegisterObservers(Particle* particle)
          // a shared observer, however the observer's subject isn't the particle itself
          // but rather the field it sees. Thus, reset the previous particles data, 
          // but don't change the observer's subject.
-         observer->ResetData();
          particle->Attach(observer);
       } else if (subject == "Experiment") {
          // If the observer's main subject is the experiment, then the data is relevant
@@ -393,7 +392,6 @@ void Data::RegisterObservers(Particle* particle)
          // of events happening in the experiment, however the particle is not responsible
          // for writing this observer's output to the Datafile.
          // For the same reasoning, don't reset the data after each particle.
-         observer->ResetData();
          observer->DefineSubject(particle);
          particle->AttachSharedObserver(observer);
       }

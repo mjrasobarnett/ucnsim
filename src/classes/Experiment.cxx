@@ -99,7 +99,7 @@ Bool_t Experiment::Initialise(const RunConfig& runConfig)
 }
 
 //______________________________________________________________________________
-Bool_t Experiment::ExportGeometry(Run& run)
+Bool_t Experiment::Export(Run& run)
 {
    // -- Write create the Visualisation Geometry and write it out to file if
    // -- it exists. Else just export the usual Geometry

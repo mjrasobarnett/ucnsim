@@ -36,7 +36,7 @@ public:
    
    // -- methods
    Bool_t               Initialise(const RunConfig& runConfig);
-   Bool_t               ExportGeometry(Run& run);
+   Bool_t               Export(Run& run);
    
    // GeoManager Interface
    void                 ClearManager() {fGeoManager = 0;}
