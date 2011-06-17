@@ -296,14 +296,7 @@ void Data::CreateObservers(const RunConfig& runConfig, Experiment& experiment)
 {
    // -- Check Run configuration for which properties are to be monitored with Observers 
    cout << "-------------------------------------------" << endl;
-   cout << "Creating Observers" << endl;
-   cout << "ObserveSpin: " << runConfig.ObserveSpin() << endl;
-   cout << "Spin Measurement Interval (s): " << runConfig.SpinMeasureInterval() << endl;
-   cout << "ObserveField: " << runConfig.ObserveField() << endl;
-   cout << "Field Measurement Interval (s): " << runConfig.FieldMeasureInterval() << endl;
-   cout << "ObserveBounces: " << runConfig.ObserveBounces() << endl;
-   cout << "ObserveTracks: " << runConfig.ObserveTracks() << endl;
-   cout << "Track Measurement Interval (s): " << runConfig.TrackMeasureInterval() << endl;
+   cout << "Creating Observers..." << endl;
    if (runConfig.ObserveBounces() == kTRUE) {
       // Create an observer to track UCN Bounces
       Observer* obs = new BounceObserver("BounceObserver");

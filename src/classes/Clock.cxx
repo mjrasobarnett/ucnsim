@@ -57,6 +57,7 @@ bool Clock::Initialise(const RunConfig& runConfig)
 void Clock::ScheduleEvent(const std::string name, const double interval, const double prevMeasureTime)
 {
    // -- Add this event to the Clock to be scheduled in Run
+   cout << "Scheduling Event: " << name << "\t" << "Measurement Interval: " << interval << "s" << endl;
    EventTimer newEvent(name, interval, prevMeasureTime);
    fExternalEvents.push_back(newEvent);
 }
