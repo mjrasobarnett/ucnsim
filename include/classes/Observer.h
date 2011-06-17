@@ -22,6 +22,7 @@
 #include "BounceData.h"
 #include "FieldData.h"
 #include "Track.h"
+#include "PopulationData.h"
 
 namespace Context {
    // Define List of contexts passed to observers to help them distinguish
@@ -32,6 +33,7 @@ namespace Context {
    const std::string MagField = "magfield";
    const std::string SpecBounce = "specbounce";
    const std::string DiffBounce = "diffbounce";
+   const std::string Population = "population";
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -164,5 +166,31 @@ public:
    ClassDef(FieldObserver, 1)
 };
 
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    PopulationObserver -                                                  //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+class PopulationObserver : public Observer
+{
+private:
+   PopulationData* fPopulationData;
+   double fMeasInterval;
+   double fLastMeasurementTime;
+   
+public:
+   // -- Constructors
+   PopulationObserver(const std::string name, const double measureInterval);
+   PopulationObserver(const PopulationObserver&);
+   PopulationObserver& operator=(const PopulationObserver&);
+   virtual ~PopulationObserver();
+   
+   virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
+   virtual void ResetData();
+   virtual void WriteToFile(Data& data);
+   
+   ClassDef(PopulationObserver, 1)
+};
 
 #endif /* OBSERVER_H */

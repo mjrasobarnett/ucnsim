@@ -369,3 +369,97 @@ void FieldObserver::WriteToFile(Data& data)
    data.WriteObjectToTree(fFieldData, fFieldData->GetName());
 }
 
+/////////////////////////////////////////////////////////////////////////////
+//                                                                         //
+//    PopulationObserver                                                   //
+//                                                                         //
+/////////////////////////////////////////////////////////////////////////////
+
+ClassImp(PopulationObserver);
+
+//_____________________________________________________________________________
+PopulationObserver::PopulationObserver(const std::string name, const double measureInterval)
+              :Observer(name),
+               fPopulationData(NULL),
+               fMeasInterval(measureInterval),
+               fLastMeasurementTime(Clock::Instance()->GetTime())
+{
+   // Constructor
+   Info("PopulationObserver","Default Constructor");
+   fPopulationData = new PopulationData();
+}
+
+//_____________________________________________________________________________
+PopulationObserver::PopulationObserver(const PopulationObserver& other)
+             :Observer(other),
+              fPopulationData(NULL),
+              fMeasInterval(other.fMeasInterval),
+              fLastMeasurementTime(other.fLastMeasurementTime)
+{
+   // Copy Constructor
+   Info("PopulationObserver","Copy Constructor");
+   if (other.fPopulationData) fPopulationData = new PopulationData(*(other.fPopulationData));
+}
+
+//_____________________________________________________________________________
+PopulationObserver& PopulationObserver::operator=(const PopulationObserver& other)
+{
+   // Assignment
+   Info("PopulationObserver","Assignment");
+   if(this!=&other) {
+      Observer::operator=(other);
+      if (fPopulationData) delete fPopulationData;
+      fPopulationData = new PopulationData(*(other.fPopulationData));
+      fMeasInterval = other.fMeasInterval;
+      fLastMeasurementTime = other.fLastMeasurementTime;
+   }
+   return *this;
+}
+
+//_____________________________________________________________________________
+PopulationObserver::~PopulationObserver()
+{
+   // Destructor
+   Info("PopulationObserver","Destructor");
+   if (fPopulationData != NULL) delete fPopulationData;
+}
+
+//_____________________________________________________________________________
+void PopulationObserver::RecordEvent(const Point& point, const TVector3& velocity, const std::string& context)
+{
+   // -- Record the current Population at the current point
+   if (context == Context::Population) {
+      // The population context means that its time to record the particle population.
+      // First check whether it is time to make a population measurement
+      double currentTime = Clock::Instance()->GetTime();
+      if (Precision::IsEqual(currentTime, (fLastMeasurementTime + fMeasInterval))) {
+         // Get the current state of the particle
+         const Particle* particle = dynamic_cast<const Particle*>(fSubject);
+         const string stateName = particle->GetState().GetName();
+         // Update Population data
+         fPopulationData->Fill(currentTime, stateName);
+         // Update stored value of last measurement
+         fLastMeasurementTime = currentTime;
+      }
+   } else if (context == Context::Creation) {
+      // The creation context signifies that the particle has just been instantiated so we
+      // shall make a measurement of its initial state
+      const Particle* particle = dynamic_cast<const Particle*>(fSubject);
+      const string stateName = particle->GetState().GetName();
+      fPopulationData->Fill(Clock::Instance()->GetTime(), stateName);
+   } 
+}
+
+//_____________________________________________________________________________
+void PopulationObserver::ResetData()
+{
+   // -- Reset the time of the last measurement to the beginning
+   fLastMeasurementTime = 0.0;
+}
+
+//_____________________________________________________________________________
+void PopulationObserver::WriteToFile(Data& data)
+{
+   // -- Write out the current observer's data to the observer's branch on the tree
+   data.WriteObjectToFile(fPopulationData);
+}

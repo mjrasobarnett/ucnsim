@@ -124,7 +124,7 @@ public:
    const TRandom3State* GetRandomGeneratorState() const {return fRndState;}
    
    // -- State
-   const State*         GetState()     {return fState;}
+   const State&         GetState() const {return *fState;}
    
    // -- Spin
    const Spin&          GetSpin() const {return fSpin;}

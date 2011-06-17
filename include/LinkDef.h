@@ -69,6 +69,8 @@
 #pragma link C++ class Listing+;
 #pragma link C++ class TRandom3a;
 #pragma link C++ class TRandom3State+;
+#pragma link C++ class PopulationObserver+;
+#pragma link C++ class PopulationData+;
 
 // ----------------------------------------------------------------------
 // -- Elements and Materials Namespaces are used for defining common material properties
