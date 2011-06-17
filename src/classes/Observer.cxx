@@ -42,10 +42,22 @@ Observer::Observer(const string name)
 
 //_____________________________________________________________________________
 Observer::Observer(const Observer& other)
-         :TNamed(other)
+         :TNamed(other),
+          fSubject(other.fSubject)
 {
    // Copy Constructor
    Info("Observer","Copy Constructor");
+}
+
+//_____________________________________________________________________________
+Observer& Observer::operator=(const Observer& other)
+{
+   Info("Observer","Assignment");
+   if(this!=&other) {
+      Observer::operator=(other);
+      fSubject = other.fSubject;
+   }
+   return *this;
 }
 
 //_____________________________________________________________________________
@@ -72,17 +84,34 @@ SpinObserver::SpinObserver(const std::string name, double measureInterval)
 {
    // Constructor
    Info("SpinObserver","Default Constructor");
+   fSpinData = new SpinData();
 }
 
 //_____________________________________________________________________________
 SpinObserver::SpinObserver(const SpinObserver& other)
-                 :Observer(other),
-                  fSpinData(other.fSpinData),
-                  fMeasInterval(other.fMeasInterval),
-                  fLastMeasurementTime(other.fLastMeasurementTime)
+             :Observer(other),
+              fSpinData(NULL),
+              fMeasInterval(other.fMeasInterval),
+              fLastMeasurementTime(other.fLastMeasurementTime)
 {
    // Copy Constructor
    Info("SpinObserver","Copy Constructor");
+   if (other.fSpinData) fSpinData = new SpinData(*(other.fSpinData));
+}
+
+//_____________________________________________________________________________
+SpinObserver& SpinObserver::operator=(const SpinObserver& other)
+{
+   // Assignment
+   Info("SpinObserver","Assignment");
+   if(this!=&other) {
+      Observer::operator=(other);
+      if (fSpinData) delete fSpinData;
+      fSpinData = new SpinData(*(other.fSpinData));
+      fMeasInterval = other.fMeasInterval;
+      fLastMeasurementTime = other.fLastMeasurementTime;
+   }
+   return *this;
 }
 
 //_____________________________________________________________________________
@@ -150,15 +179,17 @@ BounceObserver::BounceObserver(const std::string name)
 {
    // Constructor
    Info("BounceObserver","Default Constructor");
+   fBounceData = new BounceData();
 }
 
 //_____________________________________________________________________________
 BounceObserver::BounceObserver(const BounceObserver& other)
                  :Observer(other),
-                  fBounceData(other.fBounceData)
+                  fBounceData(NULL)
 {
    // Copy Constructor
    Info("BounceObserver","Copy Constructor");
+   if (other.fBounceData) fBounceData = new BounceData(*(other.fBounceData));
 }
 
 //_____________________________________________________________________________
@@ -168,6 +199,7 @@ BounceObserver& BounceObserver::operator=(const BounceObserver& other)
    Info("BounceObserver","Assignment");
    if(this!=&other) {
       Observer::operator=(other);
+      if (fBounceData) delete fBounceData;
       fBounceData = other.fBounceData;
    }
    return *this;
@@ -227,17 +259,35 @@ TrackObserver::TrackObserver(const std::string name, double measInterval)
 {
    // Constructor
    Info("TrackObserver","Default Constructor");
+   fTrack = new Track();
 }
 
 //_____________________________________________________________________________
 TrackObserver::TrackObserver(const TrackObserver& other)
                  :Observer(other),
-                  fTrack(other.fTrack),
+                  fTrack(NULL),
                   fMeasInterval(other.fMeasInterval),
                   fLastMeasurementTime(other.fLastMeasurementTime)
+                  
 {
    // Copy Constructor
    Info("TrackObserver","Copy Constructor");
+   if (other.fTrack) fTrack = new Track(*(other.fTrack));
+}
+
+//_____________________________________________________________________________
+TrackObserver& TrackObserver::operator=(const TrackObserver& other)
+{
+   // Assignment
+   Info("TrackObserver","Assignment");
+   if(this!=&other) {
+      Observer::operator=(other);
+      if (fTrack) delete fTrack;
+      fTrack = other.fTrack;
+      fMeasInterval = other.fMeasInterval;
+      fLastMeasurementTime = other.fLastMeasurementTime;
+   }
+   return *this;
 }
 
 //_____________________________________________________________________________
@@ -308,17 +358,34 @@ FieldObserver::FieldObserver(const std::string name, const double measureInterva
 {
    // Constructor
    Info("FieldObserver","Default Constructor");
+   fFieldData = new FieldData(name);
 }
 
 //_____________________________________________________________________________
 FieldObserver::FieldObserver(const FieldObserver& other)
-              :Observer(other),
-               fFieldData(other.fFieldData),
-               fMeasInterval(other.fMeasInterval),
-               fLastMeasurementTime(other.fLastMeasurementTime)
+             :Observer(other),
+              fFieldData(NULL),
+              fMeasInterval(other.fMeasInterval),
+              fLastMeasurementTime(other.fLastMeasurementTime)
 {
    // Copy Constructor
    Info("FieldObserver","Copy Constructor");
+   if (other.fFieldData) fFieldData = new FieldData(*(other.fFieldData));
+}
+
+//_____________________________________________________________________________
+FieldObserver& FieldObserver::operator=(const FieldObserver& other)
+{
+   // Assignment
+   Info("FieldObserver","Assignment");
+   if(this!=&other) {
+      Observer::operator=(other);
+      if (fFieldData) delete fFieldData;
+      fFieldData = new FieldData(*(other.fFieldData));
+      fMeasInterval = other.fMeasInterval;
+      fLastMeasurementTime = other.fLastMeasurementTime;
+   }
+   return *this;
 }
 
 //_____________________________________________________________________________

@@ -53,6 +53,7 @@ public:
    Observer();
    Observer(const std::string name);
    Observer(const Observer&);
+   Observer& operator=(const Observer&);
    virtual ~Observer();
    
    virtual void DefineSubject(const TObject* subject) {fSubject = subject;}
@@ -80,6 +81,7 @@ public:
    // -- Constructors
    SpinObserver(const std::string name, double measureInterval);
    SpinObserver(const SpinObserver&);
+   SpinObserver& operator=(const SpinObserver&);
    virtual ~SpinObserver();
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
@@ -131,6 +133,7 @@ public:
    // -- Constructors
    TrackObserver(const std::string name, double measureInterval);
    TrackObserver(const TrackObserver&);
+   TrackObserver& operator=(const TrackObserver&);
    virtual ~TrackObserver();
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
@@ -157,6 +160,7 @@ public:
    // -- Constructors
    FieldObserver(const std::string name, const double measureInterval);
    FieldObserver(const FieldObserver&);
+   FieldObserver& operator=(const FieldObserver&);
    virtual ~FieldObserver();
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
