@@ -34,6 +34,7 @@ namespace RunParams {
    static const std::string recordBounces = "RecordBounces";
    static const std::string recordTracks = "RecordTracks";
    static const std::string recordField = "RecordField";
+   static const std::string recordPopulation = "RecordPopulation";
    // -- Parameters (Allows values to be set by user)
    static const std::string runTime = "RunTime(s)";
    static const std::string maxStepTime = "MaxStepTime(s)";
@@ -41,6 +42,7 @@ namespace RunParams {
    static const std::string trackMeasFreq = "TrackMeasureFrequency(Hz)";
    static const std::string spinMeasFreq = "SpinMeasureFrequency(Hz)";
    static const std::string fieldMeasFreq = "FieldMeasureFrequency(Hz)";
+   static const std::string populationMeasFreq = "PopulationMeasureFrequency(Hz)";
 }
 
 class ConfigFile;
@@ -90,9 +92,11 @@ public:
    bool ObserveBounces() const;
    bool ObserveTracks() const;
    bool ObserveField() const;
+   bool ObservePopulation() const;
    double TrackMeasureInterval() const;
    double SpinMeasureInterval() const;
    double FieldMeasureInterval() const;;
+   double PopulationMeasureInterval() const;
    std::vector<int> SelectedParticleIDs() const {return fSelectedParticleIDs;}
    virtual void Print(Option_t* option = "") const;
 

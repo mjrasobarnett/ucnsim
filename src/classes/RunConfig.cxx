@@ -191,6 +191,14 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile)
    double fieldMeasFreq = runConfigFile.GetFloat("FieldMeasureFrequency(Hz)","Observables");
    double fieldMeasInterval = (fieldMeasFreq == 0.0 ? 0.0 : (1.0/fieldMeasFreq));
    fParams.insert(ParamPair(RunParams::fieldMeasFreq, fieldMeasInterval));
+   // Option for whether to record field seen by particles
+   bool recordPopulation = runConfigFile.GetBool(RunParams::recordPopulation,"Observables");
+   fOptions.insert(OptionPair(RunParams::recordPopulation, recordPopulation));
+   // Parameter to be set; Specify frequency of field measurements
+   double populationMeasFreq = runConfigFile.GetFloat("PopulationMeasureFrequency(Hz)","Observables");
+   double populationMeasInterval = (populationMeasFreq == 0.0 ? 0.0 : (1.0/populationMeasFreq));
+   fParams.insert(ParamPair(RunParams::populationMeasFreq, populationMeasInterval));
+   
    // -----------------------------------
    // -- Selected Particle IDs
    if (loadAllParticles == false) {
@@ -217,6 +225,9 @@ void RunConfig::ReadInRunConfig(const ConfigFile& runConfigFile)
    }
    if (recordField == true && fieldMeasInterval == 0.0) {
       throw runtime_error("Incompatible options in RunConfig: Check RecordField and FieldMeasFreq");
+   }
+   if (recordPopulation == true && populationMeasInterval == 0.0) {
+      throw runtime_error("Incompatible options in RunConfig: Check RecordPopulation and PopulationMeasFreq");
    }
 }
 
@@ -433,6 +444,13 @@ bool RunConfig::ObserveField() const
 }
 
 //__________________________________________________________________________
+bool RunConfig::ObservePopulation() const
+{
+   map<string, bool>::const_iterator it = fOptions.find(RunParams::recordPopulation);
+   return (it == fOptions.end()) ? false : it->second;
+}
+
+//__________________________________________________________________________
 double RunConfig::TrackMeasureInterval() const
 {
    map<string, double>::const_iterator it = fParams.find(RunParams::trackMeasFreq);
@@ -450,6 +468,13 @@ double RunConfig::SpinMeasureInterval() const
 double RunConfig::FieldMeasureInterval() const
 {
    map<string, double>::const_iterator it = fParams.find(RunParams::fieldMeasFreq);
+   return (it == fParams.end()) ? 0. : it->second;
+}
+
+//__________________________________________________________________________
+double RunConfig::PopulationMeasureInterval() const
+{
+   map<string, double>::const_iterator it = fParams.find(RunParams::populationMeasFreq);
    return (it == fParams.end()) ? 0. : it->second;
 }
 
