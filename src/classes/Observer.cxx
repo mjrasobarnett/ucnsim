@@ -163,10 +163,9 @@ void SpinObserver::RecordEvent(const Point& /*point*/, const TVector3& /*velocit
 }
 
 //_____________________________________________________________________________
-void SpinObserver::Reset()
+void SpinObserver::ResetData()
 {
    // -- Delete current observables and create a new version in its place
-   SetPreviousMeasTime(0.0);
    if (fSpinData != NULL) delete fSpinData; fSpinData = NULL;
    fSpinData = new SpinData();
 }
@@ -240,7 +239,7 @@ void BounceObserver::RecordEvent(const Point& /*point*/, const TVector3& /*veloc
 }
 
 //_____________________________________________________________________________
-void BounceObserver::Reset()
+void BounceObserver::ResetData()
 {
    // -- Delete current observables and create a new version in its place
    if (fBounceData != NULL) delete fBounceData; fBounceData = NULL;
@@ -332,10 +331,9 @@ void TrackObserver::RecordEvent(const Point& /*point*/, const TVector3& /*veloci
 }
 
 //_____________________________________________________________________________
-void TrackObserver::Reset()
+void TrackObserver::ResetData()
 {
    // -- Delete current observables and create a new version in its place
-   SetPreviousMeasTime(0.0);
    if (fTrack != NULL) delete fTrack; fTrack = NULL;
    fTrack = new Track();
 }
@@ -422,10 +420,9 @@ void FieldObserver::RecordEvent(const Point& point, const TVector3& velocity, co
 }
 
 //_____________________________________________________________________________
-void FieldObserver::Reset()
+void FieldObserver::ResetData()
 {
    // -- Delete current observables and create a new version in its place
-   SetPreviousMeasTime(0.0);
    if (fFieldData != NULL) delete fFieldData; fFieldData = NULL;
    fFieldData = new FieldData(this->GetName());
 }
@@ -513,10 +510,11 @@ void PopulationObserver::RecordEvent(const Point& point, const TVector3& velocit
 }
 
 //_____________________________________________________________________________
-void PopulationObserver::Reset()
+void PopulationObserver::ResetData()
 {
    // -- Reset the time of the last measurement to the beginning
-   SetPreviousMeasTime(0.0);
+   if (fPopulationData != NULL) delete fPopulationData;
+   fPopulationData = new PopulationData();
 }
 
 //_____________________________________________________________________________

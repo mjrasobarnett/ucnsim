@@ -29,10 +29,14 @@ private:
    ParticleManifest* fOutputManifest;
    
    // -- Observers
-   std::multimap<std::string, Observer*> fObservers;
+   typedef std::multimap<std::string, Observer*> ObserverList;
+   typedef std::map<std::string, ObserverList> ObserverCategories;
+   ObserverCategories fObservers;
    
    void           PurgeObservers();
-   void           AddObserver(std::string subject, Observer* observer);
+   void           AddObserver(const std::string category, const std::string subject, Observer* observer);
+   void           AttachObservers(ObserverList& observerList, Particle* particle);
+      
          
    ParticleManifest* ReadInParticleManifest(TFile* file) const;
    TTree*            ReadInParticleTree(TFile* file) const;
@@ -56,10 +60,12 @@ public:
    Bool_t               SaveFinalParticle(Particle* particle, const std::string& state);
    
    // Get a Particle
-   Particle* const      RetrieveParticle(unsigned int index);
-   void                 RegisterObservers(Particle* particle);
    std::vector<int>     GetListOfParticlesToLoad(const RunConfig& runConfig);
+   Particle* const      RetrieveParticle(unsigned int index);
    
+   // Observers
+   void                 RegisterObservers(Particle* particle);
+   void                 ResetObservers();
    
    // Particle Counters
    Bool_t               ChecksOut() const;

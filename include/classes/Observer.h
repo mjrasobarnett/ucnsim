@@ -24,6 +24,19 @@
 #include "Track.h"
 #include "PopulationData.h"
 
+namespace Categories {
+   // -- Define List of Observer categories. These define a "type" of observer
+   const std::string PerTrack = "per_track";
+   const std::string PerRun = "per_run";
+}
+
+namespace Subjects {
+   // -- Define List of Observer categories. These define a "type" of observer
+   const std::string Particles = "particles";
+   const std::string Fields = "fields";
+}
+
+
 namespace Context {
    // Define List of contexts passed to observers to help them distinguish
    // whether the particle's state change is of interest to them
@@ -67,7 +80,8 @@ public:
    void DefineSubject(const TObject* subject) {fSubject = subject;}
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context) = 0;
-   virtual void Reset() = 0;
+   virtual void Reset() {fPreviousMeasTime = 0.0;}
+   virtual void ResetData() = 0;
    virtual void WriteToFile(Data& data) = 0;
    
    ClassDef(Observer, 1)
@@ -92,7 +106,7 @@ public:
    virtual ~SpinObserver();
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
-   virtual void Reset();
+   virtual void ResetData();
    virtual void WriteToFile(Data& data);
    
    ClassDef(SpinObserver, 1)
@@ -117,7 +131,7 @@ public:
    virtual ~BounceObserver();
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
-   virtual void Reset();
+   virtual void ResetData();
    virtual void WriteToFile(Data& data);
    
    ClassDef(BounceObserver, 1)
@@ -142,7 +156,7 @@ public:
    virtual ~TrackObserver();
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
-   virtual void Reset();
+   virtual void ResetData();
    virtual void WriteToFile(Data& data);
    
    ClassDef(TrackObserver, 1)
@@ -167,7 +181,7 @@ public:
    virtual ~FieldObserver();
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
-   virtual void Reset();
+   virtual void ResetData();
    virtual void WriteToFile(Data& data);
    
    ClassDef(FieldObserver, 1)
@@ -192,7 +206,7 @@ public:
    virtual ~PopulationObserver();
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context);
-   virtual void Reset();
+   virtual void ResetData();
    virtual void WriteToFile(Data& data);
    
    ClassDef(PopulationObserver, 1)

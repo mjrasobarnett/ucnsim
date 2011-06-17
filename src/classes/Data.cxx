@@ -282,11 +282,15 @@ bool Data::CopySelectedParticles(const std::vector<int>& selectedIndexes, TBranc
 void Data::PurgeObservers()
 {
    // -- Delete all observers held
-   if (fObservers.empty() == kFALSE) {
-      multimap<string, Observer*>::iterator it;
-      for(it = fObservers.begin(); it != fObservers.end(); ++it) {
-         delete it->second;
-         it->second = 0;
+   if (fObservers.empty() == false) {
+      ObserverCategories::iterator categoryIter;
+      for(categoryIter = fObservers.begin(); categoryIter != fObservers.end(); ++categoryIter) {
+         ObserverList& observerList = categoryIter->second;
+         ObserverList::iterator observerIter;
+         for(observerIter = observerList.begin(); observerIter != observerList.end(); ++observerIter) {
+            delete observerIter->second;
+            observerIter->second = 0;
+         }
       }
    }
 }
@@ -301,19 +305,19 @@ void Data::CreateObservers(const RunConfig& runConfig, Experiment& experiment)
       // Create an observer to track UCN Bounces
       Observer* obs = new BounceObserver("BounceObserver");
       // Add observer to the list
-      this->AddObserver("Particles", obs);
+      this->AddObserver(Categories::PerTrack, Subjects::Particles, obs);
    }
    if (runConfig.ObserveTracks() == kTRUE) {
       // Create an observer to track UCN path
       Observer* obs = new TrackObserver("TrackObserver", runConfig.TrackMeasureInterval());
       // Add observer to the list
-      this->AddObserver("Particles", obs);
+      this->AddObserver(Categories::PerTrack, Subjects::Particles, obs);
    }
    if (runConfig.ObserveSpin() == kTRUE) {
       // Create an observer to track UCN Spin polarisation
       Observer* obs = new SpinObserver("SpinObserver", runConfig.SpinMeasureInterval());
       // Add observer to the list
-      this->AddObserver("Particles", obs);
+      this->AddObserver(Categories::PerTrack, Subjects::Particles, obs);
    }
    // -- Attach observers to parts of the experiment
    if (runConfig.ObserveField() == kTRUE) {
@@ -321,7 +325,7 @@ void Data::CreateObservers(const RunConfig& runConfig, Experiment& experiment)
       if (runConfig.MagFieldOn() == kTRUE) {
          Observer* obs = new FieldObserver("MagFieldObserver", runConfig.FieldMeasureInterval());
          // Add observer to the list
-         this->AddObserver("Fields", obs);
+         this->AddObserver(Categories::PerTrack, Subjects::Fields, obs);
          // Define Observer's subject
          MagFieldArray& magFieldArray = experiment.GetFieldManager().GetMagFieldArray();
          obs->DefineSubject(&magFieldArray);
@@ -332,7 +336,7 @@ void Data::CreateObservers(const RunConfig& runConfig, Experiment& experiment)
       if (runConfig.ElecFieldOn() == kTRUE) {
          Observer* obs = new FieldObserver("ElecFieldObserver", runConfig.FieldMeasureInterval());
          // Add observer to the list
-         this->AddObserver("Fields", obs);
+         this->AddObserver(Categories::PerTrack, Subjects::Fields, obs);
          // Define Observer's subject
          ElecFieldArray& elecFieldArray = experiment.GetFieldManager().GetElecFieldArray();
          obs->DefineSubject(&elecFieldArray);
@@ -344,49 +348,99 @@ void Data::CreateObservers(const RunConfig& runConfig, Experiment& experiment)
    if (runConfig.ObservePopulation() == true) {
       Observer* obs = new PopulationObserver("PopulationObserver", runConfig.PopulationMeasureInterval());
       // Add observer to the list - noting that its subject will be the particles
-      this->AddObserver("Experiment", obs);
-      // Attach observer to the experiment
-      experiment.Attach(obs);
+      this->AddObserver(Categories::PerRun, Subjects::Particles, obs);
    }
 }
 
 //_____________________________________________________________________________
-void Data::AddObserver(string subject, Observer* observer)
+void Data::AddObserver(const string category, const string subject, Observer* observer)
 {
    // -- Add observer to internal list
-   fObservers.insert(pair<string, Observer*>(subject, observer));
+   ObserverCategories::iterator categoryIter = fObservers.find(category);
+   if (categoryIter == fObservers.end()) {
+      ObserverList newList;
+      newList.insert(pair<string, Observer*>(subject, observer));
+      fObservers.insert(pair<string, ObserverList>(category, newList));
+   } else {
+      ObserverList& observerList = categoryIter->second;
+      observerList.insert(pair<string, Observer*>(subject, observer));
+   }
 }
 
-//_____________________________________________________________________________
+//______________________________________________________________________________
 void Data::RegisterObservers(Particle* particle)
 {
    // -- Attach to particle the relevant observers
-   multimap<string, Observer*>::iterator obsIter;
-   for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
-      string subject = obsIter->first;
-      Observer* observer = obsIter->second;
-      observer->Reset();
-      if (subject == "Particles") {
+   ObserverCategories::iterator categoryIter;
+   for(categoryIter = fObservers.begin(); categoryIter != fObservers.end(); ++categoryIter) {
+      const string category = categoryIter->first;
+      ObserverList& observerList = categoryIter->second;
+      if (category == Categories::PerTrack) {
+         AttachObservers(observerList, particle);
+      } else if (category == Categories::PerRun) {
+         AttachObservers(observerList, particle);
+      } else {
+         cerr << "Error: An observer category, " << category << " has been added that is not recognised." << endl;
+         throw runtime_error("Unsure how to handle this observer");
+      }
+   }
+}
+
+//______________________________________________________________________________
+void Data::ResetObservers()
+{
+   // -- After each particle has finished its propagation, Reset all the observers
+   // -- before the next propagation. For those observers recording data on a track-by-track
+   // -- basis, Write their data to file.
+   ObserverCategories::iterator categoryIter;
+   for(categoryIter = fObservers.begin(); categoryIter != fObservers.end(); ++categoryIter) {
+      const string category = categoryIter->first;
+      ObserverList& observerList = categoryIter->second;
+      ObserverList::iterator observerIter;
+      for(observerIter = observerList.begin(); observerIter != observerList.end(); ++observerIter) {
+         string subject = observerIter->first;
+         Observer* observer = observerIter->second;
+         if (category == Categories::PerTrack) {
+            // If the observer is recording data on a 'PerTrack' basis, reset
+            // both its clock, and its internal data
+            observer->WriteToFile(*this);
+            observer->Reset();
+            observer->ResetData();
+         } else if (category == Categories::PerRun) {
+            // If the observer is recording data on a 'PerRun' basis, *just* reset
+            // its clock
+            observer->Reset();
+         } else {
+            cerr << "Error: An observer category, " << category;
+            cerr << " has been added that is not recognised." << endl;
+            throw runtime_error("Unsure how to handle this observer");
+         }
+      }
+   }
+}
+
+//______________________________________________________________________________
+void Data::AttachObservers(ObserverList& observerList, Particle* particle)
+{
+   ObserverList::iterator observerIter;
+   for(observerIter = observerList.begin(); observerIter != observerList.end(); ++observerIter) {
+      string subject = observerIter->first;
+      Observer* observer = observerIter->second;
+      if (subject == Subjects::Particles) {
          // If observer's ONLY subject is the particle, then reset previous particle's
          // data and define Observer's subject to be current particle
          observer->DefineSubject(particle);
          particle->Attach(observer);
-      } else if (subject == "Fields") {
+      } else if (subject == Subjects::Fields) {
          // If observer's subject is primarily the particle's observed fields, 
          // then the data is still relevant only to a single particle, therefore it isn't
          // a shared observer, however the observer's subject isn't the particle itself
          // but rather the field it sees. Thus, reset the previous particles data, 
          // but don't change the observer's subject.
          particle->Attach(observer);
-      } else if (subject == "Experiment") {
-         // If the observer's main subject is the experiment, then the data is relevant
-         // to ALL particles, not only one, so attach it to the particle as a
-         // *SHARED* observer. This means that the particle can notify this observer
-         // of events happening in the experiment, however the particle is not responsible
-         // for writing this observer's output to the Datafile.
-         // For the same reasoning, don't reset the data after each particle.
-         observer->DefineSubject(particle);
-         particle->AttachSharedObserver(observer);
+      } else {
+         cerr << "Error: An observer subject, " << subject << " has been added that is not recognised." << endl;
+         throw runtime_error("Unsure how to handle this observer");
       }
       // Get observers to make a measurement of the initial state of their subjects
       observer->RecordEvent(particle->GetPoint(), particle->GetVelocity(), Context::Creation);
@@ -396,7 +450,7 @@ void Data::RegisterObservers(Particle* particle)
 //_____________________________________________________________________________
 Bool_t Data::SaveInitialParticle(Particle* particle)
 {
-   // Delete any observers first
+   // Detach observers
    particle->DetachAll();
    // Write Particle to output branch
    this->WriteObjectToTree(particle, States::initial.c_str());
@@ -409,8 +463,7 @@ Bool_t Data::SaveInitialParticle(Particle* particle)
 //_____________________________________________________________________________
 Bool_t Data::SaveFinalParticle(Particle* particle, const std::string& state)
 {
-   // Write observers to Tree and then delete them
-   particle->WriteObservers(*this);
+   // Detach observers
    particle->DetachAll();
    // Write Particle to output branch
    this->WriteObjectToTree(particle, States::final.c_str());
@@ -509,6 +562,16 @@ void Data::Export()
 {
    this->WriteObjectToFile(fOutputTree);
    this->WriteObjectToFile(fOutputManifest);
+   // Write out any 'PerRun' observers
+   ObserverCategories::iterator categoryIter = fObservers.find(Categories::PerRun);
+   if (categoryIter != fObservers.end()) {
+      ObserverList& observerList = categoryIter->second;
+      ObserverList::iterator observerIter;
+      for(observerIter = observerList.begin(); observerIter != observerList.end(); ++observerIter) {
+         Observer* observer = observerIter->second;
+         observer->WriteToFile(*this);
+      }
+   }
 }
 
 //_____________________________________________________________________________

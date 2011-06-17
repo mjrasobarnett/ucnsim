@@ -10,8 +10,7 @@ using namespace std;
 
 //______________________________________________________________________________
 Observable::Observable()
-        :fObservers(),
-         fSharedObservers()
+        :fObservers()
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "Observable Default Constructor" << endl;
@@ -20,8 +19,7 @@ Observable::Observable()
 
 //______________________________________________________________________________
 Observable::Observable(const Observable& other)
-        :fObservers(other.fObservers),
-         fSharedObservers(other.fSharedObservers)
+        :fObservers(other.fObservers)
 {
    #ifdef PRINT_CONSTRUCTORS
       cout << "Observable Copy Construct" << endl;
@@ -44,31 +42,11 @@ void Observable::Attach(Observer* observer)
    fObservers.push_back(observer);
 }
 
-//______________________________________________________________________________
-void Observable::AttachSharedObserver(Observer* observer)
-{
-   // -- Add an observer to the particle's list of observers
-   fSharedObservers.push_back(observer);
-}
-
 //_____________________________________________________________________________
 void Observable::DetachAll()
 {
    // -- Remove all observers from the particle's list of observers
    fObservers.clear();
-   fSharedObservers.clear();
-}
-
-//_____________________________________________________________________________
-void Observable::WriteObservers(Data& data)
-{
-   // -- Write *ONLY* the observers that watching this observable to the file
-   // -- Don't write the shared observers.
-   vector<Observer*>::iterator it;
-   for(it = fObservers.begin(); it != fObservers.end(); it++) {
-      // Write out to Tree
-      (*it)->WriteToFile(data);
-   }
 }
 
 //_____________________________________________________________________________
@@ -78,10 +56,6 @@ void Observable::NotifyObservers(const Point& point, const TVector3& velocity, c
    vector<Observer*>::iterator it;
    // Notify my observers
    for(it = fObservers.begin(); it != fObservers.end(); it++) {
-      (*it)->RecordEvent(point, velocity, context);
-   }
-   // Notify my shared observers
-   for(it = fSharedObservers.begin(); it != fSharedObservers.end(); it++) {
       (*it)->RecordEvent(point, velocity, context);
    }
 }

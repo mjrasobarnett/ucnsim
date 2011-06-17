@@ -160,8 +160,6 @@ Bool_t Run::Start()
          Error("Start","Failed to retrieve particle from Data");
          return false;
       }
-      // Reset the clock
-      Clock::Instance()->Reset();
       // If the particle has stored a previous random generator state, load it
       const TRandom3State* previousRndState = particle->GetRandomGeneratorState();
       if (previousRndState != NULL) {rndGenerator->SetState(*previousRndState);}
@@ -191,6 +189,12 @@ Bool_t Run::Start()
       ///////////////////////////////////////////////////////////////////////
       // Add Final Particle State to data tree
       particle->SaveState(fData);
+      ///////////////////////////////////////////////////////////////////////
+      // Reset the clock
+      Clock::Instance()->Reset();
+      // Reset the observers
+      this->GetData().ResetObservers();
+      ///////////////////////////////////////////////////////////////////////
       // Print Progress Bar to Screen
       #ifndef VERBOSE_MODE
          Algorithms::ProgressBar::PrintProgress(particleNumber, totalParticles, 2);

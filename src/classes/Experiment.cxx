@@ -24,7 +24,6 @@ ClassImp(Experiment)
 //_____________________________________________________________________________
 Experiment::Experiment()
            :TNamed("Experiment", "The Experimental Geometry"),
-            Observable(),
             fFieldManager(),
             fGeoManager(NULL)
 {
@@ -35,7 +34,6 @@ Experiment::Experiment()
 //_____________________________________________________________________________
 Experiment::Experiment(const Experiment& other)
                :TNamed(other),
-                Observable(),
                 fFieldManager(other.fFieldManager),
                 fGeoManager(other.fGeoManager)
 {
@@ -110,8 +108,6 @@ Bool_t Experiment::Export(Run& run)
    }
    // Write Geomanger to file
    run.GetData().WriteObjectToFile(fGeoManager);
-   // Write Observers to file
-   this->WriteObservers(run.GetData());
    return kTRUE;
 }
 
