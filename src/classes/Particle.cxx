@@ -48,7 +48,7 @@ Particle::Particle()
 
 
 //______________________________________________________________________________
-Particle::Particle(unsigned int id, Point& pos, TVector3& vel)
+Particle::Particle(const unsigned int id, const Point pos, const TVector3 vel)
              :TObject(), Observable(),
               fId(id), fPos(pos), fVel(vel),
               fState(NULL), fSpin(), fRndState(NULL)

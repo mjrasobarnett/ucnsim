@@ -78,7 +78,7 @@ private:
 public:
    // -- Constructors
    Particle();
-   Particle(unsigned int id, Point& position, TVector3& vel);
+   Particle(const unsigned int id, const Point position, const TVector3 vel);
    Particle& operator=(const Particle& other);
    Particle(const Particle &part);
 

@@ -208,7 +208,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    const string outputFileName = initialConfig.OutputFileName();
    TFile* file = Analysis::DataFile::OpenRootFile(outputFileName,"RECREATE");
    TTree tree("Particles","Tree of Particle Data");
-   Particle* particle = new Particle();
+   Particle* particle = new Particle(0, Point(), TVector3());
    TBranch* initialBranch = tree.Branch(States::initial.c_str(), particle->ClassName(), &particle);
    ParticleManifest manifest;
    //////////////////////////////////////////////////////////////////////////////////////
