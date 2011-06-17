@@ -24,8 +24,4 @@ void PopulationData::Fill(double currentTime, std::string statename)
    }
    // Increment counter in table for this state
    tableIter->second += 1;
-   cout << "Time: " << currentTime << " (s)" << endl;
-   for (tableIter = populationTable.begin(); tableIter != populationTable.end(); tableIter++) {
-      cout << tableIter->first << ":  " << tableIter->second << endl;
-   }
 }
