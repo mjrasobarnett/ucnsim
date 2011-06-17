@@ -51,7 +51,7 @@ Particle::Particle()
 Particle::Particle(unsigned int id, Point& pos, TVector3& vel)
              :TObject(), Observable(),
               fId(id), fPos(pos), fVel(vel),
-              fSpin(), fRndState(NULL)
+              fState(NULL), fSpin(), fRndState(NULL)
 {
    // -- Constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -64,16 +64,14 @@ Particle::Particle(unsigned int id, Point& pos, TVector3& vel)
 Particle::Particle(const Particle& other)
              :TObject(other), Observable(other),
               fId(other.fId), fPos(other.fPos), fVel(other.fVel),
-              fSpin(other.fSpin), fRndState(NULL)
+              fState(NULL), fSpin(other.fSpin), fRndState(NULL)
 {
    // -- Copy Constructor
    #ifdef PRINT_CONSTRUCTORS
       Info("Particle","Copy Constructor");
    #endif
-      if (fState) delete fState;
-      fState = other.fState->Clone();
-      if (fRndState) delete fRndState;
-      if (other.fRndState) fRndState = other.fRndState->Clone();
+      if (other.fState) fState = (other.fState)->Clone();
+      if (other.fRndState) fRndState = (other.fRndState)->Clone();
 }
 
 //_____________________________________________________________________________
@@ -91,9 +89,9 @@ Particle& Particle::operator=(const Particle& other)
       fVel = other.fVel;
       fSpin = other.fSpin;
       if (fState) delete fState;
-      fState = other.fState->Clone();
+      fState = (other.fState)->Clone();
       if (fRndState) delete fRndState;
-      if (other.fRndState) fRndState = other.fRndState->Clone();
+      if (other.fRndState) fRndState = (other.fRndState)->Clone();
    }
    return *this;
 }
