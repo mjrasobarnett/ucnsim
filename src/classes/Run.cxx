@@ -153,6 +153,7 @@ Bool_t Run::Start()
    // Loop over all particles stored in InitialParticles Tree
    vector<int>::const_iterator indexIter;
    for (indexIter = selectedParticles.begin(); indexIter != selectedParticles.end(); indexIter++) {
+      // Count the number of particles we have propagated so far
       const int particleNumber = indexIter - selectedParticles.begin();
       // Get Particle from list
       Particle* particle = fData.RetrieveParticle(*indexIter);
@@ -188,7 +189,7 @@ Bool_t Run::Start()
       fData.SaveInitialParticle(&initialParticle);
       ///////////////////////////////////////////////////////////////////////
       // Add Final Particle State to data tree
-      particle->SaveState(fData);
+      fData.SaveFinalParticle(particle, particle->GetState().GetName());
       ///////////////////////////////////////////////////////////////////////
       // Reset the clock
       Clock::Instance()->Reset();

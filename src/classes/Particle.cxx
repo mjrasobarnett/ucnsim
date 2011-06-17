@@ -115,13 +115,6 @@ void Particle::ChangeState(State* state)
 }
 
 //______________________________________________________________________________
-void Particle::SaveState(Data& data)
-{
-   // Ask States to register themselves in the run to keep track of numbers
-   data.SaveFinalParticle(this, fState->GetName());
-}
-
-//______________________________________________________________________________
 void Particle::SetPosition(const Double_t x, const Double_t y, const Double_t z,
                                     const Double_t t)
 {

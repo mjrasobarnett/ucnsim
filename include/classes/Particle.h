@@ -145,9 +145,6 @@ public:
    void                 IsAbsorbed();
    void                 IsAnomalous();
    
-   // -- Output to file
-   void                 SaveState(Data& data);
-   
    ClassDef(Particle,1)   // Ultra-Cold Neutron
 };
 
