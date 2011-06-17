@@ -80,7 +80,7 @@ public:
    void DefineSubject(const TObject* subject) {fSubject = subject;}
    
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context) = 0;
-   virtual void Reset() {fPreviousMeasTime = 0.0;}
+   virtual void ResetInternalClock() {fPreviousMeasTime = 0.0;}
    virtual void ResetData() = 0;
    virtual void WriteToFile(Data& data) = 0;
    

@@ -404,12 +404,12 @@ void Data::ResetObservers()
             // If the observer is recording data on a 'PerTrack' basis, reset
             // both its clock, and its internal data
             observer->WriteToFile(*this);
-            observer->Reset();
+            observer->ResetInternalClock();
             observer->ResetData();
          } else if (category == Categories::PerRun) {
             // If the observer is recording data on a 'PerRun' basis, *just* reset
             // its clock
-            observer->Reset();
+            observer->ResetInternalClock();
          } else {
             cerr << "Error: An observer category, " << category;
             cerr << " has been added that is not recognised." << endl;
