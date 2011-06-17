@@ -17,15 +17,8 @@ Clock *Clock::fgClock = NULL;
 Clock::Clock()
       :fTime(0.),
        fRunEnd(0.),
-       fLastSpinMeas(0.),
-       fLastFieldMeas(0.),
-       fLastTrackMeas(0.),
-       fLastPopulationMeas(0.),
        fMaxStepInterval(0.),
-       fSpinMeasInterval(0.),
-       fFieldMeasInterval(0.),
-       fTrackMeasInterval(0.),
-       fPopulationMeasInterval(0.)
+       fExternalEvents()
 {
    // -- Default constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -57,11 +50,29 @@ bool Clock::Initialise(const RunConfig& runConfig)
 {
    fRunEnd = runConfig.RunTime();
    fMaxStepInterval = runConfig.MaxStepTime();
-   fSpinMeasInterval = runConfig.SpinMeasureInterval();
-   fFieldMeasInterval = runConfig.FieldMeasureInterval();
-   fTrackMeasInterval = runConfig.TrackMeasureInterval();
-   fPopulationMeasInterval = runConfig.PopulationMeasureInterval();
    return true;
+}
+
+//______________________________________________________________________________
+void Clock::ScheduleEvent(const std::string name, const double interval, const double prevMeasureTime)
+{
+   // -- Add this event to the Clock to be scheduled in Run
+   EventTimer newEvent(name, interval, prevMeasureTime);
+   fExternalEvents.push_back(newEvent);
+}
+
+//______________________________________________________________________________
+bool Clock::CancelEvent(const std::string name)
+{
+   // Remove named event from list
+   vector<EventTimer>::iterator eventIt;
+   for (eventIt = fExternalEvents.begin(); eventIt != fExternalEvents.end(); eventIt++) {
+      if (eventIt->fEventName == name) {
+         fExternalEvents.erase(eventIt);
+         return true;
+      }
+   }
+   return false;
 }
 
 //______________________________________________________________________________
@@ -73,44 +84,20 @@ double Clock::GetTimeToNextEvent()
    double nextInterval = fMaxStepInterval;
    // Check if we will reach end of run in this time and adjust
    if (fTime + nextInterval >= fRunEnd) {nextInterval = fRunEnd - fTime;}
-   // Check if we are measuring spin at a specific frequency
-   if (fSpinMeasInterval > 0.0) {
-      // Update LastSpin Measurement time if we reached it
-      if (fTime >= fLastSpinMeas + fSpinMeasInterval) {fLastSpinMeas += fSpinMeasInterval;}
-      // Check if we will make a spin measurement in this time
-      const double nextSpinMeasureTime = fLastSpinMeas + fSpinMeasInterval;
-      if (fTime + nextInterval >= nextSpinMeasureTime) {
-         nextInterval = nextSpinMeasureTime - fTime;
-      }
-   }
-   // Check if we are measuring field at a specific frequency
-   if (fFieldMeasInterval > 0.0) {
-      // Update LastField Measurement time if we reached it
-      if (fTime >= fLastFieldMeas + fFieldMeasInterval) {fLastFieldMeas += fFieldMeasInterval;}
-      // Check if we will make a field measurement in this time
-      const double nextFieldMeasureTime = fLastFieldMeas + fFieldMeasInterval;
-      if (fTime + nextInterval >= nextFieldMeasureTime) {
-         nextInterval = nextFieldMeasureTime - fTime;
-      }
-   }
-   // Check if we are measuring track at a specific frequency
-   if (fTrackMeasInterval > 0.0) {
-      // Update LastField Measurement time if we reached it
-      if (fTime >= fLastTrackMeas + fTrackMeasInterval) {fLastTrackMeas += fTrackMeasInterval;}
-      // Check if we will make a field measurement in this time
-      const double nextTrackMeasureTime = fLastTrackMeas + fTrackMeasInterval;
-      if (fTime + nextInterval >= nextTrackMeasureTime) {
-         nextInterval = nextTrackMeasureTime - fTime;
-      }
-   }
-   // Check if we are measuring track at a specific frequency
-   if (fPopulationMeasInterval > 0.0) {
-      // Update LastField Measurement time if we reached it
-      if (fTime >= fLastPopulationMeas + fPopulationMeasInterval) {fLastPopulationMeas += fPopulationMeasInterval;}
-      // Check if we will make a field measurement in this time
-      const double nextPopulationMeasureTime = fLastPopulationMeas + fPopulationMeasInterval;
-      if (fTime + nextInterval >= nextPopulationMeasureTime) {
-         nextInterval = nextPopulationMeasureTime - fTime;
+   // Finally check our list of external events to see if any will occur 
+   // within next proposed interval. If so, set nextInterval to the time to this event
+   vector<EventTimer>::iterator eventIt;
+   for (eventIt = fExternalEvents.begin(); eventIt != fExternalEvents.end(); eventIt++) {
+      EventTimer& event = (*eventIt);
+      // Check if the event is only measured at a specific frequency
+      if (event.fMeasInterval > 0.0) {
+         // Update this event's last measurement time if we reached it
+         if (fTime >= event.fPreviousMeas + event.fMeasInterval) {event.fPreviousMeas += event.fMeasInterval;}
+         // Check if we will make a spin measurement in this time
+         const double nextEventMeas = event.fPreviousMeas + event.fMeasInterval;
+         if (fTime + nextInterval >= nextEventMeas) {
+            nextInterval = nextEventMeas - fTime;
+         }
       }
    }
    return nextInterval;
@@ -120,8 +107,9 @@ double Clock::GetTimeToNextEvent()
 void Clock::Reset()
 {
    fTime = 0.0;
-   fLastSpinMeas = 0.0;
-   fLastFieldMeas = 0.0;
-   fLastTrackMeas = 0.0;
-   fLastPopulationMeas = 0.0;
+   // Set the time of previous measurement for every external event back to 0
+   vector<EventTimer>::iterator eventIt;
+   for (eventIt = fExternalEvents.begin(); eventIt != fExternalEvents.end(); eventIt++) {
+      eventIt->fPreviousMeas = 0.0;
+   }
 }

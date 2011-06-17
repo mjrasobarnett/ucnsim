@@ -12,6 +12,7 @@
 #include "Data.h"
 #include "Clock.h"
 #include "Algorithms.h"
+#include "Clock.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -26,27 +27,39 @@ ClassImp(Observer);
 
 //_____________________________________________________________________________
 Observer::Observer()
-         :TNamed()
+         :TNamed(),
+          fSubject(NULL),
+          fMeasInterval(0.0),
+          fPreviousMeasTime(0.0)
 {
    // Constructor
    Info("Observer","Default Constructor");
 }
 
 //_____________________________________________________________________________
-Observer::Observer(const string name)
-         :TNamed(name,name)
+Observer::Observer(const string name, const double measureInterval)
+         :TNamed(name,name),
+          fSubject(NULL),
+          fMeasInterval(measureInterval),
+          fPreviousMeasTime(Clock::Instance()->GetTime())
 {
    // Constructor
    Info("Observer","Default Constructor");
+   // Register ourselves with the clock as a periodic event
+   Clock::Instance()->ScheduleEvent(name, measureInterval, fPreviousMeasTime);
 }
 
 //_____________________________________________________________________________
 Observer::Observer(const Observer& other)
          :TNamed(other),
-          fSubject(other.fSubject)
+          fSubject(other.fSubject),
+          fMeasInterval(other.fMeasInterval),
+          fPreviousMeasTime(other.fPreviousMeasTime)
 {
    // Copy Constructor
    Info("Observer","Copy Constructor");
+   // Register ourselves with the clock as a periodic event
+   Clock::Instance()->ScheduleEvent(this->GetName(), fMeasInterval, fPreviousMeasTime);
 }
 
 //_____________________________________________________________________________
@@ -54,8 +67,15 @@ Observer& Observer::operator=(const Observer& other)
 {
    Info("Observer","Assignment");
    if(this!=&other) {
+      // Un-register ourselves from the Clock's list of events
+      Clock::Instance()->CancelEvent(this->GetName());
+      // Assignment
       Observer::operator=(other);
       fSubject = other.fSubject;
+      fMeasInterval = other.fMeasInterval;
+      fPreviousMeasTime = other.fPreviousMeasTime;
+      // Re-register ourselves with the Clock
+      Clock::Instance()->ScheduleEvent(this->GetName(), fMeasInterval, fPreviousMeasTime);
    }
    return *this;
 }
@@ -77,10 +97,8 @@ ClassImp(SpinObserver);
 
 //_____________________________________________________________________________
 SpinObserver::SpinObserver(const std::string name, double measureInterval)
-             :Observer(name),
-              fSpinData(NULL),
-              fMeasInterval(measureInterval),
-              fLastMeasurementTime(Clock::Instance()->GetTime())
+             :Observer(name, measureInterval),
+              fSpinData(NULL)
 {
    // Constructor
    Info("SpinObserver","Default Constructor");
@@ -90,9 +108,7 @@ SpinObserver::SpinObserver(const std::string name, double measureInterval)
 //_____________________________________________________________________________
 SpinObserver::SpinObserver(const SpinObserver& other)
              :Observer(other),
-              fSpinData(NULL),
-              fMeasInterval(other.fMeasInterval),
-              fLastMeasurementTime(other.fLastMeasurementTime)
+              fSpinData(NULL)
 {
    // Copy Constructor
    Info("SpinObserver","Copy Constructor");
@@ -108,8 +124,6 @@ SpinObserver& SpinObserver::operator=(const SpinObserver& other)
       Observer::operator=(other);
       if (fSpinData) delete fSpinData;
       fSpinData = new SpinData(*(other.fSpinData));
-      fMeasInterval = other.fMeasInterval;
-      fLastMeasurementTime = other.fLastMeasurementTime;
    }
    return *this;
 }
@@ -130,19 +144,19 @@ void SpinObserver::RecordEvent(const Point& /*point*/, const TVector3& /*velocit
       // The Spin context means that spin state has just changed.
       // First check whether it is time to make a Spin measurement
       double currentTime = Clock::Instance()->GetTime();
-      if (Precision::IsEqual(currentTime, (fLastMeasurementTime + fMeasInterval))) {
-         const Particle* particle = dynamic_cast<const Particle*>(fSubject);
+      if (Precision::IsEqual(currentTime, (this->GetPreviousMeasTime() + this->GetMeasInterval()))) {
+         const Particle* particle = dynamic_cast<const Particle*>(this->GetSubject());
          // Make a copy of the current spin state
          const Spin* spin = new Spin(particle->GetSpin());
          // Insert copy into data structure
          fSpinData->insert(pair<Double_t,const Spin*>(particle->T(), spin));
          // Update stored value of last measurement
-         fLastMeasurementTime = currentTime;
+         SetPreviousMeasTime(currentTime);
       }
    } else if (context == Context::Creation) {
       // The creation context signifies that the particle has just been instantiated so we
       // shall make a measurement of its initial state
-      const Particle* particle = dynamic_cast<const Particle*>(fSubject);
+      const Particle* particle = dynamic_cast<const Particle*>(this->GetSubject());
       const Spin* spin = new Spin(particle->GetSpin());
       fSpinData->insert(pair<Double_t,const Spin*>(particle->T(), spin));
    }
@@ -152,7 +166,7 @@ void SpinObserver::RecordEvent(const Point& /*point*/, const TVector3& /*velocit
 void SpinObserver::Reset()
 {
    // -- Delete current observables and create a new version in its place
-   fLastMeasurementTime = 0.0;
+   SetPreviousMeasTime(0.0);
    if (fSpinData != NULL) delete fSpinData; fSpinData = NULL;
    fSpinData = new SpinData();
 }
@@ -174,7 +188,7 @@ ClassImp(BounceObserver);
 
 //_____________________________________________________________________________
 BounceObserver::BounceObserver(const std::string name)
-                   :Observer(name),
+                   :Observer(name, 0.0),
                     fBounceData(NULL)
 {
    // Constructor
@@ -252,10 +266,8 @@ ClassImp(TrackObserver);
 
 //_____________________________________________________________________________
 TrackObserver::TrackObserver(const std::string name, double measInterval)
-                   :Observer(name),
-                    fTrack(NULL),
-                    fMeasInterval(measInterval),
-                    fLastMeasurementTime(0.0)
+                   :Observer(name, measInterval),
+                    fTrack(NULL)
 {
    // Constructor
    Info("TrackObserver","Default Constructor");
@@ -265,10 +277,7 @@ TrackObserver::TrackObserver(const std::string name, double measInterval)
 //_____________________________________________________________________________
 TrackObserver::TrackObserver(const TrackObserver& other)
                  :Observer(other),
-                  fTrack(NULL),
-                  fMeasInterval(other.fMeasInterval),
-                  fLastMeasurementTime(other.fLastMeasurementTime)
-                  
+                  fTrack(NULL)
 {
    // Copy Constructor
    Info("TrackObserver","Copy Constructor");
@@ -284,8 +293,6 @@ TrackObserver& TrackObserver::operator=(const TrackObserver& other)
       Observer::operator=(other);
       if (fTrack) delete fTrack;
       fTrack = other.fTrack;
-      fMeasInterval = other.fMeasInterval;
-      fLastMeasurementTime = other.fLastMeasurementTime;
    }
    return *this;
 }
@@ -305,21 +312,21 @@ void TrackObserver::RecordEvent(const Point& /*point*/, const TVector3& /*veloci
    if (context == Context::Step) {
       double currentTime = Clock::Instance()->GetTime();
       // If no measurement interval is set, we record every step
-      if (fMeasInterval == 0.0) {
-         const Particle* particle = dynamic_cast<const Particle*>(fSubject);
+      if (this->GetMeasInterval() == 0.0) {
+         const Particle* particle = dynamic_cast<const Particle*>(this->GetSubject());
          fTrack->AddPoint(particle->GetPoint());
-      } else if (Precision::IsEqual(currentTime, (fLastMeasurementTime + fMeasInterval))) {
-         const Particle* particle = dynamic_cast<const Particle*>(fSubject);
+      } else if (Precision::IsEqual(currentTime, (this->GetPreviousMeasTime() + this->GetMeasInterval()))) {
+         const Particle* particle = dynamic_cast<const Particle*>(this->GetSubject());
          fTrack->AddPoint(particle->GetPoint());
          // Update stored value of last measurement
-         fLastMeasurementTime = currentTime;
+         SetPreviousMeasTime(currentTime);
       } else {
          // Do nothing
       }
    }  else if (context == Context::Creation) {
       // The creation context signifies that the particle has just been instantiated so we
       // shall make a measurement of its initial state
-      const Particle* particle = dynamic_cast<const Particle*>(fSubject);
+      const Particle* particle = dynamic_cast<const Particle*>(this->GetSubject());
       fTrack->AddPoint(particle->GetPoint());
    }
 }
@@ -328,7 +335,7 @@ void TrackObserver::RecordEvent(const Point& /*point*/, const TVector3& /*veloci
 void TrackObserver::Reset()
 {
    // -- Delete current observables and create a new version in its place
-   fLastMeasurementTime = 0.0;
+   SetPreviousMeasTime(0.0);
    if (fTrack != NULL) delete fTrack; fTrack = NULL;
    fTrack = new Track();
 }
@@ -351,10 +358,8 @@ ClassImp(FieldObserver);
 
 //_____________________________________________________________________________
 FieldObserver::FieldObserver(const std::string name, const double measureInterval)
-              :Observer(name),
-               fFieldData(NULL),
-               fMeasInterval(measureInterval),
-               fLastMeasurementTime(Clock::Instance()->GetTime())
+              :Observer(name, measureInterval),
+               fFieldData(NULL)
 {
    // Constructor
    Info("FieldObserver","Default Constructor");
@@ -364,9 +369,7 @@ FieldObserver::FieldObserver(const std::string name, const double measureInterva
 //_____________________________________________________________________________
 FieldObserver::FieldObserver(const FieldObserver& other)
              :Observer(other),
-              fFieldData(NULL),
-              fMeasInterval(other.fMeasInterval),
-              fLastMeasurementTime(other.fLastMeasurementTime)
+              fFieldData(NULL)
 {
    // Copy Constructor
    Info("FieldObserver","Copy Constructor");
@@ -382,8 +385,6 @@ FieldObserver& FieldObserver::operator=(const FieldObserver& other)
       Observer::operator=(other);
       if (fFieldData) delete fFieldData;
       fFieldData = new FieldData(*(other.fFieldData));
-      fMeasInterval = other.fMeasInterval;
-      fLastMeasurementTime = other.fLastMeasurementTime;
    }
    return *this;
 }
@@ -403,18 +404,18 @@ void FieldObserver::RecordEvent(const Point& point, const TVector3& velocity, co
    if (context == Context::MagField) {
       // Calculate whether it is time to make a field measurement
       double currentTime = Clock::Instance()->GetTime();
-      if (Precision::IsEqual(currentTime,(fLastMeasurementTime + fMeasInterval))) {
+      if (Precision::IsEqual(currentTime,(this->GetPreviousMeasTime() + this->GetMeasInterval()))) {
          // Make measurement
-         const TVector3 field = dynamic_cast<const FieldArray*>(fSubject)->GetMagField(point,velocity);
+         const TVector3 field = dynamic_cast<const FieldArray*>(this->GetSubject())->GetMagField(point,velocity);
          const FieldVertex* fieldvertex = new FieldVertex(point, field);
          fFieldData->push_back(fieldvertex);
          // Update stored value of last measurement
-         fLastMeasurementTime = currentTime;
+         SetPreviousMeasTime(currentTime);
       }
    } else if (context == Context::Creation) {
       // The creation context signifies that the particle has just been instantiated so we
       // shall make a measurement of the initial state
-      const TVector3 field = dynamic_cast<const FieldArray*>(fSubject)->GetMagField(point,velocity);
+      const TVector3 field = dynamic_cast<const FieldArray*>(this->GetSubject())->GetMagField(point,velocity);
       const FieldVertex* fieldvertex = new FieldVertex(point, field);
       fFieldData->push_back(fieldvertex);
    }
@@ -424,7 +425,7 @@ void FieldObserver::RecordEvent(const Point& point, const TVector3& velocity, co
 void FieldObserver::Reset()
 {
    // -- Delete current observables and create a new version in its place
-   fLastMeasurementTime = 0.0;
+   SetPreviousMeasTime(0.0);
    if (fFieldData != NULL) delete fFieldData; fFieldData = NULL;
    fFieldData = new FieldData(this->GetName());
 }
@@ -446,10 +447,8 @@ ClassImp(PopulationObserver);
 
 //_____________________________________________________________________________
 PopulationObserver::PopulationObserver(const std::string name, const double measureInterval)
-              :Observer(name),
-               fPopulationData(NULL),
-               fMeasInterval(measureInterval),
-               fLastMeasurementTime(Clock::Instance()->GetTime())
+              :Observer(name, measureInterval),
+               fPopulationData(NULL)
 {
    // Constructor
    Info("PopulationObserver","Default Constructor");
@@ -459,9 +458,7 @@ PopulationObserver::PopulationObserver(const std::string name, const double meas
 //_____________________________________________________________________________
 PopulationObserver::PopulationObserver(const PopulationObserver& other)
              :Observer(other),
-              fPopulationData(NULL),
-              fMeasInterval(other.fMeasInterval),
-              fLastMeasurementTime(other.fLastMeasurementTime)
+              fPopulationData(NULL)
 {
    // Copy Constructor
    Info("PopulationObserver","Copy Constructor");
@@ -477,8 +474,6 @@ PopulationObserver& PopulationObserver::operator=(const PopulationObserver& othe
       Observer::operator=(other);
       if (fPopulationData) delete fPopulationData;
       fPopulationData = new PopulationData(*(other.fPopulationData));
-      fMeasInterval = other.fMeasInterval;
-      fLastMeasurementTime = other.fLastMeasurementTime;
    }
    return *this;
 }
@@ -499,19 +494,19 @@ void PopulationObserver::RecordEvent(const Point& point, const TVector3& velocit
       // The population context means that its time to record the particle population.
       // First check whether it is time to make a population measurement
       double currentTime = Clock::Instance()->GetTime();
-      if (Precision::IsEqual(currentTime, (fLastMeasurementTime + fMeasInterval))) {
+      if (Precision::IsEqual(currentTime, (this->GetPreviousMeasTime() + this->GetMeasInterval()))) {
          // Get the current state of the particle
-         const Particle* particle = dynamic_cast<const Particle*>(fSubject);
+         const Particle* particle = dynamic_cast<const Particle*>(this->GetSubject());
          const string stateName = particle->GetState().GetName();
          // Update Population data
          fPopulationData->Fill(currentTime, stateName);
          // Update stored value of last measurement
-         fLastMeasurementTime = currentTime;
+         SetPreviousMeasTime(currentTime);
       }
    } else if (context == Context::Creation) {
       // The creation context signifies that the particle has just been instantiated so we
       // shall make a measurement of its initial state
-      const Particle* particle = dynamic_cast<const Particle*>(fSubject);
+      const Particle* particle = dynamic_cast<const Particle*>(this->GetSubject());
       const string stateName = particle->GetState().GetName();
       fPopulationData->Fill(Clock::Instance()->GetTime(), stateName);
    } 
@@ -521,7 +516,7 @@ void PopulationObserver::RecordEvent(const Point& point, const TVector3& velocit
 void PopulationObserver::Reset()
 {
    // -- Reset the time of the last measurement to the beginning
-   fLastMeasurementTime = 0.0;
+   SetPreviousMeasTime(0.0);
 }
 
 //_____________________________________________________________________________

@@ -46,17 +46,26 @@ class Data;
 
 class Observer : public TNamed
 {
-protected:
+private:
    const TObject* fSubject;
+   double fMeasInterval;
+   double fPreviousMeasTime;
+   
+protected:
+   double GetMeasInterval() const {return fMeasInterval;}
+   double GetPreviousMeasTime() const {return fPreviousMeasTime;}
+   double SetPreviousMeasTime(double newPrevMeasTime) {fPreviousMeasTime = newPrevMeasTime;}
+   const TObject* GetSubject() const {return fSubject;}
    
 public:
    Observer();
-   Observer(const std::string name);
+   Observer(const std::string name, const double measureInterval);
    Observer(const Observer&);
    Observer& operator=(const Observer&);
    virtual ~Observer();
    
-   virtual void DefineSubject(const TObject* subject) {fSubject = subject;}
+   void DefineSubject(const TObject* subject) {fSubject = subject;}
+   
    virtual void RecordEvent(const Point& point, const TVector3& velocity, const std::string& context) = 0;
    virtual void Reset() = 0;
    virtual void WriteToFile(Data& data) = 0;
@@ -74,8 +83,6 @@ class SpinObserver : public Observer
 {
 private:
    SpinData *fSpinData;
-   double fMeasInterval;
-   double fLastMeasurementTime;
    
 public:
    // -- Constructors
@@ -126,8 +133,6 @@ class TrackObserver : public Observer
 {
 private:
    Track *fTrack;
-   double fMeasInterval;
-   double fLastMeasurementTime;
    
 public:
    // -- Constructors
@@ -153,8 +158,6 @@ class FieldObserver : public Observer
 {
 private:
    FieldData *fFieldData;
-   double fMeasInterval;
-   double fLastMeasurementTime;
    
 public:
    // -- Constructors
@@ -180,8 +183,6 @@ class PopulationObserver : public Observer
 {
 private:
    PopulationData* fPopulationData;
-   double fMeasInterval;
-   double fLastMeasurementTime;
    
 public:
    // -- Constructors
