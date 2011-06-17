@@ -48,7 +48,7 @@ public:
    virtual ~Data(void);
    
    Bool_t               Initialise(const RunConfig& runConfig);
-   void                 CreateObservers(const RunConfig& runConfig, const Experiment& experiment);
+   void                 CreateObservers(const RunConfig& runConfig, Experiment& experiment);
    std::vector<int>     GetSelectedParticleIndexes(const ParticleManifest& manifest, const RunConfig& runConfig) const;
    
    // Add a Particle

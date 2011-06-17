@@ -18,12 +18,14 @@ private:
    double fLastSpinMeas;
    double fLastFieldMeas;
    double fLastTrackMeas;
+   double fLastPopulationMeas;
    
    // -- Event intervals
    double fMaxStepInterval;
    double fSpinMeasInterval;
    double fFieldMeasInterval;
    double fTrackMeasInterval;
+   double fPopulationMeasInterval;
    
    // -- Hidden Constructor
    Clock();

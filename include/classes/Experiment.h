@@ -17,7 +17,7 @@
 class Run;
 class RunConfig;
 
-class Experiment : public TNamed
+class Experiment : public TNamed, public Observable
 {
 protected:
    FieldManager     fFieldManager;

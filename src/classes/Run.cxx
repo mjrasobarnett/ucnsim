@@ -112,7 +112,7 @@ Bool_t Run::Initialise()
       return kFALSE;
    }
    // -- Create any observers selected by user
-   this->GetData().CreateObservers(this->GetRunConfig(), this->GetExperiment());
+   this->GetData().CreateObservers(this->GetRunConfig(), *fExperiment);
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Check Run Parameters
    // Run Time

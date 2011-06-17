@@ -20,11 +20,12 @@ Clock::Clock()
        fLastSpinMeas(0.),
        fLastFieldMeas(0.),
        fLastTrackMeas(0.),
+       fLastPopulationMeas(0.),
        fMaxStepInterval(0.),
        fSpinMeasInterval(0.),
        fFieldMeasInterval(0.),
-       fTrackMeasInterval(0.)
-       
+       fTrackMeasInterval(0.),
+       fPopulationMeasInterval(0.)
 {
    // -- Default constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -59,6 +60,7 @@ bool Clock::Initialise(const RunConfig& runConfig)
    fSpinMeasInterval = runConfig.SpinMeasureInterval();
    fFieldMeasInterval = runConfig.FieldMeasureInterval();
    fTrackMeasInterval = runConfig.TrackMeasureInterval();
+   fPopulationMeasInterval = runConfig.PopulationMeasureInterval();
    return true;
 }
 
@@ -101,6 +103,16 @@ double Clock::GetTimeToNextEvent()
          nextInterval = nextTrackMeasureTime - fTime;
       }
    }
+   // Check if we are measuring track at a specific frequency
+   if (fPopulationMeasInterval > 0.0) {
+      // Update LastField Measurement time if we reached it
+      if (fTime >= fLastPopulationMeas + fPopulationMeasInterval) {fLastPopulationMeas += fPopulationMeasInterval;}
+      // Check if we will make a field measurement in this time
+      const double nextPopulationMeasureTime = fLastPopulationMeas + fPopulationMeasInterval;
+      if (fTime + nextInterval >= nextPopulationMeasureTime) {
+         nextInterval = nextPopulationMeasureTime - fTime;
+      }
+   }
    return nextInterval;
 }
 
@@ -111,4 +123,5 @@ void Clock::Reset()
    fLastSpinMeas = 0.0;
    fLastFieldMeas = 0.0;
    fLastTrackMeas = 0.0;
+   fLastPopulationMeas = 0.0;
 }

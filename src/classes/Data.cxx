@@ -292,7 +292,7 @@ void Data::PurgeObservers()
 }
 
 //_____________________________________________________________________________
-void Data::CreateObservers(const RunConfig& runConfig, const Experiment& experiment)
+void Data::CreateObservers(const RunConfig& runConfig, Experiment& experiment)
 {
    // -- Check Run configuration for which properties are to be monitored with Observers 
    cout << "-------------------------------------------" << endl;
@@ -347,6 +347,14 @@ void Data::CreateObservers(const RunConfig& runConfig, const Experiment& experim
          elecFieldArray.Attach(obs);
       }
    }
+   // -- Attach observers to the Experiment
+   if (runConfig.ObservePopulation() == true) {
+      Observer* obs = new PopulationObserver("PopulationObserver", runConfig.PopulationMeasureInterval());
+      // Add observer to the list - noting that its subject will be the particles
+      this->AddObserver("Experiment", obs);
+      // Attach observer to the experiment
+      experiment.Attach(obs);
+   }
 }
 
 //_____________________________________________________________________________
@@ -359,20 +367,35 @@ void Data::AddObserver(string subject, Observer* observer)
 //_____________________________________________________________________________
 void Data::RegisterObservers(Particle* particle)
 {
-   // -- Attach to particle only those observers in map with their subject being particles
+   // -- Attach to particle the relevant observers
    multimap<string, Observer*>::iterator obsIter;
    for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
       string subject = obsIter->first;
       Observer* observer = obsIter->second;
-      observer->ResetData();
       if (subject == "Particles") {
-         // If observer's subject is particle, then attach it to the particle
+         // If observer's ONLY subject is the particle, then reset previous particle's
+         // data and define Observer's subject to be current particle
+         observer->ResetData();
          observer->DefineSubject(particle);
          particle->Attach(observer);
       } else if (subject == "Fields") {
-         // If observer's subject is fields, also attach it to the particle but don't change its
-         // subject, as the particle is not subject, but it can issue notifications
+         // If observer's subject is primarily the particle's observed fields, 
+         // then the data is still relevant only to a single particle, therefore it isn't
+         // a shared observer, however the observer's subject isn't the particle itself
+         // but rather the field it sees. Thus, reset the previous particles data, 
+         // but don't change the observer's subject.
+         observer->ResetData();
          particle->Attach(observer);
+      } else if (subject == "Experiment") {
+         // If the observer's main subject is the experiment, then the data is relevant
+         // to ALL particles, not only one, so attach it to the particle as a
+         // *SHARED* observer. This means that the particle can notify this observer
+         // of events happening in the experiment, however the particle is not responsible
+         // for writing this observer's output to the Datafile.
+         // For the same reasoning, don't reset the data after each particle.
+         observer->ResetData();
+         observer->DefineSubject(particle);
+         particle->AttachSharedObserver(observer);
       }
       // Get observers to make a measurement of the initial state of their subjects
       observer->RecordEvent(particle->GetPoint(), particle->GetVelocity(), Context::Creation);
