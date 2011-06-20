@@ -21,7 +21,7 @@ namespace GeomParameters {
    const Double_t sourceSegRMax = 31.5*Units::mm;
    const Double_t sourceSegHalfLength = 125.*Units::mm;
    const Double_t sourceSegPhi = 0.0;
-   const Double_t sourceSegTheta = 90.0;
+   const Double_t sourceSegTheta = -90.0;
    const Double_t sourceSegPsi = 0.0;
    const Double_t sourceSegXPos = 0.;
    const Double_t sourceSegYPos = sourceSegHalfLength;
@@ -31,8 +31,12 @@ namespace GeomParameters {
    const Double_t sourceSegGapRMin = 31.5*Units::mm; 
    const Double_t sourceSegGapRMax = 60*Units::mm;
    const Double_t sourceSegGapHalfLength = 1.0*Units::mm;
-   const Double_t sourceSegGapAngle = 90.0;
+   const Double_t sourceSegGapPhi = 0.0;
+   const Double_t sourceSegGapTheta = -90.0;
+   const Double_t sourceSegGapPsi = 0.0;
+   const Double_t sourceSegGapXPos = 0.;
    const Double_t sourceSegGapYPos = sourceSegGapHalfLength;
+   const Double_t sourceSegGapZPos = 0.;
    
    // -- Valve Volume Entrance
    const Double_t valveVolEntranceRMin = 0.;
