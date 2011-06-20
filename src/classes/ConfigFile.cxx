@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include "ConfigFile.h"
+#include "Algorithms.h"
 
 //#define VERBOSE
 //#define PRINT_CONSTRUCTORS
@@ -32,8 +33,11 @@ ConfigFile::ConfigFile(string filename)
     // All is well, read the file in!
     ReadFile(cfg); 
    } else {
-    // Print an error message if we were trying to open a file
-    if (filename != "") {throw runtime_error("Could not read configuration file.");}
+      // Print an error message if we were trying to open a file
+      if (filename != "") {
+         cout << "Could not open file: " << filename << endl;
+         throw runtime_error("Could not read configuration file");
+      }
    }
    /// Otherwise, we are blank! Nothing more needs to be done....
 }
@@ -172,147 +176,67 @@ bool ConfigFile::ReadKeyPair(const string &section, const string &line)
 }
 
 //_____________________________________________________________________________
-string ConfigFile::GetString(string key, string section, string defaultval) const
+string ConfigFile::GetString(string key, string sectionName, string defaultval) const
 {
-  string value = fStore.find(section)->second.find(key)->second;
-
-  if (value.size() == 0)
-    return defaultval;
-  else
-    return value;    
+   // If it exists, find the section named 'sectionName' 
+   map<string, map<string, string> >::const_iterator sectionIter = fStore.find(sectionName);
+   if (sectionIter == fStore.end()) return defaultval;
+   const map<string,string>& section = sectionIter->second;
+   // If it exists, find the option named 'key'
+   map<string, string>::const_iterator optionIter = section.find(key);
+   if (optionIter == section.end()) return defaultval;
+   // If the option existed, store its value (as a string)
+   string value = optionIter->second;
+   // If option is empty return defaultval
+   if (value.size() == 0) return defaultval;
+   return value;
 }
 
 //_____________________________________________________________________________
 int ConfigFile::GetInt(string key, string section, int defaultval) const
 {
-  string value = fStore.find(section)->second.find(key)->second;
-  if (value.size() == 0) return defaultval;
-  
-  // Attempt to read an integer out of this stream
-  istringstream iss (value);
-  int ival = 0;
-  iss >> ival;
-  
-  if (!iss.fail())
-  {
-    return ival;
-  } else {
-     cout << "GetInteger::Failed to read [ " << section << " ]. " << key;
-     cout << " = " << value << " as integer." << endl;
-    return defaultval;
-  }
+   string value = this->GetString(key, section);
+   if (value.size() == 0) return defaultval;
+   int returnval;
+   if (Algorithms::String::ConvertToInt(value, returnval) == false) {
+      return defaultval;
+   }
+   return returnval;
 }
 
 //_____________________________________________________________________________
 double ConfigFile::GetFloat(string key, string section, double defaultval) const
 {
-  string value = fStore.find(section)->second.find(key)->second;
-  if (value.size() == 0) return defaultval;
-  
-  // Attempt to read an integer out of this stream
-  istringstream iss (value);
-  double ival = 0.0;
-  iss >> ival;
-  
-  if (!iss.fail())
-  {
-    return ival;
-  } else {
-    cout << "GetFloat:: Failed to read [ " << section << " ]. " << key;
-    cout << " = " << value << " as float." << endl;
-    return defaultval;
-  }
+   string value = this->GetString(key, section);
+   if (value.size() == 0) return defaultval;
+   double returnval;
+   if (Algorithms::String::ConvertToDouble(value, returnval) == false) {
+      return defaultval;
+   }
+   return returnval;
 }
 
 //_____________________________________________________________________________
 bool ConfigFile::GetBool(string key, string section, bool defaultval) const
 {
-   string value = fStore.find(section)->second.find(key)->second;
+   string value = this->GetString(key, section);
    if (value.size() == 0) return defaultval;
-
-   // Now try to work out what it is
-   if (value == "True" || value == "true" || value == "TRUE" || value == "ON" || value == "On" || value == "on" || value == "YES" || value == "Yes" || value == "yes") return true;
-   if (value == "False" || value == "false" || value == "FALSE" || value == "OFF" || value == "Off" || value == "off" || value == "NO" || value == "No" || value == "no" ) return false;
-
-   // Try to convert to an integer, and see if it is non-zero
-   istringstream iss (value);
-   int ival = 0;
-   iss >> ival;
-
-   // It worked - just return the value
-   if (!iss.fail())
-   {
-    return ival;
+   bool returnval;
+   if (Algorithms::String::ConvertToBool(value, returnval) == false) {
+      return defaultval;
    }
-
-   // It failed..... give up here for now
-   cout << "GetBool::Failed to read [ " << section << " ]. " << key;
-   cout << " = " << value << " as bool." << endl;
-   return defaultval;
+   return returnval;
 }
 
 //_____________________________________________________________________________
-string ConfigFile::ExpandFilePath(const string path) const
+map<string, string> ConfigFile::GetSection(string section) const
 {
-   // -- Take string, search for a shell variable inside the path '*/$VAR/*' and expand
-   // -- it out to its literal value. Returns empty string if expansion fails
-   if (path.empty()) return path;
-   string fullpath = path;
-   // Locate a shell variable in string
-   size_t start_pos = fullpath.find_first_of("$");
-   while (start_pos != string::npos) {
-      size_t end_pos = fullpath.find_first_of("/", start_pos);
-      size_t length = end_pos - start_pos;
-      // Extract shell variable
-      string shell_var = fullpath.substr(start_pos, length);
-      #ifdef VERBOSE
-         cout << "Start: " << start_pos << "\t" << "End: " << end_pos << endl;
-         cout << "Shellvar: " << shell_var << endl;
-      #endif
-      // Expand shell variable
-      string var_expansion = ExpandShellVar(shell_var);
-      if (var_expansion.empty()) {
-         cout << "Failed to expand shell variable: " << shell_var << endl;
-         // Return empty string
-         fullpath.clear();
-         return fullpath;
-      }
-      // Insert expansion back into path
-      fullpath.replace(start_pos, length, var_expansion);
-      // Check fullpath for any more shell variables to expand
-      start_pos = fullpath.find_first_of("$");
+   // -- Return a map of the requested ConfigFile section
+   map<string, map<string, string> >::const_iterator it = fStore.find(section);
+   if (it == fStore.end()) {
+      map<string, string> copy;
+      return copy;
    }
-   #ifdef VERBOSE
-      cout << "Full path: " << fullpath << endl;
-   #endif
-   return fullpath;
+   return it->second;
 }
 
-//_____________________________________________________________________________
-string ConfigFile::ExpandShellVar(const string var) const
-{
-   // -- Take shell variable and expand it using the OS
-   char* p_val;
-   #ifdef VERBOSE
-      cout << "ExpandShellVar: " << var << "\t";
-   #endif
-   // Remove $ from front of shell var
-   string var_name = var;
-   var_name.erase(0,1); 
-   // Use cstdlib function to get environment variable
-   p_val = getenv(var_name.c_str());
-   // Check pointer
-   if (p_val!=NULL) {
-      string value(p_val);
-      #ifdef VERBOSE
-         cout << "Result: " << value << endl;
-      #endif
-      return value;
-   }
-   // Return empty string
-   #ifdef VERBOSE
-      cout << "Expansion Failed!" << endl;
-   #endif
-   string empty_str;
-   return empty_str;
-}

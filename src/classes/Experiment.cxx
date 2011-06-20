@@ -97,7 +97,7 @@ Bool_t Experiment::Initialise(const RunConfig& runConfig)
 }
 
 //______________________________________________________________________________
-Bool_t Experiment::ExportGeometry(Run& run)
+Bool_t Experiment::Export(Run& run)
 {
    // -- Write create the Visualisation Geometry and write it out to file if
    // -- it exists. Else just export the usual Geometry
@@ -107,14 +107,14 @@ Bool_t Experiment::ExportGeometry(Run& run)
       if (fGeoManager == NULL) return kFALSE;
    }
    // Write Geomanger to file
-   run.GetData()->SaveGeometry(fGeoManager);
+   run.GetData().WriteObjectToFile(fGeoManager);
    return kTRUE;
 }
 
 //______________________________________________________________________________
-const TVector3 Experiment::GetMagField(const Point& point, const string volume) const
+const TVector3 Experiment::GetMagField(const Point& point, const TVector3& vel, const string volume) const
 {
    // -- Get FieldManager to measure magnetic field
-   return fFieldManager.GetMagField(point,volume);
+   return fFieldManager.GetMagField(point,vel,volume);
 }
 

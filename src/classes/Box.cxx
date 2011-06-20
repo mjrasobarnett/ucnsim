@@ -1,6 +1,7 @@
 // Box
 // Author: Matthew Raso-Barnett  22/05/2009
 #include <iostream>
+#include <iomanip>
 #include <stdexcept>
 
 #include "TMath.h"
@@ -15,9 +16,7 @@
 
 #include "Box.h"
 
-using std::cout;
-using std::endl;
-using std::runtime_error;
+using namespace std;
 
 //#define VERBOSE_MODE
 
@@ -72,15 +71,16 @@ Box::~Box()
 }
 
 //_____________________________________________________________________________
-Double_t Box::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
+Double_t Box::TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
 {
 	// This method calculates the time of all possible intersections of the particle's future path
 	// with all possible boundaries of the current shape.
 	// Method then compares the times found and returns the smallest, non-zero value. 
 	// In the case of an error, a value of zero, or a negative value will be returned.
 	
-	#ifdef VERBOSE_MODE		
-		cout << "Box::TimeFromInsideAlongParabola " << endl;
+	#ifdef VERBOSE_MODE
+		cout << "-----------------------------" << endl;
+      cout << "-- " << this->GetName() << " -- Starting Box::TimeFromInside " << endl;
 	#endif
 	// -- Determine the local point in case the box origin is not as the local centre (ie: 0,0,0)
 	// -- (Not sure of why this would ever be the case, but ROOT does allow you to set the origin...)
@@ -92,12 +92,22 @@ Double_t Box::TimeFromInsideAlongParabola(const Double_t* point, const Double_t*
 	Double_t tfinal = 0.; // The smallest time to reach ANY boundary;
 	Double_t boundary[3] = {fDX, fDY, fDZ}; // Store the coordinates of the box boundaries
 		
-	#ifdef VERBOSE_MODE		
-		cout << "TimeFromInsideAlongParabola - (Local) +Boundaries - +X: " << boundary[0] << "\t" << "+Y: " << boundary[1] << "\t" <<  "+Z: " << boundary[2] << endl;
-		cout << "TimeFromInsideAlongParabola - Origin - +X: " << fOrigin[0] << "\t" << "+Y: " << fOrigin[1] << "\t" <<  "+Z: " << fOrigin[2] << endl;
-		cout << "TimeFromInsideAlongParabola - (Local) point - +X: " << localpt[0] << "\t" << "+Y: " << localpt[1] << "\t" <<  "+Z: " << localpt[2] << endl;
-		cout << "TimeFromInsideAlongParabola - (Local) velocity - +X: " << velocity[0] << "\t" << "+Y: " << velocity[1] << "\t" <<  "+Z: " << velocity[2] << endl;
-		cout << "TimeFromInsideAlongParabola - (Local) field direction - +X: " << field[0] << "\t" << "+Y: " << field[1] << "\t" <<  "+Z: " << field[2] << endl;
+	#ifdef VERBOSE_MODE
+      cout << left << setw(20) << "Box Boundaries - " << setw(4) << "X: " << setw(10) << boundary[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << boundary[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << boundary[2] << endl;
+      cout << setw(20) << "Box Origin - " << setw(4) << "X: " << setw(10) << fOrigin[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << fOrigin[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << fOrigin[2] << endl;
+      cout << setw(20) << "Local Point - " << setw(4) << "X: " << setw(10) << localpt[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << localpt[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << localpt[2] << endl;
+      cout << setw(20) << "Local Velocity - " << setw(4) << "X: " << setw(10) << velocity[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << velocity[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << velocity[2] << endl;
+      cout << setw(20) << "Local Field - " << setw(4) << "X: " << setw(10) << field[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << field[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << field[2] << endl;
 	#endif
 			
 	// ----------------------------------------------------------------------	
@@ -135,9 +145,11 @@ Double_t Box::TimeFromInsideAlongParabola(const Double_t* point, const Double_t*
 			Double_t roots[2] = {0., 0.};
 			Int_t solutions = Polynomial::Instance()->QuadraticRootFinder(&params[0], &roots[0]);
 
-			#ifdef VERBOSE_MODE		
-				cout << i << "\t" << j << "\t" << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
-				cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
+			#ifdef VERBOSE_MODE
+				cout << "Boundary (" << i << ", " << j << ")" << endl;
+				cout << "Polynomial - " << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
+				cout << "Num Solutions: " << solutions << endl;
+				cout << "Root 1: " << roots[0] << "\t" << "Root 2: " << roots[1] << endl;
 			#endif
 			// -- Find the smallest, non-zero root
 			Double_t tmin = Box::SmallestInsideTime(solutions, &roots[0], onBoundary);
@@ -154,18 +166,19 @@ Double_t Box::TimeFromInsideAlongParabola(const Double_t* point, const Double_t*
 	
 	// -- Analyse the final value for the time to nearest boundary from inside
 	if (tfinal > 0.) { 
-		#ifdef VERBOSE_MODE		
-			cout << "TimeFromInsideAlongParabola - time to nearest boundary: " << tfinal << endl; 
-		#endif
+		#ifdef VERBOSE_MODE
+			cout << "Time to nearest boundary from inside: " << tfinal << endl; 
+		   cout << "-----------------------------" << endl;
+      #endif
 		return tfinal;
 	} else {
-		cout << "Error in Box, TimeFromInsideAlongParabola - no time to boundary is found!" << endl;
+		cout << "Error - No time to boundary from inside is found!" << endl;
 		return 0;
 	}
 }
 
 //_____________________________________________________________________________
-Double_t Box::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, 
+Double_t Box::TimeFromInsideS(const Double_t* point, const Double_t* velocity, const Double_t* field, 
 											const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Bool_t onBoundary)
 {
 	// This method calculates the time of all possible intersections of the particle's future
@@ -173,7 +186,8 @@ Double_t Box::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t
 	// Method then compares the times found and returns the smallest, non-zero value. 
 	
 	#ifdef VERBOSE_MODE		
-	cout << "Box::TimeFromInsideAlongParabolaS" << endl;
+	cout << "-----------------------------" << endl;
+	cout << "Box::TimeFromInsideS" << endl;
 	#endif
 	// -- Determine the local point in case the box origin is not as the local centre (ie: 0,0,0)
 	// -- (Not sure of why this would ever be the case, but ROOT does allow you to set the origin...)
@@ -187,11 +201,21 @@ Double_t Box::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t
 	Double_t boundary[3] = {dx, dy, dz}; // Store the coordinates of the box boundaries
 		
 	#ifdef VERBOSE_MODE		
-		cout << "TimeFromInsideAlongParabolaS - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
-		cout << "TimeFromInsideAlongParabolaS - Origin - X: " << origin[0] << "\t" << "Y: " << origin[1] << "\t" <<  "Z: " << origin[2] << endl;
-		cout << "TimeFromInsideAlongParabolaS - (Local) point - +X: " << localpt[0] << "  +Y: " << localpt[1] << "  +Z: " << localpt[2] << endl;
-		cout << "TimeFromInsideAlongParabolaS - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
-		cout << "TimeFromInsideAlongParabolaS - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
+   cout << setw(20) << "Box Boundaries - " << setw(4) << "X: " << setw(10) << boundary[0] << "\t";
+   cout << setw(4) << "Y: " << setw(10) << boundary[1] << "\t";
+   cout << setw(4) << "Z: " << setw(10) << boundary[2] << endl;
+   cout << setw(20) << "Box Origin - " << setw(4) << "X: " << setw(10) << origin[0] << "\t";
+   cout << setw(4) << "Y: " << setw(10) << origin[1] << "\t";
+   cout << setw(4) << "Z: " << setw(10) << origin[2] << endl;
+   cout << setw(20) << "Local Point - " << setw(4) << "X: " << setw(10) << localpt[0] << "\t";
+   cout << setw(4) << "Y: " << setw(10) << localpt[1] << "\t";
+   cout << setw(4) << "Z: " << setw(10) << localpt[2] << endl;
+   cout << setw(20) << "Local Velocity - " << setw(4) << "X: " << setw(10) << velocity[0] << "\t";
+   cout << setw(4) << "Y: " << setw(10) << velocity[1] << "\t";
+   cout << setw(4) << "Z: " << setw(10) << velocity[2] << endl;
+   cout << setw(20) << "Local Field - " << setw(4) << "X: " << setw(10) << field[0] << "\t";
+   cout << setw(4) << "Y: " << setw(10) << field[1] << "\t";
+   cout << setw(4) << "Z: " << setw(10) << field[2] << endl;
 	#endif
 			
 	// ----------------------------------------------------------------------	
@@ -230,8 +254,10 @@ Double_t Box::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t
 			Int_t solutions = Polynomial::Instance()->QuadraticRootFinder(&params[0], &roots[0]);
 			
 			#ifdef VERBOSE_MODE		
-				cout << i << "\t" << j << "\t" << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
-				cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
+   			cout << "Boundary (" << i << ", " << j << ")" << endl;
+   			cout << "Polynomial - " << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
+   			cout << "Num Solutions: " << solutions << endl;
+   			cout << "Root 1: " << roots[0] << "\t" << "Root 2: " << roots[1] << endl;
 			#endif
 			
 			// -- Find the smallest, non-zero root
@@ -249,18 +275,19 @@ Double_t Box::TimeFromInsideAlongParabolaS(const Double_t* point, const Double_t
 
 	// -- Analyse the final value for the time to nearest boundary from inside
 	if (tfinal > 0.) { 
-		#ifdef VERBOSE_MODE		
-			cout << "TimeFromInsideAlongParabola - time to nearest boundary: " << tfinal << endl; 
-		#endif
+		#ifdef VERBOSE_MODE
+         cout << "Time to nearest boundary from inside: " << tfinal << endl; 
+         cout << "-----------------------------" << endl;
+      #endif
 		return tfinal;
 	} else {
-		cout << "Error in Box, TimeFromInsideAlongParabola - no time to boundary is found!" << endl;
+		cout << "Error - no time to boundary from inside is found!" << endl;
 		return 0;
 	}
 }
 
 //_____________________________________________________________________________
-Double_t Box::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
+Double_t Box::TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t /*stepTime*/, const Bool_t onBoundary) const
 {
 	// This method calculates the time of all possible intersections of the particle's future path
 	// with all possible boundaries of the current shape.
@@ -268,8 +295,9 @@ Double_t Box::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t
 	// with each boundary plane actually corresponds to a point  on the box. From these valid solutions,
 	// the method	returns the smallest, non-zero value.
 	
-	#ifdef VERBOSE_MODE		
-		cout << "Box::TimeFromOutsideAlongParabola" << endl;
+	#ifdef VERBOSE_MODE
+      cout << "-----------------------------" << endl;
+      cout << "-- " << this->GetName() << " -- Starting Box::TimeFromOutside " << endl;
 	#endif
 	
    // -- Determine the local point in case the box origin is not as the local centre (ie: 0,0,0)
@@ -282,12 +310,22 @@ Double_t Box::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t
 	Double_t tfinal = 0.; // The smallest time to reach any boundary;
 	Double_t boundary[3] = {fDX, fDY, fDZ}; // Store the coordinates of the box boundaries
 	
-	#ifdef VERBOSE_MODE		
-		cout << "TimeFromOutsideAlongParabola - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
-		cout << "TimeFromOutsideAlongParabola - Origin - +X: " << fOrigin[0] << "\t" << "+Y: " << fOrigin[1] << "\t" <<  "+Z: " << fOrigin[2] << endl;
-		cout << "TimeFromOutsideAlongParabola - (Local) point - +X: " << localpt[0] << "  +Y: " << localpt[1] << "  +Z: " << localpt[2] << endl;
-		cout << "TimeFromOutsideAlongParabola - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
-		cout << "TimeFromOutsideAlongParabola - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
+	#ifdef VERBOSE_MODE
+      cout << setw(20) << "Box Boundaries - " << setw(4) << "X: " << setw(10) << boundary[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << boundary[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << boundary[2] << endl;
+      cout << setw(20) << "Box Origin - " << setw(4) << "X: " << setw(10) << fOrigin[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << fOrigin[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << fOrigin[2] << endl;
+      cout << setw(20) << "Local Point - " << setw(4) << "X: " << setw(10) << localpt[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << localpt[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << localpt[2] << endl;
+      cout << setw(20) << "Local Velocity - " << setw(4) << "X: " << setw(10) << velocity[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << velocity[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << velocity[2] << endl;
+      cout << setw(20) << "Local Field - " << setw(4) << "X: " << setw(10) << field[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << field[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << field[2] << endl;
 	#endif
 		
 	// ----------------------------------------------------------------------	
@@ -326,8 +364,10 @@ Double_t Box::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t
 			Int_t solutions = Polynomial::Instance()->QuadraticRootFinder(&params[0], &roots[0]);
 
 			#ifdef VERBOSE_MODE		
-				cout << i << "\t" << j << "\t" << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
-				cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
+   			cout << "Boundary (" << i << ", " << j << ")" << endl;
+   			cout << "Polynomial - " << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
+   			cout << "Num Solutions: " << solutions << endl;
+   			cout << "Root 1: " << roots[0] << "\t" << "Root 2: " << roots[1] << endl;
 			#endif
 
 			// -- Find the smallest, non-zero root
@@ -345,29 +385,36 @@ Double_t Box::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t
 
 	// -- Analyse the final value of the shortest time to hit the boundary from outside
 	if (tfinal > 0.) { 
-		#ifdef VERBOSE_MODE		
-			cout << "TimeFromOutsideAlongParabola - Time to nearest boundary: " << tfinal << endl; 
-		#endif
+		#ifdef VERBOSE_MODE
+			cout << "Time to nearest boundary from outside: " << tfinal << endl; 
+		   cout << "-----------------------------" << endl;
+      #endif
 		return tfinal;
 	} else if (tfinal == 0.) {
-		#ifdef VERBOSE_MODE		
-			cout << "TimeFromOutsideAlongParabola - No Boundary hit" << endl;
-		#endif
+		#ifdef VERBOSE_MODE
+			cout << "No Boundary hit reached from outside" << endl;
+		   cout << "-----------------------------" << endl;
+      #endif
 		return TGeoShape::Big();
 	} else {
-		cout << "Error In Box, TimeFromOutsideAlongParabola - Calculation error - time to boundary is negative" << endl;
+		cout << "Error In Box, TimeFromOutside - Calculation error - time to boundary is negative" << endl;
 		return 0;
 	}
 }
 
 //_____________________________________________________________________________
-Double_t Box::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_t* velocity, const Double_t* field, 
+Double_t Box::TimeFromOutsideS(const Double_t* point, const Double_t* velocity, const Double_t* field, 
 											const Double_t dx, const Double_t dy, const Double_t dz, const Double_t *origin, const Bool_t onBoundary) 
 {
 	// This method calculates the time of all possible intersections of the particle's future path
 	// with all possible boundaries of the current shape. Method then compares the times found and
 	// checks that the corresponding point of intersection with each boundary plane actually corresponds
 	// to a point on the box. From these valid solutions, the method	returns the smallest, non-zero value.
+	
+	#ifdef VERBOSE_MODE
+      cout << "-----------------------------" << endl;
+      cout << "-- Starting Box::TimeFromOutsideS --" << endl;
+	#endif
 		
 	// -- Determine the local point in case the box origin is not as the local centre (ie: 0,0,0)
 	// -- (Not sure of why this would ever be the case, but ROOT does allow you to set the origin...)
@@ -379,12 +426,22 @@ Double_t Box::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_
 	Double_t tfinal = 0.; // The smallest time to reach any boundary;
 	Double_t boundary[3] = {dx, dy, dz}; // Store the coordinates of the box boundaries
 	
-	#ifdef VERBOSE_MODE		
-		cout << "TimeFromOutsideAlongParabolaS - Positive (Local) Boundaries - +X: " << boundary[0] << "  +Y: " << boundary[1] << "  +Z: " << boundary[2] << endl;
-		cout << "TimeFromOutsideAlongParabolaS - Origin - X: " << origin[0] << "\t" << "Y: " << origin[1] << "\t" <<  "Z: " << origin[2] << endl;
-		cout << "TimeFromOutsideAlongParabolaS - (Local) point - +X: " << localpt[0] << "  +Y: " << localpt[1] << "  +Z: " << localpt[2] << endl;
-		cout << "TimeFromOutsideAlongParabolaS - (Local) velocity - +X: " << velocity[0] << "  +Y: " << velocity[1] << "  +Z: " << velocity[2] << endl;
-		cout << "TimeFromOutsideAlongParabolaS - (Local) field direction - +X: " << field[0] << "  +Y: " << field[1] << "  +Z: " << field[2] << endl;
+	#ifdef VERBOSE_MODE
+      cout << setw(20) << "Box Boundaries - " << setw(4) << "X: " << setw(10) << boundary[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << boundary[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << boundary[2] << endl;
+      cout << setw(20) << "Box Origin - " << setw(4) << "X: " << setw(10) << origin[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << origin[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << origin[2] << endl;
+      cout << setw(20) << "Local Point - " << setw(4) << "X: " << setw(10) << localpt[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << localpt[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << localpt[2] << endl;
+      cout << setw(20) << "Local Velocity - " << setw(4) << "X: " << setw(10) << velocity[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << velocity[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << velocity[2] << endl;
+      cout << setw(20) << "Local Field - " << setw(4) << "X: " << setw(10) << field[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << field[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << field[2] << endl;
 	#endif
 	
 	// ----------------------------------------------------------------------	
@@ -423,8 +480,10 @@ Double_t Box::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_
 			Int_t solutions = Polynomial::Instance()->QuadraticRootFinder(&params[0], &roots[0]);
 			
 			#ifdef VERBOSE_MODE		
-				cout << i << "\t" << j << "\t" << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
-				cout << "solutions: " << solutions << "\t" << "root 1: " << roots[0] << "\t" << "root 2: " << roots[1] << endl;
+   			cout << "Boundary (" << i << ", " << j << ")" << endl;
+   			cout << "Polynomial - " << "a: " << params[0] << "\t" << "b: " << params[1] << "\t" << "c: " << params[2] << "\t";
+   			cout << "Num Solutions: " << solutions << endl;
+   			cout << "Root 1: " << roots[0] << "\t" << "Root 2: " << roots[1] << endl;
 			#endif
 			
 			// -- Find the smallest, non-zero root
@@ -443,17 +502,19 @@ Double_t Box::TimeFromOutsideAlongParabolaS(const Double_t* point, const Double_
 
 	// -- Analyse the final value of the shortest time to hit the boundary from outside
 	if (tfinal > 0.) { 
-		#ifdef VERBOSE_MODE		
-			cout << "TimeFromOutsideAlongParabola - Time to nearest boundary: " << tfinal << endl; 
-		#endif
+		#ifdef VERBOSE_MODE
+			cout << "Time to nearest boundary from outside: " << tfinal << endl; 
+		   cout << "-----------------------------" << endl;
+      #endif
 		return tfinal;
 	} else if (tfinal == 0.) {
-		#ifdef VERBOSE_MODE		
-			cout << "TimeFromOutsideAlongParabola - No Boundary hit" << endl;
-		#endif
+		#ifdef VERBOSE_MODE
+			cout << "No Boundary hit" << endl;
+		   cout << "-----------------------------" << endl;
+      #endif
 		return TGeoShape::Big();
 	} else {
-		cout << "Error In Box, TimeFromOutsideAlongParabola - Calculation error - time to boundary is negative" << endl;
+		cout << "Error In Box, TimeFromOutside - Calculation error - time to boundary is negative" << endl;
 		return 0;
 	}
 }
@@ -463,8 +524,9 @@ Bool_t Box::IsNextPointOnBox(const Double_t* point, const Double_t* velocity, co
 {
 	// Calculate the proposed intersection point given a time, starting point, direction and local field. 
 	// Check that this intersection is actually located on the surface of the box. 
-	#ifdef VERBOSE_MODE		
-		cout << "IsNextPointOnBox - Calling method. t: " <<  t << endl;
+	#ifdef VERBOSE_MODE
+		cout << "-----------------------------" << endl;
+      cout << "-- IsNextPointOnBox -- For Solution: " << t << endl;
 	#endif
 	
 	Double_t crossedpoint[3], surface[3];
@@ -476,19 +538,22 @@ Bool_t Box::IsNextPointOnBox(const Double_t* point, const Double_t* velocity, co
 	// Calculate the intersection point. If point coords are within limits of the boundary return TRUE, else point is outside; return FALSE.
 	for (Int_t i = 0; i < 3; ++i) {
 		crossedpoint[i] = point[i] + velocity[i]*t + 0.5*field[i]*t*t;
-		#ifdef VERBOSE_MODE		
-			cout << "IsNextPointOnBox - Crossing Point: i: " << i << "  -  " << crossedpoint[i] << ",   Boundary: " << surface[i] << endl;
-		#endif
 		// Check point is on surface
 		if (TMath::Abs(crossedpoint[i]) > surface[i]) {
-			#ifdef VERBOSE_MODE		
-				cout << "IsNextPointOnBox - Point not on surface of box. Returning false" << endl;
+			#ifdef VERBOSE_MODE
+				cout << "Point is not on surface of box." << endl;
 			#endif
 			return kFALSE;
 		} 
 	}
-	#ifdef VERBOSE_MODE		
-		cout << "IsNextPointOnBox - Point on surface of box. Return true" << endl;
+	#ifdef VERBOSE_MODE
+		cout << setw(20) << "Crossing Point - " << setw(4) << "X: " << setw(10) << crossedpoint[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << crossedpoint[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << crossedpoint[2] << endl;
+      cout << setw(20) << "Boundary - " << setw(4) << "X: " << setw(10) << surface[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << surface[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << surface[2] << endl;   
+      cout << "Point is on surface of box." << endl;
 	#endif
 	return kTRUE;	
 }
@@ -497,7 +562,10 @@ Bool_t Box::IsNextPointOnBox(const Double_t* point, const Double_t* velocity, co
 Double_t Box::SmallestInsideTime(const Int_t solutions, Double_t* roots, const Bool_t onBoundary)
 {
 	// -- Determining number of roots, and select the smallest, real, non-zero value. 
-	
+	#ifdef VERBOSE_MODE
+	   cout << "-----------------------------" << endl;
+      cout << "-- SmallestInsideTime -- " << endl;
+	#endif
 	// First check if we are sitting on a boundary
 	if (onBoundary == kTRUE) {
 		// If on boundary, we must be vigilant as one of the roots, representing the time to the boundary we are
@@ -508,14 +576,14 @@ Double_t Box::SmallestInsideTime(const Int_t solutions, Double_t* roots, const B
 		// corner of a box, where the next boundary is very very close by. 
 		if (solutions == 2) {
 			if (TMath::Abs(roots[0]) < 1.E-8 && TMath::Abs(roots[1]) < 1.E-8) {
-				cout << "SmallestInsideTime - Two roots are both very small" << endl;
+				cout << "Error: Both roots are both very small" << endl;
 				cout << "Root 1: " << roots[0] << "\t" << "Root 2: " << roots[1] << endl;
 				throw runtime_error("Two very small roots encountered. Unsure how to proceed.");
 			}
 			for (Int_t i = 0; i < 2; i++) {
 				if (TMath::Abs(roots[i]) < 1.E-8) { 
 					#ifdef VERBOSE_MODE
-						cout << "SmallestInsideTime - Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
+						cout << "Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
 					#endif
 					roots[i] = 0.0;
 				}
@@ -530,7 +598,7 @@ Double_t Box::SmallestInsideTime(const Int_t solutions, Double_t* roots, const B
 			// In any case, we have a single solution which should be correct and not need setting to zero.
 			if (TMath::Abs(roots[0]) < 1.E-8) {
 				#ifdef VERBOSE_MODE
-					cout << "SmallestInsideTime - Single Root found to be < 1.E-8 : " << roots[0] << endl;
+					cout << "Single Root found to be < 1.E-8 : " << roots[0] << endl;
 				#endif
 			}
 		} else {
@@ -555,8 +623,9 @@ Double_t Box::SmallestInsideTime(const Int_t solutions, Double_t* roots, const B
 			tmin = roots[1];
 		} else {
 			#ifdef VERBOSE_MODE
-				cout << "SmallestInsideTime - Both roots are negative or zero" << endl; 
-			#endif
+				cout << "Both roots are negative or zero" << endl; 
+				cout << "-----------------------------" << endl;
+         #endif
 			return 0;
 		}
 	} else if (solutions == 1) {
@@ -566,18 +635,24 @@ Double_t Box::SmallestInsideTime(const Int_t solutions, Double_t* roots, const B
 		} else {
 			//-- Only Root is negative or zero
 			#ifdef VERBOSE_MODE
-				cout << "SmallestInsideTime - Only root is nagative or zero" << endl;
-			#endif
+				cout << "Only root is negative or zero" << endl;
+				cout << "-----------------------------" << endl;
+         #endif
 			return 0;
 		}
 	} else {
 		// -- No Real Roots
 		#ifdef VERBOSE_MODE
-			cout << "SmallestInsideTime - No real roots - Cannot cross boundary" << endl;
-		#endif
+			cout << "No real roots - Cannot cross boundary" << endl;
+			cout << "-----------------------------" << endl;
+      #endif
 		return 0;
 	}
 	// Return the smallest time found
+	#ifdef VERBOSE_MODE
+		cout << "Smallest Time from Inside: " << tmin << endl;
+		cout << "-----------------------------" << endl;
+   #endif
 	return tmin;
 }
 
@@ -586,7 +661,10 @@ Double_t Box::SmallestOutsideTime(const Int_t solutions, Double_t* roots, const 
 											const Double_t* velocity, const Double_t* field, const Double_t* boundary)
 {
 	// -- Determing number of roots, and select the smallest, real, non-zero value. 
-	
+	#ifdef VERBOSE_MODE
+	   cout << "-----------------------------" << endl;
+      cout << "-- SmallestOutsideTime -- " << endl;
+	#endif
 	// First check if we are sitting on a boundary
 	if (onBoundary == kTRUE) {
 		// If on boundary, we must be vigilant as one of the roots, representing the time to the boundary we are
@@ -597,14 +675,14 @@ Double_t Box::SmallestOutsideTime(const Int_t solutions, Double_t* roots, const 
 		// corner of a box, where the next boundary is very very close by. 
 		if (solutions == 2) {
 			if (TMath::Abs(roots[0]) < 1.E-8 && TMath::Abs(roots[1]) < 1.E-8) {
-				cout << "SmallestOutsideTime - Two roots are both very small" << endl;
+				cout << "Error: SmallestOutsideTime - Two roots are both very small" << endl;
 				cout << "Root 1: " << roots[0] << "\t" << "Root 2: " << roots[1] << endl;
 				throw runtime_error("Two very small roots encountered. Unsure how to proceed.");
 			}
 			for (Int_t i = 0; i < 2; i++) {
 				if (TMath::Abs(roots[i]) < 1.E-8) {
 					#ifdef VERBOSE_MODE
-						cout << "SmallestOutsideTime - Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
+						cout << "Root[" << i << "]: "<< roots[i] << ", is < 1.E-8. Setting to zero." << endl;
 					#endif
 					roots[i] = 0.0;
 				}
@@ -619,7 +697,7 @@ Double_t Box::SmallestOutsideTime(const Int_t solutions, Double_t* roots, const 
 			// In any case, we have a single solution which should be correct and not need setting to zero.
 			if (TMath::Abs(roots[0]) < 1.E-8) {
 				#ifdef VERBOSE_MODE
-					cout << "SmallestOutsideTime - Single Root found to be < 1.E-8 : " << roots[0] << endl;
+					cout << "Single Root found to be < 1.E-8 : " << roots[0] << endl;
 				#endif
 			}
 		} else {
@@ -645,8 +723,9 @@ Double_t Box::SmallestOutsideTime(const Int_t solutions, Double_t* roots, const 
 				tmin = roots[1];
 			} else {
 				#ifdef VERBOSE_MODE		
-					cout << "SmallestOutsideTime - Both roots are negative, zero or invalid" << endl; 
-				#endif
+					cout << "Both roots are negative, zero or invalid" << endl; 
+					cout << "-----------------------------" << endl;
+         	#endif
 				return 0;
 			}
 		}
@@ -657,17 +736,23 @@ Double_t Box::SmallestOutsideTime(const Int_t solutions, Double_t* roots, const 
 		} else {
 			//-- Only Root is negative or zero
 			#ifdef VERBOSE_MODE		
-				cout << "SmallestOutsideTime - Only root is negative, zero or invalid" << endl; 
-			#endif
+				cout << "Only root is negative, zero or invalid" << endl; 
+				cout << "-----------------------------" << endl;
+      	#endif
 			return 0;
 		}
 	} else {
 		// -- No Real Roots
 		#ifdef VERBOSE_MODE		
-			cout << "SmallestOutsideTime - No solutions" << endl; 
-		#endif
+			cout << "No solutions" << endl; 
+			cout << "-----------------------------" << endl;
+   	#endif
 		return 0;
 	}
 	// Return the smallest time found
+	#ifdef VERBOSE_MODE
+		cout << "Smallest Time from Outside: " << tmin << endl;
+		cout << "-----------------------------" << endl;
+   #endif
 	return tmin;
 }

@@ -86,32 +86,6 @@ BoolNode::BoolNode(const char *expr1, const char *expr2)
 }
 
 //_____________________________________________________________________________
-BoolNode::BoolNode(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, TGeoMatrix *rmat)
-{
-// Constructor providing left and right shapes and matrices (in the Boolean operation).
-   #ifdef PRINT_CONSTRUCTORS
-      Info("BoolNode","Constructor");
-	#endif
-	fSelected = 0;
-   fLeft = left;
-   fRight = right;
-   fLeftMat = lmat;
-   if (!fLeftMat) fLeftMat = gGeoIdentity;
-   else fLeftMat->RegisterYourself();
-   fRightMat = rmat;
-   if (!fRightMat) fRightMat = gGeoIdentity;
-   else fRightMat->RegisterYourself();
-   if (!fLeft) {
-      Error("ctor", "left shape is NULL");
-      return;
-   }   
-   if (!fRight) {
-      Error("ctor", "right shape is NULL");
-      return;
-   }   
-}
-
-//_____________________________________________________________________________
 BoolNode::~BoolNode()
 {
 // Destructor.
@@ -302,19 +276,6 @@ Union::Union(const char *expr1, const char *expr2)
 	#ifdef PRINT_CONSTRUCTORS
       Info("Union","Constructor");
    #endif
-}
-
-//_____________________________________________________________________________
-Union::Union(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, TGeoMatrix *rmat)
-          :BoolNode(left,right,lmat,rmat)
-{
-// Constructor providing pointers to components
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Union","Constructor");
-	#endif
-	if (left->TestShapeBit(TGeoShape::kGeoHalfSpace) || right->TestShapeBit(TGeoShape::kGeoHalfSpace)) {
-      Fatal("Union", "Unions with a half-space (%s + %s) not allowed", left->GetName(), right->GetName());
-   }
 }
 
 //_____________________________________________________________________________
@@ -621,15 +582,16 @@ void Union::Sizeof3D() const
 }
 
 //_____________________________________________________________________________
-Double_t Union::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field,
+Double_t Union::TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field,
                                  const Double_t stepTime, const Bool_t onBoundary) const
 {
 // Compute time from inside point to outside of this composite shape along parabola.
 // Refering to 'left' shape and 'right' shape, I am refering to the two terms in the equation for
 // this particular BoolNode: left + right. 
    #ifdef VERBOSE_MODE
-      Info("TimeFromInsideAlongParabola","Start");
-      cout << "Initial X: " << point[0] << "\t" << "V: " << point[1] << "\t" << "Z: " << point[2] << endl;
+      cout << "-----------------------------" << endl;
+		cout << "-- Union::TimeFromInside -- " << endl;
+      cout << "Initial X: " << point[0] << "\t" << "Y: " << point[1] << "\t" << "Z: " << point[2] << endl;
       cout << "Initial Vx: " << velocity[0] << "\t" << "Vy: " << velocity[1] << "\t" << "Vz: " << velocity[2] << endl;
       cout << "Field Gx: " << field[0] << "\t" << "Gy: " << field[1] << "\t" << "Gz: " << field[2] << "\t" << endl;
    #endif
@@ -652,26 +614,26 @@ Double_t Union::TimeFromInsideAlongParabola(const Double_t* point, const Double_
    fRightMat->MasterToLocalVect(field, &rightField[0]);
    // Calculate Time to each Node
    Bool_t insideLeft = fLeft->Contains(leftPoint);
-   if (insideLeft) leftTime = dynamic_cast<Box*>(fLeft)->TimeFromInsideAlongParabola(leftPoint, leftVel, \
+   if (insideLeft) leftTime = dynamic_cast<Box*>(fLeft)->TimeFromInside(leftPoint, leftVel, \
                                                                                  leftField, stepTime, onBoundary);
    Bool_t insideRight = fRight->Contains(rightPoint);
-   if (insideRight) rightTime = dynamic_cast<Box*>(fRight)->TimeFromInsideAlongParabola(rightPoint, rightVel, \
+   if (insideRight) rightTime = dynamic_cast<Box*>(fRight)->TimeFromInside(rightPoint, rightVel, \
                                                                                     rightField, stepTime, onBoundary);
    #ifdef VERBOSE_MODE
-      Info("TimeFromInsideAlongParabola","Are we Inside Left? %i. Are we inside Right? %i",insideLeft,insideRight);
-      Info("TimeFromInsideAlongParabola","LeftTime: %f. RightTime: %f",leftTime,rightTime);
+      cout << "Are we Inside Left? " << insideLeft << "\t Are we inside Right? " << insideRight << endl;
+      cout << "LeftTime: " << leftTime << "\t RightTime: " << rightTime << endl;
    #endif
    while (insideLeft || insideRight) {
       if (insideLeft && insideRight) {
          #ifdef VERBOSE_MODE
-            Info("TimeFromInsideAlongParabola","We are inside both Left and Right. Determining which we exit first.");
+            cout << "We are inside both Left and Right. Determining which we exit first..." << endl;
          #endif
          if (leftTime < rightTime) {      
             finalTime += leftTime;
             node->SetSelected(1);
             // propagate to exit of left shape
             #ifdef VERBOSE_MODE
-               Info("TimeFromInsideAlongParabola","Exit Left First. Propagating outside Left.");
+               cout << "Exit Left First. Propagating outside Left..." << endl;
             #endif
             insideLeft = kFALSE;
             for (i=0; i<3; i++) {
@@ -683,18 +645,18 @@ Double_t Union::TimeFromInsideAlongParabola(const Double_t* point, const Double_
             fRightMat->MasterToLocalVect(masterVel, rightVel);
             insideRight = fRight->Contains(rightPoint);
             #ifdef VERBOSE_MODE
-               Info("TimeFromInsideAlongParabola","Propagated Point inside Right? %i",insideRight);
+               cout << "Propagated Point inside Right? " << insideRight << endl;
             #endif
             if (!insideRight) {
                #ifdef VERBOSE_MODE
-                  Info("TimeFromInsideAlongParabola","Returning finalTime: %f",finalTime);
+                  cout << "Returning finalTime: " << finalTime << endl;
                #endif
                return finalTime;
             }
-            rightTime = dynamic_cast<Box*>(fRight)->TimeFromInsideAlongParabola(rightPoint, rightVel, \
+            rightTime = dynamic_cast<Box*>(fRight)->TimeFromInside(rightPoint, rightVel, \
                                                                            rightField, stepTime, onBoundary);
             #ifdef VERBOSE_MODE
-               Info("TimeFromInsideAlongParabola","Time to Exit Right: %f",rightTime);
+               cout << "Time to Exit Right: " << rightTime << endl;
             #endif
             if (rightTime < TGeoShape::Tolerance()) return finalTime;
          } else {
@@ -702,7 +664,7 @@ Double_t Union::TimeFromInsideAlongParabola(const Double_t* point, const Double_
             node->SetSelected(2);
             // propagate to exit of right shape
             #ifdef VERBOSE_MODE
-               Info("TimeFromInsideAlongParabola","Exit Right First. Propagating outside Right.");
+               cout << "Exit Right First. Propagating outside Right." << endl;
             #endif
             insideRight = kFALSE;
             for (i=0; i<3; i++) {
@@ -714,18 +676,18 @@ Double_t Union::TimeFromInsideAlongParabola(const Double_t* point, const Double_
             fLeftMat->MasterToLocalVect(masterVel, leftVel);
             insideLeft = fLeft->Contains(leftPoint);
             #ifdef VERBOSE_MODE
-               Info("TimeFromInsideAlongParabola","Propagated Point inside Left? %i",insideLeft);
+               cout << "Propagated Point inside Left? " << insideLeft << endl;
             #endif
             if (!insideLeft) {
                #ifdef VERBOSE_MODE
-                  Info("TimeFromInsideAlongParabola","Returning finalTime: %f",finalTime);
+                  cout << "Returning finalTime: " << finalTime << endl;
                #endif
                return finalTime;
             }
-            leftTime = dynamic_cast<Box*>(fLeft)->TimeFromInsideAlongParabola(leftPoint, leftVel, \
+            leftTime = dynamic_cast<Box*>(fLeft)->TimeFromInside(leftPoint, leftVel, \
                                                                            leftField, stepTime, onBoundary);
             #ifdef VERBOSE_MODE
-               Info("TimeFromInsideAlongParabola","Time to Exit Left? %f",leftTime);
+               cout << "Time to Exit Left? " << leftTime << endl;
             #endif
             if (leftTime < TGeoShape::Tolerance()) return finalTime;
          }
@@ -735,7 +697,7 @@ Double_t Union::TimeFromInsideAlongParabola(const Double_t* point, const Double_
          node->SetSelected(1);
          // propagate to exit of left shape
          #ifdef VERBOSE_MODE
-            Info("TimeFromInsideAlongParabola","Currently Only Inside Left. Propagating to Exit Left.");
+            cout << "Currently Only Inside Left. Propagating to Exit Left." << endl;
             cout << "Final: " << finalTime << endl;
          #endif
          insideLeft = kFALSE;
@@ -759,30 +721,29 @@ Double_t Union::TimeFromInsideAlongParabola(const Double_t* point, const Double_
             cout << "Pushed X: " << pushedPoint[0] << "\t" << "Y: " << pushedPoint[1] << "\t" << "Z: " << pushedPoint[2] << endl;
             cout << "Pushed Vx: " << pushedVel[0] << "\t" << "Vy: " << pushedVel[1] << "\t" << "Vz: " << pushedVel[2] << endl;
             cout << "Pushed Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(pushedPoint[0],2) + TMath::Power(pushedPoint[2],2)) << endl;
-            Info("TimeFromInsideAlongParabola","Propagated Point inside Right? %i",insideRight);
+            cout << "Propagated Point inside Right? " << insideRight << endl;
          #endif
          if (!insideRight) {
             #ifdef VERBOSE_MODE
-               cout << "Final: " << finalTime << endl;
-               Info("TimeFromInsideAlongParabola","Returning finalTime: %f",finalTime);
+               cout << "Final Time: " << finalTime << endl;
             #endif
             return finalTime;
          }
          #ifdef VERBOSE_MODE
-            Info("TimeFromInsideAlongParabola","Still Inside Right therefore find time to exit right");
+            cout << "Still Inside Right therefore find time to exit right" << endl;
          #endif
-         rightTime = dynamic_cast<Box*>(fRight)->TimeFromInsideAlongParabola(rightPoint, rightVel, \
+         rightTime = dynamic_cast<Box*>(fRight)->TimeFromInside(rightPoint, rightVel, \
                                                                            rightField, stepTime, onBoundary);
          if (rightTime < TGeoShape::Tolerance()) {
             #ifdef VERBOSE_MODE
-               Info("TimeFromInsideAlongParabola","Time to right is very small. Returning finalTime: %f",finalTime);
+               cout << "Time to right is very small. Returning finalTime: " << finalTime << endl;
             #endif
             return finalTime;
          }
          rightTime += (1.+leftTime)*TGeoShape::Tolerance();
          #ifdef VERBOSE_MODE
             cout << "Incrementing Right Time by (1.+leftTime)*TGeoShape::Tolerance(): " << rightTime << endl;
-            Info("TimeFromInsideAlongParabola","Time to Exit Right? %f",rightTime);
+            cout << "Time to Exit Right? " << rightTime << endl;
          #endif
       }   
       if (insideRight) {
@@ -790,7 +751,7 @@ Double_t Union::TimeFromInsideAlongParabola(const Double_t* point, const Double_
          node->SetSelected(2);
          // propagate to exit of right shape
          #ifdef VERBOSE_MODE
-            Info("TimeFromInsideAlongParabola","Currently Only Inside Right. Propagating to Exit Right.");
+            cout << "Currently Only Inside Right. Propagating to Exit Right." << endl;
             cout << "Final: " << finalTime << endl;
          #endif
          insideRight = kFALSE;
@@ -814,47 +775,45 @@ Double_t Union::TimeFromInsideAlongParabola(const Double_t* point, const Double_
             cout << "Pushed X: " << pushedPoint[0] << "\t" << "Y: " << pushedPoint[1] << "\t" << "Z: " << pushedPoint[2] << endl;
             cout << "Pushed Vx: " << pushedVel[0] << "\t" << "Vy: " << pushedVel[1] << "\t" << "Vz: " << pushedVel[2] << endl;
             cout << "Pushed Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(pushedPoint[0],2) + TMath::Power(pushedPoint[2],2)) << endl;
-            Info("TimeFromInsideAlongParabola","Propagated Point inside Left? %i",insideLeft);
+            cout << "Propagated Point inside Left? " << insideLeft << endl;
          #endif
          if (!insideLeft) {
             #ifdef VERBOSE_MODE
-               cout << "Final: " << finalTime << endl;
-               Info("TimeFromInsideAlongParabola","Returning finalTime: %f",finalTime);
+               cout << "Final Time: " << finalTime << endl;
             #endif
             return finalTime;
          }
          #ifdef VERBOSE_MODE
-            Info("TimeFromInsideAlongParabola","Still Inside Left therefore find time to exit left");
+            cout << "Still Inside Left therefore find time to exit left" << endl;
          #endif
-         leftTime = dynamic_cast<Box*>(fLeft)->TimeFromInsideAlongParabola(leftPoint, leftVel, \
+         leftTime = dynamic_cast<Box*>(fLeft)->TimeFromInside(leftPoint, leftVel, \
                                                                         leftField, stepTime, onBoundary);
          if (leftTime < TGeoShape::Tolerance()) {
             #ifdef VERBOSE_MODE
-               cout << "Final: " << finalTime << endl;
-               Info("TimeFromInsideAlongParabola","Returning finalTime: %f",finalTime);
+               cout << "Final Time: " << finalTime << endl;
             #endif
             return finalTime;
          }
          leftTime += (1.+rightTime)*TGeoShape::Tolerance();
          #ifdef VERBOSE_MODE
             cout << "Incrementing Left Time by (1.+rightTime)*TGeoShape::Tolerance(): " << leftTime << endl;
-            Info("TimeFromInsideAlongParabola","Time to Exit Left? %f",leftTime);
+            cout << "Time to Exit Left? " << leftTime << endl;
          #endif
       }
    }
    #ifdef VERBOSE_MODE
-      Info("TimeFromInsideAlongParabola","FinalTime: %f",finalTime);
+      cout << "FinalTime: " << finalTime << endl;
    #endif      
    return finalTime;
 }
 
 //_____________________________________________________________________________
-Double_t Union::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field,
+Double_t Union::TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field,
                                  const Double_t stepTime, const Bool_t onBoundary) const
 {
 // Compute the time from outside point to this composite shape along parabola.
    #ifdef VERBOSE_MODE
-      Info("TimeFromOutsideAlongParabola","Start");
+      Info("TimeFromOutside","Start");
    #endif
    BoolNode *node = (BoolNode*)this;
    Double_t leftTime, rightTime, finalTime;
@@ -867,12 +826,12 @@ Double_t Union::TimeFromOutsideAlongParabola(const Double_t* point, const Double
    fRightMat->MasterToLocalVect(velocity, &rightVel[0]);
    fRightMat->MasterToLocalVect(field, &rightField[0]);
    // Calculate time from outside to both shapes
-   leftTime = dynamic_cast<Box*>(fLeft)->TimeFromOutsideAlongParabola(leftPoint, leftVel, \
+   leftTime = dynamic_cast<Box*>(fLeft)->TimeFromOutside(leftPoint, leftVel, \
                                                                leftField, stepTime, onBoundary);
-   rightTime = dynamic_cast<Box*>(fRight)->TimeFromOutsideAlongParabola(rightPoint, rightVel, \
+   rightTime = dynamic_cast<Box*>(fRight)->TimeFromOutside(rightPoint, rightVel, \
                                                                rightField, stepTime, onBoundary);
    #ifdef VERBOSE_MODE
-      Info("TimeFromOutsideAlongParabola","LeftTime: %f. RightTime: %f",leftTime,rightTime);
+      Info("TimeFromOutside","LeftTime: %f. RightTime: %f",leftTime,rightTime);
    #endif
    // Simply choose the shape that is hit first
    if (leftTime < rightTime) {
@@ -883,7 +842,7 @@ Double_t Union::TimeFromOutsideAlongParabola(const Double_t* point, const Double
       node->SetSelected(2);
    }
    #ifdef VERBOSE_MODE
-      Info("TimeFromOutsideAlongParabola","FinalTime: %f",finalTime);
+      Info("TimeFromOutside","FinalTime: %f",finalTime);
    #endif      
    return finalTime;
 }
@@ -928,19 +887,6 @@ Subtraction::Subtraction(const char *expr1, const char *expr2)
    #ifdef PRINT_CONSTRUCTORS
       Info("Subtraction","Constructor");
    #endif
-}
-
-//_____________________________________________________________________________
-Subtraction::Subtraction(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, TGeoMatrix *rmat)
-                :BoolNode(left,right,lmat,rmat)
-{
-// Constructor providing pointers to components
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Subtraction","Constructor");
-   #endif
-   if (left->TestShapeBit(TGeoShape::kGeoHalfSpace)) {
-      Fatal("TGeoSubstraction", "Substractions from a half-space (%s) not allowed", left->GetName());
-   }
 }
 
 //_____________________________________________________________________________
@@ -1191,12 +1137,12 @@ void Subtraction::Sizeof3D() const
 }
 
 //_____________________________________________________________________________
-Double_t Subtraction::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t*
+Double_t Subtraction::TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t*
                                        field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 // Compute time from inside point to outside of this composite shape along parabola.
    #ifdef VERBOSE_MODE
-      Info("TimeFromInsideAlongParabola","Start");
+      Info("TimeFromInside","Start");
    #endif
    BoolNode *node = (BoolNode*)this;
    Double_t leftTime, rightTime, finalTime=0.;
@@ -1210,13 +1156,13 @@ Double_t Subtraction::TimeFromInsideAlongParabola(const Double_t* point, const D
    fRightMat->MasterToLocalVect(field, &rightField[0]);
    // We are inside ('+') and therefore should'nt be inside ('-') since this is a subtraction volume
    // Therefore first we want to find the time to exit ('+') from Inside
-   leftTime = dynamic_cast<Box*>(fLeft)->TimeFromInsideAlongParabola(&leftPoint[0], &leftVel[0], &leftField[0], \
+   leftTime = dynamic_cast<Box*>(fLeft)->TimeFromInside(&leftPoint[0], &leftVel[0], &leftField[0], \
                                                                               stepTime, onBoundary);
    // Now we want to find the time to the boundary of the ('-') from Outside
-   rightTime= dynamic_cast<Box*>(fRight)->TimeFromOutsideAlongParabola(&rightPoint[0], &rightVel[0], &rightField[0], \
+   rightTime= dynamic_cast<Box*>(fRight)->TimeFromOutside(&rightPoint[0], &rightVel[0], &rightField[0], \
                                                                                  stepTime, onBoundary);
    #ifdef VERBOSE_MODE
-      Info("TimeFromInsideAlongParabola","LeftTime: %f, RightTime: %f",leftTime,rightTime);
+      Info("TimeFromInside","LeftTime: %f, RightTime: %f",leftTime,rightTime);
    #endif
    // Compare the two times for which boundary will be intersected first
    if (leftTime < rightTime) {
@@ -1227,18 +1173,18 @@ Double_t Subtraction::TimeFromInsideAlongParabola(const Double_t* point, const D
       node->SetSelected(2);
    }
    #ifdef VERBOSE_MODE
-      Info("TimeFromInsideAlongParabola","FinalTime: %f", finalTime);
+      Info("TimeFromInside","FinalTime: %f", finalTime);
    #endif
    return finalTime;
 }
 
 //_____________________________________________________________________________
-Double_t Subtraction::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t*
+Double_t Subtraction::TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t*
                                        field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 // Compute the time from outside point to this composite shape along parabola.
    #ifdef VERBOSE_MODE
-		Info("TimeFromOutsideAlongParabola","Start");
+		Info("TimeFromOutside","Start");
    #endif
    BoolNode *node = (BoolNode*)this;
    Int_t i;
@@ -1262,15 +1208,15 @@ Double_t Subtraction::TimeFromOutsideAlongParabola(const Double_t* point, const 
    Double_t epsil = 0.;
    while (1) {
       #ifdef VERBOSE_MODE
-         Info("TimeFromOutsideAlongParabola","Currently Outside Left. Are we Inside Right? %i",inside);
+         Info("TimeFromOutside","Currently Outside Left. Are we Inside Right? %i",inside);
       #endif
       if (inside) {
          // We are inside '-' so propagate outside of this
          node->SetSelected(2);
-         rightTime = dynamic_cast<Box*>(fRight)->TimeFromInsideAlongParabola(&rightPoint[0], &rightVel[0], \
+         rightTime = dynamic_cast<Box*>(fRight)->TimeFromInside(&rightPoint[0], &rightVel[0], \
                                                                               &rightField[0], stepTime, onBoundary);
          #ifdef VERBOSE_MODE
-            Info("TimeFromOutsideAlongParabola","Currently Inside Right. Propagating outside Right. RightTime: %f",rightTime);
+            Info("TimeFromOutside","Currently Inside Right. Propagating outside Right. RightTime: %f",rightTime);
          #endif
          finalTime += rightTime+epsil;
          for (i=0; i<3; i++) {
@@ -1283,34 +1229,34 @@ Double_t Subtraction::TimeFromOutsideAlongParabola(const Double_t* point, const 
          fLeftMat->MasterToLocalVect(&masterVel[0], &leftVel[0]);
          if (fLeft->Contains(&leftPoint[0])) {
             #ifdef VERBOSE_MODE
-               Info("TimeFromOutsideAlongParabola","We are inside Left. Returning finalTime: %f",finalTime);
+               Info("TimeFromOutside","We are inside Left. Returning finalTime: %f",finalTime);
             #endif
             return finalTime;
          }
       }
       // masterPoint is outside '-' and outside '+' ;  find times to both
       #ifdef VERBOSE_MODE
-         Info("TimeFromOutsideAlongParabola","Currently outside both Left and Right.");
+         Info("TimeFromOutside","Currently outside both Left and Right.");
       #endif
       node->SetSelected(1);
       fLeftMat->MasterToLocal(&masterPoint[0], &leftPoint[0]);
       fLeftMat->MasterToLocalVect(&masterVel[0], &leftVel[0]);
-      leftTime = dynamic_cast<Box*>(fLeft)->TimeFromOutsideAlongParabola(&leftPoint[0], &leftVel[0], \
+      leftTime = dynamic_cast<Box*>(fLeft)->TimeFromOutside(&leftPoint[0], &leftVel[0], \
                                                                            &leftField[0], stepTime, onBoundary);
       if (leftTime > 1E20) return TGeoShape::Big();
       
       fRightMat->MasterToLocal(&masterPoint[0], &rightPoint[0]);
       fRightMat->MasterToLocalVect(&masterVel[0], &rightVel[0]);
-      rightTime = dynamic_cast<Box*>(fRight)->TimeFromOutsideAlongParabola(&rightPoint[0], &rightVel[0], \
+      rightTime = dynamic_cast<Box*>(fRight)->TimeFromOutside(&rightPoint[0], &rightVel[0], \
                                                                               &rightField[0], stepTime, onBoundary);
       #ifdef VERBOSE_MODE
-         Info("TimeFromOutsideAlongParabola","LeftTime: %f. RightTime: %f",leftTime, rightTime);
+         Info("TimeFromOutside","LeftTime: %f. RightTime: %f",leftTime, rightTime);
       #endif
       // If we reach '+' first then return this time
       if (leftTime < rightTime-TGeoShape::Tolerance()) {
          finalTime += leftTime+epsil;
          #ifdef VERBOSE_MODE
-            Info("TimeFromOutsideAlongParabola","Propagating to Left. Returning finalTime: %f",finalTime);
+            Info("TimeFromOutside","Propagating to Left. Returning finalTime: %f",finalTime);
          #endif
          return finalTime;
       }
@@ -1326,7 +1272,7 @@ Double_t Subtraction::TimeFromOutsideAlongParabola(const Double_t* point, const 
       fRightMat->MasterToLocalVect(&masterVel[0], &rightVel[0]);
       inside = kTRUE;
       #ifdef VERBOSE_MODE
-         Info("TimeFromOutsideAlongParabola","Propagated to Right. finalTime: %f", finalTime);
+         Info("TimeFromOutside","Propagated to Right. finalTime: %f", finalTime);
       #endif
    }
 }
@@ -1371,19 +1317,6 @@ Intersection::Intersection(const char *expr1, const char *expr2)
    #ifdef PRINT_CONSTRUCTORS
       Info("Intersection","Constructor");
    #endif
-}
-
-//_____________________________________________________________________________
-Intersection::Intersection(TGeoShape *left, TGeoShape *right, TGeoMatrix *lmat, TGeoMatrix *rmat)
-                 :BoolNode(left,right,lmat,rmat)
-{
-// Constructor providing pointers to components
-   #ifdef PRINT_CONSTRUCTORS
-      Info("Intersection","Constructor");
-   #endif
-   Bool_t hs1 = (fLeft->TestShapeBit(TGeoShape::kGeoHalfSpace))?kTRUE:kFALSE;
-   Bool_t hs2 = (fRight->TestShapeBit(TGeoShape::kGeoHalfSpace))?kTRUE:kFALSE;
-   if (hs1 && hs2) Fatal("ctor", "cannot intersect two half-spaces: %s * %s", left->GetName(), right->GetName());
 }
 
 //_____________________________________________________________________________
@@ -1719,12 +1652,12 @@ void Intersection::Sizeof3D() const
 }
 
 //_____________________________________________________________________________
-Double_t Intersection::TimeFromOutsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
+Double_t Intersection::TimeFromOutside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 // Compute the time from outside point to this composite shape along parabola.
 // Check if the bounding box is crossed within the requested distance
 	#ifdef VERBOSE_MODE
-		Info("TimeFromOutsideAlongParabola","Start");
+		Info("TimeFromOutside","Start");
    #endif
 	BoolNode *node = (BoolNode*)this;
    Double_t leftPoint[3], rightPoint[3], leftVelocity[3], rightVelocity[3], leftField[3], rightField[3];
@@ -1747,14 +1680,14 @@ Double_t Intersection::TimeFromOutsideAlongParabola(const Double_t* point, const
 	Bool_t inleft = fLeft->Contains(leftPoint);
    Bool_t inright = fRight->Contains(rightPoint);
    #ifdef VERBOSE_MODE
-		Info("TimeFromOutsideAlongParabola","Is Point in %s Node? : ",fLeft->GetName(),inleft);
-   	Info("TimeFromOutsideAlongParabola","Is Point in %s Node? : ",fRight->GetName(),inright);	
+		Info("TimeFromOutside","Is Point in %s Node? : ",fLeft->GetName(),inleft);
+   	Info("TimeFromOutside","Is Point in %s Node? : ",fRight->GetName(),inright);	
 	#endif
 	node->SetSelected(0);
    Double_t timeFromInside = 0.0;
    if (inleft && inright) {
 	   #ifdef VERBOSE_MODE
-			Info("TimeFromOutsideAlongParabola","Particle in Both. Returning: %f",timeFromInside);
+			Info("TimeFromOutside","Particle in Both. Returning: %f",timeFromInside);
 		#endif
 		return timeFromInside;
 	}
@@ -1762,17 +1695,17 @@ Double_t Intersection::TimeFromOutsideAlongParabola(const Double_t* point, const
       leftTime = rightTime = 0.0;
       if (!inleft)  {
 		  	#ifdef VERBOSE_MODE
-				Info("TimeFromOutsideAlongParabola","Point is not in Left node: %s. Finding Time FromOutside.",fLeft->GetName());
+				Info("TimeFromOutside","Point is not in Left node: %s. Finding Time FromOutside.",fLeft->GetName());
 			#endif
-			leftTime = static_cast<Box*>(fLeft)->TimeFromOutsideAlongParabola(leftPoint, leftVelocity, leftField, \
+			leftTime = static_cast<Box*>(fLeft)->TimeFromOutside(leftPoint, leftVelocity, leftField, \
 			                                                                           stepTime, onBoundary);
          if (leftTime > 1E20) return TGeoShape::Big();
       }
       if (!inright) {  
          #ifdef VERBOSE_MODE
-				Info("TimeFromOutsideAlongParabola","Point is not in Right node: %s. Finding Time FromOutside.",fRight->GetName());
+				Info("TimeFromOutside","Point is not in Right node: %s. Finding Time FromOutside.",fRight->GetName());
 			#endif
-			rightTime = static_cast<Box*>(fRight)->TimeFromOutsideAlongParabola(rightPoint, rightVelocity, rightField, \
+			rightTime = static_cast<Box*>(fRight)->TimeFromOutside(rightPoint, rightVelocity, rightField, \
 			                                                                              stepTime, onBoundary);
          if (rightTime > 1E20) return TGeoShape::Big();
       }
@@ -1781,8 +1714,8 @@ Double_t Intersection::TimeFromOutsideAlongParabola(const Double_t* point, const
          // propagate to left shape
          timeFromInside += leftTime;
          #ifdef VERBOSE_MODE
-				Info("TimeFromOutsideAlongParabola","LeftTime: %f > RightTime: %f.",leftTime, rightTime);
-	         Info("TimeFromOutsideAlongParabola","TimeFromInside: %f.",timeFromInside);
+				Info("TimeFromOutside","LeftTime: %f > RightTime: %f.",leftTime, rightTime);
+	         Info("TimeFromOutside","TimeFromInside: %f.",timeFromInside);
 			#endif
 			node->SetSelected(1);
          inleft = kTRUE;
@@ -1796,12 +1729,12 @@ Double_t Intersection::TimeFromOutsideAlongParabola(const Double_t* point, const
          // check if propagated point is inside right shape
          inright = fRight->Contains(rightPoint);
          #ifdef VERBOSE_MODE
-				Info("TimeFromOutsideAlongParabola","Propagate point by LeftTime: X: %f, Y: %f, Z: %f", masterPoint[0], masterPoint[1], masterPoint[2]);
-				Info("TimeFromOutsideAlongParabola","Is new point in Right? : %i",inright);
+				Info("TimeFromOutside","Propagate point by LeftTime: X: %f, Y: %f, Z: %f", masterPoint[0], masterPoint[1], masterPoint[2]);
+				Info("TimeFromOutside","Is new point in Right? : %i",inright);
 			#endif
 			if (inright) {
 				#ifdef VERBOSE_MODE
-					Info("TimeFromOutsideAlongParabola","Returning TimeFromInside: %f.",timeFromInside);
+					Info("TimeFromOutside","Returning TimeFromInside: %f.",timeFromInside);
 				#endif
 				return timeFromInside;
 			}// here inleft=true, inright=false         
@@ -1809,8 +1742,8 @@ Double_t Intersection::TimeFromOutsideAlongParabola(const Double_t* point, const
          // propagate to right shape
          timeFromInside += rightTime;
          #ifdef VERBOSE_MODE
-				Info("TimeFromOutsideAlongParabola","RightTime: %f > LeftTime: %f.",rightTime, leftTime);
-				Info("TimeFromOutsideAlongParabola","TimeFromInside: %f.",timeFromInside);
+				Info("TimeFromOutside","RightTime: %f > LeftTime: %f.",rightTime, leftTime);
+				Info("TimeFromOutside","TimeFromInside: %f.",timeFromInside);
          #endif
 			node->SetSelected(2);
          inright = kTRUE;
@@ -1824,12 +1757,12 @@ Double_t Intersection::TimeFromOutsideAlongParabola(const Double_t* point, const
          // check if propagated point is inside left shape
          inleft = fLeft->Contains(leftPoint);
          #ifdef VERBOSE_MODE
-				Info("TimeFromOutsideAlongParabola","Propagate point by LeftTime: X: %f, Y: %f, Z: %f", masterPoint[0], masterPoint[1], masterPoint[2]);
-         	Info("TimeFromOutsideAlongParabola","Is new point in Left? : %i",inleft);
+				Info("TimeFromOutside","Propagate point by LeftTime: X: %f, Y: %f, Z: %f", masterPoint[0], masterPoint[1], masterPoint[2]);
+         	Info("TimeFromOutside","Is new point in Left? : %i",inleft);
          #endif
 			if (inleft) {
 				#ifdef VERBOSE_MODE
-					Info("TimeFromOutsideAlongParabola","Returning TimeFromInside: %f.",timeFromInside);
+					Info("TimeFromOutside","Returning TimeFromInside: %f.",timeFromInside);
 	         #endif
 				return timeFromInside;
          }
@@ -1840,11 +1773,11 @@ Double_t Intersection::TimeFromOutsideAlongParabola(const Double_t* point, const
 }   
 
 //_____________________________________________________________________________
-Double_t Intersection::TimeFromInsideAlongParabola(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
+Double_t Intersection::TimeFromInside(const Double_t* point, const Double_t* velocity, const Double_t* field, const Double_t stepTime, const Bool_t onBoundary) const
 {
 // -- Compute time from inside point to outside of this composite shape along parabola.
 	#ifdef VERBOSE_MODE
-		Info("TimeFromInsideAlongParabola","Start");
+		Info("TimeFromInside","Start");
 	#endif
 	// Compute the time to each of the shapes involved in the intersection
    BoolNode *node = (BoolNode*)this;
@@ -1854,44 +1787,44 @@ Double_t Intersection::TimeFromInsideAlongParabola(const Double_t* point, const 
    fLeftMat->MasterToLocal(point, &leftPoint[0]);
    fLeftMat->MasterToLocalVect(velocity, &leftVelocity[0]);
    fLeftMat->MasterToLocalVect(field, &leftField[0]);
-	leftTime = static_cast<Box*>(fLeft)->TimeFromInsideAlongParabola(&leftPoint[0], &leftVelocity[0], &leftField[0], stepTime, onBoundary);
+	leftTime = static_cast<Box*>(fLeft)->TimeFromInside(&leftPoint[0], &leftVelocity[0], &leftField[0], stepTime, onBoundary);
    #ifdef VERBOSE_MODE
-		Info("TimeFromInsideAlongParabola","Finding Time from Inside to Left Node, %s.",fLeft->GetName());
-   	Info("TimeFromInsideAlongParabola","Time from Inside to Left Node, %s: %f",fLeft->GetName(),leftTime);
+		Info("TimeFromInside","Finding Time from Inside to Left Node, %s.",fLeft->GetName());
+   	Info("TimeFromInside","Time from Inside to Left Node, %s: %f",fLeft->GetName(),leftTime);
 	#endif
 	if (leftTime <= 0.0) {
-		Error("TimeFromInsideAlongParabola", "No boundary of left Node was hit from inside");
+		Error("TimeFromInside", "No boundary of left Node was hit from inside");
 		return 0.0;
 	}
 	// Calculate the time to the boundary of the shape on the right branch
    fRightMat->MasterToLocal(point, &rightPoint[0]);
    fRightMat->MasterToLocalVect(velocity, &rightVelocity[0]);
    fRightMat->MasterToLocalVect(field, &rightField[0]);
-   rightTime = static_cast<Box*>(fRight)->TimeFromInsideAlongParabola(&rightPoint[0], &rightVelocity[0], &rightField[0], stepTime, onBoundary);
+   rightTime = static_cast<Box*>(fRight)->TimeFromInside(&rightPoint[0], &rightVelocity[0], &rightField[0], stepTime, onBoundary);
    #ifdef VERBOSE_MODE
-		Info("TimeFromInsideAlongParabola","Finding Time from Inside to Right Node, %s.",fRight->GetName());
-	   Info("TimeFromInsideAlongParabola","Time from Inside to Right Node, %s: %f",fRight->GetName(),rightTime);
+		Info("TimeFromInside","Finding Time from Inside to Right Node, %s.",fRight->GetName());
+	   Info("TimeFromInside","Time from Inside to Right Node, %s: %f",fRight->GetName(),rightTime);
 	#endif
 	if (rightTime <= 0.0) {
-		Error("TimeFromInsideAlongParabola", "No boundary of right Node was hit from inside");
+		Error("TimeFromInside", "No boundary of right Node was hit from inside");
 		return 0.0;
 	}
 	// Work out which time is the shortest
    if (leftTime < rightTime) {
       #ifdef VERBOSE_MODE
-			Info("TimeFromInsideAlongParabola","LeftTime < RightTime");
+			Info("TimeFromInside","LeftTime < RightTime");
 	   #endif
 		timeFromInside = leftTime;
       node->SetSelected(1);
    } else {
       #ifdef VERBOSE_MODE
-			Info("TimeFromInsideAlongParabola","RightTime < LeftTime");
+			Info("TimeFromInside","RightTime < LeftTime");
       #endif
 		timeFromInside = rightTime;
       node->SetSelected(2);
    }      
    #ifdef VERBOSE_MODE
-		Info("TimeFromInsideAlongParabola","TimeFromInside: %f", timeFromInside);
+		Info("TimeFromInside","TimeFromInside: %f", timeFromInside);
 	#endif
 	return timeFromInside;
 }

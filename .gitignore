@@ -13,3 +13,9 @@ temp/*
 *.root
 *.png
 *.gif
+doc/*
+build
+build_xcode
+*.xls
+*.cfg
+*.tmproj

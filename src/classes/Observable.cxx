@@ -46,17 +46,17 @@ void Observable::Attach(Observer* observer)
 void Observable::DetachAll()
 {
    // -- Remove all observers from the particle's list of observers
-   fObservers.erase(fObservers.begin(), fObservers.end());
+   fObservers.clear();
 }
 
 //_____________________________________________________________________________
-void Observable::WriteObserversToFile(TDirectory* particleDir)
+void Observable::NotifyObservers(const Point& point, const TVector3& velocity, const std::string& context)
 {
-   // -- Get Observers to write their data to file
-   particleDir->cd();
+   // -- Notify *ALL* Observers of change
    vector<Observer*>::iterator it;
+   // Notify my observers
    for(it = fObservers.begin(); it != fObservers.end(); it++) {
-      // Write out
-      (*it)->WriteToFile(particleDir);
+      (*it)->RecordEvent(point, velocity, context);
    }
 }
+

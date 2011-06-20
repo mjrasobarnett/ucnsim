@@ -33,8 +33,10 @@ ClassImp(FieldManager)
 
 //_____________________________________________________________________________
 FieldManager::FieldManager()
-                 :TNamed("FieldManager", "Default Field Manager"), fGravField(NULL),
-                  fMagFieldArray(NULL)
+                 :TNamed("FieldManager", "Default Field Manager"),
+                  fGravField(NULL),
+                  fMagFieldArray(NULL),
+                  fElecFieldArray(NULL)
 {
 // -- Default constructor
    Info("FieldManager", "Default Constructor");
@@ -42,8 +44,10 @@ FieldManager::FieldManager()
 
 //_____________________________________________________________________________
 FieldManager::FieldManager(const FieldManager& other)
-                 :TNamed(other), fGravField(other.fGravField),
-                  fMagFieldArray(other.fMagFieldArray)
+                 :TNamed(other),
+                  fGravField(other.fGravField),
+                  fMagFieldArray(other.fMagFieldArray),
+                  fElecFieldArray(other.fElecFieldArray)
 {
 // -- Copy Constructor
    Info("FieldManager", "Copy Constructor");
@@ -57,6 +61,7 @@ FieldManager& FieldManager::operator=(const FieldManager& other)
       TNamed::operator=(other);
       fGravField = other.fGravField;
       fMagFieldArray = other.fMagFieldArray;
+      fElecFieldArray = other.fElecFieldArray;
    }
    return *this;
 }
@@ -68,6 +73,7 @@ FieldManager::~FieldManager()
    Info("FieldManager", "Destructor");
    if (fGravField) delete fGravField;
    if (fMagFieldArray) delete fMagFieldArray;
+   if (fElecFieldArray) delete fElecFieldArray;
 }
 
 // -- METHODS --
@@ -86,10 +92,9 @@ Bool_t FieldManager::Initialise(const RunConfig& runConfig)
    } else {
       Info("Initialise","Gravitational Field set to be OFF.");
    }
-   // Set-up the magnetic fields
-   if (runConfig.MagFieldOn() == kTRUE) {
+   // Set-up the electric/magnetic fields
+   if (runConfig.MagFieldOn() == kTRUE || runConfig.ElecFieldOn() == kTRUE) {
       // Look for Fields file
-      Info("Initialise","Magnetic Environment set to be ON. Creating...");
       TString fieldsFileName = runConfig.FieldsFileName();
       if (fieldsFileName == "") { 
          Error("Initialise","No Fields File has been specified");
@@ -104,23 +109,41 @@ Bool_t FieldManager::Initialise(const RunConfig& runConfig)
       }
       f->ls();
       // Search for Magnetic Field Manager
-      TString magManagerName = "MagFieldArray";
-      MagFieldArray* importedMagFieldArray = 0;
-      f->GetObject(magManagerName,importedMagFieldArray);
-      if (importedMagFieldArray == NULL) {
-         Error("Initialise","Could not find MagFieldArray: %s in file", magManagerName.Data());
-         return kFALSE;
+      if (runConfig.MagFieldOn() == kTRUE) {
+         Info("Initialise","Magnetic Environment set to be ON. Creating...");
+         TString magManagerName = "MagFieldArray";
+         MagFieldArray* importedMagFieldArray = 0;
+         f->GetObject(magManagerName,importedMagFieldArray);
+         if (importedMagFieldArray == NULL) {
+            Error("Initialise","Could not find: %s in file", magManagerName.Data());
+            return kFALSE;
+         }
+         // Store MagField Manager
+         fMagFieldArray = importedMagFieldArray;
+         importedMagFieldArray = 0;
+      } else {
+         Info("Initialise","Magnetic Environment set to be OFF.");
       }
-      // Store MagField Manager
-      fMagFieldArray = importedMagFieldArray;
-      // Clean up
-      importedMagFieldArray = 0;
+      // Search for Electric Field Manager
+      if (runConfig.ElecFieldOn() == kTRUE) {
+         Info("Initialise","Electric Fields Environment set to be ON. Creating...");
+         TString elecFieldArrayName = "ElecFieldArray";
+         ElecFieldArray* importedElecFieldArray = 0;
+         f->GetObject(elecFieldArrayName,importedElecFieldArray);
+         if (importedElecFieldArray == NULL) {
+            Error("Initialise","Could not find: %s in file", elecFieldArrayName.Data());
+            return kFALSE;
+         }
+         // Store ElecField Manager
+         fElecFieldArray = importedElecFieldArray;
+         importedElecFieldArray = 0;
+      } else {
+         Info("Initialise","Electric Environment set to be OFF.");
+      }
+      // Clean up file
       f->Close();
       delete f;
       f = 0;
-      
-   } else {
-      Info("Initialise","Magnetic Environment set to be OFF.");
    }
    
    cout << "-------------------------------------------" << endl;
@@ -143,12 +166,16 @@ GravField* FieldManager::AddGravField()
 }
 
 //______________________________________________________________________________
-const TVector3 FieldManager::GetMagField(const Point& point, const string volume) const
+const TVector3 FieldManager::GetMagField(const Point& point, const TVector3& velocity, const string volume) const
 {
+   // -- Calculate the total magnetic field at the given position
+   TVector3 bfield(0.,0.,0.);
    if (fMagFieldArray != NULL) {
-      return fMagFieldArray->GetMagField(point, volume);
-   } else {
-      return TVector3(0.,0.,0.);
+      bfield += fMagFieldArray->GetMagField(point,velocity,volume);
    }
+   if (fElecFieldArray != NULL) {
+      bfield += fElecFieldArray->GetMagField(point,velocity,volume);
+   }
+   return bfield;
 }
 

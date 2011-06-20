@@ -1,23 +1,27 @@
-// UCNData.cpp
-// Author: Simon JM Peeters
-// Created July 2009
-
 #include "Data.h"
 
 #include <iostream>
 #include <sstream>
-#include <locale>
 #include <cassert>
 #include <stdexcept>
+#include <algorithm>
+#include <iterator>
 
+#include "TList.h"
 #include "TKey.h"
 #include "TClass.h"
 #include "TGeoManager.h"
+#include "TTree.h"
+#include "TBranch.h"
 
+#include "RunConfig.h"
+#include "Particle.h"
 #include "Experiment.h"
 #include "MagFieldArray.h"
-#include "DataFileHierarchy.h"
-#include "ProgressBar.h"
+#include "ElecFieldArray.h"
+#include "ValidStates.h"
+#include "Algorithms.h"
+#include "DataAnalysis.h"
 
 using namespace std;
 
@@ -31,19 +35,25 @@ Data::Data()
    // -- Default Constructor
    Info("Data","Default Constructor");
    // -- Create the Trees
+   fInputFile = NULL;
    fOutputFile = NULL;
-   fParticleStatesFolder = NULL;
-   fInitialStatesFolder = NULL;
-   fCurrentParticleDir = NULL;
+   fInputTree = NULL;
+   fOutputTree = NULL;
+   fInputBranch = NULL;
+   fCurrentParticle = NULL;
+   fOutputManifest = NULL;
 }
 
 //_____________________________________________________________________________
 Data::Data(const Data& other)
          :TNamed(other), 
+          fInputFile(other.fInputFile),
           fOutputFile(other.fOutputFile),
-          fParticleStatesFolder(other.fParticleStatesFolder),
-          fInitialStatesFolder(other.fInitialStatesFolder),
-          fCurrentParticleDir(other.fCurrentParticleDir),
+          fInputTree(other.fInputTree),
+          fOutputTree(other.fOutputTree),
+          fInputBranch(other.fInputBranch),
+          fCurrentParticle(other.fCurrentParticle),
+          fOutputManifest(other.fOutputManifest),
           fObservers(other.fObservers)
 {
    // Copy Constructor
@@ -55,403 +65,428 @@ Data::~Data()
 {
    // -- Destructor
    Info("Data","Destructor");
-   if (fOutputFile) fOutputFile->Close(); delete fOutputFile;
-   fOutputFile = NULL;
-   fParticleStatesFolder = NULL;
-   fInitialStatesFolder = NULL;
-   fCurrentParticleDir = NULL;
+   fInputBranch = NULL; // Dont delete the branch, let the Tree clean it up
+   if (fInputTree) fInputTree->Delete(); fInputTree = NULL;
+   if (fOutputTree) fOutputTree->Delete(); fOutputTree = NULL;
+   if (fCurrentParticle) delete fCurrentParticle; fCurrentParticle = NULL;
+   if (fOutputManifest) delete fOutputManifest; fOutputManifest = NULL;
+   if (fInputFile) fInputFile->Close(); delete fInputFile; fInputFile = NULL;
+   if (fOutputFile) fOutputFile->Close(); delete fOutputFile; fOutputFile = NULL;
    PurgeObservers();
-}
-
-//_____________________________________________________________________________
-Bool_t Data::Initialise(const InitialConfig& initialConfig)
-{
-   // -- Take the initialConfig, open the output file and necessary directories to store
-   // -- particles that being generated.
-   // Fetch the OutputFile name
-   const string outputFileName = initialConfig.OutputFileName();
-   if (outputFileName == "") { 
-      Error("Initialise","No Output file path specified in run configuration");
-      return kFALSE;
-   }
-   // Open and store pointer to File
-   TFile *file = TFile::Open(outputFileName.c_str(), "recreate");
-   if (!file || file->IsZombie()) {
-      Error("Initialise","Unable to open output file");
-      return kFALSE;
-   }
-   fOutputFile = file;
-   // Set up basic folder structure
-   fOutputFile->cd();
-   TDirectory* topDir = gDirectory;
-   // Need to create particles directory structure
-   fParticleStatesFolder = topDir->mkdir(Folders::particles.c_str());
-   // Create the initial states folder
-   fInitialStatesFolder = fParticleStatesFolder->mkdir(Folders::initial.c_str());
-   return kTRUE;
 }
 
 //_____________________________________________________________________________
 Bool_t Data::Initialise(const RunConfig& runConfig)
 {
-   // -- Take the runConfig, open the output files and create directories to store
-   // -- both initial and final states of the particles. Finally, load all particles specified
-   // -- by the run config into the initial states folder, ready for propagation
-   // Fetch the Output File name
+   // -- Open the output file, load the initial particles from the input file
+   // -- and write the particle tree, as well as a copy of the runconfig to the
+   // -- output file
+   
+   ///////////////////////////////////////////////////////////////////////
+   // -- Open the file holding the initial particle tree
+   const string inputFileName = runConfig.InputFileName();
+   fInputFile = Analysis::DataFile::OpenRootFile(inputFileName, "READ");
+   if (fInputFile == NULL) {return false;}
+   ///////////////////////////////////////////////////////////////////////
+   // -- Read into memory the input file's Particle Tree, 
+   // -- and the input file's particle manifest
+   fInputTree = this->ReadInParticleTree(fInputFile);
+   // Check that we actually read both these objects into memory
+   if (fInputTree == NULL) {
+      Error("Initialise","Cannot find Particle Tree input file");
+      return false;
+   }
+   // Open Output File
    const string outputFileName = runConfig.OutputFileName();
-   if (outputFileName == "") { 
-      Error("Initialise","No Output file path specified in run configuration");
-      return kFALSE;
-   }
-   // Open and store pointer to output File
-   TFile *outputfile = TFile::Open(outputFileName.c_str(), "recreate");
-   if (!outputfile || outputfile->IsZombie()) {
-      Error("Initialise","Unable to open output file");
-      return kFALSE;
-   }
-   fOutputFile = outputfile;
-   // Set up basic folder structure
-   fOutputFile->cd();
-   TDirectory* topDir = gDirectory;
-   // Create a config directory and write copy of RunConfig to it
-   TDirectory* configDir = topDir->mkdir(Folders::config.c_str());
-   configDir->cd();
-   runConfig.Write("RunConfig",TObject::kOverwrite);
-   topDir->cd();
-   // Create a particles directory structure
-   fParticleStatesFolder = topDir->mkdir(Folders::particles.c_str());
-   // Create the initial states folder
-   fInitialStatesFolder = fParticleStatesFolder->mkdir(Folders::initial.c_str());
-   // Create the typical subfolders of final states
-   fParticleStatesFolder->mkdir(Folders::propagating.c_str());
-   fParticleStatesFolder->mkdir(Folders::absorbed.c_str());
-   fParticleStatesFolder->mkdir(Folders::detected.c_str());
-   fParticleStatesFolder->mkdir(Folders::decayed.c_str());
-   fParticleStatesFolder->mkdir(Folders::lost.c_str());
-   fParticleStatesFolder->mkdir(Folders::anomalous.c_str());
-   // Load initial particles into output file
-   if (this->LoadParticles(runConfig) == kFALSE) {
-      Error("Initialise","Cannot Load Particles");
-      return kFALSE;
-   }
-   return kTRUE;
+   fOutputFile = Analysis::DataFile::OpenRootFile(outputFileName, "RECREATE");
+   if (fOutputFile == NULL) return false;
+   // Create the Output Tree and Output Particle Manifest
+   fOutputTree = new TTree("Particles","Tree of Particle Data");
+   fOutputManifest = new ParticleManifest();
+   // Store pointer to the current 'in-memory' Particle
+   fCurrentParticle = new Particle();
+   return true;
 }
 
 //_____________________________________________________________________________
-Bool_t Data::LoadParticles(const RunConfig& runConfig)
+vector<int> Data::GetListOfParticlesToLoad(const RunConfig& runConfig)
 {
    // -- Locate particles designated as 'initial' in the run config. Copy all of these
-   // -- particles into the initial states folder inside the output file.
-   cout << "-------------------------------------------" << endl;
-   cout << "Loading the Particles" << endl;
-   cout << "-------------------------------------------" << endl;
+   // -- particles into the output file ready for propagation.
    ///////////////////////////////////////////////////////////////////////
-   // -- Get name of file holding the data from runconfig 
-   const string inputFileName = runConfig.InputFileName();
-   if (inputFileName == "") { 
-      Error("LoadParticles","No Input file path specified in run configuration");
-      return kFALSE;
-   }
-   TFile *inputfile = TFile::Open(inputFileName.c_str(), "read");
-   if (!inputfile || inputfile->IsZombie()) {
-      Error("LoadParticles","Unable to open input file");
-      return kFALSE;
-   }
-   // Determine which particle states to take as the initial states for current run
-   cout << "Determining which particles to load..." << endl;
-   inputfile->cd();
-   TDirectory* const topDir = gDirectory;
-   if (topDir->cd(Folders::particles.c_str()) == kFALSE) {
-      Error("LoadParticles","No folder named: %s, found in input file",Folders::particles.c_str());
-      return kFALSE;
-   }
-   TDirectory * const partDir = gDirectory;
-   ///////////////////////////////////////////////////////////////////////
-   // -- Check Config for which particle states we wish to load as our input particles
-   string whichParticles = runConfig.ParticlesToLoad();
-   // Convert to lowercase.
-   locale loc;
-   for (size_t i=0; i < whichParticles.length(); ++i) {
-      whichParticles[i] = tolower(whichParticles[i],loc);
-   }
-   // Navigate to the folder containing the input particle states 
-   Bool_t correctFolder = partDir->cd(whichParticles.c_str());
-   // check that we ended up in the correct folder
-   if (correctFolder == kFALSE) {
-      Error("LoadParticles","Cannot find folder: ", whichParticles.c_str());
-      return kFALSE;
-   }
-   TDirectory * const sourceDir = gDirectory;
-   TDirectory * const outputDir = fInitialStatesFolder; 
-   ///////////////////////////////////////////////////////////////////////
-   // - Check Config for whether we will re-start the particles specified above from their initial
-   // - states. This will only be done for particles that are not in their initial states already.
+   // -- Check RunConfig for whether we are continuing to propagate particles from
+   // -- their last recorded position, or whether we are restarting them from their
+   // -- initial position
    Bool_t fromBeginning = runConfig.RestartFromBeginning();
-   if (fromBeginning == kTRUE && sourceDir->GetName() != Folders::initial) {
-      cout << "Resetting particles in the state: " << sourceDir->GetName();
-      cout << ", to their initial state as the input to current Run " << endl;
-      // Loop on all entries of source directory, which will be a set of folders containing
-      // the particles in this state
-      TKey *key;
-      TIter nextkey(sourceDir->GetListOfKeys());
-      while ((key = static_cast<TKey*>(nextkey.Next()))) {
-         const char *classname = key->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // For each particle-folder in the current directory, find its corresponding
-            // initial states folder in the input file, and make a copy of it in the output file
-            partDir->cd(Folders::initial.c_str());
-            TDirectory * const initialDir = gDirectory;
-            this->CopyDirectory(initialDir, outputDir);
-         }
-      }
+   string selectedBranch;
+   if (fromBeginning == false) {
+      selectedBranch = States::final;
    } else {
-      // Otherwise we just propagate the particles from where they left off
-      cout << "Loading particles in the state: " << sourceDir->GetName();
-      cout << ", as the input to current Run, to continue their propagation" << endl;
-      // Copy particles from the source directory into the initial states directory of the run
-      this->CopyDirectoryContents(sourceDir, outputDir);
+      selectedBranch = States::initial;
    }
-   // Clean up
-   inputfile->Close();
-   if (inputfile) delete inputfile; inputfile = NULL;
-   cout << "-------------------------------------------" << endl;
-   cout << this->InitialParticles() << " particles have been loaded succesfully" << endl;
-   cout << "-------------------------------------------" << endl;
-   return kTRUE;
+   ///////////////////////////////////////////////////////////////////////
+   // -- Set the input branch from where we will read the particles
+   fInputBranch = fInputTree->GetBranch(selectedBranch.c_str());
+   if (fInputBranch == NULL) {
+      Error("GetListOfParticlesToLoad","Could not find branch %s in input tree",selectedBranch.c_str());
+      return vector<int>();
+   }
+   fInputTree->SetBranchAddress(fInputBranch->GetName(), &fCurrentParticle);
+   // -- Read in the input manifest from file
+   ParticleManifest* inputManifest = this->ReadInParticleManifest(fInputFile);
+   if (inputManifest == NULL) {
+      Error("Initialise","Cannot find Particle Manifest in input file");
+      return vector<int>();
+   }
+   ///////////////////////////////////////////////////////////////////////
+   // -- Copy all particles from the input branch into the current Run's tree
+   vector<int> selectedIndexes = this->GetSelectedParticleIndexes(*inputManifest, runConfig);
+   return selectedIndexes;
 }
 
 //_____________________________________________________________________________
-void Data::CopyDirectory(TDirectory * const sourceDir, TDirectory * const outputDir) {
-   // Copy the source directory and all its subdirectories into the supplied output directory
-   // as a new subdirectory  
-   TDirectory* copiedDir = outputDir->mkdir(sourceDir->GetName());
-   copiedDir->cd();
-   // Loop on all entries of this directory
+vector<int> Data::GetSelectedParticleIndexes(const ParticleManifest& manifest, const RunConfig& runConfig) const
+{
+   ///////////////////////////////////////////////////////////////////////////////////////
+   // -- Check RunConfig for which particle state we should take our initial particles from
+   cout << "Determining which particles to load..." << endl;
+   string which_particle_state = runConfig.ParticlesToLoad();
+   vector<int> availableIndexes = manifest.GetListing(which_particle_state).GetTreeIndexes();
+   if (availableIndexes.empty() == true) {
+      Error("GetListOfSelectedParticles","Cannot find any Particles for state %s in input manifest",which_particle_state.c_str());
+      return availableIndexes;
+   }
+   ///////////////////////////////////////////////////////////////////////
+   // -- Check RunConfig for whether to load all the particles in this state, or 
+   // -- only a subset of these particles, chosen by the User
+   Bool_t loadAllParticles = runConfig.LoadAllParticles();
+   if (loadAllParticles != true) {
+      // Get the User-defined particle IDs they wish to propagte
+      vector<int> selectedIndexes = runConfig.SelectedParticleIDs();
+      CheckSelectedIndexList(selectedIndexes, availableIndexes);
+      return selectedIndexes;
+   }
+   return availableIndexes;
+}
+
+//_____________________________________________________________________________
+ParticleManifest* Data::ReadInParticleManifest(TFile* file) const
+{
+   // Loop on all entries of this directory searching for the first
+   // ParticleManifest object
+   ParticleManifest* manifest = NULL;
    TKey *key;
-   TIter nextkey(sourceDir->GetListOfKeys());
+   TIter nextkey(file->GetListOfKeys());
    while ((key = static_cast<TKey*>(nextkey.Next()))) {
       const char *classname = key->GetClassName();
       TClass *cl = gROOT->GetClass(classname);
       if (!cl) continue;
-      if (cl->InheritsFrom("TDirectory")) {
-         // Copy subdirectory to a new subdirectoy in copiedDir
-         sourceDir->cd(key->GetName());
-         TDirectory *subdir = gDirectory;
-         copiedDir->cd();
-         CopyDirectory(subdir, copiedDir);
-         copiedDir->cd();
+      if (cl->InheritsFrom("ParticleManifest")) {
+         manifest = dynamic_cast<ParticleManifest*>(key->ReadObj());
+         break;
       } else {
-         // Copy Object
-         sourceDir->cd();
-         TObject *obj = key->ReadObj();
-         copiedDir->cd();
-         obj->Write();
-         delete obj;
-     }
-  }
-  copiedDir->SaveSelf(kTRUE);
-  outputDir->cd();
-}
-
-//_____________________________________________________________________________
-void Data::CopyDirectoryContents(TDirectory * const sourceDir, TDirectory * const outputDir) {
-   // -- Similar to CopyDirectory but here we only copy all the objects and subdirs of the source
-   // -- directory into the supplied output directory, not the source directory itself
-   outputDir->cd();
-   // Loop on all entries of this directory
-   TKey *key;
-   TIter nextkey(sourceDir->GetListOfKeys());
-   Int_t counter = 0;
-   while ((key = static_cast<TKey*>(nextkey.Next()))) {
-      const char *classname = key->GetClassName();
-      TClass *cl = gROOT->GetClass(classname);
-      if (!cl) continue;
-      if (cl->InheritsFrom("TDirectory")) {
-         // Copy subdirectory to a new subdirectoy in outputDir
-         sourceDir->cd(key->GetName());
-         TDirectory *subdir = gDirectory;
-         outputDir->cd();
-         TDirectory* outputSubDir = outputDir->mkdir(subdir->GetName());
-         CopyDirectoryContents(subdir, outputSubDir);
-         outputDir->cd();
-      } else {
-         // Copy Object
-         sourceDir->cd();
-         TObject *obj = key->ReadObj();
-         outputDir->cd();
-         obj->Write();
-         delete obj;
+         continue;
       }
-      ++counter;
-      ProgressBar::PrintProgress(counter,sourceDir->GetNkeys(),1);
    }
-   outputDir->SaveSelf(kTRUE);
-   outputDir->cd();
+   return manifest;
+}
+
+//_____________________________________________________________________________
+TTree* Data::ReadInParticleTree(TFile* file) const
+{
+   // Loop on all entries of this directory searching for the first Tree object
+   TTree* inputTree = NULL;
+   TKey *key;
+   TIter nextkey(file->GetListOfKeys());
+   while ((key = static_cast<TKey*>(nextkey.Next()))) {
+      const char *classname = key->GetClassName();
+      TClass *cl = gROOT->GetClass(classname);
+      if (!cl) continue;
+      if (cl->InheritsFrom("TTree")) {
+         inputTree = dynamic_cast<TTree*>(key->ReadObj());
+      } else {
+         continue;
+      }
+   }
+   return inputTree;
+}
+
+//_____________________________________________________________________________
+bool Data::CheckSelectedIndexList(vector<int>& selectedIndexes, vector<int>& availableIndexes) const
+{
+   // Take the intersection between ALL the particle IDs for the requested State
+   // and those that have been selected by the User.
+   sort(selectedIndexes.begin(), selectedIndexes.end());
+   sort(availableIndexes.begin(), availableIndexes.end());
+   vector<int>::iterator range;
+   // Using the stl's set_intersection() algorithm for this. It requires both input vectors
+   // to be SORTED. 
+   range = set_intersection(availableIndexes.begin(), availableIndexes.end(), selectedIndexes.begin(), selectedIndexes.end(), selectedIndexes.begin());
+   // Algorithm returns an iterator to the point in the output vector that is the end
+   // of the elements that were in the interesection. We need to manually remove all 
+   // the elements past the end of this point, to leave us with a vector of ONLY the
+   // intersection elements 
+   selectedIndexes.erase(range, selectedIndexes.end());
+   if (selectedIndexes.empty()) {
+      Error("CheckSelectedIndexList","None of selected Particle IDs are available for current state");
+      return false;
+   }
+   // Printing these elements to stdout
+   cout << "Loading specific particles, Numbers: ";
+   copy(selectedIndexes.begin(), selectedIndexes.end(), ostream_iterator<int>(cout,","));
+   cout << endl;
+   return true;
+}
+
+//_____________________________________________________________________________
+bool Data::CopyAllParticles(TBranch* inputBranch, TBranch* outputBranch)
+{
+   // Copy all particles from inputBranch 
+   for (int id = 0; id < inputBranch->GetEntries(); id++) {
+      int bytesCopied = inputBranch->GetEntry(id);
+      if (bytesCopied <= 0) continue;
+      outputBranch->Fill();
+      int branchIndex = outputBranch->GetEntries() - 1;
+      fOutputManifest->AddEntry(States::initial, fCurrentParticle->Id(), branchIndex);
+      Algorithms::ProgressBar::PrintProgress(id, inputBranch->GetEntries(), 1);
+   }
+   return true;
+}
+
+//_____________________________________________________________________________
+bool Data::CopySelectedParticles(const std::vector<int>& selectedIndexes, TBranch* inputBranch, TBranch* outputBranch)
+{
+   ///////////////////////////////////////////////////////////////////////
+   // -- Iterate over the chosen particle IDs and copy these particles to the 'Initial'
+   // -- branch of the Output file
+   if (selectedIndexes.empty()) return false;
+   vector<int>::const_iterator indexIter;
+   for (indexIter = selectedIndexes.begin(); indexIter != selectedIndexes.end(); indexIter++) {
+      int index = indexIter - selectedIndexes.begin(); 
+      // Fetch the particle at the current index
+      int bytesCopied = inputBranch->GetEntry(index);
+      if (bytesCopied <= 0) {
+         Error("CopySelectedParticles","Could not find particle %i in input branch",index);
+         return false;
+      }
+      // If we found the particle, copy to the output branch
+      outputBranch->Fill();
+      int branchIndex = outputBranch->GetEntries() - 1;
+      fOutputManifest->AddEntry(States::initial, fCurrentParticle->Id(), branchIndex);
+      Algorithms::ProgressBar::PrintProgress(index, selectedIndexes.size(), 1);
+   }
+   return true;
 }
 
 //_____________________________________________________________________________
 void Data::PurgeObservers()
 {
    // -- Delete all observers held
-   if (fObservers.empty() == kFALSE) {
-      multimap<string, Observer*>::iterator it;
-      for(it = fObservers.begin(); it != fObservers.end(); ++it) {
-         delete it->second;
-         it->second = 0;
+   if (fObservers.empty() == false) {
+      ObserverCategories::iterator categoryIter;
+      for(categoryIter = fObservers.begin(); categoryIter != fObservers.end(); ++categoryIter) {
+         ObserverList& observerList = categoryIter->second;
+         ObserverList::iterator observerIter;
+         for(observerIter = observerList.begin(); observerIter != observerList.end(); ++observerIter) {
+            delete observerIter->second;
+            observerIter->second = 0;
+         }
       }
    }
 }
 
 //_____________________________________________________________________________
-void Data::CreateObservers(const RunConfig& runConfig, const Experiment& experiment)
+void Data::CreateObservers(const RunConfig& runConfig, Experiment& experiment)
 {
    // -- Check Run configuration for which properties are to be monitored with Observers 
    cout << "-------------------------------------------" << endl;
-   cout << "Creating Observers" << endl;
-   cout << "ObserveSpin: " << runConfig.ObserveSpin() << endl;
-   cout << "Spin Measurement Interval (s): " << runConfig.SpinMeasureInterval() << endl;
-   cout << "ObserveField: " << runConfig.ObserveField() << endl;
-   cout << "Field Measurement Interval (s): " << runConfig.FieldMeasureInterval() << endl;
-   cout << "ObserveBounces: " << runConfig.ObserveBounces() << endl;
-   cout << "ObserveTracks: " << runConfig.ObserveTracks() << endl;
-   cout << "Track Measurement Interval (s): " << runConfig.TrackMeasureInterval() << endl;
+   cout << "Creating Observers..." << endl;
    if (runConfig.ObserveBounces() == kTRUE) {
       // Create an observer to track UCN Bounces
-      Observer* obs = new BounceObserver();
+      Observer* obs = new BounceObserver("BounceObserver");
       // Add observer to the list
-      this->AddObserver("Particles", obs);
+      this->AddObserver(Categories::PerTrack, Subjects::Particles, obs);
    }
    if (runConfig.ObserveTracks() == kTRUE) {
       // Create an observer to track UCN path
-      Observer* obs = new TrackObserver(runConfig.TrackMeasureInterval());
+      Observer* obs = new TrackObserver("TrackObserver", runConfig.TrackMeasureInterval());
       // Add observer to the list
-      this->AddObserver("Particles", obs);
+      this->AddObserver(Categories::PerTrack, Subjects::Particles, obs);
    }
    if (runConfig.ObserveSpin() == kTRUE) {
       // Create an observer to track UCN Spin polarisation
-      Observer* obs = new SpinObserver(runConfig.SpinMeasureInterval());
+      Observer* obs = new SpinObserver("SpinObserver", runConfig.SpinMeasureInterval());
       // Add observer to the list
-      this->AddObserver("Particles", obs);
+      this->AddObserver(Categories::PerTrack, Subjects::Particles, obs);
    }
    // -- Attach observers to parts of the experiment
    if (runConfig.ObserveField() == kTRUE) {
       // Create an observer to record field seen by spin
-      Observer* obs = new FieldObserver(runConfig.FieldMeasureInterval());
-      // Add observer to the list
-      this->AddObserver("Fields", obs);
-      // Define Observer's subject
-      MagFieldArray& magFieldArray = experiment.GetFieldManager().GetMagFieldArray();
-      obs->DefineSubject(&magFieldArray);
-      // Attach observer to its subject
-      magFieldArray.Attach(obs);
+      if (runConfig.MagFieldOn() == kTRUE) {
+         Observer* obs = new FieldObserver("MagFieldObserver", runConfig.FieldMeasureInterval());
+         // Add observer to the list
+         this->AddObserver(Categories::PerTrack, Subjects::Fields, obs);
+         // Define Observer's subject
+         MagFieldArray& magFieldArray = experiment.GetFieldManager().GetMagFieldArray();
+         obs->DefineSubject(&magFieldArray);
+         // Attach observer to its subject
+         magFieldArray.Attach(obs);
+      }
+      // Create an observer to record field seen by spin
+      if (runConfig.ElecFieldOn() == kTRUE) {
+         Observer* obs = new FieldObserver("ElecFieldObserver", runConfig.FieldMeasureInterval());
+         // Add observer to the list
+         this->AddObserver(Categories::PerTrack, Subjects::Fields, obs);
+         // Define Observer's subject
+         ElecFieldArray& elecFieldArray = experiment.GetFieldManager().GetElecFieldArray();
+         obs->DefineSubject(&elecFieldArray);
+         // Attach observer to its subject
+         elecFieldArray.Attach(obs);
+      }
+   }
+   // -- Attach observers to the Experiment
+   if (runConfig.ObservePopulation() == true) {
+      Observer* obs = new PopulationObserver("PopulationObserver", runConfig.PopulationMeasureInterval());
+      // Add observer to the list - noting that its subject will be the particles
+      this->AddObserver(Categories::PerRun, Subjects::Particles, obs);
    }
 }
 
 //_____________________________________________________________________________
-void Data::AddObserver(string subject, Observer* observer)
+void Data::AddObserver(const string category, const string subject, Observer* observer)
 {
    // -- Add observer to internal list
-   fObservers.insert(pair<string, Observer*>(subject, observer));
+   ObserverCategories::iterator categoryIter = fObservers.find(category);
+   if (categoryIter == fObservers.end()) {
+      ObserverList newList;
+      newList.insert(pair<string, Observer*>(subject, observer));
+      fObservers.insert(pair<string, ObserverList>(category, newList));
+   } else {
+      ObserverList& observerList = categoryIter->second;
+      observerList.insert(pair<string, Observer*>(subject, observer));
+   }
 }
 
-//_____________________________________________________________________________
+//______________________________________________________________________________
 void Data::RegisterObservers(Particle* particle)
 {
-   // -- Attach to particle only those observers in map with their subject being particles
-   multimap<string, Observer*>::iterator obsIter;
-   for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
-      string subject = obsIter->first;
-      Observer* observer = obsIter->second;
-      observer->ResetData();
-      if (subject == "Particles") {
-         // If observer's subject is particle, then attach it to the particle
+   // -- Attach to particle the relevant observers
+   ObserverCategories::iterator categoryIter;
+   for(categoryIter = fObservers.begin(); categoryIter != fObservers.end(); ++categoryIter) {
+      const string category = categoryIter->first;
+      ObserverList& observerList = categoryIter->second;
+      if (category == Categories::PerTrack) {
+         AttachObservers(observerList, particle);
+      } else if (category == Categories::PerRun) {
+         AttachObservers(observerList, particle);
+      } else {
+         cerr << "Error: An observer category, " << category << " has been added that is not recognised." << endl;
+         throw runtime_error("Unsure how to handle this observer");
+      }
+   }
+}
+
+//______________________________________________________________________________
+void Data::ResetObservers()
+{
+   // -- After each particle has finished its propagation, Reset all the observers
+   // -- before the next propagation. For those observers recording data on a track-by-track
+   // -- basis, Write their data to file.
+   ObserverCategories::iterator categoryIter;
+   for(categoryIter = fObservers.begin(); categoryIter != fObservers.end(); ++categoryIter) {
+      const string category = categoryIter->first;
+      ObserverList& observerList = categoryIter->second;
+      ObserverList::iterator observerIter;
+      for(observerIter = observerList.begin(); observerIter != observerList.end(); ++observerIter) {
+         string subject = observerIter->first;
+         Observer* observer = observerIter->second;
+         if (category == Categories::PerTrack) {
+            // If the observer is recording data on a 'PerTrack' basis, reset
+            // both its clock, and its internal data
+            observer->WriteToFile(*this);
+            observer->ResetInternalClock();
+            observer->ResetData();
+         } else if (category == Categories::PerRun) {
+            // If the observer is recording data on a 'PerRun' basis, *just* reset
+            // its clock
+            observer->ResetInternalClock();
+         } else {
+            cerr << "Error: An observer category, " << category;
+            cerr << " has been added that is not recognised." << endl;
+            throw runtime_error("Unsure how to handle this observer");
+         }
+      }
+   }
+}
+
+//______________________________________________________________________________
+void Data::AttachObservers(ObserverList& observerList, Particle* particle)
+{
+   ObserverList::iterator observerIter;
+   for(observerIter = observerList.begin(); observerIter != observerList.end(); ++observerIter) {
+      string subject = observerIter->first;
+      Observer* observer = observerIter->second;
+      if (subject == Subjects::Particles) {
+         // If observer's ONLY subject is the particle, then reset previous particle's
+         // data and define Observer's subject to be current particle
          observer->DefineSubject(particle);
          particle->Attach(observer);
-      } else if (subject == "Fields") {
-         // If observer's subject is fields, also attach it to the particle but don't change its
-         // subject, as the particle is not subject, but it can issue notifications
+      } else if (subject == Subjects::Fields) {
+         // If observer's subject is primarily the particle's observed fields, 
+         // then the data is still relevant only to a single particle, therefore it isn't
+         // a shared observer, however the observer's subject isn't the particle itself
+         // but rather the field it sees. Thus, reset the previous particles data, 
+         // but don't change the observer's subject.
          particle->Attach(observer);
+      } else {
+         cerr << "Error: An observer subject, " << subject << " has been added that is not recognised." << endl;
+         throw runtime_error("Unsure how to handle this observer");
       }
       // Get observers to make a measurement of the initial state of their subjects
-      observer->RecordEvent(particle->GetPoint(), Context::Creation);
+      observer->RecordEvent(particle->GetPoint(), particle->GetVelocity(), Context::Creation);
    }
 }
 
 //_____________________________________________________________________________
-Bool_t Data::SaveParticle(Particle* particle, const std::string& state)
+Bool_t Data::SaveInitialParticle(Particle* particle)
 {
-   // -- Navigate to folder "state" in the particles/finalstates directory of the output data
-   // -- file. If folder "state" doesn't yet exist, then create it and set as the current directory
-   Bool_t foundFolder = fParticleStatesFolder->cd(state.c_str());
-   if (foundFolder == kFALSE) {
-      Error("SaveParticle","Unable to open folder: %s", state.c_str());
-      return kFALSE;
-   }
-   // We should now be in the correct folder for our particle
-   TDirectory* stateDir = gDirectory;
-   // Make a new folder for particle named by its ID.
-   ostringstream s_ID;
-   s_ID << particle->Id();
-   TDirectory* particleDir = stateDir->mkdir(s_ID.str().c_str());
-   // Write particle to folder
-   particle->WriteToFile(particleDir);
-   return kTRUE;
+   // Detach observers
+   particle->DetachAll();
+   // Write Particle to output branch
+   this->WriteObjectToTree(particle, States::initial.c_str());
+   // Update Manifest
+   int branchIndex = fOutputTree->GetBranch(States::initial.c_str())->GetEntries() - 1;
+   fOutputManifest->AddEntry(States::initial, particle->Id(), branchIndex);
+   return true;
 }
 
 //_____________________________________________________________________________
-Particle* const Data::RetrieveParticle()
+Bool_t Data::SaveFinalParticle(Particle* particle, const std::string& state)
 {
-   // -- Retrieve the next particle from fInitialStatesFolder. The current particle
-   // -- is referenced by the the TIter fCurrentParticleDir.
-   // Cd into the folder of initial particle states
-   fInitialStatesFolder->cd();
-   // If there is no iterator set on the particles already, do so.
-   if (fCurrentParticleDir == NULL) {
-      fCurrentParticleDir = new TIter(fInitialStatesFolder->GetListOfKeys());
-   }
-   // Get the next particle folder
-   TKey* nextDir = static_cast<TKey*>(fCurrentParticleDir->Next());
-   if (nextDir == NULL) {
-      // Reached end of the directory. No more particles to load
+   // Detach observers
+   particle->DetachAll();
+   // Write Particle to output branch
+   this->WriteObjectToTree(particle, States::final.c_str());
+   // Update Manifest
+   int branchIndex = fOutputTree->GetBranch(States::final.c_str())->GetEntries() - 1;
+   fOutputManifest->AddEntry(state, particle->Id(), branchIndex);
+   return true;
+}
+
+//_____________________________________________________________________________
+Particle* const Data::RetrieveParticle(unsigned int index)
+{
+   if (fInputBranch == NULL) {
+      Error("RetrieveParticle","No input branch set");
       return NULL;
    }
-   const char *dir_classname = nextDir->GetClassName();
-   TClass *dir_cl = gROOT->GetClass(dir_classname);
-   assert(dir_cl->InheritsFrom("TDirectory"));
-   // Cd into the next particle's folder
-   fInitialStatesFolder->cd(nextDir->GetName());
-   TDirectory *nextParticleDir = gDirectory;
-   // Search Directory for the particle
-   Particle* nextParticle = this->LocateParticle(nextParticleDir);
-   // Register Observers with particle
-   this->RegisterObservers(nextParticle);
-   // Search Directory for any observables previously recorded to be continued
-   multimap<string, Observer*>::iterator obsIter;
-   for (obsIter = fObservers.begin(); obsIter != fObservers.end(); obsIter++) {
-      obsIter->second->LoadExistingData(nextParticleDir);
+   fInputTree->SetBranchAddress(fInputBranch->GetName(), &fCurrentParticle);
+   if (index >= fInputBranch->GetEntries()) {
+      Error("RetrieveParticle","Requested index, %i, is larger than number of particles",index);
+      return NULL;
    }
-   return nextParticle;
-}
-
-//_____________________________________________________________________________
-Particle* Data::LocateParticle(TDirectory * const particleDir)
-{
-   // -- Loop on all entries of this directory looking for a particle
-   Particle* particle = NULL;
-   TKey *key;
-   TIter nextkey(particleDir->GetListOfKeys());
-   while ((key = static_cast<TKey*>(nextkey.Next()))) {
-      const char *classname = key->GetClassName();
-      TClass *cl = gROOT->GetClass(classname);
-      if (!cl) continue;
-      if (cl->InheritsFrom("Particle")) {
-         particle = dynamic_cast<Particle*>(key->ReadObj());
-         break;
-      }
-   }
-   return particle;
+   fInputBranch->GetEntry(index);
+   return fCurrentParticle;
 }
 
 //_____________________________________________________________________________
@@ -476,67 +511,43 @@ Bool_t Data::ChecksOut() const
 Int_t Data::InitialParticles() const
 {
    // -- Count the number of particle states in the Initial Particles folder
-   return fInitialStatesFolder->GetNkeys();
+   return fOutputManifest->GetListing(States::initial).Entries();
 }
 
 //_____________________________________________________________________________
 Int_t Data::PropagatingParticles() const
 {
-   if (fParticleStatesFolder->cd(Folders::propagating.c_str()) == kFALSE) {
-      return 0;
-   } else {
-      return gDirectory->GetNkeys();
-   }
+   return fOutputManifest->GetListing(States::propagating).Entries();
 }
 
 //_____________________________________________________________________________
 Int_t Data::DetectedParticles() const
 {
-   if (fParticleStatesFolder->cd(Folders::detected.c_str()) == kFALSE) {
-      return 0;
-   } else {
-      return gDirectory->GetNkeys();
-   }
+   return fOutputManifest->GetListing(States::detected).Entries();
 }
 
 //_____________________________________________________________________________
 Int_t Data::DecayedParticles() const
 {
-   if (fParticleStatesFolder->cd(Folders::decayed.c_str()) == kFALSE) {
-      return 0;
-   } else {
-      return gDirectory->GetNkeys();
-   }
+   return fOutputManifest->GetListing(States::decayed).Entries();
 }
 
 //_____________________________________________________________________________
 Int_t Data::AbsorbedParticles() const
 {
-   if (fParticleStatesFolder->cd(Folders::absorbed.c_str()) == kFALSE) {
-      return 0;
-   } else {
-      return gDirectory->GetNkeys();
-   }
+   return fOutputManifest->GetListing(States::absorbed).Entries();
 }
 
 //_____________________________________________________________________________
 Int_t Data::LostParticles() const
 {
-   if (fParticleStatesFolder->cd(Folders::lost.c_str()) == kFALSE) {
-      return 0;
-   } else {
-      return gDirectory->GetNkeys();
-   }
+   return fOutputManifest->GetListing(States::lost).Entries();
 }
 
 //_____________________________________________________________________________
 Int_t Data::AnomalousParticles() const
 {
-   if (fParticleStatesFolder->cd(Folders::anomalous.c_str()) == kFALSE) {
-      return 0;
-   } else {
-      return gDirectory->GetNkeys();
-   }
+   return fOutputManifest->GetListing(States::anomalous).Entries();
 }
 
 //_____________________________________________________________________________
@@ -547,19 +558,43 @@ Int_t Data::FinalParticles() const
 }
 
 //_____________________________________________________________________________
-void Data::SaveGeometry(TGeoManager* const geoManager)
+void Data::Export()
 {
-   // -- Write copy of Geometry to data file
-   fOutputFile->cd();
-   TDirectory* topDir = gDirectory;
-   TDirectory* geomDir = topDir->mkdir(Folders::geometry.c_str());
-   if (geomDir == NULL) {
-      topDir->cd(Folders::geometry.c_str());
-      geomDir = gDirectory;
+   this->WriteObjectToFile(fOutputTree);
+   this->WriteObjectToFile(fOutputManifest);
+   // Write out any 'PerRun' observers
+   ObserverCategories::iterator categoryIter = fObservers.find(Categories::PerRun);
+   if (categoryIter != fObservers.end()) {
+      ObserverList& observerList = categoryIter->second;
+      ObserverList::iterator observerIter;
+      for(observerIter = observerList.begin(); observerIter != observerList.end(); ++observerIter) {
+         Observer* observer = observerIter->second;
+         observer->WriteToFile(*this);
+      }
    }
-   geomDir->cd();
-   geoManager->Write("GeoManager",TObject::kOverwrite);
-   topDir->cd();
-   return;
 }
 
+//_____________________________________________________________________________
+int Data::WriteObjectToFile(TObject* object)
+{
+   // -- Write a copy of the object to the top level directory of the File
+   fOutputFile->cd();
+   int bytesCopied = object->Write(object->GetName(),TObject::kOverwrite);
+   return bytesCopied;
+}
+
+//_____________________________________________________________________________
+int Data::WriteObjectToTree(TObject* object, const char* branchName)
+{
+   // -- Write out the provided data to a branch on the provided tree, named after
+   // -- the classname of the data
+   TBranch* branch = fOutputTree->GetBranch(branchName);
+   if (branch == NULL) {
+      // -- If there is no branch yet, create one
+      Info("WriteObjectToTree","Creating Branch %s in output tree", branchName);
+      branch = fOutputTree->Branch(branchName, object->ClassName(), &object, 32000,0);
+   }
+   fOutputTree->SetBranchAddress(branchName, &object);
+   int bytesCopied = branch->Fill();
+   return bytesCopied;
+}

@@ -278,7 +278,7 @@ Bool_t Boundary::AbsorbParticle(Particle* particle, const Double_t* normal)
    Double_t eta = this->LossFactor();
    if (eta == 0.0) {
       // No wall losses implemented
-      Warning("AbsorbParticle","No Wall Losses Implemented. V: %f, W: %f", this->FermiPotential(), this->WPotential());
+      Warning("AbsorbParticle","No Wall Losses for boundary %s. V: %f, W: %f", this->GetName(), this->FermiPotential(), this->WPotential());
       return kFALSE;
    }
    Double_t lossProb = 2.*eta*(TMath::Sqrt(energyPerp/(this->FermiPotential() - energyPerp)));

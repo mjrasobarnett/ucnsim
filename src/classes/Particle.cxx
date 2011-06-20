@@ -1,6 +1,7 @@
 // UCN class
 // Author: Matthew Raso-Barnett  19/01/2009
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 #include <stdexcept>
 
@@ -9,9 +10,11 @@
 
 #include "Particle.h"
 #include "Run.h"
+#include "Data.h"
 #include "Observer.h"
 #include "Volume.h"
 #include "Clock.h"
+#include "ValidStates.h"
 
 #include "TMath.h"
 #include "TRandom.h"
@@ -22,6 +25,7 @@
 #include "TGeoShape.h"
 #include "TGeoMatrix.h"
 #include "TGeoVoxelFinder.h"
+#include "TTree.h"
 
 using namespace std;
 
@@ -33,8 +37,8 @@ ClassImp(Particle)
 //______________________________________________________________________________
 Particle::Particle()
              :TObject(), Observable(),
-              fId(0), fPos(), fVel(), fE(0.),
-              fRandomSeed(0), fState(NULL), fSpin()
+              fId(0), fPos(), fVel(),
+              fState(NULL), fSpin(), fRndState(NULL)
 {
    // -- Default constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -44,10 +48,10 @@ Particle::Particle()
 
 
 //______________________________________________________________________________
-Particle::Particle(Int_t id, Point& pos, TVector3& mom, Double_t energy)
+Particle::Particle(const unsigned int id, const Point pos, const TVector3 vel)
              :TObject(), Observable(),
-              fId(id), fPos(pos), fVel(mom), fE(energy),
-              fRandomSeed(0), fSpin()
+              fId(id), fPos(pos), fVel(vel),
+              fState(NULL), fSpin(), fRndState(NULL)
 {
    // -- Constructor
    #ifdef PRINT_CONSTRUCTORS
@@ -57,15 +61,39 @@ Particle::Particle(Int_t id, Point& pos, TVector3& mom, Double_t energy)
 }
 
 //_____________________________________________________________________________
-Particle::Particle(const Particle& p)
-             :TObject(p), Observable(p),
-              fId(p.fId), fPos(p.fPos), fVel(p.fVel), fE(p.fE),
-              fRandomSeed(p.fRandomSeed), fState(p.fState), fSpin(p.fSpin)
+Particle::Particle(const Particle& other)
+             :TObject(other), Observable(other),
+              fId(other.fId), fPos(other.fPos), fVel(other.fVel),
+              fState(NULL), fSpin(other.fSpin), fRndState(NULL)
 {
    // -- Copy Constructor
    #ifdef PRINT_CONSTRUCTORS
       Info("Particle","Copy Constructor");
    #endif
+      if (other.fState) fState = (other.fState)->Clone();
+      if (other.fRndState) fRndState = (other.fRndState)->Clone();
+}
+
+//_____________________________________________________________________________
+Particle& Particle::operator=(const Particle& other) 
+{
+   //assignment operator
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Particle", "Assignment");
+   #endif
+   if(this!=&other) {
+      TObject::operator=(other);
+      Observable::operator=(other);
+      fId = other.fId;
+      fPos = other.fPos;
+      fVel = other.fVel;
+      fSpin = other.fSpin;
+      if (fState) delete fState;
+      fState = (other.fState)->Clone();
+      if (fRndState) delete fRndState;
+      if (other.fRndState) fRndState = (other.fRndState)->Clone();
+   }
+   return *this;
 }
 
 //______________________________________________________________________________
@@ -76,6 +104,7 @@ Particle::~Particle()
       Info("Particle","Destructor");
    #endif
    if (fState) delete fState;
+   if (fRndState) delete fRndState;
 }
 
 //______________________________________________________________________________
@@ -83,13 +112,6 @@ void Particle::ChangeState(State* state)
 {
    // -- Store pointer to state
    fState = state;
-}
-
-//______________________________________________________________________________
-void Particle::SaveState(Run* run)
-{
-   // Ask States to register themselves in the run to keep track of numbers
-   fState->SaveState(run, this);
 }
 
 //______________________________________________________________________________
@@ -105,22 +127,28 @@ void Particle::SetVelocity(const Double_t vx, const Double_t vy, const Double_t 
 {
    // Set current velocity and energy to given coords
    fVel.SetXYZ(vx,vy,vz);
-   fE = TMath::Power(this->P(), 2.0) / (2.0*Neutron::mass_eV);
 }
 
 //_____________________________________________________________________________
 void Particle::Print(const Option_t* /*option*/) const
 {
-   cout << "Particle: " << this->Id() << "\t" << "Time Elapsed: " << this->T() << endl;
-   cout << "Vertex (m): " << "X:" << this->X() << "\t" << "Y:" << this->Y();
-   cout << "\t" << "Z:" << this->Z() << endl;
-   cout << "Dir: " << "Nx:" << this->Nx()  << "\t" << "Ny:" << this->Ny();
-   cout << "\t" << "Nz:" << this->Nz() << endl;
-   cout << "Vel (m/s): " << "Vx:" << this->Vx()  << "\t" << "Vy:" << this->Vy();
-   cout << "\t" << "Vz:" << this->Vz() << "\t" << "V:" << this->V() << endl;
-   cout << "Mom (eV): " << "X:" << this->Px()  << "\t" << "Y:" << this->Py();
-   cout << "\t" << "Z:" << this->Pz() << "\t" << "P:" << this->P() << endl;
-   cout << "Energy (neV): " << this->Energy() / Units::neV << endl;
+   cout << left << setw(15) << "Particle: " << setw(8) << this->Id() << "\t";
+   cout << setw(4) << "T: " << setw(8) << this->T() << endl;
+   cout << setw(15) << "Vertex (m): " << setw(4) << "X:" << setw(8) << this->X() << "\t";
+   cout << setw(4) << "Y:" << setw(8) << this->Y() << "\t";
+   cout << setw(4) << "Z:" << setw(8) << this->Z() << endl;
+   cout << setw(15) << "Dir: " << setw(4) << "Nx:" << setw(8) << this->Nx()  << "\t";
+   cout << setw(4) << "Ny:" << setw(8) << this->Ny() << "\t";
+   cout << setw(4) << "Nz:" << setw(8) << this->Nz() << endl;
+   cout << setw(15) << "Vel (m/s): " << setw(4) << "Vx:" << setw(8) << this->Vx()  << "\t";
+   cout << setw(4) << "Vy:" << setw(8) << this->Vy() << "\t";
+   cout << setw(4) << "Vz:" << setw(8) << this->Vz() << "\t";
+   cout << setw(4) << "V:" << setw(8) << this->V() << endl;
+   cout << setw(15) << "Mom (eV): " << setw(4) << "X:" << setw(8) << this->Px()  << "\t";
+   cout << setw(4) << "Y:" << setw(8) << this->Py() << "\t";
+   cout << setw(4) << "Z:" << setw(8) << this->Pz() << "\t";
+   cout << setw(4) << "P:" << setw(8) << this->P() << endl;
+   cout << setw(15) << "Energy (neV): " << setw(8) << this->Energy() / Units::neV << endl;
 }
 
 //_____________________________________________________________________________
@@ -129,6 +157,7 @@ Bool_t Particle::Propagate(Run* run)
    // -- Call State-dependent propagate method
    if (!fState) fState = new Propagating();
    return fState->Propagate(this,run);
+   return true;
 }
 
 //_____________________________________________________________________________
@@ -141,6 +170,20 @@ void Particle::Move(const Double_t stepTime, const Run* run)
    if (interval >= stepTime || interval <= 0.0) {
       interval = stepTime;
    }
+   #ifdef VERBOSE_MODE
+      cout << "-------------------------------------------" << endl;
+      cout << "-- Move Particle along trajectory -- " << endl;
+      cout << "Interval: " << interval << "\t" << "StepTime: " << stepTime << endl;
+      cout << "----------" << endl;
+      cout << setw(10) << "Initial - " << setw(4) << "X: " << setw(10) << this->X() << "\t";
+      cout << setw(4) << "Y: " << setw(10) << this->Y() << "\t";
+      cout << setw(4) << "Z: " << setw(10) << this->Z() << endl;
+      cout << setw(10) << "Initial - " << setw(4) << "Vx: " << setw(10) << this->Vx() << "\t";
+      cout << setw(4) << "Vy: " << setw(10) << this->Vy() << "\t";
+      cout << setw(4) << "Vz: " << setw(10) << this->Vz() << endl;
+      cout << setw(4) << "E: " << setw(10) << this->Energy()/Units::neV << endl;
+      cout << "----------" << endl;
+   #endif
    // Fetch the Gravitational Field if it exists, and store field's components
    const GravField* const gravity = run->GetExperiment().GetGravField();
    TVector3 gravField(0.,0.,0.);
@@ -151,15 +194,6 @@ void Particle::Move(const Double_t stepTime, const Run* run)
    // one step of size 'stepTime'
    const Double_t end = this->T() + stepTime;
    while (this->T() < end) {
-      #ifdef VERBOSE_MODE
-         cout << "-------------------------------------------" << endl;
-         cout << "Move -- Interval: " << interval << "\t" << "StepTime: " << stepTime << endl;
-         cout << "Move -- Initial X: " << this->X() << "\t" << "Y: " << this->Y();
-         cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
-         cout << "Move -- Initial Vx: " << this->Vx() << "\t" << "Vy: " << this->Py();
-         cout << "\t" <<  "Vz: " << this->Pz() << "\t";
-         cout <<  "E: " << this->Energy()/Units::neV << endl;
-      #endif
       // Check if we will reach the end of stepTime within the next small step
       if (this->T() + interval > end) {interval = end - this->T();} 
       // Get current positions
@@ -168,8 +202,10 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       // Calculate position halfway along step
       const Double_t halfInterval = interval*0.5;
       TVector3 halfwayPos(pos);
+      TVector3 halfwayVel(vel);
       for (int i=0;i<3;i++) {
          halfwayPos[i] += vel[i]*halfInterval + 0.5*gravField[i]*halfInterval*halfInterval;
+         halfwayVel[i] += gravField[i]*halfInterval;
       }
       const Double_t halfwayTime = this->T()+halfInterval;
       Point halfwayPoint(halfwayPos,halfwayTime);
@@ -185,23 +221,25 @@ void Particle::Move(const Double_t stepTime, const Run* run)
       this->SetPosition(pos[0],pos[1],pos[2],finalTime);
       this->SetVelocity(vel[0],vel[1],vel[2]);
       // Measure the magnetic field at the halfway point along step
-      const TVector3 field = run->GetExperiment().GetMagField(halfwayPoint);
+      const TVector3 field = run->GetExperiment().GetMagField(halfwayPoint,halfwayVel);
       // Notify observers of new field state
-      this->NotifyObservers(halfwayPoint, Context::MagField);
+      this->NotifyObservers(halfwayPoint, halfwayVel, Context::MagField);
       // Precess spin about measured magnetic field
       this->PrecessSpin(field, interval);
-      #ifdef VERBOSE_MODE
-         cout << "-------------------------------------------" << endl;
-         cout << "Move -- Final X: " << this->X() << "\t" << "Y: " << this->Y();
-         cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
-         cout << "Move -- Final Vx: " << this->Vx() << "\t" << "Vy: " << this->Py();
-         cout << "\t" <<  "Vz: " << this->Pz() << "\t";
-         cout <<  "E: " << this->Energy()/Units::neV << endl;
-      #endif
    }
+   #ifdef VERBOSE_MODE
+      cout << setw(10) << "Final - " << setw(4) << "X: " << setw(10) << this->X() << "\t";
+      cout << setw(4) << "Y: " << setw(10) << this->Y() << "\t";
+      cout << setw(4) << "Z: " << setw(10) << this->Z() << endl;
+      cout << setw(10) << "Final - " << setw(4) << "Vx: " << setw(10) << this->Vx() << "\t";
+      cout << setw(4) << "Vy: " << setw(10) << this->Vy() << "\t";
+      cout << setw(4) << "Vz: " << setw(10) << this->Vz() << endl;
+      cout << setw(4) << "E: " << setw(10) << this->Energy()/Units::neV << endl;
+      cout << "---------------------------------------" << endl;
+   #endif
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Notify Observers of Step Completion
-   this->NotifyObservers(this->GetPoint(), Context::Step);
+   this->NotifyObservers(this->GetPoint(), this->GetVelocity(), Context::Step);
 }
 
 //_____________________________________________________________________________
@@ -210,11 +248,15 @@ void Particle::UpdateCoordinates(const TGeoNavigator* navigator)
    // Take the Navigator's internal state (position, direction) and set particle's to this
    #ifdef VERBOSE_MODE
       cout << "-------------------------------------------" << endl;
-      cout << "Update -- Initial X: " << this->X() << "\t" << "Y: " << this->Y();
-      cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
-      cout << "Update -- Initial Vx: " << this->Vx() << "\t" << "Vy: " << this->Py();
-      cout << "\t" <<  "Vz: " << this->Pz() << "\t";
-      cout <<  "E: " << this->Energy()/Units::neV << endl;
+      cout << "-- Update Particle's state with that of the Navigator --" << endl;
+      cout << setw(10) << "Initial - " << setw(4) << "X: " << setw(10) << this->X() << "\t";
+      cout << setw(4) << "Y: " << setw(10) << this->Y() << "\t";
+      cout << setw(4) << "Z: " << setw(10) << this->Z() << endl;
+      cout << setw(10) << "Initial - " << setw(4) << "Vx: " << setw(10) << this->Vx() << "\t";
+      cout << setw(4) << "Vy: " << setw(10) << this->Vy() << "\t";
+      cout << setw(4) << "Vz: " << setw(10) << this->Vz() << endl;
+      cout << setw(4) << "E: " << setw(10) << this->Energy()/Units::neV << endl;
+      cout << "----------" << endl;
    #endif
    const Double_t* pos = navigator->GetCurrentPoint();
    const Double_t* dir = navigator->GetCurrentDirection();
@@ -223,11 +265,13 @@ void Particle::UpdateCoordinates(const TGeoNavigator* navigator)
    this->SetPosition(pos[0], pos[1], pos[2], this->T());
    this->SetVelocity(vel*dir[0], vel*dir[1], vel*dir[2]);
    #ifdef VERBOSE_MODE
-      cout << "Update -- Final X: " << this->X() << "\t" << "Y: " << this->Y();
-      cout << "\t" <<  "Z: " << this->Z() << "\t" <<  "T: " << this->T() << endl;
-      cout << "Update -- Final Vx: " << this->Vx() << "\t" << "Vy: " << this->Py();
-      cout << "\t" <<  "Vz: " << this->Pz() << "\t";
-      cout <<  "E: " << this->Energy()/Units::neV << endl;
+      cout << setw(10) << "Final - " << setw(4) << "X: " << setw(10) << this->X() << "\t";
+      cout << setw(4) << "Y: " << setw(10) << this->Y() << "\t";
+      cout << setw(4) << "Z: " << setw(10) << this->Z() << endl;
+      cout << setw(10) << "Final - " << setw(4) << "Vx: " << setw(10) << this->Vx() << "\t";
+      cout << setw(4) << "Vy: " << setw(10) << this->Vy() << "\t";
+      cout << setw(4) << "Vz: " << setw(10) << this->Vz() << endl;
+      cout << setw(4) << "E: " << setw(10) << this->Energy()/Units::neV << endl;
       cout << "-------------------------------------------" << endl;
    #endif
 }
@@ -279,7 +323,7 @@ void Particle::PrecessSpin(const TVector3& field, const Double_t precessTime)
    // -- Precess spin about field for time defined by precessTime 
    fSpin.Precess(field,precessTime);
    // Notify Observers of spin state change
-   NotifyObservers(this->GetPoint(), Context::Spin);
+   NotifyObservers(this->GetPoint(), this->GetVelocity(), Context::Spin);
 }
 
 //_____________________________________________________________________________
@@ -287,31 +331,6 @@ Bool_t Particle::IsSpinUp(const TVector3& axis) const
 {
    // -- Return whether Particle is in Spin up state defined along provided axis
    return this->GetSpin().IsSpinUp(axis);
-}
-
-//_____________________________________________________________________________
-void Particle::NotifyObservers(const Point& point, const std::string& context)
-{
-   // -- Notify Observers of change
-   for(int i = 0; i < this->CountObservers(); i++) {
-      Observer* observer = this->GetObserver(i);
-      observer->RecordEvent(point, context);
-   }
-}
-
-//_____________________________________________________________________________
-void Particle::WriteToFile(TDirectory* particleDir)
-{
-   // -- Write particle to given directory. Also tell the observers to write out the particle's
-   // -- observables to the same directory.
-   particleDir->cd();
-   // First write out the observers to file
-   this->WriteObserversToFile(particleDir);
-   // Delete Observers
-   this->DetachAll();
-   assert(this->CountObservers() == 0);
-   // Next write particle to file
-   this->Write("Particle",TObject::kOverwrite);
 }
 
 //_____________________________________________________________________________
@@ -342,11 +361,11 @@ Bool_t Particle::Reflect(const Double_t* normal, TGeoNavigator* navigator, TGeoN
    if (gRandom->Uniform(0.0,1.0) <= diffuseProbability) {
       // -- Diffuse Bounce
       this->DiffuseBounce(navigator, norm);
-      this->NotifyObservers(this->GetPoint(), Context::DiffBounce);
+      this->NotifyObservers(this->GetPoint(), this->GetVelocity(), Context::DiffBounce);
    } else {
       // -- Specular Bounce
       this->SpecularBounce(norm);
-      this->NotifyObservers(this->GetPoint(), Context::SpecBounce);
+      this->NotifyObservers(this->GetPoint(), this->GetVelocity(), Context::SpecBounce);
    }
    // Update Navigator
    navigator->SetCurrentDirection(this->Nx(), this->Ny(), this->Nz());
@@ -515,4 +534,8 @@ Double_t Particle::DiffuseProbability(const Boundary* boundary, const Double_t* 
    return diffProb;
 }
 
-
+//______________________________________________________________________________
+void Particle::SaveRandomGeneratorState(const TRandom3State& rndState)
+{
+   fRndState = new TRandom3State(rndState);
+}

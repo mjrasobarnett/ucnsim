@@ -9,6 +9,7 @@
 #include "Box.h"
 #include "Tube.h"
 #include "Volume.h"
+#include "ParticleManifest.h"
 
 #include "TMath.h"
 #include "TGeoManager.h"
@@ -24,13 +25,16 @@
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
 #include "TPolyMarker3D.h"
+#include "TTree.h"
+#include "TBranch.h"
 
 #include "Materials.h"
 #include "Constants.h"
 #include "Units.h"
-#include "DataFileHierarchy.h"
+#include "ValidStates.h"
 #include "GeomParameters.h"
-#include "ProgressBar.h"
+#include "Algorithms.h"
+#include "DataAnalysis.h"
 
 using std::cin;
 using std::cout;
@@ -68,7 +72,7 @@ Int_t main(Int_t argc,Char_t **argv)
    }
    // Start 'the app' -- this is so we are able to enter into a ROOT session
    // after the program has run, instead of just quitting.
-   TRint *theApp = new TRint("FittingApp", &argc, argv);
+   TRint *theApp = new TRint("FittingApp", NULL, NULL);
    // Read in Batch Configuration file to find the Initial Configuration File
    ConfigFile configFile(configFileName);
    ///////////////////////////////////////////////////////////////////////////////////////
@@ -147,21 +151,45 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    
    // Calculate the boundaries of the beam volume using the beam matrix
    Box* boundary = dynamic_cast<Box*>(beamVolume->GetShape());
-   Double_t bounds[3] = {0.,0.,0.};
-   Double_t localBounds[3] = {boundary->GetDX(), boundary->GetDY(), boundary->GetDZ()};
-   beamMatrix->LocalToMaster(localBounds, bounds);
+   Double_t posBounds[3] = {0.,0.,0.};
+   Double_t negBounds[3] = {0.,0.,0.};
+   Double_t posLocalBounds[3] = {boundary->GetDX(), boundary->GetDY(), boundary->GetDZ()};
+   Double_t negLocalBounds[3] = {-boundary->GetDX(), -boundary->GetDY(), -boundary->GetDZ()};
+   beamMatrix->LocalToMaster(posLocalBounds, posBounds);
+   beamMatrix->LocalToMaster(negLocalBounds, negBounds);
    beamMatrix->Print();
-
+   
    // Create Histograms to view the initial particle distributions
    const Int_t nbins = 100;
-   TH1F* initialXHist = new TH1F("InitialXHist","X Position, Units of (m)", nbins, -bounds[0], bounds[0]);
-   TH1F* initialYHist = new TH1F("InitialYHist","Y Position, Units of (m)", nbins, -bounds[1], bounds[1]); 
-   TH1F* initialZHist = new TH1F("InitialZHist","Z Position, Units of (m)", nbins, -bounds[2], bounds[2]);
-   TH1F* initialVXHist = new TH1F("InitialVXHist","Initial VX velocity, Units of (m/s)", nbins, -vmax, vmax);
-   TH1F* initialVYHist = new TH1F("InitialVYHist","Initial VY velocity, Units of (m/s)", nbins, -vmax, vmax);
-   TH1F* initialVZHist = new TH1F("InitialVZHist","Initial VZ velocity, Units of (m/s)", nbins, -vmax, vmax);
-   TH1F* initialVHist = new TH1F("InitialVHist","Initial V velocity, Units of (m/s)", nbins, 0.0, vmax);
-   TH1F* initialTHist = new TH1F("InitialTHist","Initial T time, Units of s", nbins, 0.0, fillTime);
+   TH1F* initialXHist = new TH1F("initial:X","X (m)", nbins, negBounds[0], posBounds[0]);
+   initialXHist->SetLineColor(kBlue);
+   initialXHist->SetFillStyle(3001);
+   initialXHist->SetFillColor(kBlue);
+   TH1F* initialYHist = new TH1F("initial:Y","Y (m)", nbins, negBounds[1], posBounds[1]); 
+   initialYHist->SetLineColor(kBlue);
+   initialYHist->SetFillStyle(3001);
+   initialYHist->SetFillColor(kBlue);
+   TH1F* initialZHist = new TH1F("initial:Z","Z (m)", nbins, negBounds[2], posBounds[2]);
+   initialZHist->SetLineColor(kBlue);
+   initialZHist->SetFillStyle(3001);
+   initialZHist->SetFillColor(kBlue);
+   TH1F* initialVXHist = new TH1F("initial:Vx","Vx (m/s)", nbins, -vmax, vmax);
+   initialVXHist->SetLineColor(kRed);
+   initialVXHist->SetFillStyle(3001);
+   initialVXHist->SetFillColor(kRed);
+   TH1F* initialVYHist = new TH1F("initial:Vy","Vy (m/s)", nbins, -vmax, vmax);
+   initialVYHist->SetLineColor(kRed);
+   initialVYHist->SetFillStyle(3001);
+   initialVYHist->SetFillColor(kRed);
+   TH1F* initialVZHist = new TH1F("initial:Vz","Vz (m/s)", nbins, -vmax, vmax);
+   initialVZHist->SetLineColor(kRed);
+   initialVZHist->SetFillStyle(3001);
+   initialVZHist->SetFillColor(kRed);
+   TH1F* initialVHist = new TH1F("initial:Velocity","Velocity (m/s)", nbins, 0.0, vmax);
+   initialVHist->SetLineColor(kRed);
+   initialVHist->SetFillStyle(3001);
+   initialVHist->SetFillColor(kRed);
+   TH1F* initialTHist = new TH1F("initial:Time","Time (s)", nbins, 0.0, fillTime);
    
    TPolyMarker3D* positions = new TPolyMarker3D(particles, 1); // 1 is marker style
    positions->SetMarkerColor(2);
@@ -177,13 +205,19 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Create storage for the particles
-   Data * data = new Data();
-   data->Initialise(initialConfig);
-   
+   const string outputFileName = initialConfig.OutputFileName();
+   TFile* file = Analysis::DataFile::OpenRootFile(outputFileName,"RECREATE");
+   TTree tree("Particles","Tree of Particle Data");
+   Particle* particle = new Particle(0, Point(), TVector3());
+   TBranch* initialBranch = tree.Branch(States::initial.c_str(), particle->ClassName(), &particle);
+   ParticleManifest manifest;
+   //////////////////////////////////////////////////////////////////////////////////////
+   // -- Initialise random number generator with a unique state
+   gRandom->SetSeed(0);
+   //////////////////////////////////////////////////////////////////////////////////////
    // -- Loop over the total number of particles to be created. 
    for (Int_t i = 1; i <= particles; i++) {
       // -- Create particle at a random position inside beam volume
-      Particle* particle = new Particle();
       particle->SetId(i);
       CreateRandomParticle(particle, fillTime, beamVolume, beamMatrix);
       // -- Initialise particle's momentum
@@ -199,37 +233,49 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       initialVZHist->Fill(particle->Vz());
       initialVHist->Fill(particle->V());
       initialTHist->Fill(particle->T());
-      positions->SetPoint(particle->Id(), particle->X(), particle->Y(), particle->Z());
+      positions->SetPoint(i-1, particle->X(), particle->Y(), particle->Z());
       // -- Add particle to data file
-      data->SaveParticle(particle, Folders::initial);
-      if (particle) delete particle;
+      initialBranch->Fill();
+      int branchIndex = initialBranch->GetEntries() - 1;
+      manifest.AddEntry(States::initial, particle->Id(), branchIndex);
       // -- Update progress bar
-      ProgressBar::PrintProgress(i,particles,1);
+      Algorithms::ProgressBar::PrintProgress(i,particles,1);
    }
-   // -- Close the data
-   delete data;
-   data = NULL;
-   
+   // -- Write the tree and manifest to file
+   manifest.Write();
+   tree.Write();
+   // -- Navigate to histogram folder
+   Analysis::DataFile::NavigateToHistDir(*file);
+   // -- Save initial state plots to histogram folder
    TCanvas *canvas1 = new TCanvas("InitialPhaseSpace","Initial Phase Space",60,0,1000,800);
    canvas1->Divide(4,2);
    canvas1->cd(1);
    initialXHist->Draw();
+   initialXHist->Write(initialXHist->GetName(),TObject::kOverwrite);
    canvas1->cd(2);
    initialYHist->Draw();
+   initialYHist->Write(initialYHist->GetName(),TObject::kOverwrite);
    canvas1->cd(3);
    initialZHist->Draw();
+   initialZHist->Write(initialZHist->GetName(),TObject::kOverwrite);
    canvas1->cd(4);
    initialTHist->Draw();
+   initialTHist->Write(initialTHist->GetName(),TObject::kOverwrite);
    canvas1->cd(5);
    initialVXHist->Draw();
+   initialVXHist->Write(initialVXHist->GetName(),TObject::kOverwrite);
    canvas1->cd(6);
    initialVYHist->Draw();
+   initialVYHist->Write(initialVYHist->GetName(),TObject::kOverwrite);
    canvas1->cd(7);
    initialVZHist->Draw();
+   initialVZHist->Write(initialVZHist->GetName(),TObject::kOverwrite);
    canvas1->cd(8);
    initialVHist->Draw();
+   initialVHist->Write(initialVHist->GetName(),TObject::kOverwrite);
    
-   TCanvas* canvas2 = new TCanvas("InitialPositions","Positions",60,0,100,100);
+   
+   TCanvas* canvas2 = new TCanvas("initial:Positions","Positions",60,0,100,100);
    canvas2->cd();
    string geomFileName = initialConfig.GeomVisFileName();
    if (geomFileName.empty()) geomFileName = initialConfig.GeomFileName();
@@ -250,7 +296,9 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
    glViewer->SetCurrentCamera(camera);
    glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   Double_t cameraCentre[3] = {0,0,0};
+   // -- Set Camera centre to Centre of the Beam
+   const TVector3 beamCentre = initialConfig.BeamDisplacement();
+   Double_t cameraCentre[3] = {beamCentre.X(),beamCentre.Y(),beamCentre.Z()};
    glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
    // -- Draw Reference Point, Axes
    Double_t refPoint[3] = {0.,0.,0.};
@@ -258,9 +306,16 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
    glViewer->UpdateScene();
    glViewer = 0;
-   
    cout << "Successfully generated " << particles << " particles." << endl;
    cout << "-------------------------------------------" << endl;	
+   // -- Write the initial positions out to file
+   Analysis::DataFile::NavigateToHistDir(*file);
+   positions->Write("initial:Positions",TObject::kOverwrite);
+   // -- Write the geometry also to file
+   file->cd();
+   geoManager->Write("Geometry",TObject::kOverwrite);
+   // -- Close file
+   file->Close();
    return kTRUE;
 }
 

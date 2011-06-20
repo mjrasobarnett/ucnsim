@@ -1,6 +1,7 @@
 // UCN class
 // Author: Matthew Raso-Barnett  19/02/2010
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 #include <stdexcept>
 
@@ -31,7 +32,7 @@
 
 #include "Constants.h"
 #include "Units.h"
-#include "DataFileHierarchy.h"
+#include "ValidStates.h"
 
 using namespace std;
 
@@ -183,11 +184,9 @@ Propagating::~Propagating()
 }
 
 //______________________________________________________________________________
-Bool_t Propagating::SaveState(Run* run, Particle* particle)
+Propagating* Propagating::Clone() const
 {
-   // Register in Run what final state we are
-   run->GetData()->SaveParticle(particle, Folders::propagating);
-   return kTRUE;
+   return new Propagating(*this);
 }
 
 //_____________________________________________________________________________
@@ -214,9 +213,10 @@ Bool_t Propagating::Propagate(Particle* particle, Run* run)
    // -- Propagation Loop
    for (Int_t stepNumber = 1 ; ; stepNumber++) {
       #ifdef VERBOSE_MODE
-         cout << endl << "-------------------------------------------------------" << endl;
-         cout << "STEP " << stepNumber << "\t" << particle->T() << " s" << "\t";
-         cout << navigator->GetCurrentNode()->GetName() << endl;	
+         cout << endl;
+         cout << "-------------------------------------------------------" << endl;
+         cout << "STEP " << stepNumber << endl;	
+         cout << "-------------------------------------------------------" << endl;
       #endif
       // Check clock for time to the next event. Set this as the maximum step time
       Double_t stepTime = Clock::Instance()->GetTimeToNextEvent();
@@ -254,19 +254,18 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
    // -- Save Path to current node - we will want to return to this in the event we make a bounce
    const char* initialPath = navigator->GetPath();
    #ifdef VERBOSE_MODE
-      cout << endl << "------------------- START OF STEP ----------------------" << endl;
+      cout << "------------------- START OF STEP ----------------------" << endl;
       particle->Print(); // Print state
       cout << "Steptime (s): " << stepTime << endl;
       cout << "-----------------------------" << endl;
       cout << "Navigator's Initial Node: " << initialNode->GetName() << endl;
+      cout << "Initial Node PATH: " << initialPath << endl;
       cout << "Initial Matrix: " << endl;
       initialMatrix->Print();
-      initMatrix.Print();
       cout << "Is On Boundary?  " << fIsOnBoundary << endl;
       cout << "Is Step Entering?  " << fIsStepEntering << endl;
       cout << "Is Step Exiting?  " << fIsStepExiting << endl;
-      cout << "-----------------------------" << endl << endl;
-      cout << "Current PATH: " << initialPath << endl;
+      cout << "-----------------------------" << endl;
    #endif
    
    ///////////////////////////////////////////////////////////////////////////////////////
@@ -292,7 +291,7 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
    } else {
       // CASE 2; Grav Field present - tracking along parabolic trajectories
       // -- Propagate Point by StepTime along Parabola
-      TGeoNode* nextNode = this->ParabolicBoundaryFinder(stepTime, particle, navigator, crossedNode, gravField);
+      TGeoNode* nextNode = this->ParabolicBoundaryFinder(stepTime, *particle, navigator, crossedNode, gravField);
       if (nextNode == NULL) {
          #ifdef VERBOSE_MODE
             Error("MakeStep", "MakeStep has failed to find the next node");
@@ -304,17 +303,39 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
       assert(nextNode == navigator->GetCurrentNode());
    }
    
+   // -- We should now have propagated our point by some stepsize and be inside the correct volume 
+   if (fIsStepEntering == kTRUE) {
+      // If current node is the daughter of the initial node, then we need to set the current node
+      // as the crossed node, so that we use its normal vector for making reflections off of
+      crossedNode = navigator->GetCurrentNode();
+      #ifdef VERBOSE_MODE
+         cout << "Particle has entered a Daughter volume of the initial volume: " << crossedNode->GetName() << endl;
+      #endif
+   } else if (fIsStepExiting == kTRUE) {
+      // We are exiting mother volume
+      // crossedNode = initialNode --> therefore no change to be made
+      #ifdef VERBOSE_MODE
+         cout << "Particle has exited the boundary of the initial volume: " << crossedNode->GetName() << endl;
+      #endif
+   } else {
+      // Neither Exiting mother nor entering daughter. Hopefully its because we didnt hit any boundaries
+      #ifdef VERBOSE_MODE
+         cout << "Particle has not hit any boundaries in this step" << endl;
+      #endif
+   }
+   
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Move Particle to next position.
    // -- Along the way, if a MagField is present, precess the spin
    ///////////////////////////////////////////////////////////////////////////////////////
    particle->Move(stepTime, run);
    #ifdef VERBOSE_MODE	
-      cout << endl << "------------------- AFTER STEP ----------------------" << endl;
+      cout << "------------------- AFTER STEP ----------------------" << endl;
       particle->Print(); // Print verbose
       cout << "Steptime (s): " << stepTime << endl;
       cout << "-----------------------------" << endl;
       cout << "Navigator's Current Node: " << navigator->GetCurrentNode()->GetName() << endl;
+      cout << "Crossed Node: " << crossedNode->GetName() << endl;
       cout << "Is On Boundary?  " << fIsOnBoundary << endl;
       cout << "Is Step Entering?  " << fIsStepEntering << endl;
       cout << "Is Step Exiting?  " << fIsStepExiting << endl;
@@ -334,16 +355,17 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
       this->IsAnomalous(particle);;
       throw runtime_error("Unable to locate particle uniquely in correct volume");
    }
-   // -- We should now have propagated our point by some stepsize and be inside the correct volume 
    
    ///////////////////////////////////////////////////////////////////////////////////////
    // -- Determine whether we collided with a wall, decayed, or any other
    // -- state change occured
    ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Check whether particle has decayed in the last step
-   if(this->WillDecay(stepTime) == kTRUE) {
-      this->IsDecayed(particle);
-      return kFALSE;
+   if (run->GetRunConfig().BetaDecayOn() == true) {
+      // -- Check whether particle has decayed in the last step
+      if(particle->WillDecay(stepTime) == kTRUE) {
+         this->IsDecayed(particle);
+         return kFALSE;
+      }
    }
    // -- Get the normal vector to the boundary
    Double_t normal[3] = {0.,0.,0.};
@@ -359,6 +381,8 @@ Bool_t Propagating::MakeStep(Double_t stepTime, Particle* particle, Run* run)
       // Particle reached a final state
       return kFALSE;
    }
+   // -- Notify observers
+   particle->NotifyObservers(particle->GetPoint(), particle->GetVelocity(), Context::Population);
    // End of MakeStep.
    return kTRUE;
 }
@@ -378,7 +402,7 @@ Double_t Propagating::DetermineNextStepTime(const Particle& particle, const RunC
 }
 
 //_____________________________________________________________________________
-TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* particle, TGeoNavigator* navigator, TGeoNode* crossedNode, const GravField* const field)
+TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, const Particle& particle, TGeoNavigator* navigator, TGeoNode* crossedNode, const GravField* const field)
 {
 // Compute distance to next boundary within STEPMAX. If no boundary is found,
 // propagate current point along current direction with fStep=STEPMAX. Otherwise
@@ -386,12 +410,12 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* par
 // node.
    
    // -- Get the global coordinates
-   Double_t globalField[3] 	 = {field->Gx(), field->Gy(), field->Gz()}; 
-   Double_t globalPoint[3] 	 = {particle->X(), particle->Y(), particle->Z()};
-   Double_t globalDir[3]	 	 = {particle->Nx(), particle->Ny(), particle->Nz()};
-   Double_t globalVelocity[3]  = {particle->Vx(), particle->Vy(), particle->Vz()};
+   Double_t globalField[3]     = {field->Gx(), field->Gy(), field->Gz()}; 
+   Double_t globalPoint[3]     = {particle.X(), particle.Y(), particle.Z()};
+   Double_t globalDir[3]       = {particle.Nx(), particle.Ny(), particle.Nz()};
+   Double_t globalVelocity[3]  = {particle.Vx(), particle.Vy(), particle.Vz()};
    
-   Double_t currentField[3]	 = {globalField[0], globalField[1], globalField[2]};
+   Double_t currentField[3]    = {globalField[0], globalField[1], globalField[2]};
    Double_t currentPoint[3]    = {globalPoint[0], globalPoint[1], globalPoint[2]};
    Double_t currentDir[3]      = {globalDir[0], globalDir[1], globalDir[2]};
    Double_t currentVelocity[3] = {globalVelocity[0], globalVelocity[1], globalVelocity[2]};
@@ -400,10 +424,6 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* par
    const Double_t stepMax = Parabola::Instance()->ArcLength(globalVelocity, globalField, stepTime);
    
    // -- Some initialisations
-   static Int_t icount = 0;
-   icount++;
-   Int_t nextindex;
-   Bool_t is_assembly;
    fIsStepExiting  = kFALSE;
    fIsStepEntering = kFALSE;
    TGeoNode *skip;
@@ -414,55 +434,58 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* par
    Double_t tnext = TGeoShape::Big();
    
    #ifdef VERBOSE_MODE
-      cout << "PBF - Starting StepTime: " << stepTime << "\t";
-      cout << "Starting StepSize: " << navigator->GetStep() << endl;
-      cout << "PBF - Velocity: " << particle->V() << endl;
-      cout << "PBF - Global Field: X: " << globalField[0] << "\t" << "Y: " << globalField[1];
-      cout << "\t" << "Z: " << globalField[2] << endl;
-      cout << "PBF - Global Point: X: " << globalPoint[0] << "\t" << "Y: " << globalPoint[1];
-      cout << "\t" << "Z: " << globalPoint[2] << endl;
-      cout << "PBF - Global Dir: X: "   << globalDir[0] << "\t" << "Y: " << globalDir[1];
-      cout << "\t" << "Z: " << globalDir[2] << endl;	
-      cout << "PBF - Global Velocity: X: " << globalVelocity[0] << "\t" << "Y: ";
-      cout << globalVelocity[1] << "\t" << "Z: " << globalVelocity[2] << endl;	
+      cout << "-----------------------------" << endl;
+      cout << "-- STARTING PBF --" << endl;
+      cout << setw(20) << "StepTime: " << setw(10) << stepTime << "\t";
+      cout << setw(20) << "StepSize: " << setw(10) << navigator->GetStep() << endl;
+      cout << setw(20) << "Global Field - " << setw(4) << "X: " << setw(10) << globalField[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << globalField[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << globalField[2] << endl;
+      cout << setw(20) << "Global Point - " << setw(4) << "X: " << setw(10) << globalPoint[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << globalPoint[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << globalPoint[2] << endl;
+      cout << setw(20) << "Global Dir - " << setw(4) << "X: " << setw(10) << globalDir[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << globalDir[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << globalDir[2] << endl;	
+      cout << setw(20) << "Global Velocity - " << setw(4) << "X: " << setw(10) << globalVelocity[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << globalVelocity[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << globalVelocity[2] << endl;	
    #endif
    
    navigator->GetHMatrix()->CopyFrom(navigator->GetCurrentMatrix());
    
    // *********************************************************************
-   // -- BRANCH 2
    // -- Get point and direction in local coordinate frame and calculate
    // -- distance to boundary of current node.
    // *********************************************************************
    Double_t localPoint[3], localVelocity[3], localField[3]; // Containers for the local coords
-   Int_t icrossed = -2;
    navigator->GetCurrentMatrix()->MasterToLocal(currentPoint, &localPoint[0]);
    navigator->GetCurrentMatrix()->MasterToLocalVect(currentVelocity, &localVelocity[0]);
    navigator->GetCurrentMatrix()->MasterToLocalVect(currentField, &localField[0]);
    TGeoVolume *vol = navigator->GetCurrentNode()->GetVolume();
    
    // -- Find distance to exiting current node
-   tnext = static_cast<Box*>(vol->GetShape())->TimeFromInsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary); 
+   #ifdef VERBOSE_MODE
+      cout << "Finding distance to exit current node: " << vol->GetName() << endl;
+   #endif
+   tnext = static_cast<Box*>(vol->GetShape())->TimeFromInside(localPoint, localVelocity, localField, stepTime, fIsOnBoundary); 
    if (tnext <= 0.0) {
-      #ifdef VERBOSE_MODE
-         Error("ParabolicBoundaryFinder", "Failed to find boundary");
-      #endif
+      Error("ParabolicBoundaryFinder", "Failed to find boundary of current node from inside");
       return NULL;
    }
    snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
    crossedNode = navigator->GetCurrentNode();
-   
    #ifdef VERBOSE_MODE
-      cout << "PBF - Branch 2. Find distance to exit current Volume: " << vol->GetName() << endl;
-      cout << "PBF - Local Field: X: " << localField[0] << "\t" << "Y: " << localField[1] << "\t";
-      cout << "Z: " << localField[2] << endl;
-      cout << "PBF - Time to boundary: " << tnext << "\t";
-      cout << "Distance to Boundary: " << snext << endl;
-      cout << "PBF - Abs(snext - fStep): " << TMath::Abs(snext - navigator->GetStep()) << endl;
+      cout << "Time to nearest boundary of " << crossedNode->GetName() << ": " << tnext << endl;
+      cout << "Proposed Step Time: " << stepTime << endl;
    #endif
+   
    // -- If distance to exiting current node is <= Tolerance value (1e-10)
    // -- make a small step by navigator tolerance value
    if (snext <= TGeoShape::Tolerance()) {
+      #ifdef VERBOSE_MODE
+         cout << "Warning: Distance is within Shape Tolerance level." << endl;
+      #endif
       snext = TGeoShape::Tolerance();
       tnext = TGeoShape::Tolerance();
       navigator->SetStep(snext);
@@ -477,15 +500,6 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* par
       currentPoint[1] += navigator->GetStep()*currentDir[1]; 
       currentPoint[2] += navigator->GetStep()*currentDir[2];	
       navigator->SetCurrentPoint(currentPoint);
-      is_assembly = navigator->GetCurrentNode()->GetVolume()->IsAssembly();
-      if (!(navigator->GetLevel()) && !is_assembly) {
-         // fUCNIsOutside = kTRUE ;
-         return 0;
-      }
-      if (navigator->GetCurrentNode()->IsOffset()) {
-         Warning("ParabolicBoundaryFinder","Deprecated CrossDivisionCell().");
-         throw runtime_error("In Particle PBF Need to call CrossDivisionCell but can't!");
-      }
       // -- Cross Boundary and return new volume
       if (navigator->GetLevel()) {
          navigator->CdUp(); 
@@ -498,47 +512,52 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* par
    // -- If distance to exiting current node is smaller than proposed Stepsize
    // -- then set our stepsize fStep to navigator distance (snext)
    if (snext < navigator->GetStep() - TGeoShape::Tolerance()) {
-      icrossed = -1;
       navigator->SetStep(snext);
       stepTime = tnext;
       fIsStepEntering = kFALSE;
       fIsStepExiting = kTRUE;
+      #ifdef VERBOSE_MODE
+         cout << "Boundary of " << crossedNode->GetName() << " is within range of proposed step size." << endl;
+         cout << "Updated Step Time: " << stepTime << endl;
+      #endif
    }
    
-   // Find next daughter boundary for the current volume
-   Int_t idaughter = -1;
-   TGeoNode *crossed = this->ParabolicDaughterBoundaryFinder(stepTime, navigator, localPoint, localVelocity, localField, idaughter, kTRUE);
+   // *********************************************************************
+   // -- Check if we will intersect any daughters of current volume before
+   // -- reaching current volume's boundary
+   // *********************************************************************
+   #ifdef VERBOSE_MODE
+      cout << "Check daughter volumes of " << crossedNode->GetName() << " to see if there are any further intersection" << endl;
+   #endif
+   Int_t daughterIndex = -1;
+   TGeoNode *crossed = this->ParabolicDaughterBoundaryFinder(stepTime, navigator, localPoint, localVelocity, localField, daughterIndex, kTRUE);
    if (crossed) {
+      #ifdef VERBOSE_MODE
+         cout << "Particle will intersect " << crossed->GetName() << " volume first." << endl;
+      #endif
       fIsStepExiting = kFALSE;
-      icrossed = idaughter;
       fIsStepEntering = kTRUE;
       // If we crossed a daughter volume, set this node to be the new crossedNode,
       // since in this case it is the daughter's boundary we are crossing, rather than
       // the current volume's boundary.
       crossedNode = crossed;
    }
-   // -- If we are in an overlapping node, return an error as we are no longer supporting this.
-   // -- Geometries must be constructed with no overlaps beyond common boundaries.
-   if (navigator->GetNmany()) {
-      Error("PBF","In overlapping node - implementation of this removed");
-      return 0;
-   }
    // *********************************************************************
-   // -- BRANCH 3
-   // -- Updating the Particle's position and momentum
+   // -- Update the navigator's state to intersection point
    // *********************************************************************
    const Double_t timestep = stepTime;
    #ifdef VERBOSE_MODE
-      cout << "PBF - Branch 3. Updating Global Point. fTimeStep: " << stepTime;
-      cout << "\t" << "fStep: " << navigator->GetStep() << endl;
-      cout << "PBF - Initial X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] <<  "\t";
-      cout << "Z: " << currentPoint[2] << endl;
-      cout << "PBF - Initial Vx: " << currentVelocity[0] << "\t" << "Vy: " << currentVelocity[1];
-      cout <<  "\t" << "Vz: " << currentVelocity[2] << endl;
-      cout << "PBF - Initial Gx: " << currentField[0] << "\t" << "Gy: " << currentField[1] <<  "\t";
-      cout << "Gz: " << currentField[2] << endl;
-      cout << "PBF - Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[1],2)) << endl;
-      cout << "PBF - Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[2],2)) << endl;
+      cout << "-----------------------------" << endl;
+      cout << "Intersection found with " << crossedNode->GetName() << endl;
+      cout << "Updating Navigator's State to point of intersection..." << endl;
+      cout << "Final Time Step (s): " << stepTime << "\t";
+      cout << "Step Size (m): " << navigator->GetStep() << endl;
+      cout << setw(20) << "Initial Point - " << setw(4) << "X: " << setw(10) << currentPoint[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << currentPoint[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << currentPoint[2] << endl;
+      cout << setw(20) << "Initial Velocity - " << setw(4) << "X: " << setw(10) << currentVelocity[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << currentVelocity[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << currentVelocity[2] << endl;	
    #endif
    // -- Update Position and Direction according to the timestep
    for (Int_t i = 0; i < 3; i++) {
@@ -555,40 +574,35 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* par
    for (Int_t i = 0; i < 3; i++) currentDir[i] = currentVelocity[i]/velocityMag;
    navigator->SetCurrentDirection(currentDir);
    #ifdef VERBOSE_MODE
-      cout << "PBF - Final X: " << currentPoint[0] << "\t" << "Y: " << currentPoint[1] <<  "\t";
-      cout << "Z: " << currentPoint[2] << endl;
-      cout << "PBF - Final Vx: " << currentVelocity[0] << "\t" << "Vy: " << currentVelocity[1] <<  "\t" << "Vz: " << currentVelocity[2] << endl;
-      cout << "PBF - Field Gx: " << currentField[0] << "\t" << "Gy: " << currentField[1] <<  "\t";
-      cout << "Gz: " << currentField[2] << endl;
-      cout << "PBF - Sqrt(X^2 + Y^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[1],2)) << endl;
-      cout << "PBF - Sqrt(X^2 + Z^2): " << TMath::Sqrt(TMath::Power(currentPoint[0],2) + TMath::Power(currentPoint[2],2)) << endl;
+      cout << "---------" << endl;
+      cout << setw(20) << "Final Point - " << setw(4) << "X: " << setw(10) << currentPoint[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << currentPoint[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << currentPoint[2] << endl;
+      cout << setw(20) << "Final Velocity - " << setw(4) << "X: " << setw(10) << currentVelocity[0] << "\t";
+      cout << setw(4) << "Y: " << setw(10) << currentVelocity[1] << "\t";
+      cout << setw(4) << "Z: " << setw(10) << currentVelocity[2] << endl;	
    #endif
    // *********************************************************************
-   // -- BRANCH 4
-   // -- Final check on results of above
+   // -- Return Final Node
    // *********************************************************************
    TGeoNode *current = 0;
-   if (icrossed == -2) {
-      // Nothing crossed within stepMax -> propagate and return same location   
+   if (fIsStepExiting == false && fIsStepEntering == false) {
+      // Nothing crossed within stepMax -> propagate and return same location
       #ifdef VERBOSE_MODE
-         cout << "PBF - Branch 4. Nothing crossed within stepMax. Propagating point and returning same location." << endl;
+         cout << "Nothing crossed within step." << endl;
       #endif
       fIsOnBoundary = kFALSE;
       return navigator->GetCurrentNode();
    }
    fIsOnBoundary = kTRUE;
-   if (icrossed == -1) {
+   if (fIsStepExiting == true) {
       #ifdef VERBOSE_MODE
-         cout << "PBF - Branch 4. On Boundary. Crossing boundary and locating." << endl;
-         cout << "PBF - Get Level: " << navigator->GetLevel() << endl;
-         cout << "PBF - Current Node: " << navigator->GetCurrentNode()->GetName() << endl;
+         cout << "Reached a boundary of current volume (or daughter of current volume) within step." << endl;
+         cout << "Now crossing boundary and determining what our next volume is..." << endl;
+         cout << "Current Node: " << navigator->GetCurrentNode()->GetName() << endl;
+         cout << "Get Level: " << navigator->GetLevel() << endl;
       #endif
       skip = navigator->GetCurrentNode();
-      is_assembly = navigator->GetCurrentNode()->GetVolume()->IsAssembly();
-      if (!(navigator->GetLevel()) && !is_assembly) {
-         // fUCNIsOutside = kTRUE;
-         return 0;
-      }   
       if (navigator->GetCurrentNode()->IsOffset()) {
          throw runtime_error("In PBF Need to call CrossDivisionCell but can't!");
          //return navigator->CrossDivisionCell();
@@ -600,28 +614,26 @@ TGeoNode* Propagating::ParabolicBoundaryFinder(Double_t& stepTime, Particle* par
       }
       TGeoNode* finalNode = navigator->CrossBoundaryAndLocate(kFALSE, skip);
       #ifdef VERBOSE_MODE
-         cout << "PBF - Branch 4. Crossing boundary Upwards." << endl;
-         cout << "PBF - Final Node: " << finalNode->GetName() << endl;
+         cout << "Crossing boundary. Navigating Upwards in Node Hierarchy." << endl;
+         cout << "Final Node: " << finalNode->GetName() << endl;
          cout << "---------------------------------------" << endl;
       #endif
       return finalNode;
    }
    current = navigator->GetCurrentNode();
-   navigator->CdDown(icrossed);
-   nextindex = navigator->GetCurrentNode()->GetVolume()->GetNextNodeIndex();
-   while (nextindex>=0) {
-      current = navigator->GetCurrentNode();
-      navigator->CdDown(nextindex);
-      nextindex = navigator->GetCurrentNode()->GetVolume()->GetNextNodeIndex();
-   }
+   // Make a daughter of current node current  
+   navigator->CdDown(daughterIndex);
+   TGeoNode* finalNode = navigator->CrossBoundaryAndLocate(kTRUE, current);
    #ifdef VERBOSE_MODE
-      cout << "PBF - Branch 4. Crossing boundary Downwards." << endl;
+      cout << "Crossing boundary. Navigating Downwards in Node Hierarchy." << endl;
+      cout << "Final Node: " << finalNode->GetName() << endl;
+      cout << "---------------------------------------" << endl;
    #endif
-   return navigator->CrossBoundaryAndLocate(kTRUE, current);
+   return finalNode;
 }
 
 //_____________________________________________________________________________
-TGeoNode* Propagating::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator, Double_t* point, Double_t* velocity, Double_t* field, Int_t &idaughter, Bool_t compmatrix)
+TGeoNode* Propagating::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoNavigator* navigator, Double_t* point, Double_t* velocity, Double_t* field, Int_t &daughterIndex, Bool_t compmatrix)
 {
 // Computes as fStep the distance to next daughter of the current volume. 
 // The point and direction must be converted in the coordinate system of the current volume.
@@ -632,222 +644,69 @@ TGeoNode* Propagating::ParabolicDaughterBoundaryFinder(Double_t& stepTime, TGeoN
    Double_t motherPoint[3] = {point[0], point[1], point[2]};
    Double_t motherVelocity[3] = {velocity[0], velocity[1], velocity[2]};
    
-   #ifdef VERBOSE_MODE		
-      cout << "PDBF - Mother Local Field: X: " << motherField[0] << "\t" << "Y: ";
-      cout << motherField[1] << "\t" << "Z: " << motherField[2] << endl;
+   #ifdef VERBOSE_MODE
+      cout << "-----------------------------" << endl;
+      cout << "-- STARTING PDBF --" << endl;
    #endif
-   
    // -- Initialising some important parameters
    Double_t tnext = TGeoShape::Big();
    Double_t snext = TGeoShape::Big();
-   idaughter = -1; // nothing crossed
+   daughterIndex = -1; // nothing crossed
    TGeoNode *nodefound = 0;
    // This has been added because we do not have access to fGlobalMatrix in TGeoNavigator
    TGeoHMatrix* globalMatrix = navigator->GetCurrentMatrix(); 
    
    // Get number of daughters. If no daughters we are done.
    TGeoVolume *vol = navigator->GetCurrentNode()->GetVolume();
-   Int_t nd = vol->GetNdaughters();
+   Int_t numberOfDaughters = vol->GetNdaughters();
    
-   #ifdef VERBOSE_MODE		
-      cout << "PDBF - Volume: " << vol->GetName() << "\t";
-      cout << "Checking number of Daughters: " << nd << endl;
+   #ifdef VERBOSE_MODE
+      cout << "Mother Volume: " << vol->GetName() << "\t";
+      cout << "Number of Daughters: " << numberOfDaughters << endl;
    #endif
-      
-   if (!nd) return 0;  // No daughter 
-   if (gGeoManager->IsActivityEnabled() && !vol->IsActiveDaughters()) {
-      cout << "Warning PDBF - IsActivityEnabled in geomanager" << endl;
-      return 0;
-   }
+   if (numberOfDaughters == 0) return 0;  // No daughter 
    
    Double_t localPoint[3], localVelocity[3], localField[3];
    TGeoNode *current = 0;
    Int_t i=0;
-   
    // ************************************************************************************
-   // -- BRANCH 1
-   // -- if current volume is divided, we are in the non-divided region. We
-   // -- check first if we are inside a cell in which case compute distance to next cell
+   // Calculate distance to all daughters of current volume
+   // If any daughters will be reached within current step, return the closest of these
    // ************************************************************************************
-	
-   TGeoPatternFinder *finder = vol->GetFinder();
-   if (finder) {
-      Int_t ifirst = finder->GetDivIndex();
-      Int_t ilast = ifirst+finder->GetNdiv()-1;
-      current = finder->FindNode(motherPoint);
-      if (current) {
-         // Point inside a cell: find distance to next cell
-         Int_t index = current->GetIndex();
-         if ((index-1) >= ifirst) ifirst = index-1;
-         else                     ifirst = -1;
-         if ((index+1) <= ilast)  ilast  = index+1;
-         else                     ilast  = -1;
+   #ifdef VERBOSE_MODE
+      cout << "Only Few daughters. Calculate distance from outside to all." << endl;
+   #endif
+   for (i=0; i<numberOfDaughters; i++) {
+      current = vol->GetNode(i);
+      current->cd();
+      current->MasterToLocal(motherPoint, localPoint);
+      current->MasterToLocalVect(motherVelocity, localVelocity);
+      current->MasterToLocalVect(motherField, localField);
+      if (current->IsOverlapping() && current->GetVolume()->Contains(localPoint)) continue;
+      tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutside(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
+      if (tnext <= 0.0) {
+         Error("ParabolicDaughterBoundaryFinder", "Failed to find boundary");
+         return NULL;
       }
-      if (ifirst>=0) {   
-         current = vol->GetNode(ifirst);
-         current->cd();
-         current->MasterToLocal(&motherPoint[0], &localPoint[0]);
-         current->MasterToLocalVect(&motherVelocity[0], &localVelocity[0]);
-         current->MasterToLocalVect(&motherField[0], &localField[0]);
-         #ifdef VERBOSE_MODE
-            cout << "PDBF - Divided Volume. Calculate distance from outside to first cell." << endl;
-            cout << "PDBF - Volume: " << current->GetName() << endl;
-            cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
-            cout << "Z: " << localField[2] << endl;
-         #endif
-         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);  
-         if (tnext <= 0.0) {
-            Error("ParabolicDaughterBoundaryFinder", "Failed to find boundary");
-            return NULL;
-         }
-         snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
-         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
-            if (compmatrix) {
-               navigator->GetHMatrix()->CopyFrom(globalMatrix);
-               navigator->GetHMatrix()->Multiply(current->GetMatrix());
-            }
-            fIsStepExiting  = kFALSE;
-            fIsStepEntering = kTRUE;
-            navigator->SetStep(snext);
-            stepTime = tnext;
-            nodefound = current;
-            idaughter = ifirst;
-         }
-      }
-      if (ilast==ifirst) return nodefound;
-      if (ilast>=0) { 
-         current = vol->GetNode(ilast);
-         current->cd();
-         current->MasterToLocal(&motherPoint[0], localPoint);
-         current->MasterToLocalVect(&motherVelocity[0], localVelocity);
-         current->MasterToLocalVect(&motherField[0], localField);
-         #ifdef VERBOSE_MODE		
-            cout << "PDBF - Divided Volume. Calculate distance from outside to last cell." << endl;
-            cout << "PDBF - Volume: " << current->GetName() << endl;
-            cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
-            cout << "Z: " << localField[2] << endl;
-         #endif
-         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
-         if (tnext <= 0.0) {
-            Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
-            return NULL;
-         }
-         snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
-         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
-            if (compmatrix) {
-               navigator->GetHMatrix()->CopyFrom(globalMatrix);
-               navigator->GetHMatrix()->Multiply(current->GetMatrix());
-            }
-            fIsStepExiting  = kFALSE;
-            fIsStepEntering = kTRUE;
-            navigator->SetStep(snext);
-            stepTime = tnext;
-            nodefound = current;
-            idaughter = ilast;
-         }
-      }   
-      return nodefound;
-   }
-   // if only few daughters, check all and exit
-   TGeoVoxelFinder *voxels = vol->GetVoxels();
-   Int_t indnext;
-   if (nd<5 || !voxels) {
-      for (i=0; i<nd; i++) {
-         current = vol->GetNode(i);
-         if (gGeoManager->IsActivityEnabled() && !current->GetVolume()->IsActive()) continue;
-         current->cd();
-         if (voxels && voxels->IsSafeVoxel(motherPoint, i, navigator->GetStep())) continue;
-         current->MasterToLocal(motherPoint, localPoint);
-         current->MasterToLocalVect(motherVelocity, localVelocity);
-         current->MasterToLocalVect(motherField, localField);
-         if (current->IsOverlapping() && current->GetVolume()->Contains(localPoint)) continue;
-         #ifdef VERBOSE_MODE		
-            cout << "PDBF - Only Few daughters. Calculate distance from outside to all." << endl;
-            cout << "PDBF - Volume: " << current->GetName() << endl;
-            cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
-            cout << "Z: " << localField[2] << endl;
-            #endif
-         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
-         if (tnext <= 0.0) {
-            Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
-            return NULL;
-         }
-         snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
-         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
-            #ifdef VERBOSE_MODE		
-            cout << "PDBF - Distance to daughter is less than distance to current volume." << endl;
-            #endif
-            indnext = current->GetVolume()->GetNextNodeIndex();
-            if (compmatrix) {
-               navigator->GetHMatrix()->CopyFrom(globalMatrix);
-               navigator->GetHMatrix()->Multiply(current->GetMatrix());
-            }    
-            fIsStepExiting  = kFALSE;
-            fIsStepEntering = kTRUE;
-            navigator->SetStep(snext);
-            stepTime = tnext;
-            nodefound = current;   
-            idaughter = i;   
-            while (indnext>=0) {
-               current = current->GetDaughter(indnext);
-               if (compmatrix) navigator->GetHMatrix()->Multiply(current->GetMatrix());
-               nodefound = current;
-               indnext = current->GetVolume()->GetNextNodeIndex();
-            }
-         }
-      }
-      #ifdef VERBOSE_MODE		
-         cout << "PDBF - Return nearest Node found if any." << endl;
+      snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
+      #ifdef VERBOSE_MODE
+         cout << "Daughter Volume: " << current->GetName() << endl;
+         cout << "Time to nearest Daughter boundary: " << tnext << endl;
       #endif
-      return nodefound;
-   }
-   // if current volume is voxelized, first get current voxel
-   Int_t ncheck = 0;
-   Int_t sumchecked = 0;
-   Int_t *vlist = 0;
-   voxels->SortCrossedVoxels(motherPoint, motherVelocity);
-   while ((sumchecked<nd) && (vlist=voxels->GetNextVoxel(motherPoint, motherVelocity, ncheck))) {
-      for (i=0; i<ncheck; i++) {
-         current = vol->GetNode(vlist[i]);
-         if (gGeoManager->IsActivityEnabled() && !current->GetVolume()->IsActive()) continue;
-         current->cd();
-         current->MasterToLocal(motherPoint, localPoint);
-         current->MasterToLocalVect(motherVelocity, localVelocity);
-         current->MasterToLocalVect(&motherField[0], &localField[0]);
-         if (current->IsOverlapping() && current->GetVolume()->Contains(localPoint)) continue;
-         #ifdef VERBOSE_MODE		
-            cout << "PDBF - Volume is voxelized. Calculate distance from outside to voxel." << endl;
-            cout << "PDBF - Volume: " << current->GetName() << endl;
-            cout << "Local Field: X: " << localField[0] << "\t" << "Y: " << localField[0] << "\t";
-            cout << "Z: " << localField[2] << endl;
+      if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
+         #ifdef VERBOSE_MODE
+         cout << "Distance to daughter boundary is less than distance to mother volume." << endl;
          #endif
-         tnext = static_cast<Box*>(current->GetVolume()->GetShape())->TimeFromOutsideAlongParabola(localPoint, localVelocity, localField, stepTime, fIsOnBoundary);
-         if (tnext <= 0.0) {
-            Error("FindNextBoundaryAlongParabola", "Failed to find boundary");
-            return NULL;
-         }
-         snext = Parabola::Instance()->ArcLength(localVelocity, localField, tnext);
-         sumchecked++;
-//         printf("checked %d from %d : snext=%g\n", sumchecked, nd, snext);
-         if (snext < (navigator->GetStep() - TGeoShape::Tolerance())) {
-            indnext = current->GetVolume()->GetNextNodeIndex();
-            if (compmatrix) {
-               navigator->GetHMatrix()->CopyFrom(globalMatrix);
-               navigator->GetHMatrix()->Multiply(current->GetMatrix());
-            }
-            fIsStepExiting  = kFALSE;
-            fIsStepEntering = kTRUE;
-            navigator->SetStep(snext);
-            stepTime = tnext;
-            nodefound = current;
-            idaughter = vlist[i];
-            while (indnext>=0) {
-               current = current->GetDaughter(indnext);
-               if (compmatrix) navigator->GetHMatrix()->Multiply(current->GetMatrix());
-               nodefound = current;
-               indnext = current->GetVolume()->GetNextNodeIndex();
-            }
-         }
+         if (compmatrix) {
+            navigator->GetHMatrix()->CopyFrom(globalMatrix);
+            navigator->GetHMatrix()->Multiply(current->GetMatrix());
+         }    
+         fIsStepExiting  = kFALSE;
+         fIsStepEntering = kTRUE;
+         navigator->SetStep(snext);
+         stepTime = tnext;
+         nodefound = current;
+         daughterIndex = i;
       }
    }
    return nodefound;
@@ -884,7 +743,7 @@ Bool_t Propagating::LocateInGeometry(Particle* particle, TGeoNavigator* navigato
    // -- If we are in the same node as before, then we have not crossed any boundary
    if (currentNode == initialNode) {
       #ifdef VERBOSE_MODE
-         cout << "Particle didn't not cross a boundary in last step." << endl;
+         cout << "Particle didn't cross a boundary in last step." << endl;
          cout << "Current Node: " << currentNode->GetName() << endl;
          cout << "Initial Node: " << initialNode->GetName() << endl;
          currentMatrix->Print();
@@ -924,9 +783,25 @@ Bool_t Propagating::LocateInGeometry(Particle* particle, TGeoNavigator* navigato
          cout << "Current Matrix: " << endl;
          currentMatrix->Print();
          currentNode->GetMatrix()->Print();
-         cout << "Coords local to Final Node: " << endl;
+         cout << "Point in Coords local to Final Node: " << endl;
          cout << "X:" << currentLocalPoint[0] << "\t" << "Y:" << currentLocalPoint[1] << "\t";
          cout << "Z:" << currentLocalPoint[2] << endl;
+         TGeoBBox* currentShape = dynamic_cast<TGeoBBox*>(currentNode->GetVolume()->GetShape());
+         Double_t currentVolGlobalOrigin[3] = {0.,0.,0.};
+         Double_t currentVolPosLocalBoundary[3] = {currentShape->GetDX(),currentShape->GetDY(),currentShape->GetDZ()};
+         Double_t currentVolNegLocalBoundary[3] = {-currentShape->GetDX(),-currentShape->GetDY(),-currentShape->GetDZ()};
+         Double_t currentVolPosGlobalBoundary[3] = {0.,0.,0.};
+         Double_t currentVolNegGlobalBoundary[3] = {0.,0.,0.};
+         currentNode->GetMatrix()->LocalToMaster(currentShape->GetOrigin(), currentVolGlobalOrigin);
+         currentNode->GetMatrix()->LocalToMaster(currentVolPosLocalBoundary, currentVolPosGlobalBoundary);
+         currentNode->GetMatrix()->LocalToMaster(currentVolNegLocalBoundary, currentVolNegGlobalBoundary);
+         cout << "Final Node's Origin in Global Coords: " << endl;
+         cout << "X:" << currentVolGlobalOrigin[0] << "\t" << "Y:" << currentVolGlobalOrigin[1] << "\t";
+         cout << "Z:" << currentVolGlobalOrigin[2] << endl;
+         cout << "Final Node's Boundaries in Global Coords: " << endl;
+         cout << "+X: " << currentVolPosGlobalBoundary[0] << "\t -X: " << currentVolNegGlobalBoundary[0] << endl;
+         cout << "+Y: " << currentVolPosGlobalBoundary[1] << "\t -Y: " << currentVolNegGlobalBoundary[1] << endl;
+         cout << "+Z: " << currentVolPosGlobalBoundary[2] << "\t -Z: " << currentVolNegGlobalBoundary[2] << endl;         
          cout << "Sqrt(X^2 + Y^2): ";
          cout << TMath::Sqrt(TMath::Power(currentLocalPoint[0],2) + TMath::Power(currentLocalPoint[1],2)) << endl;
          cout << "Sqrt(X^2 + Z^2): ";
@@ -938,10 +813,25 @@ Bool_t Propagating::LocateInGeometry(Particle* particle, TGeoNavigator* navigato
          cout << "Initial Matrix: " << endl;
          initialMatrix->Print();
          initialNode->GetMatrix()->Print();
-         cout << "Coords local to Initial Node: " << endl;
+         cout << "Point in Coords local to Initial Node: " << endl;
          cout << "X:" << tempLocalPoint[0] << "\t" << "Y:" << tempLocalPoint[1] << "\t";
          cout << "Z:" << tempLocalPoint[2] << endl;
-         cout << "Sqrt(X^2 + Y^2): ";
+         TGeoBBox* initialShape = dynamic_cast<TGeoBBox*>(initialNode->GetVolume()->GetShape());
+         Double_t initialVolGlobalOrigin[3] = {0.,0.,0.};
+         Double_t initialVolPosLocalBoundary[3] = {initialShape->GetDX(),initialShape->GetDY(),initialShape->GetDZ()};
+         Double_t initialVolNegLocalBoundary[3] = {-initialShape->GetDX(),-initialShape->GetDY(),-initialShape->GetDZ()};
+         Double_t initialVolPosGlobalBoundary[3] = {0.,0.,0.};
+         Double_t initialVolNegGlobalBoundary[3] = {0.,0.,0.};
+         initialNode->GetMatrix()->LocalToMaster(initialShape->GetOrigin(), initialVolGlobalOrigin);
+         initialNode->GetMatrix()->LocalToMaster(initialVolPosLocalBoundary, initialVolPosGlobalBoundary);
+         initialNode->GetMatrix()->LocalToMaster(initialVolNegLocalBoundary, initialVolNegGlobalBoundary);
+         cout << "Final Node's Origin in Global Coords: " << endl;
+         cout << "X:" << initialVolGlobalOrigin[0] << "\t" << "Y:" << initialVolGlobalOrigin[1] << "\t";
+         cout << "Z:" << initialVolGlobalOrigin[2] << endl;
+         cout << "Final Node's Boundaries in Global Coords: " << endl;
+         cout << "+X: " << initialVolPosGlobalBoundary[0] << "\t -X: " << initialVolNegGlobalBoundary[0] << endl;
+         cout << "+Y: " << initialVolPosGlobalBoundary[1] << "\t -Y: " << initialVolNegGlobalBoundary[1] << endl;
+         cout << "+Z: " << initialVolPosGlobalBoundary[2] << "\t -Z: " << initialVolNegGlobalBoundary[2] << endl;         cout << "Sqrt(X^2 + Y^2): ";
          cout << TMath::Sqrt(TMath::Power(tempLocalPoint[0],2) + TMath::Power(tempLocalPoint[1],2)) << endl;
          cout << "Sqrt(X^2 + Z^2): ";
          cout << TMath::Sqrt(TMath::Power(tempLocalPoint[0],2) + TMath::Power(tempLocalPoint[2],2)) << endl;
@@ -1166,13 +1056,6 @@ Bool_t Propagating::FindBoundaryNormal(Double_t* normal, TGeoNavigator* navigato
    return kTRUE;
 }
 
-//______________________________________________________________________________
-Bool_t Propagating::WillDecay(const Double_t /*timeInterval*/)
-{
-   // Placeholder for method to calculate probability particle will decay within timeInterval, and then roll the dice!
-   return kFALSE;
-}
-
 //_____________________________________________________________________________
 void Propagating::IsDetected(Particle* particle)
 {
@@ -1245,14 +1128,12 @@ Decayed::~Decayed()
 //   Info("Decayed","Destructor");
 }
 
-//______________________________________________________________________________
-Bool_t Decayed::SaveState(Run* run, Particle* particle)
-{
-   // Register in Run what final state we are
-   run->GetData()->SaveParticle(particle, Folders::decayed);
-   return kTRUE;
-}
 
+//______________________________________________________________________________
+Decayed* Decayed::Clone() const
+{
+   return new Decayed(*this);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //
@@ -1297,11 +1178,9 @@ Absorbed::~Absorbed()
 }
 
 //______________________________________________________________________________
-Bool_t Absorbed::SaveState(Run* run, Particle* particle)
+Absorbed* Absorbed::Clone() const
 {
-   // Register in Run what final state we are
-   run->GetData()->SaveParticle(particle, Folders::absorbed);
-   return kTRUE;
+   return new Absorbed(*this);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1347,11 +1226,9 @@ Detected::~Detected()
 }
 
 //______________________________________________________________________________
-Bool_t Detected::SaveState(Run* run, Particle* particle)
+Detected* Detected::Clone() const
 {
-   // Register in Run what final state we are
-   run->GetData()->SaveParticle(particle, Folders::detected);
-   return kTRUE;
+   return new Detected(*this);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1396,12 +1273,11 @@ Lost::~Lost()
 //   Info("Lost","Destructor");
 }
 
+
 //______________________________________________________________________________
-Bool_t Lost::SaveState(Run* run, Particle* particle)
+Lost* Lost::Clone() const
 {
-   // Register in Run what final state we are
-   run->GetData()->SaveParticle(particle, Folders::lost);
-   return kTRUE;
+   return new Lost(*this);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1446,11 +1322,10 @@ Anomalous::~Anomalous()
 //   Info("Lost","Destructor");
 }
 
+
 //______________________________________________________________________________
-Bool_t Anomalous::SaveState(Run* run, Particle* particle)
+Anomalous* Anomalous::Clone() const
 {
-   // Register in Run what final state we are
-   run->GetData()->SaveParticle(particle, Folders::anomalous);
-   return kTRUE;
+   return new Anomalous(*this);
 }
 
