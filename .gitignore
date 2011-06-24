@@ -19,3 +19,6 @@ build_xcode
 *.xls
 *.cfg
 *.tmproj
+!README.txt
+!INSTALL.txt
+!LICENSE.txt

@@ -1,0 +1,136 @@
+Installation Instructions
+=========================
+
+I have only tested building this project on Linux (Ubuntu) and Mac OS X (10.5+). I see no reason the project cannot be build under Windows, however I have not tested this.
+
+To compile the project you will need the following libraries:
+
+
+1. CMake - http://www.cmake.org
+================================
+
+CMake is used as the build system of this project. Just because I am able to write Makefiles, doesn't mean I want to! CMake provides a vastly superior syntax and makes maintaining and extending the project effortless. It is also cross-platform and can generate project files for all the major IDEs.
+
+You can download the latest version of CMake from: http://www.cmake.org/cmake/resources/software.html
+
+I recommend installing one of the binary distributions if they are available for your platform.
+
+
+2. ROOT - http://root.cern.ch
+=====================================
+
+ROOT is used extensively throughout the project as both its Geometry framework and for data analysis and visualisation.
+
+This project has only been tested under ROOT v5.28/00 (and its respective patches). Older versions may work, but I do not test against them.
+
+You can grab the sources from: http://root.cern.ch/drupal/content/downloading-root
+
+For the full instructions on how to build ROOT, refer to the INSTALL file in the source top-level directory.
+
+I follow the environment driven build (Section 3.1):
+
+- 1 - Set ROOTSYS to the directory where you want ROOT to be installed:
+        export ROOTSYS=<path>/root
+
+- 2 - Build commands:
+        ./configure --help
+        ./configure
+        make
+        make install
+
+- 3 - Add $ROOTSYS/bin to PATH and $ROOTSYS/lib to LD_LIBRARY_PATH:
+        export PATH=$ROOTSYS/bin:$PATH
+        export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+        export DYLD_LIBRARY_PATH=$ROOTSYS/lib:$DYLD_LIBRARY_PATH (MacOS X only)
+
+- 4 - Try running root:
+        root
+
+If this worked, you should be sitting in a ROOT interactive session.
+
+
+3. GSL - http://www.gnu.org/software/gsl/
+=========================================
+
+The GNU Scientific Library is used in places for some of its mathematical libraries that do not exist in ROOT.
+
+You can grab the latest version of the source from:
+ftp://ftp.gnu.org/gnu/gsl/
+
+For reference I am currently using v1.14.
+
+After unpacking the sources, you can read their installation instructions in the INSTALL file again which has very good, platform specific compilation recommendations.
+
+Mac OS X x86_64 Build Commands:
+   ./configure --help
+   ./configure --disable-shared CFLAGS=-m64 --with-pic 
+   make
+   sudo make install
+
+
+4. BOOST - http://www.boost.org/
+================================
+
+Boost is a collection of very high quality C++ libraries that provide some highly useful functionality to the language. I currently only use a small fraction of what is available from this, but it is very nice to have it and should be your first port of call if you are looking to add some functionality that you think is likely to have been written before.
+
+I am currently using v1.46.
+
+Grab the source from: http://www.boost.org/users/download/
+
+Build instructions for Unix variants can be found at: http://www.boost.org/doc/libs/1_46_1/more/getting_started/unix-variants.html
+
+The libraries that I am using are:
+- String Algorithms: http://www.boost.org/doc/libs/1_46_1/doc/html/string_algo.html
+- Date Time: http://www.boost.org/doc/libs/1_46_1/doc/html/date_time.html
+- Foreach: http://www.boost.org/doc/libs/1_46_1/doc/html/foreach.html
+- Program options: http://www.boost.org/doc/libs/1_46_1/doc/html/program_options.html
+
+Only the Program options library needs to be compiled. The others are header-only libraries. 
+
+Build Commands:
+   cd /to/boost/directory
+   ./bootstrap.sh --help
+   ./bootstrap.sh --with-libraries=program_options
+   ./bjam install
+
+
+Building UCNSIM
+===============
+
+Finally we are ready to build the project.
+
+Firstly we need to configure some environment variables, so that the project can find ROOT, GSL and BOOST easily.
+
+You have two options. 
+
+- a - Edit or copy the environment config file
+         
+         /path/to/UCNSIM/directory/config/ucnsim.sh
+      
+      This file attempts to set up the environment for me depending on what
+      machine I'm working on.
+      
+      If you can follow what is going on here, then either modify it to add your
+      own installation paths or else copy it and make your own version.
+      
+- b - Set the key environment variables manually.
+      
+         export UCN_DIR=/path/to/UCNSIM/directory
+         export ROOTSYS=/path/to/ROOT/installation/directory
+         export GSL=/path/to/GSL/installation/directory
+         export BOOST=/path/to/BOOST/installation/directory
+      
+Once you have done either of these, type
+   
+   source config/ucnsim.sh
+   
+Now we are ready to build. Type
+
+   cd build
+   cmake ..
+   make
+   
+
+
+
+      
