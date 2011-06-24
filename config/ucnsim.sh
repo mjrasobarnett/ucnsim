@@ -5,7 +5,7 @@ echo "------------------------------------------------------------------------"
 echo "Setting up environment for UCNSIM"
 echo "------------------------------------------------------------------------"
 
-if [[ `uname -n` == "MJRasoBarnett.local" ]] ; then
+if [[ `hostname -s` == "MJRasoBarnett" ]] ; then
 	# First test if we are running on matt's machine
 	echo "Configuring for Matt's local machine"
 	export UCN_DIR=${HOME}/Projects/ucnsim/source
@@ -22,7 +22,7 @@ if [[ `uname -n` == "MJRasoBarnett.local" ]] ; then
 	export GSL=${HOME}/Apps/GSL/gsl
 	# Define path to BOOST installation
 	export BOOST=${HOME}/Apps/Boost/boost
-elif [[ `uname -n` == "feynman" ]] ; then 
+elif [[ `hostname -s` == "feynman" ]] ; then 
 	# Test if we are running on matt's linux virtual machine
 	echo "Configuring for Feynman remote machine"
 	export UCN_DIR=${HOME}/projects/ucnsim
