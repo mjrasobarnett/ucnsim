@@ -555,7 +555,8 @@ bool FinalStates::PlotEmptyingTime(const std::string state,
                                    const RunConfig& runConfig,
                                    const int nbins,
                                    const double lLimit,
-                                   const double uLimit)
+                                   const double uLimit,
+                                   TF1* fitFunc)
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Run Time
@@ -586,21 +587,11 @@ bool FinalStates::PlotEmptyingTime(const std::string state,
    timeHist->SetMarkerStyle(8);
    timeHist->Draw("P E1 X0");
    // Fit exponential to Graph
-   int numParams = 2;
-   TF1* expo = new TF1("Exponential", FitFunctions::ExponentialDecay, lLimit, uLimit, numParams);
-   expo->SetParNames("Amplitude","Decay lifetime");
-   expo->SetParameters(10.0,50.0);
-   timeHist->Fit(expo, "R P 0");
-   
-   expo->SetLineWidth(3);
-   expo->SetLineStyle(2); // Dashed
-   expo->SetLineColor(kRed);
-   expo->Draw("SAME");
-   // Extract Emptying Time
-   double t2 = expo->GetParameter(1);
-   double t2error = expo->GetParError(1);
-   cout << "Decay Lifetime: " << t2 << "\t Error: " << t2error << endl;
-   cout << "Chi-Sq: " << expo->GetChisquare() << "\t NDF: " << expo->GetNDF() << endl;
+   timeHist->Fit(fitFunc, "Q R P 0");
+   fitFunc->SetLineWidth(3);
+   fitFunc->SetLineStyle(2); // Dashed
+   fitFunc->SetLineColor(kRed);
+   fitFunc->Draw("SAME");
    return true;
 }
 

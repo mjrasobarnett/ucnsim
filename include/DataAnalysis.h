@@ -13,6 +13,7 @@ class TGraph;
 class TTree;
 class TCanvas;
 class TBranch;
+class TF1;
 
 class RunConfig;
 class Track;
@@ -118,7 +119,8 @@ namespace Analysis {
                             const RunConfig& runConfig,
                             const int nbins,
                             const double lLimit,
-                            const double uLimit);
+                            const double uLimit,
+                            TF1* fitFunc);
    }
    
    //_____________________________________________________________________________
