@@ -22,3 +22,5 @@ build_xcode
 !README.txt
 !INSTALL.txt
 !LICENSE.txt
+*.sublime-project
+
