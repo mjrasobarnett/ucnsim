@@ -60,6 +60,8 @@ namespace Analysis {
       //_____________________________________________________________________________
       double ExponentialDecay(double *x, double *par);
       //_____________________________________________________________________________
+      double DoubleExponential(double *x, double *par);
+      //_____________________________________________________________________________
       double MaxwellBoltzmann(double *x, double *par);
    }
    

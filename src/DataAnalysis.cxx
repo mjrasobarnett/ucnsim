@@ -370,6 +370,20 @@ double FitFunctions::ExponentialDecay(double *x, double *par)
 }
 
 //_____________________________________________________________________________
+double FitFunctions::DoubleExponential(double *x, double *par)
+{
+   double t = x[0];
+   double expo1, expo2;
+   if (Algorithms::Precision::IsEqual(par[1], 0.0)) expo1 = 0.0;
+   else expo1 = par[0]*TMath::Exp(-t/par[1]);
+   
+   if (Algorithms::Precision::IsEqual(par[3], 0.0)) expo2 = 0.0;
+   else expo2 = par[2]*TMath::Exp(-t/par[3]);
+   
+   double f = expo1 + expo2;
+   return f;
+}
+//_____________________________________________________________________________
 double FitFunctions::MaxwellBoltzmann(double *x, double *par)
 {
    double v = x[0];
