@@ -365,7 +365,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans neutralElectrodeCom(neutralElectrodeTra,neutralElectrodeRot);
    TGeoHMatrix neutralElectrodeMat = neutralElectrodeCom;
 //   chamber->AddNode(neutralElectrode, 1, new TGeoHMatrix(neutralElectrodeMat));
-      
+
    // Define valve holes in neutral electrode 
    Tube *neutralElectrodeHoleShape = new Tube("NeutralElectrodeHoleShape", neutralElectrodeHoleRMin, neutralElectrodeHoleRMax, neutralElectrodeHoleHalfZ);
    // 1
@@ -380,7 +380,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix neutralElectrodeHole1Mat = neutralElectrodeHole1Com;
    chamber->AddNode(neutralElectrodeHole1, 1, new TGeoHMatrix(neutralElectrodeHole1Mat));
    Double_t neutralElectrodeHole1Capacity = neutralElectrodeHoleShape->Capacity();
-   
+
    // 2
    Boundary* neutralElectrodeHole2 = new Boundary("NeutralElectrodeHole2", neutralElectrodeHoleShape, beryllium, surfaceRoughness);
    neutralElectrodeHole2->SetLineColor(kGray+3);
@@ -402,7 +402,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix neutralElectrodeHole3Mat = neutralElectrodeHole3Com;
    chamber->AddNode(neutralElectrodeHole3, 1, new TGeoHMatrix(neutralElectrodeHole3Mat));
    Double_t neutralElectrodeHole3Capacity = neutralElectrodeHoleShape->Capacity();
-   
+
    // 4
    Boundary* neutralElectrodeHole4 = new Boundary("NeutralElectrodeHole4", neutralElectrodeHoleShape, beryllium, surfaceRoughness);
    neutralElectrodeHole4->SetLineColor(kGray+3);
@@ -413,7 +413,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans neutralElectrodeHole4Com(neutralElectrodeHole4Tra,neutralElectrodeHoleRot);
    TGeoHMatrix neutralElectrodeHole4Mat = neutralElectrodeHole4Com;
 //   chamber->AddNode(neutralElectrodeHole4, 1, new TGeoHMatrix(neutralElectrodeHole4Mat));
-   
+
    // Neutral Cell
    Tube *neutralCellShape = new Tube("NeutralCellShape", neutralCellRMin, neutralCellRMax, neutralCellHalfZ);
    TrackingVolume* neutralCell = new TrackingVolume("NeutralCell", neutralCellShape, heliumII);
@@ -427,7 +427,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix neutralCellMat = neutralCellCom;
    chamber->AddNode(neutralCell, 1, new TGeoHMatrix(neutralCellMat));
    Double_t neutralCellCapacity = neutralCellShape->Capacity();
-   
+
    // Cell Connector Tube
    Tube *cellConnectorShape = new Tube("CellConnectorShape", cellConnectorRMin, cellConnectorRMax, cellConnectorHalfZ);
    TrackingVolume* cellConnector = new TrackingVolume("CellConnector", cellConnectorShape, heliumII);
@@ -480,7 +480,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix centralElectrodeHoleMat = centralElectrodeHoleCom;
    chamber->AddNode(centralElectrodeHole, 1, new TGeoHMatrix(centralElectrodeHoleMat));
    Double_t centralElectrodeHoleCapacity = centralElectrodeHoleShape->Capacity(); 
-   
+
    // HV Cell
    Tube *hvCellShape = new Tube("HVCellShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
    TrackingVolume* hvCell = new TrackingVolume("HVCell", hvCellShape, heliumII);
@@ -508,7 +508,6 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix hvElectrodeMat = hvElectrodeCom;
 //   chamber->AddNode(hvElectrode, 1, new TGeoHMatrix(hvElectrodeMat));
    
-   
    // -------------------------------------
    // -- Close Geometry
    geoManager->CloseGeometry();
@@ -525,7 +524,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -- TGeoShape downcasting problems in TGeoPainter. The geometry that is left becomes
    // --  the visualisation geometry used for drawing
    // First replace the composite shapes in the geometry
-   TGeoCompositeShape *valveVolShapeVis = new TGeoCompositeShape("ValveVolVis",                                    "(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
+   TGeoCompositeShape *valveVolShapeVis = new TGeoCompositeShape("ValveVolVis","(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
    valveVol->SetShape(valveVolShapeVis);
    
    TGeoCompositeShape* bendShapeVis = new TGeoCompositeShape("BendShapeVis","(CircleBend * BendBox:BendBoxMatrix)");
@@ -536,20 +535,6 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    const char *visFileName = "$(UCN_GEOM)/cryoedm_vis.root";
    cout << "Visualisation Geometry Built... Writing to file: " << visFileName << endl;
    geoManager->Export(visFileName);
-   
-   // -------------------------------------
-   // -- Calculate total volume of model
-   Double_t totalVolume = sourceCapacity + valveVolEntraceCapacity + valveVolFrontCapacity + valveVolCapacity + bendCapacity + detectorValveVolCapacity + guideCapacity + preVolumeBoxCapacity + neutralElectrodeHole1Capacity + neutralElectrodeHole3Capacity + neutralCellCapacity + cellConnectorCapacity + centralElectrodeHoleCapacity + hvCellCapacity;
-   Double_t closedSourceVolume = sourceCapacity + valveVolEntraceCapacity + valveVolFrontCapacity;
-   Double_t transferSecVolume = valveVolCapacity + bendCapacity + detectorValveVolCapacity + guideCapacity + preVolumeBoxCapacity;
-   cout << "-------------------------------------------" << endl;
-   cout << "Model's Total Real Volume: " << totalVolume << "m^3" << endl;
-   cout << "Closed Source Volume: " << closedSourceVolume << "m^3" << "\t" << closedSourceVolume/totalVolume << " factor of Total" << endl;
-   cout << "Transfer Section Volume: " << transferSecVolume << "\t" << transferSecVolume/totalVolume << " factor of Total" << endl;
-   cout << "HV + Neutral Cell Volume: " << neutralCellCapacity + hvCellCapacity << "m^3" << "\t"  << (neutralCellCapacity + hvCellCapacity)/totalVolume << " factor of Total" << endl;
-   cout << "Dilution factor: " << (neutralCellCapacity + hvCellCapacity)/totalVolume << endl;
-   cout << "-------------------------------------------" << endl;
-   
    return kTRUE;
 }
 
