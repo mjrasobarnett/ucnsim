@@ -365,6 +365,7 @@ double FitFunctions::SpinPrecession(double *x, double *par)
 double FitFunctions::ExponentialDecay(double *x, double *par)
 {
    double t = x[0];
+   if (Algorithms::Precision::IsEqual(par[1], 0.0)) return 0.0;
    double f = par[0]*TMath::Exp(-t/par[1]);
    return f;
 }
