@@ -14,6 +14,7 @@ class TTree;
 class TCanvas;
 class TBranch;
 class TF1;
+class TH1F;
 
 class RunConfig;
 class Track;
@@ -121,6 +122,12 @@ namespace Analysis {
                             const double lLimit,
                             const double uLimit,
                             TF1* fitFunc);
+      //_____________________________________________________________________________
+      bool PlotFinalTime(const std::string states,
+                         const std::vector<int> particleIndexes,
+                         TTree* dataTree,
+                         TH1F* hist);
+   
    }
    
    //_____________________________________________________________________________

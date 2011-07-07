@@ -595,6 +595,27 @@ bool FinalStates::PlotEmptyingTime(const std::string state,
    return true;
 }
 
+//______________________________________________________________________________
+bool FinalStates::PlotFinalTime(const std::string state,
+                                const std::vector<int> particleIndexes,
+                                TTree* dataTree,
+                                TH1F* hist)
+{
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   Particle* particle = new Particle();
+   TBranch* particleBranch = DataFile::GetParticleBranch(state, dataTree);
+   dataTree->SetBranchAddress(particleBranch->GetName(), &particle);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      particleBranch->GetEntry(particleIndex);
+      // Fill Histograms
+      hist->Fill(particle->T());
+   }
+   delete particle; particle = NULL;
+   return true;
+}
+
 //_____________________________________________________________________________
 void Polarisation::PlotSpinPolarisation(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig) 
 {

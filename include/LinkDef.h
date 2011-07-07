@@ -146,6 +146,7 @@
 #pragma link C++ function Analysis::FinalStates::PlotFinalState(const std::string, const std::vector<int>, TTree*, const RunConfig&);
 #pragma link C++ function Analysis::FinalStates::DrawFinalPositions(const std::string, const std::vector<int>, TTree*, TGeoManager&, double*);
 #pragma link C++ function Analysis::FinalStates::PlotEmptyingTime(const std::string, const std::vector<int>, TTree*, const RunConfig&, const int, const double, const double, TF1*);
+#pragma link C++ function Analysis::FinalStates::PlotFinalTime(const std::string, const std::vector<int>, TTree*, TH1F*);
 
 
 #pragma link C++ namespace Analysis::Tracks;
