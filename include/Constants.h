@@ -36,7 +36,9 @@ namespace Constants
    //
    static const Double_t electron_charge = -eplus; // Units.h
    static const Double_t e_squared = eplus * eplus;
-   
+   static const Double_t mu0 = 4.0 * pi * 1.e-7; // (V.s)/(A.m)
+   static const Double_t mu0_4pi = 1.e-7; // (V.s)/(A.m)
+
    //
    //
    static const Double_t grav_acceleration = 9.80665*m/(s*s);

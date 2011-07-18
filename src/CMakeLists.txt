@@ -24,7 +24,8 @@ set(UCNLIB_SOURCES  Algorithms.cxx classes/BoolNode.cxx
                     classes/UniformElecField.cxx
                     classes/UniformMagField.cxx classes/VertexStack.cxx
                     classes/Volume.cxx classes/ParticleManifest.cxx 
-                    classes/TRandom3a.cxx classes/PopulationData.cxx 
+                    classes/TRandom3a.cxx classes/PopulationData.cxx
+                    classes/MagFieldDipole.cxx 
                     DataAnalysis.cxx Materials.cxx )
 
 set(UCNLIB_HEADER_NAMES   Algorithms.h classes/BoolNode.h
@@ -50,7 +51,8 @@ set(UCNLIB_HEADER_NAMES   Algorithms.h classes/BoolNode.h
                           classes/UniformElecField.h
                           classes/UniformMagField.h classes/VertexStack.h
                           classes/Volume.h classes/ParticleManifest.h 
-                          classes/TRandom3a.h classes/PopulationData.h 
+                          classes/TRandom3a.h classes/PopulationData.h
+                          classes/MagFieldDipole.h 
                           Constants.h DataAnalysis.h
                           ValidStates.h GeomParameters.h
                           Materials.h Units.h )
@@ -76,6 +78,7 @@ set(UCNLIB_DICT_HEADERS   classes/Box.h classes/Tube.h classes/Material.h
                           classes/Clock.h classes/UniformElecField.h
                           classes/ElecFieldArray.h classes/ParticleManifest.h 
                           classes/TRandom3a.h classes/PopulationData.h
+                          classes/MagFieldDipole.h
                           Algorithms.h Constants.h DataAnalysis.h
                           ValidStates.h GeomParameters.h
                           Materials.h Units.h )
