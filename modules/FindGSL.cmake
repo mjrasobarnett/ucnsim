@@ -72,6 +72,7 @@ SET(GSL_CONFIG_PREFER_PATH
  "$ENV{GSL_DIR}"
  "$ENV{GSL_HOME}/bin"
  "$ENV{GSL_HOME}"
+ "$ENV{GSL}/bin"
  CACHE STRING "preferred path to GSL (gsl-config)")
 FIND_PROGRAM(GSL_CONFIG gsl-config
  ${GSL_CONFIG_PREFER_PATH}
