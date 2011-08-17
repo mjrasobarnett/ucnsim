@@ -48,11 +48,6 @@ MagFieldDipole::MagFieldDipole(const string& name,
   cout << "Defined Dipole Moment - Magnitude: " << fMomentMag << endl;;
   cout << "Direction mx: " << fMomentUnitVec[0] << "\t my: " << fMomentUnitVec[1];
   cout << "\t mz: " << fMomentUnitVec[2] << endl;
-  cout << fMoment[0] << "\t";
-  cout << fMoment[1] << "\t";
-  cout << fMoment[2] << "\t" << endl;
-  matrix->Print();
-  rotation.Print();
 }
 
 //______________________________________________________________________________
