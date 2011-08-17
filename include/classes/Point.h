@@ -22,6 +22,7 @@ public:
    Point();
    Point(double x, double y, double z, double t);
    Point(TVector3 pos, double t);
+   Point(double r, double theta, double z);
    Point(const Point&); 
    Point& operator=(const Point&);
    // -- destructor
