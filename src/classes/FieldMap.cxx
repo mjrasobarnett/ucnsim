@@ -10,6 +10,8 @@
 #include "Particle.h"
 #include "Run.h"
 
+#include "Algorithms.h"
+
 //#define VERBOSE
 
 using namespace std;
@@ -145,6 +147,12 @@ TVector3 MagFieldMap::Interpolate(const TVector3& position, const Int_t numInter
    for (stackIter = neighbours->begin(); stackIter != neighbours->end(); stackIter++) {
       double distance = stackIter->second;
       const FieldVertex* vertex = stackIter->first;
+      // If one of the points found is exactly on the requested position, return that
+      if (Algorithms::Precision::IsEqual(distance, 0.0)) {
+         delete neighbours;
+         return vertex->GetField();
+      }
+      // Compute weight for each point
       double weight = pow((radius - distance)/(radius*distance),2.0);
       #ifdef VERBOSE
          cout << "Vertex: " << vertex->ToString() << "\t";
