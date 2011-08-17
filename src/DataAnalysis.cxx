@@ -1538,7 +1538,7 @@ void Geometry::DrawGeometry(TCanvas& canvas, TGeoManager& geoManager, double* ca
    // -- Set Background colour
    glViewer->SetClearColor(kWhite);
    // -- Set Camera type
-   TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
+   TGLViewer::ECameraType camera = TGLViewer::kCameraPerspYOZ;
    glViewer->SetCurrentCamera(camera);
    glViewer->CurrentCamera().SetExternalCenter(kTRUE);
    glViewer->SetPerspectiveCamera(camera,4,100, cameraCentre,0,0);

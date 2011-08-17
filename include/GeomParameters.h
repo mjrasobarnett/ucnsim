@@ -75,12 +75,12 @@ namespace GeomParameters {
    const Double_t bendEntranceHalfX = 30.0*Units::mm;
    const Double_t bendEntranceHalfY = 15.0*Units::mm;
    const Double_t bendEntranceHalfZ = 55.0*Units::mm;
-   const Double_t bendEntrancePhi = 0.0;
-   const Double_t bendEntranceTheta = 0.0;
-   const Double_t bendEntrancePsi = 0.0;
-   const Double_t bendEntranceXPos = 0.0;
+   const Double_t bendEntrancePhi = 90.0;
+   const Double_t bendEntranceTheta = 90.0;
+   const Double_t bendEntrancePsi = 90.0;
+   const Double_t bendEntranceXPos = -bendEntranceHalfZ;
    const Double_t bendEntranceYPos = 0.0;
-   const Double_t bendEntranceZPos = -bendEntranceHalfZ;
+   const Double_t bendEntranceZPos = 0.0;
    // Composite
    const Double_t valveVolPhi = 0.0;
    const Double_t valveVolTheta = 0.0;
@@ -98,23 +98,23 @@ namespace GeomParameters {
    const Double_t bendBoxXPos = bendRMax;
    const Double_t bendBoxYPos = -bendRMax;
    const Double_t bendBoxZPos = 0.0;
-   const Double_t bendVolPhi = 0.0;
+   const Double_t bendVolPhi = 180.0;
    const Double_t bendVolTheta = 90.0;
    const Double_t bendVolPsi = 0.0;
-   const Double_t bendVolXPos = -0.5*(bendRMin + bendRMax);
+   const Double_t bendVolXPos = -2.0*bendEntranceHalfZ;
    const Double_t bendVolYPos = valveVolYPos;
-   const Double_t bendVolZPos = -2.0*bendEntranceHalfZ;
+   const Double_t bendVolZPos = 0.5*(bendRMin + bendRMax);
    
    // -- Detector Valve Volume
    const Double_t detectorValveVolHalfX = 30.0*Units::mm;
    const Double_t detectorValveVolHalfY = 30.0*Units::mm;
    const Double_t detectorValveVolHalfZ = 55.0*Units::mm;
-   const Double_t detectorValveVolPhi = -90.0;
-   const Double_t detectorValveVolTheta = 90.0;
+   const Double_t detectorValveVolPhi =   0.0;
+   const Double_t detectorValveVolTheta = 0.0;
    const Double_t detectorValveVolPsi = 0.0;
-   const Double_t detectorValveVolXPos = bendVolXPos - detectorValveVolHalfZ;
+   const Double_t detectorValveVolXPos = bendVolXPos - bendVolZPos;
    const Double_t detectorValveVolYPos = valveVolYPos;
-   const Double_t detectorValveVolZPos = bendVolZPos + bendVolXPos;
+   const Double_t detectorValveVolZPos = bendVolZPos + detectorValveVolHalfZ;
    
    // -- Detector Valve
    const Double_t detectorValveHalfX = 2.0*Units::mm;
@@ -131,45 +131,45 @@ namespace GeomParameters {
    const Double_t detectorTubeTopRMin = 0.;
    const Double_t detectorTubeTopRMax = 25.0*Units::mm;
    const Double_t detectorTubeTopHalfLength = 15.75*Units::mm;
-   const Double_t detectorTubeTopPhi = 0.0;
-   const Double_t detectorTubeTopTheta = 0.0;
-   const Double_t detectorTubeTopPsi = 0.0;
-   const Double_t detectorTubeTopXPos = detectorValveVolXPos;
+   const Double_t detectorTubeTopPhi = 90.0;
+   const Double_t detectorTubeTopTheta = 90.0;
+   const Double_t detectorTubeTopPsi = 90.0;
+   const Double_t detectorTubeTopXPos = detectorValveVolXPos - detectorValveVolHalfX - detectorTubeTopHalfLength;
    const Double_t detectorTubeTopYPos = detectorValveVolYPos;
-   const Double_t detectorTubeTopZPos = detectorValveVolZPos - detectorValveVolHalfX - detectorTubeTopHalfLength;
+   const Double_t detectorTubeTopZPos = detectorValveVolZPos;
    
    // -- Detector Tube
    const Double_t detectorTubeRMin = 0.;
    const Double_t detectorTubeRMax = 27.85*Units::mm;
    const Double_t detectorTubeHalfLength = 250.75*Units::mm;
-   const Double_t detectorTubePhi = 0.0;
-   const Double_t detectorTubeTheta = 0.0;
-   const Double_t detectorTubePsi = 0.0;
-   const Double_t detectorTubeXPos = detectorValveVolXPos;
+   const Double_t detectorTubePhi = 90.0;
+   const Double_t detectorTubeTheta = 90.0;
+   const Double_t detectorTubePsi = 90.0;
+   const Double_t detectorTubeXPos = detectorTubeTopXPos - detectorTubeTopHalfLength - detectorTubeHalfLength;
    const Double_t detectorTubeYPos = valveVolYPos;
-   const Double_t detectorTubeZPos = detectorTubeTopZPos - detectorTubeTopHalfLength - detectorTubeHalfLength;
+   const Double_t detectorTubeZPos = detectorValveVolZPos;
    
    // -- Detector Tube Bottom
    const Double_t detectorTubeBottomRMin = 15.0*Units::mm;
    const Double_t detectorTubeBottomRMax = 27.85*Units::mm;
    const Double_t detectorTubeBottomHalfLength = 5.*Units::mm;
-   const Double_t detectorTubeBottomPhi = 0.0;
-   const Double_t detectorTubeBottomTheta = 0.0;
-   const Double_t detectorTubeBottomPsi = 0.0;
-   const Double_t detectorTubeBottomXPos = detectorValveVolXPos;
+   const Double_t detectorTubeBottomPhi = 90.0;
+   const Double_t detectorTubeBottomTheta = 90.0;
+   const Double_t detectorTubeBottomPsi = 90.0;
+   const Double_t detectorTubeBottomXPos = detectorTubeXPos - detectorTubeHalfLength - detectorTubeBottomHalfLength;
    const Double_t detectorTubeBottomYPos = valveVolYPos;
-   const Double_t detectorTubeBottomZPos = detectorTubeZPos - detectorTubeHalfLength - detectorTubeBottomHalfLength;
+   const Double_t detectorTubeBottomZPos = detectorValveVolZPos;
    
    // -- Detector
    const Double_t detectorRMin = 0.;
    const Double_t detectorRMax = 27.85*Units::mm;
    const Double_t detectorHalfLength = 5.0*Units::mm;
-   const Double_t detectorPhi = 0.0;
-   const Double_t detectorTheta = 0.0;
-   const Double_t detectorPsi = 0.0;
-   const Double_t detectorXPos = detectorValveVolXPos;
+   const Double_t detectorPhi = 90.0;
+   const Double_t detectorTheta = 90.0;
+   const Double_t detectorPsi = 90.0;
+   const Double_t detectorXPos = detectorTubeXPos - detectorTubeHalfLength - detectorHalfLength;
    const Double_t detectorYPos = valveVolYPos;
-   const Double_t detectorZPos = detectorTubeZPos - detectorTubeHalfLength - detectorHalfLength;
+   const Double_t detectorZPos = detectorValveVolZPos;
    
    // -- Guide Sections Segment
    // Note that I am unsure of the exact number and lengths of each individual section. The total
@@ -178,12 +178,12 @@ namespace GeomParameters {
    const Double_t guideSegHalfX = 25.0*Units::mm;
    const Double_t guideSegHalfY = 25.0*Units::mm;
    const Double_t guideSegHalfZ = 289.0*Units::mm;
-   const Double_t guidePhi = -90;
-   const Double_t guideTheta = 90;
+   const Double_t guidePhi = 0;
+   const Double_t guideTheta = 0;
    const Double_t guidePsi = 0;
-   const Double_t guideXPos = detectorValveVolXPos - detectorValveVolHalfZ - guideSegHalfZ;
+   const Double_t guideXPos = detectorValveVolXPos;
    const Double_t guideYPos = detectorValveVolYPos;
-   const Double_t guideZPos = detectorValveVolZPos;
+   const Double_t guideZPos = detectorValveVolZPos + detectorValveVolHalfZ + guideSegHalfZ;
 
    // -- Ramsey Cell Pre-Volume
    const Double_t preVolumeBoxHalfX = 72.0*Units::mm;
@@ -234,24 +234,24 @@ namespace GeomParameters {
    const Double_t preVolumeCorner4YPos = -65.0*Units::mm;
    const Double_t preVolumeCorner4ZPos = 0.0*Units::mm;
    
-   const Double_t preVolumePhi = -90;
-   const Double_t preVolumeTheta = 90;
+   const Double_t preVolumePhi = 0;
+   const Double_t preVolumeTheta = 0;
    const Double_t preVolumePsi = 45;
-   const Double_t preVolumeXPos = guideXPos - 9*guideSegHalfZ - preVolumeBoxHalfZ;
+   const Double_t preVolumeXPos = guideXPos;
    const Double_t preVolumeYPos = guideYPos;
-   const Double_t preVolumeZPos = guideZPos;
+   const Double_t preVolumeZPos = guideZPos + 9*guideSegHalfZ + preVolumeBoxHalfZ;
    
    // -- Ramsey Cell
    // Neutral Electrode
    const Double_t neutralElectrodeRMin = 0.0*Units::mm;
    const Double_t neutralElectrodeRMax = 140.0*Units::mm;
    const Double_t neutralElectrodeHalfZ = 7.5*Units::mm;
-   const Double_t neutralElectrodePhi = 90;
-   const Double_t neutralElectrodeTheta = 90;
+   const Double_t neutralElectrodePhi = -90;
+   const Double_t neutralElectrodeTheta = 0;
    const Double_t neutralElectrodePsi = 0;
-   const Double_t neutralElectrodeXPos = preVolumeXPos - preVolumeBoxHalfZ - neutralElectrodeHalfZ;
+   const Double_t neutralElectrodeXPos = preVolumeXPos;
    const Double_t neutralElectrodeYPos = preVolumeYPos;
-   const Double_t neutralElectrodeZPos = preVolumeZPos;
+   const Double_t neutralElectrodeZPos = preVolumeZPos + preVolumeBoxHalfZ + neutralElectrodeHalfZ;
    
    // Neutral Electrode Valve Holes
    const Double_t neutralElectrodeHoleRMin = 0.0*Units::mm;
@@ -277,15 +277,15 @@ namespace GeomParameters {
    const Double_t neutralElectrodeHolePhi = neutralElectrodePhi;
    const Double_t neutralElectrodeHoleTheta = neutralElectrodeTheta;
    const Double_t neutralElectrodeHolePsi = neutralElectrodePsi;
-   const Double_t neutralElectrodeHole1XPos = neutralElectrodeXPos;
+   const Double_t neutralElectrodeHole1XPos = neutralElectrodeXPos+65.0*Units::mm;
    const Double_t neutralElectrodeHole1YPos = neutralElectrodeYPos;
-   const Double_t neutralElectrodeHole1ZPos = neutralElectrodeZPos+65.0*Units::mm;
+   const Double_t neutralElectrodeHole1ZPos = neutralElectrodeZPos;
    const Double_t neutralElectrodeHole2XPos = neutralElectrodeXPos;
    const Double_t neutralElectrodeHole2YPos = neutralElectrodeYPos+65.0*Units::mm;
    const Double_t neutralElectrodeHole2ZPos = neutralElectrodeZPos;
-   const Double_t neutralElectrodeHole3XPos = neutralElectrodeXPos;
+   const Double_t neutralElectrodeHole3XPos = neutralElectrodeXPos-65.0*Units::mm;
    const Double_t neutralElectrodeHole3YPos = neutralElectrodeYPos;
-   const Double_t neutralElectrodeHole3ZPos = neutralElectrodeZPos-65.0*Units::mm;
+   const Double_t neutralElectrodeHole3ZPos = neutralElectrodeZPos;
    const Double_t neutralElectrodeHole4XPos = neutralElectrodeXPos;
    const Double_t neutralElectrodeHole4YPos = neutralElectrodeYPos-65.0*Units::mm;
    const Double_t neutralElectrodeHole4ZPos = neutralElectrodeZPos;
@@ -297,9 +297,9 @@ namespace GeomParameters {
    const Double_t neutralCellPhi = neutralElectrodePhi;
    const Double_t neutralCellTheta = neutralElectrodeTheta;
    const Double_t neutralCellPsi = neutralElectrodePsi;
-   const Double_t neutralCellXPos = neutralElectrodeXPos - neutralElectrodeHalfZ - neutralCellHalfZ;
+   const Double_t neutralCellXPos = neutralElectrodeXPos;
    const Double_t neutralCellYPos = neutralElectrodeYPos;
-   const Double_t neutralCellZPos = neutralElectrodeZPos;
+   const Double_t neutralCellZPos = neutralElectrodeZPos + neutralElectrodeHalfZ + neutralCellHalfZ;
    
    // Cell connector tube
    const Double_t cellConnectorRMin = 0.0*Units::mm;
@@ -330,9 +330,9 @@ namespace GeomParameters {
    const Double_t centralElectrodePhi = neutralElectrodePhi;
    const Double_t centralElectrodeTheta = neutralElectrodeTheta;
    const Double_t centralElectrodePsi = neutralElectrodePsi;
-   const Double_t centralElectrodeXPos = neutralCellXPos - neutralCellHalfZ - centralElectrodeHalfZ;
+   const Double_t centralElectrodeXPos = neutralCellXPos;
    const Double_t centralElectrodeYPos = neutralCellYPos;
-   const Double_t centralElectrodeZPos = neutralCellZPos;
+   const Double_t centralElectrodeZPos = neutralCellZPos + neutralCellHalfZ + centralElectrodeHalfZ;
    
    // Central Electrode Hole
    const Double_t centralElectrodeHoleRMin = 0.0*Units::mm;
@@ -341,9 +341,9 @@ namespace GeomParameters {
    const Double_t centralElectrodeHolePhi = centralElectrodePhi;
    const Double_t centralElectrodeHoleTheta = centralElectrodeTheta;
    const Double_t centralElectrodeHolePsi = centralElectrodePsi;
-   const Double_t centralElectrodeHoleXPos = centralElectrodeXPos;
+   const Double_t centralElectrodeHoleXPos = centralElectrodeXPos+65.0*Units::mm;
    const Double_t centralElectrodeHoleYPos = centralElectrodeYPos;
-   const Double_t centralElectrodeHoleZPos = centralElectrodeZPos+65.0*Units::mm;
+   const Double_t centralElectrodeHoleZPos = centralElectrodeZPos;
 
    // HV Cell
    const Double_t hvCellRMin = 0.0*Units::mm;
@@ -352,9 +352,9 @@ namespace GeomParameters {
    const Double_t hvCellPhi = neutralElectrodePhi;
    const Double_t hvCellTheta = neutralElectrodeTheta;
    const Double_t hvCellPsi = neutralElectrodePsi;
-   const Double_t hvCellXPos = centralElectrodeXPos - centralElectrodeHalfZ - hvCellHalfZ;
+   const Double_t hvCellXPos = centralElectrodeXPos;
    const Double_t hvCellYPos = centralElectrodeYPos;
-   const Double_t hvCellZPos = centralElectrodeZPos;
+   const Double_t hvCellZPos = centralElectrodeZPos + centralElectrodeHalfZ + hvCellHalfZ;
    
    // HV Electrode
    const Double_t hvElectrodeRMin = 0.0*Units::mm;
@@ -363,9 +363,20 @@ namespace GeomParameters {
    const Double_t hvElectrodePhi = neutralElectrodePhi;
    const Double_t hvElectrodeTheta = neutralElectrodeTheta;
    const Double_t hvElectrodePsi = neutralElectrodePsi;
-   const Double_t hvElectrodeXPos = hvCellXPos - hvCellHalfZ - hvElectrodeHalfZ;
+   const Double_t hvElectrodeXPos = hvCellXPos;
    const Double_t hvElectrodeYPos = hvCellYPos;
-   const Double_t hvElectrodeZPos = hvCellZPos;
+   const Double_t hvElectrodeZPos = hvCellZPos + hvCellHalfZ + hvElectrodeHalfZ;
+
+   // SCV
+   const Double_t scvRMin = 0.0*Units::mm;
+   const Double_t scvRMax = 342.0*Units::mm;
+   const Double_t scvHalfZ = 363.0*Units::mm;
+   const Double_t scvPhi = neutralElectrodePhi;
+   const Double_t scvTheta = neutralElectrodeTheta;
+   const Double_t scvPsi = neutralElectrodePsi;
+   const Double_t scvXPos = centralElectrodeXPos;
+   const Double_t scvYPos = hvCellYPos;
+   const Double_t scvZPos = hvCellZPos;   
    
 }
 
