@@ -30,7 +30,8 @@
 #include "TGLPerspectiveCamera.h"
 #include "TLine.h"
 #include "TTree.h"
-
+#include "TGFrame.h"
+#include "TGLSAViewer.h"
 #include "Particle.h"
 #include "ConfigFile.h"
 #include "RunConfig.h"
@@ -1530,6 +1531,7 @@ void Geometry::DrawGeometry(TCanvas& canvas, TGeoManager& geoManager, double* ca
    geoManager.SetVisOption(0);
    // -- Get the GLViewer so we can manipulate the camera
    TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
+   ((TGMainFrame *)((TGLSAViewer *)glViewer)->GetFrame())->Resize(1380, 860);
    // -- Select Draw style 
    glViewer->SetStyle(TGLRnrCtx::kFill);
    // -- Set Background colour
@@ -1545,5 +1547,7 @@ void Geometry::DrawGeometry(TCanvas& canvas, TGeoManager& geoManager, double* ca
    double refPoint[3] = {0.,0.,0.};
    glViewer->SetGuideState(2, kFALSE, kFALSE, refPoint);
    glViewer->UpdateScene();
+   // Move window so that it is not lying under my osx dock! :D
+   ((TGMainFrame *)((TGLSAViewer *)glViewer)->GetFrame())->Move(60, 0);
    return;
 }
