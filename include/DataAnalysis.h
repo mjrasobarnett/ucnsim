@@ -15,10 +15,12 @@ class TCanvas;
 class TBranch;
 class TF1;
 class TH1F;
+class TGeoMatrix;
 
 class RunConfig;
 class Track;
 class ParticleManifest;
+class Point;
 
 namespace Analysis {
    //_____________________________________________________________________________
@@ -146,6 +148,8 @@ namespace Analysis {
    //_____________________________________________________________________________
    namespace Geometry {
       void DrawGeometry(TCanvas& canvas, TGeoManager& geoManager, double* cameraCentre);
+      void GlobalToLocalPoint(const Point& global, Point& local, const TGeoMatrix& matrix);
+      void LocalToGlobalPoint(const Point& local, Point& global, const TGeoMatrix& matrix);   
    }
 
 }

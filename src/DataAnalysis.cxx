@@ -13,6 +13,7 @@
 #include "TKey.h"
 #include "TClass.h"
 #include "TGeoManager.h"
+#include "TGeoMatrix.h"
 #include "TF1.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
@@ -1550,4 +1551,24 @@ void Geometry::DrawGeometry(TCanvas& canvas, TGeoManager& geoManager, double* ca
    // Move window so that it is not lying under my osx dock! :D
    ((TGMainFrame *)((TGLSAViewer *)glViewer)->GetFrame())->Move(60, 0);
    return;
+}
+
+//______________________________________________________________________________
+void Geometry::GlobalToLocalPoint(const Point& global, Point& local, const TGeoMatrix& matrix)
+{
+   // Transform a Point from global to local coordinates using the provided matrix  
+   double glob[3] = {global.X(), global.Y(), global.Z()};
+   double loc[3] = {0.,0.,0.};
+   matrix.MasterToLocal(&glob[0], &loc[0]);
+   local.SetPoint(loc[0],loc[1],loc[2],local.T());
+}
+
+//______________________________________________________________________________
+void Geometry::LocalToGlobalPoint(const Point& local, Point& global, const TGeoMatrix& matrix)
+{
+   // Transform a Point from local to global coordinates using the provided matrix  
+   double glob[3] = {0.,0.,0.};
+   double loc[3] = {local.X(),local.Y(),local.Z()};
+   matrix.LocalToMaster(&loc[0], &glob[0]);
+   global.SetPoint(glob[0],glob[1],glob[2],global.T());   
 }

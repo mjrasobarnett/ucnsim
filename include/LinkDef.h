@@ -156,6 +156,8 @@
 
 #pragma link C++ namespace Analysis::Geometry;
 #pragma link C++ function Analysis::Geometry::DrawGeometry(TCanvas&, TGeoManager&, double*);
+#pragma link C++ function Analysis::Geometry::GlobalToLocalPoint(const Point&, Point&, const TGeoMatrix&);
+#pragma link C++ function Analysis::Geometry::LocalToGlobalPoint(const Point&, Point&, const TGeoMatrix&);
 // ----------------------------------------------------------------------
 
 #endif
