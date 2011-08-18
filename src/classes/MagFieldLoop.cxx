@@ -21,6 +21,7 @@ ClassImp(MagFieldLoop);
 MagFieldLoop::MagFieldLoop()
              :MagField(),
               fCurrent(0.),
+              fTurns(0.),
               fRadius(0.)
 {
   // Default constructor.
@@ -30,10 +31,12 @@ MagFieldLoop::MagFieldLoop()
 //______________________________________________________________________________
 MagFieldLoop::MagFieldLoop(const string& name,
                            const double current,
+                           const int turns,
                            const Tube* tube,
                            const TGeoMatrix* matrix)
              :MagField(name, tube, matrix),
               fCurrent(current),
+              fTurns(turns),
               fRadius(tube->GetRmin())
 {
   // constructor
@@ -44,6 +47,7 @@ MagFieldLoop::MagFieldLoop(const string& name,
 MagFieldLoop::MagFieldLoop(const MagFieldLoop& other)
              :MagField(other),
               fCurrent(other.fCurrent),
+              fTurns(other.fTurns),
               fRadius(other.fRadius)
 {
   // Copy constructor
@@ -56,6 +60,7 @@ MagFieldLoop &MagFieldLoop::operator=(const MagFieldLoop& other)
   if(this != &other) {
     MagField::operator=(other);
     fCurrent = other.fCurrent;
+    fTurns = other.fTurns;
     fRadius = other.fRadius;  
   }
   return *this;
@@ -108,7 +113,7 @@ const TVector3 MagFieldLoop::OffAxisFieldCalc(const Point& localPoint, const dou
   double K_k = gsl_sf_ellint_Kcomp(k, GSL_PREC_APPROX);
   double E_k = gsl_sf_ellint_Ecomp(k, GSL_PREC_APPROX);
 
-  double B_0 = (fCurrent*Constants::mu0)/(2.0*fRadius);
+  double B_0 = (fCurrent*fTurns*Constants::mu0)/(2.0*fRadius);
   double const_factor = B_0/(TMath::Pi()*TMath::Sqrt(q));
   double numer_1 = 1.0 - alpha_2 - beta_2;
   double numer_2 = 1.0 + alpha_2 + beta_2;
@@ -129,7 +134,7 @@ const TVector3 MagFieldLoop::OnAxisFieldCalc(const Point& localPoint) const
   // -- Calculate on-axis field from current loop 
   double rad_2 = fRadius*fRadius;
   double z_2 = localPoint.Z()*localPoint.Z();
-  double numer = Constants::mu0*fCurrent*rad_2;
+  double numer = Constants::mu0*fCurrent*fTurns*rad_2;
   double denom = 2.0*TMath::Power(rad_2 + z_2, (3.0/2.0));
   double bz = numer / denom;
   TVector3 field(0.,0.,bz);

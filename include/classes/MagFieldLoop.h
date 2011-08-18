@@ -21,6 +21,7 @@ class MagFieldLoop : public MagField
 private:
    // Magnetic field vector
    double fCurrent;
+   int fTurns;
    double fRadius;
 
    const TVector3 OffAxisFieldCalc(const Point& localPoint, const double r) const;
@@ -28,7 +29,7 @@ private:
 
 public:
    MagFieldLoop();
-   MagFieldLoop(const std::string& name, const double current, const Tube* tube, const TGeoMatrix* matrix);
+   MagFieldLoop(const std::string& name, const double current, const int turns, const Tube* tube, const TGeoMatrix* matrix);
    MagFieldLoop(const MagFieldLoop&);
    MagFieldLoop& operator=(const MagFieldLoop&);
    virtual ~MagFieldLoop();
