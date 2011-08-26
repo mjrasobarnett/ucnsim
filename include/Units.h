@@ -192,6 +192,8 @@ namespace Units
    static const Double_t kiloVolt  = 1.E3*volt;
    static const Double_t KV        = kiloVolt;
    
+   // Current [A]
+   static const Double_t amp = 1.0;
 	//
 	// Temperature
 	//

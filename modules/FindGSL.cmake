@@ -36,6 +36,7 @@ $ENV{EXTERN_LIBS_DIR}/gsl
 $ENV{EXTRA}
 # "C:/home/jw/source2/gsl-1.8"
 )
+
 FIND_PATH(GSL_INCLUDE_DIR
 NAMES gsl/gsl_cdf.h gsl/gsl_randist.h
 PATHS ${GSL_POSSIBLE_ROOT_DIRS}
@@ -71,6 +72,7 @@ SET(GSL_CONFIG_PREFER_PATH
  "$ENV{GSL_DIR}"
  "$ENV{GSL_HOME}/bin"
  "$ENV{GSL_HOME}"
+ "$ENV{GSL}/bin"
  CACHE STRING "preferred path to GSL (gsl-config)")
 FIND_PROGRAM(GSL_CONFIG gsl-config
  ${GSL_CONFIG_PREFER_PATH}

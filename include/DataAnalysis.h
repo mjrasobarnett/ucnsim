@@ -13,10 +13,14 @@ class TGraph;
 class TTree;
 class TCanvas;
 class TBranch;
+class TF1;
+class TH1F;
+class TGeoMatrix;
 
 class RunConfig;
 class Track;
 class ParticleManifest;
+class Point;
 
 namespace Analysis {
    //_____________________________________________________________________________
@@ -59,6 +63,8 @@ namespace Analysis {
       double SpinPrecession(double *x, double *par);
       //_____________________________________________________________________________
       double ExponentialDecay(double *x, double *par);
+      //_____________________________________________________________________________
+      double DoubleExponential(double *x, double *par);
       //_____________________________________________________________________________
       double MaxwellBoltzmann(double *x, double *par);
    }
@@ -116,7 +122,14 @@ namespace Analysis {
                             const RunConfig& runConfig,
                             const int nbins,
                             const double lLimit,
-                            const double uLimit);
+                            const double uLimit,
+                            TF1* fitFunc);
+      //_____________________________________________________________________________
+      bool PlotFinalTime(const std::string states,
+                         const std::vector<int> particleIndexes,
+                         TTree* dataTree,
+                         TH1F* hist);
+   
    }
    
    //_____________________________________________________________________________
@@ -135,6 +148,8 @@ namespace Analysis {
    //_____________________________________________________________________________
    namespace Geometry {
       void DrawGeometry(TCanvas& canvas, TGeoManager& geoManager, double* cameraCentre);
+      void GlobalToLocalPoint(const Point& global, Point& local, const TGeoMatrix& matrix);
+      void LocalToGlobalPoint(const Point& local, Point& global, const TGeoMatrix& matrix);   
    }
 
 }

@@ -13,7 +13,6 @@
 #include "include/GeomParameters.h"
 
 Bool_t Build_Geom(const TGeoManager* geoManager);
-Bool_t Draw_Geom(const TGeoManager* geoManager);
 
 using namespace GeomParameters;
 
@@ -24,8 +23,12 @@ Int_t cryoedm_geom()
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
    // Build and write to file the simulation and visualisation geoms
    Build_Geom(geoManager);
-   Draw_Geom(geoManager);
-   
+   // Draw Geom
+   TCanvas* geomCanvas = new TCanvas("GeomCanvas","Canvas for visualisation of EDM Geom",60,40,200,200);
+   geomCanvas->cd();
+   double camera[3] = {preVolumeXPos, preVolumeYPos, preVolumeZPos};
+   Analysis::Geometry::DrawGeometry(*geomCanvas, *geoManager, camera);
+
    return 0;
 }
 
@@ -314,12 +317,12 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    guideSeg->SetLineWidth(1);
    guideSeg->SetVisibility(kTRUE);
    guideSeg->SetTransparency(20);
-   Double_t guideSegXPos = guideXPos;
+   Double_t guideSegZPos = guideZPos;
    Double_t guideCapacity = 0.0;
    for (Int_t segNum = 1; segNum <= 5; segNum++) {
       // Define Guide Seg matrix
       TGeoRotation segmentRot("SegmentRot",guidePhi,guideTheta,guidePsi); // phi, theta, psi
-      TGeoTranslation segmentTra("SegmentTra",guideSegXPos, guideYPos, guideZPos);
+      TGeoTranslation segmentTra("SegmentTra",guideXPos, guideYPos, guideSegZPos);
       TGeoCombiTrans segmentCom(segmentTra,segmentRot);
       TGeoHMatrix segmentMat = segmentCom;
       Char_t sourceMatrixName[20];
@@ -327,7 +330,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
       segmentMat.SetName(sourceMatrixName);
       chamber->AddNode(guideSeg, segNum, new TGeoHMatrix(segmentMat));
       // Shift next segment along by length of segment
-      guideSegXPos = guideSegXPos - 2.0*guideSegHalfZ;
+      guideSegZPos = guideSegZPos + 2.0*guideSegHalfZ;
       // Calculate guide's volume
       guideCapacity += guideSegShape->Capacity();
    }
@@ -365,7 +368,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans neutralElectrodeCom(neutralElectrodeTra,neutralElectrodeRot);
    TGeoHMatrix neutralElectrodeMat = neutralElectrodeCom;
 //   chamber->AddNode(neutralElectrode, 1, new TGeoHMatrix(neutralElectrodeMat));
-      
+
    // Define valve holes in neutral electrode 
    Tube *neutralElectrodeHoleShape = new Tube("NeutralElectrodeHoleShape", neutralElectrodeHoleRMin, neutralElectrodeHoleRMax, neutralElectrodeHoleHalfZ);
    // 1
@@ -380,7 +383,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix neutralElectrodeHole1Mat = neutralElectrodeHole1Com;
    chamber->AddNode(neutralElectrodeHole1, 1, new TGeoHMatrix(neutralElectrodeHole1Mat));
    Double_t neutralElectrodeHole1Capacity = neutralElectrodeHoleShape->Capacity();
-   
+
    // 2
    Boundary* neutralElectrodeHole2 = new Boundary("NeutralElectrodeHole2", neutralElectrodeHoleShape, beryllium, surfaceRoughness);
    neutralElectrodeHole2->SetLineColor(kGray+3);
@@ -402,7 +405,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix neutralElectrodeHole3Mat = neutralElectrodeHole3Com;
    chamber->AddNode(neutralElectrodeHole3, 1, new TGeoHMatrix(neutralElectrodeHole3Mat));
    Double_t neutralElectrodeHole3Capacity = neutralElectrodeHoleShape->Capacity();
-   
+
    // 4
    Boundary* neutralElectrodeHole4 = new Boundary("NeutralElectrodeHole4", neutralElectrodeHoleShape, beryllium, surfaceRoughness);
    neutralElectrodeHole4->SetLineColor(kGray+3);
@@ -413,7 +416,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans neutralElectrodeHole4Com(neutralElectrodeHole4Tra,neutralElectrodeHoleRot);
    TGeoHMatrix neutralElectrodeHole4Mat = neutralElectrodeHole4Com;
 //   chamber->AddNode(neutralElectrodeHole4, 1, new TGeoHMatrix(neutralElectrodeHole4Mat));
-   
+
    // Neutral Cell
    Tube *neutralCellShape = new Tube("NeutralCellShape", neutralCellRMin, neutralCellRMax, neutralCellHalfZ);
    TrackingVolume* neutralCell = new TrackingVolume("NeutralCell", neutralCellShape, heliumII);
@@ -427,11 +430,11 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix neutralCellMat = neutralCellCom;
    chamber->AddNode(neutralCell, 1, new TGeoHMatrix(neutralCellMat));
    Double_t neutralCellCapacity = neutralCellShape->Capacity();
-   
+
    // Cell Connector Tube
    Tube *cellConnectorShape = new Tube("CellConnectorShape", cellConnectorRMin, cellConnectorRMax, cellConnectorHalfZ);
    TrackingVolume* cellConnector = new TrackingVolume("CellConnector", cellConnectorShape, heliumII);
-   cellConnector->SetLineColor(kGreen+2);
+   cellConnector->SetLineColor(kMagenta-8);
    cellConnector->SetLineWidth(1);
    cellConnector->SetVisibility(kTRUE);
    cellConnector->SetTransparency(20);
@@ -439,9 +442,21 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoTranslation cellConnectorTra("CellConnectorTra", cellConnectorXPos, cellConnectorYPos, cellConnectorZPos);
    TGeoCombiTrans cellConnectorCom(cellConnectorTra,cellConnectorRot);
    TGeoHMatrix cellConnectorMat = cellConnectorCom;
-   chamber->AddNode(cellConnector, 1, new TGeoHMatrix(cellConnectorMat));
-   Double_t cellConnectorCapacity = cellConnectorShape->Capacity();
-   
+   neutralCell->AddNode(cellConnector, 1, new TGeoHMatrix(cellConnectorMat));
+
+   // Cell Connector Tube Boundary
+   Tube *cellConnectorBoundaryShape = new Tube("CellConnectorBoundaryShape", cellConnectorBoundaryRMin, cellConnectorBoundaryRMax, cellConnectorBoundaryHalfZ);
+   Boundary* cellConnectorBoundary = new Boundary("CellConnectorBoundary", cellConnectorBoundaryShape, beryllium, surfaceRoughness);
+   cellConnectorBoundary->SetLineColor(kGreen-1);
+   cellConnectorBoundary->SetLineWidth(1);
+   cellConnectorBoundary->SetVisibility(kFALSE);
+   cellConnectorBoundary->SetTransparency(20);
+   TGeoRotation cellConnectorBoundaryRot("CellConnectorBoundaryRot", cellConnectorBoundaryPhi, cellConnectorBoundaryTheta, cellConnectorBoundaryPsi);
+   TGeoTranslation cellConnectorBoundaryTra("CellConnectorBoundaryTra", cellConnectorBoundaryXPos, cellConnectorBoundaryYPos, cellConnectorBoundaryZPos);
+   TGeoCombiTrans cellConnectorBoundaryCom(cellConnectorBoundaryTra,cellConnectorBoundaryRot);
+   TGeoHMatrix cellConnectorBoundaryMat = cellConnectorBoundaryCom;
+   neutralCell->AddNode(cellConnectorBoundary, 1, new TGeoHMatrix(cellConnectorBoundaryMat));
+
    // Define Central electrode 
    Tube *centralElectrodeShape = new Tube("CentralElectrodeShape", centralElectrodeRMin, centralElectrodeRMax, centralElectrodeHalfZ);
    Boundary* centralElectrode = new Boundary("CentralElectrode", centralElectrodeShape, beryllium, surfaceRoughness);
@@ -468,9 +483,9 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix centralElectrodeHoleMat = centralElectrodeHoleCom;
    chamber->AddNode(centralElectrodeHole, 1, new TGeoHMatrix(centralElectrodeHoleMat));
    Double_t centralElectrodeHoleCapacity = centralElectrodeHoleShape->Capacity(); 
-   
+
    // HV Cell
-   Tube *hvCellShape = new Tube("HVShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
+   Tube *hvCellShape = new Tube("HVCellShape", hvCellRMin, hvCellRMax, hvCellHalfZ);
    TrackingVolume* hvCell = new TrackingVolume("HVCell", hvCellShape, heliumII);
    hvCell->SetLineColor(kYellow-8);
    hvCell->SetLineWidth(1);
@@ -496,7 +511,6 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix hvElectrodeMat = hvElectrodeCom;
 //   chamber->AddNode(hvElectrode, 1, new TGeoHMatrix(hvElectrodeMat));
    
-   
    // -------------------------------------
    // -- Close Geometry
    geoManager->CloseGeometry();
@@ -513,7 +527,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    // -- TGeoShape downcasting problems in TGeoPainter. The geometry that is left becomes
    // --  the visualisation geometry used for drawing
    // First replace the composite shapes in the geometry
-   TGeoCompositeShape *valveVolShapeVis = new TGeoCompositeShape("ValveVolVis",                                    "(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
+   TGeoCompositeShape *valveVolShapeVis = new TGeoCompositeShape("ValveVolVis","(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
    valveVol->SetShape(valveVolShapeVis);
    
    TGeoCompositeShape* bendShapeVis = new TGeoCompositeShape("BendShapeVis","(CircleBend * BendBox:BendBoxMatrix)");
@@ -524,54 +538,6 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    const char *visFileName = "$(UCN_GEOM)/cryoedm_vis.root";
    cout << "Visualisation Geometry Built... Writing to file: " << visFileName << endl;
    geoManager->Export(visFileName);
-   
-   // -------------------------------------
-   // -- Calculate total volume of model
-   Double_t totalVolume = sourceCapacity + valveVolEntraceCapacity + valveVolFrontCapacity + valveVolCapacity + bendCapacity + detectorValveVolCapacity + guideCapacity + preVolumeBoxCapacity + neutralElectrodeHole1Capacity + neutralElectrodeHole3Capacity + neutralCellCapacity + cellConnectorCapacity + centralElectrodeHoleCapacity + hvCellCapacity;
-   Double_t closedSourceVolume = sourceCapacity + valveVolEntraceCapacity + valveVolFrontCapacity;
-   Double_t transferSecVolume = valveVolCapacity + bendCapacity + detectorValveVolCapacity + guideCapacity + preVolumeBoxCapacity;
-   cout << "-------------------------------------------" << endl;
-   cout << "Model's Total Real Volume: " << totalVolume << "m^3" << endl;
-   cout << "Closed Source Volume: " << closedSourceVolume << "m^3" << "\t" << closedSourceVolume/totalVolume << " factor of Total" << endl;
-   cout << "Transfer Section Volume: " << transferSecVolume << "\t" << transferSecVolume/totalVolume << " factor of Total" << endl;
-   cout << "HV + Neutral Cell Volume: " << neutralCellCapacity + hvCellCapacity << "m^3" << "\t"  << (neutralCellCapacity + hvCellCapacity)/totalVolume << " factor of Total" << endl;
-   cout << "Dilution factor: " << (neutralCellCapacity + hvCellCapacity)/totalVolume << endl;
-   cout << "-------------------------------------------" << endl;
-   
    return kTRUE;
 }
 
-//__________________________________________________________________________
-Bool_t Draw_Geom(const TGeoManager* geoManager) 
-{
-   // -------------------------------------
-   // -- Draw the vis-geometry in OpenGLViewer
-   TCanvas* canvas = new TCanvas("GeomCanvas","Canvas for visualisation of EDM Geom",60,40,600,600);
-   canvas->cd();
-   geoManager->GetTopVolume()->Draw("ogl");
-   geoManager->SetVisOption(0); // Default is 1, but 0 draws all the intermediate volumes not just the final bottom layer
-   
-   // -- Get the GLViewer so we can manipulate the camera
-   TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
-   // -- Select Draw style 
-   glViewer->SetStyle(TGLRnrCtx::kFill); // TGLRnrCtx::kFill, TGLRnrCtx::kOutline, TGLRnrCtx::kWireFrame
-   // -- Set Background colour
-   glViewer->SetClearColor(TColor::kWhite);
-   // -- Set Lights - turn some off if you wish
-// TGLLightSet* lightSet = glViewer->GetLightSet();
-// lightSet->SetLight(TGLLightSet::kLightLeft, kFALSE);
-   // -- Set Camera type
-   // kCameraPerspXOZ, kCameraPerspYOZ, kCameraPerspXOY, kCameraOrthoXOY
-   // kCameraOrthoXOZ, kCameraOrthoZOY, kCameraOrthoXnOY, kCameraOrthoXnOZ, kCameraOrthoZnOY
-   TGLViewer::ECameraType camera = 2;
-   glViewer->SetCurrentCamera(camera);
-   glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   Double_t cameraCentre[3] = {preVolumeXPos, preVolumeYPos, preVolumeZPos};
-   glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
-   // -- Draw Reference Point, Axes
-   Double_t refPoint[3] = {0.,0.,0.};
-   // Int_t axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const Double_t referencePos[3]
-   glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
-   glViewer->UpdateScene();
-   return kTRUE;
-}

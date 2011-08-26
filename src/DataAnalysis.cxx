@@ -13,6 +13,7 @@
 #include "TKey.h"
 #include "TClass.h"
 #include "TGeoManager.h"
+#include "TGeoMatrix.h"
 #include "TF1.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
@@ -30,7 +31,8 @@
 #include "TGLPerspectiveCamera.h"
 #include "TLine.h"
 #include "TTree.h"
-
+#include "TGFrame.h"
+#include "TGLSAViewer.h"
 #include "Particle.h"
 #include "ConfigFile.h"
 #include "RunConfig.h"
@@ -365,10 +367,25 @@ double FitFunctions::SpinPrecession(double *x, double *par)
 double FitFunctions::ExponentialDecay(double *x, double *par)
 {
    double t = x[0];
+   if (Algorithms::Precision::IsEqual(par[1], 0.0)) return 0.0;
    double f = par[0]*TMath::Exp(-t/par[1]);
    return f;
 }
 
+//_____________________________________________________________________________
+double FitFunctions::DoubleExponential(double *x, double *par)
+{
+   double t = x[0];
+   double expo1, expo2;
+   if (Algorithms::Precision::IsEqual(par[1], 0.0)) expo1 = 0.0;
+   else expo1 = par[0]*TMath::Exp(-t/par[1]);
+   
+   if (Algorithms::Precision::IsEqual(par[3], 0.0)) expo2 = 0.0;
+   else expo2 = par[2]*TMath::Exp(-t/par[3]);
+   
+   double f = expo1 + expo2;
+   return f;
+}
 //_____________________________________________________________________________
 double FitFunctions::MaxwellBoltzmann(double *x, double *par)
 {
@@ -541,7 +558,8 @@ bool FinalStates::PlotEmptyingTime(const std::string state,
                                    const RunConfig& runConfig,
                                    const int nbins,
                                    const double lLimit,
-                                   const double uLimit)
+                                   const double uLimit,
+                                   TF1* fitFunc)
 {
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Run Time
@@ -572,21 +590,32 @@ bool FinalStates::PlotEmptyingTime(const std::string state,
    timeHist->SetMarkerStyle(8);
    timeHist->Draw("P E1 X0");
    // Fit exponential to Graph
-   int numParams = 2;
-   TF1* expo = new TF1("Exponential", FitFunctions::ExponentialDecay, lLimit, uLimit, numParams);
-   expo->SetParNames("Amplitude","Decay lifetime");
-   expo->SetParameters(10.0,50.0);
-   timeHist->Fit(expo, "R P 0");
-   
-   expo->SetLineWidth(3);
-   expo->SetLineStyle(2); // Dashed
-   expo->SetLineColor(kRed);
-   expo->Draw("SAME");
-   // Extract Emptying Time
-   double t2 = expo->GetParameter(1);
-   double t2error = expo->GetParError(1);
-   cout << "Decay Lifetime: " << t2 << "\t Error: " << t2error << endl;
-   cout << "Chi-Sq: " << expo->GetChisquare() << "\t NDF: " << expo->GetNDF() << endl;
+   timeHist->Fit(fitFunc, "Q R P 0");
+   fitFunc->SetLineWidth(3);
+   fitFunc->SetLineStyle(2); // Dashed
+   fitFunc->SetLineColor(kRed);
+   fitFunc->Draw("SAME");
+   return true;
+}
+
+//______________________________________________________________________________
+bool FinalStates::PlotFinalTime(const std::string state,
+                                const std::vector<int> particleIndexes,
+                                TTree* dataTree,
+                                TH1F* hist)
+{
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   Particle* particle = new Particle();
+   TBranch* particleBranch = DataFile::GetParticleBranch(state, dataTree);
+   dataTree->SetBranchAddress(particleBranch->GetName(), &particle);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      particleBranch->GetEntry(particleIndex);
+      // Fill Histograms
+      hist->Fill(particle->T());
+   }
+   delete particle; particle = NULL;
    return true;
 }
 
@@ -1503,12 +1532,13 @@ void Geometry::DrawGeometry(TCanvas& canvas, TGeoManager& geoManager, double* ca
    geoManager.SetVisOption(0);
    // -- Get the GLViewer so we can manipulate the camera
    TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
+   ((TGMainFrame *)((TGLSAViewer *)glViewer)->GetFrame())->Resize(1380, 860);
    // -- Select Draw style 
    glViewer->SetStyle(TGLRnrCtx::kFill);
    // -- Set Background colour
    glViewer->SetClearColor(kWhite);
    // -- Set Camera type
-   TGLViewer::ECameraType camera = TGLViewer::kCameraPerspXOY;
+   TGLViewer::ECameraType camera = TGLViewer::kCameraPerspYOZ;
    glViewer->SetCurrentCamera(camera);
    glViewer->CurrentCamera().SetExternalCenter(kTRUE);
    glViewer->SetPerspectiveCamera(camera,4,100, cameraCentre,0,0);
@@ -1518,5 +1548,27 @@ void Geometry::DrawGeometry(TCanvas& canvas, TGeoManager& geoManager, double* ca
    double refPoint[3] = {0.,0.,0.};
    glViewer->SetGuideState(2, kFALSE, kFALSE, refPoint);
    glViewer->UpdateScene();
+   // Move window so that it is not lying under my osx dock! :D
+   ((TGMainFrame *)((TGLSAViewer *)glViewer)->GetFrame())->Move(60, 0);
    return;
+}
+
+//______________________________________________________________________________
+void Geometry::GlobalToLocalPoint(const Point& global, Point& local, const TGeoMatrix& matrix)
+{
+   // Transform a Point from global to local coordinates using the provided matrix  
+   double glob[3] = {global.X(), global.Y(), global.Z()};
+   double loc[3] = {0.,0.,0.};
+   matrix.MasterToLocal(&glob[0], &loc[0]);
+   local.SetPoint(loc[0],loc[1],loc[2],local.T());
+}
+
+//______________________________________________________________________________
+void Geometry::LocalToGlobalPoint(const Point& local, Point& global, const TGeoMatrix& matrix)
+{
+   // Transform a Point from local to global coordinates using the provided matrix  
+   double glob[3] = {0.,0.,0.};
+   double loc[3] = {local.X(),local.Y(),local.Z()};
+   matrix.LocalToMaster(&loc[0], &glob[0]);
+   global.SetPoint(glob[0],glob[1],glob[2],global.T());   
 }

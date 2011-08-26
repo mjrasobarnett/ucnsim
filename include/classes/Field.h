@@ -26,6 +26,8 @@ private:
    const TGeoMatrix* fFieldMatrix;
    
 protected:
+   const TGeoMatrix& GetMatrix() const {return *fFieldMatrix;}
+    
    FieldVertex ConvertToGlobalFrame(const FieldVertex& point) const;
    FieldVertex ConvertToLocalFrame(const FieldVertex& point) const;
    

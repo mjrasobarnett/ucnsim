@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "Point.h"
+#include "TMath.h"
 
 //#define VERBOSE_MODE
 //#define PRINT_CONSTRUCTORS
@@ -38,6 +39,14 @@ Point::Point(TVector3 pos, double t)
    #ifdef PRINT_CONSTRUCTORS
       cout << "Point", "Constructor" << endl;
    #endif
+}
+
+//_____________________________________________________________________________
+Point::Point(double r, double theta, double z)
+      :fT(0.)
+{
+  // -- constructor   
+  fPos.SetXYZ(r*TMath::Cos(theta), r*TMath::Sin(theta), z);
 }
 
 //_____________________________________________________________________________

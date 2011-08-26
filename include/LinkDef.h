@@ -71,6 +71,8 @@
 #pragma link C++ class TRandom3State+;
 #pragma link C++ class PopulationObserver+;
 #pragma link C++ class PopulationData+;
+#pragma link C++ class MagFieldDipole+;
+#pragma link C++ class MagFieldLoop+;
 
 // ----------------------------------------------------------------------
 // -- Elements and Materials Namespaces are used for defining common material properties
@@ -126,6 +128,7 @@
 #pragma link C++ function Analysis::FitFunctions::SpinPrecession(double*, double*);
 #pragma link C++ function Analysis::FitFunctions::ExponentialDecay(double*, double*);
 #pragma link C++ function Analysis::FitFunctions::MaxwellBoltzmann(double*, double*);
+#pragma link C++ function Analysis::FitFunctions::DoubleExponential(double*, double*);
 
 #pragma link C++ namespace Analysis::Polarisation;
 #pragma link C++ struct Analysis::Polarisation::Coords;
@@ -144,7 +147,8 @@
 #pragma link C++ namespace Analysis::FinalStates;
 #pragma link C++ function Analysis::FinalStates::PlotFinalState(const std::string, const std::vector<int>, TTree*, const RunConfig&);
 #pragma link C++ function Analysis::FinalStates::DrawFinalPositions(const std::string, const std::vector<int>, TTree*, TGeoManager&, double*);
-#pragma link C++ function Analysis::FinalStates::PlotEmptyingTime(const std::string, const std::vector<int>, TTree*, const RunConfig&, const int, const double, const double);   
+#pragma link C++ function Analysis::FinalStates::PlotEmptyingTime(const std::string, const std::vector<int>, TTree*, const RunConfig&, const int, const double, const double, TF1*);
+#pragma link C++ function Analysis::FinalStates::PlotFinalTime(const std::string, const std::vector<int>, TTree*, TH1F*);
 
 
 #pragma link C++ namespace Analysis::Tracks;
@@ -153,6 +157,8 @@
 
 #pragma link C++ namespace Analysis::Geometry;
 #pragma link C++ function Analysis::Geometry::DrawGeometry(TCanvas&, TGeoManager&, double*);
+#pragma link C++ function Analysis::Geometry::GlobalToLocalPoint(const Point&, Point&, const TGeoMatrix&);
+#pragma link C++ function Analysis::Geometry::LocalToGlobalPoint(const Point&, Point&, const TGeoMatrix&);
 // ----------------------------------------------------------------------
 
 #endif
