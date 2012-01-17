@@ -28,7 +28,7 @@ set(UCNLIB_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/include")
 
 # Set the compiler inclusion directories
 set(INCLUDE_DIRECTORIES ${UCNLIB_INCLUDE_DIR}
-                        "${CMAKE_CURRENT_LIST_DIR}/include/classes"
+                        "${UCNLIB_INCLUDE_DIR}/classes"
                         ${ROOT_INCLUDE_DIR}
                         ${GSL_INCLUDE_DIR}
                         ${Boost_INCLUDE_DIRS})
