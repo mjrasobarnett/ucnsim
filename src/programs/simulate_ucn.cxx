@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <stdexcept>
+
 #include "TBenchmark.h"
 
 #include "ConfigFile.h"
@@ -39,29 +41,34 @@ Int_t main(Int_t argc, Char_t **argv)
       cerr << "Usage, ucnsim <configFile.cfg> <run no.>" << endl;
       return EXIT_FAILURE;
    }
-   cout << "-------------------------------------------" << endl;
-   cout << "Opening Batch ConfigFile: " << configFileName << endl;
-   ConfigFile configFile(configFileName);
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Fetch the Number of Runs
-   ///////////////////////////////////////////////////////////////////////////////////////
-   int specifiedRunNumber = 0;
-   Algorithms::String::ConvertToInt(suppliedRun, specifiedRunNumber);
-   if (specifiedRunNumber == 0) {
-      cerr << "Invalid run number supplied." << endl;
-      return EXIT_FAILURE;
-   }
-   cout << "-------------------------------------------" << endl;
-   cout << "Initialising Run" << endl;
-   cout << "-------------------------------------------" << endl;
-   const int numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
-   if (numberOfRuns < 1 || numberOfRuns < specifiedRunNumber) {
-      cerr << "Cannot read valid number of runs from ConfigFile: " << numberOfRuns << endl;
-      return EXIT_FAILURE;
-   }
-   ///////////////////////////////////////////////////////////////////////////////////////
-   // -- Create the Runs
-   if (PerformSimulation(configFile, specifiedRunNumber) == false) {
+   try {
+      cout << "-------------------------------------------" << endl;
+      cout << "Opening Batch ConfigFile: " << configFileName << endl;
+      ConfigFile configFile(configFileName);
+      ///////////////////////////////////////////////////////////////////////////////////////
+      // -- Fetch the Number of Runs
+      ///////////////////////////////////////////////////////////////////////////////////////
+      int specifiedRunNumber = 0;
+      Algorithms::String::ConvertToInt(suppliedRun, specifiedRunNumber);
+      if (specifiedRunNumber == 0) {
+         cerr << "Invalid run number supplied." << endl;
+         return EXIT_FAILURE;
+      }
+      cout << "-------------------------------------------" << endl;
+      cout << "Initialising Run" << endl;
+      cout << "-------------------------------------------" << endl;
+      const int numberOfRuns = configFile.GetInt("NumberOfRuns","Runs");
+      if (numberOfRuns < 1 || numberOfRuns < specifiedRunNumber) {
+         cerr << "Cannot read valid number of runs from ConfigFile: " << numberOfRuns << endl;
+         return EXIT_FAILURE;
+      }
+      ///////////////////////////////////////////////////////////////////////////////////////
+      // -- Create the Runs
+      if (PerformSimulation(configFile, specifiedRunNumber) == false) {
+         return EXIT_FAILURE;
+      }
+   } catch (std::runtime_error err) {
+      cout << err.what() << endl;
       return EXIT_FAILURE;
    }
    ///////////////////////////////////////////////////////////////////////////////////////
