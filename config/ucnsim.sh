@@ -13,12 +13,12 @@ if [[ `hostname -s` == "MJRasoBarnett" ]] ; then
 	export UCN_RUNS=${UCN_DIR}/runs
 	# Define path to ROOT installation
 	if [[ -z "${ROOTSYS}" ]] ; then
-		export ROOTSYS=${HOME}/Apps/ROOT/root
+		export ROOTSYS=${HOME}/Packages/ROOT/root
 	fi
 	# Define path to GSL installation
-	export GSL=${HOME}/Apps/GSL/gsl
+	export GSL=${HOME}/Packages/GSL/gsl
 	# Define path to BOOST installation
-	export BOOST=${HOME}/Apps/Boost/boost
+	export BOOST=${HOME}/Packages/Boost/boost
 elif [[ `hostname -s` == "feynman" ]] ; then 
 	# Test if we are running on matt's linux virtual machine
 	echo "Configuring for Feynman remote machine"
