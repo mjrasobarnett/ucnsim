@@ -75,6 +75,13 @@
 #pragma link C++ class MagFieldLoop+;
 
 // ----------------------------------------------------------------------
+// -- Namespaces are used for defining common constants
+#pragma link C++ namespace Units;
+#pragma link C++ namespace Constants;
+#pragma link C++ namespace GeomParameters;
+#pragma link C++ namespace FieldParameters;
+
+// ----------------------------------------------------------------------
 // -- Elements and Materials Namespaces are used for defining common material properties
 #pragma link C++ namespace Elements;
 #pragma link C++ namespace Materials;
