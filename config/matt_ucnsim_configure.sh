@@ -8,7 +8,7 @@ echo "------------------------------------------------------------------------"
 if [[ `hostname -s` == "MJRasoBarnett" ]] ; then
 	# First test if we are running on matt's machine
 	echo "Configuring for Matt's local machine"
-	export UCN_DIR=${HOME}/Projects/ucnsim/source
+	export UCN_DIR=${HOME}/Projects/ucnsim/ucnsim
 	export UCN_GEOM=${UCN_DIR}/geom
 	export UCN_RUNS=${UCN_DIR}/runs
 	# Define path to ROOT installation
