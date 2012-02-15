@@ -16,9 +16,9 @@ if [[ `hostname -s` == "MJRasoBarnett" ]] ; then
 		export ROOTSYS=${HOME}/Packages/ROOT/root
 	fi
 	# Define path to GSL installation
-	export GSL=${HOME}/Packages/GSL/gsl
+	export GSL_DIR=${HOME}/Packages/GSL/gsl
 	# Define path to BOOST installation
-	export BOOST=${HOME}/Packages/Boost/boost
+	export BOOST_ROOT=${HOME}/Packages/Boost/boost
 elif [[ `hostname -s` == "feynman" ]] ; then 
 	# Test if we are running on matt's linux virtual machine
 	echo "Configuring for Feynman remote machine"
@@ -30,9 +30,9 @@ elif [[ `hostname -s` == "feynman" ]] ; then
 		export ROOTSYS=${HOME}/root/root
 	fi
 	# Define path to GSL installation
-	export GSL=${HOME}/gsl/gsl
+	export GSL_DIR=${HOME}/gsl/gsl
 	# Define path to BOOST installation
-	export BOOST=${HOME}/boost/boost
+	export BOOST_ROOT=${HOME}/boost/boost
 fi
 
 export PATH=${UCN_DIR}/build:${UCN_DIR}/scripts:${ROOTSYS}/bin:${PATH}
@@ -42,16 +42,16 @@ export MANPATH=${ROOTSYS}/man:${MANPATH}
 # ROOT & UCN_DIR PATHS
 #------------------------------------------------------------------------------
 if [[ -n "${LD_LIBRARY_PATH}" ]] ; then
-	export LD_LIBRARY_PATH=${BOOST}/stage/lib:${UCN_DIR}/lib:${ROOTSYS}/lib:${LD_LIBRARY_PATH}
+	export LD_LIBRARY_PATH=${BOOST_ROOT}/stage/lib:${UCN_DIR}/lib:${ROOTSYS}/lib:${LD_LIBRARY_PATH}
 else
-	export LD_LIBRARY_PATH=${BOOST}/stage/lib:${UCN_DIR}/lib:${ROOTSYS}/lib
+	export LD_LIBRARY_PATH=${BOOST_ROOT}/stage/lib:${UCN_DIR}/lib:${ROOTSYS}/lib
 fi
 
 if [[ `uname` == Darwin ]] ; then
   if [[ -n "${DYLD_LIBRARY_PATH}" ]] ; then
-   export DYLD_LIBRARY_PATH=${BOOST}/stage/lib:${UCN_DIR}/lib:${ROOTSYS}/lib:${DYLD_LIBRARY_PATH}
+   export DYLD_LIBRARY_PATH=${BOOST_ROOT}/stage/lib:${UCN_DIR}/lib:${ROOTSYS}/lib:${DYLD_LIBRARY_PATH}
   else
-   export DYLD_LIBRARY_PATH=${BOOST}/stage/lib:${UCN_DIR}/lib:${ROOTSYS}/lib
+   export DYLD_LIBRARY_PATH=${BOOST_ROOT}/stage/lib:${UCN_DIR}/lib:${ROOTSYS}/lib
   fi
 fi
 
@@ -60,9 +60,9 @@ export ROOTLOGON=${UCN_DIR}/config/ucn_rootlogon.C
 export ROOTLOGOFF=${UCN_DIR}/config/ucn_rootlogoff.C
 
 #------------------------------------------------------------------------------
-echo "ROOT  : " $ROOTSYS
-echo "GSL   : " $GSL
-echo "BOOST : " $BOOST
+echo "ROOTSYS  : " $ROOTSYS
+echo "GSL_DIR   : " $GSL_DIR
+echo "BOOST_ROOT: " $BOOST_ROOT
 echo "------------------------------------------------------------------------"
 echo "UCN_DIR  : " $UCN_DIR
 echo "UCN_GEOM : " $UCN_GEOM

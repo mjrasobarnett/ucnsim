@@ -13,7 +13,6 @@ set(CMAKE_MODULE_PATH "$ENV{HOME}/Projects/cmake_modules")
 set(CMAKE_BUILD_TYPE debug)
 
 # Set Boost options
-set(BOOST_ROOT "$ENV{BOOST}") # Give CMake a hand in finding my installation of Boost
 set(Boost_USE_STATIC_LIBS        ON)
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    OFF)
