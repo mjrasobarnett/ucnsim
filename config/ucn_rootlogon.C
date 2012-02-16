@@ -1,5 +1,5 @@
 {
-   cout <<"==================================================="<< endl;
+/*   cout <<"==================================================="<< endl;
    if ( gSystem->Load("libPhysics") == 0 ) {
       cout << "Successfully loaded libPhysics.so" << endl;
    } 
@@ -29,6 +29,6 @@
       TString ucnlib = ucnsim + "/lib/libUCN.so";
       load_library(ucnlib);
    }
-   
+*/   
    set_my_style();
 } 
