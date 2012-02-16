@@ -7,7 +7,7 @@ set(LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/lib")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 
 # Root and GSL do not come with CMake, use our local copies
-set(CMAKE_MODULE_PATH "$ENV{HOME}/Projects/cmake_modules")
+set(CMAKE_MODULE_PATH "$ENV{UCN_DIR}/cmake_modules")
 
 # Set Build type
 set(CMAKE_BUILD_TYPE debug)
