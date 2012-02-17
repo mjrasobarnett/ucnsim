@@ -5,9 +5,9 @@
 #define ROOT_Experiment
 
 #include "TNamed.h"
-#include "Observable.h"
+#include "Observable.hpp"
 #include "TGeoManager.h"
-#include "FieldManager.h"
+#include "FieldManager.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //

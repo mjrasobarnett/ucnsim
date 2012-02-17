@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cassert>
 
-#include "BounceData.h"
+#include "BounceData.hpp"
 
 using namespace std;
 

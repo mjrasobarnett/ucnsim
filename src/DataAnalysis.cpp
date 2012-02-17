@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <math.h>
 
-#include "DataAnalysis.h"
+#include "DataAnalysis.hpp"
 
 #include "TROOT.h"
 #include "TFile.h"
@@ -33,18 +33,18 @@
 #include "TTree.h"
 #include "TGFrame.h"
 #include "TGLSAViewer.h"
-#include "Particle.h"
-#include "ConfigFile.h"
-#include "RunConfig.h"
-#include "SpinData.h"
-#include "BounceData.h"
-#include "FieldData.h"
-#include "ParticleManifest.h"
+#include "Particle.hpp"
+#include "ConfigFile.hpp"
+#include "RunConfig.hpp"
+#include "SpinData.hpp"
+#include "BounceData.hpp"
+#include "FieldData.hpp"
+#include "ParticleManifest.hpp"
 
-#include "Algorithms.h"
-#include "ValidStates.h"
-#include "Constants.h"
-#include "Units.h"
+#include "Algorithms.hpp"
+#include "ValidStates.hpp"
+#include "Constants.hpp"
+#include "Units.hpp"
 
 #include <boost/foreach.hpp>
 

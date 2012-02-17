@@ -5,7 +5,7 @@
 #define ROOT_Volume
 
 #include "TGeoVolume.h"
-#include "MagField.h"
+#include "MagField.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //

@@ -13,7 +13,7 @@
 #define ROOT_CompositeShape
 
 #ifndef ROOT_Box
-#include "Box.h"
+#include "Box.hpp"
 #endif
     
 ///////////////////////////////////////////////////////////////////////////////

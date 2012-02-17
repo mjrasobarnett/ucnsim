@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cassert>
 
-#include "SpinData.h"
+#include "SpinData.hpp"
 
 using namespace std;
 

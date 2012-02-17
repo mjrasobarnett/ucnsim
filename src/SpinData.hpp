@@ -7,7 +7,7 @@
 
 #include <map>
 #include "TObject.h"
-#include "Spin.h"
+#include "Spin.hpp"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //

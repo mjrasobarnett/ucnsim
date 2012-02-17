@@ -2,7 +2,7 @@
 // Author: Matthew Raso-Barnett  03/12/2010
 
 #include <iostream>
-#include "Point.h"
+#include "Point.hpp"
 #include "TMath.h"
 
 //#define VERBOSE_MODE

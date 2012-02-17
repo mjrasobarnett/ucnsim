@@ -1,12 +1,12 @@
 #include <iostream>
 #include <iomanip>
 
-#include "Materials.h"
+#include "Materials.hpp"
 
 #include "TMath.h"
 #include "TGeoManager.h"
-#include "Material.h"
-#include "Element.h"
+#include "Material.hpp"
+#include "Element.hpp"
 
 using namespace std;
 using namespace Elements;

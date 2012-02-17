@@ -9,8 +9,8 @@
 #include <stdexcept>
 #include <stdlib.h>
 
-#include "ConfigFile.h"
-#include "Algorithms.h"
+#include "ConfigFile.hpp"
+#include "Algorithms.hpp"
 
 //#define VERBOSE
 //#define PRINT_CONSTRUCTORS

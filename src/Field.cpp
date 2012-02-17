@@ -1,8 +1,8 @@
 // Field
 // Author: Matthew Raso-Barnett  30/09/2009
 
-#include "Field.h"
-#include "FieldVertex.h"
+#include "Field.hpp"
+#include "FieldVertex.hpp"
 //______________________________________________________________________________
 // Field - ABC for magnetic field.
 //

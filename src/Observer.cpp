@@ -4,15 +4,14 @@
 #include <sstream>
 #include <cassert>
 
-#include "Observer.h"
+#include "Observer.hpp"
 
-#include "FieldArray.h"
-#include "Particle.h"
-#include "RunConfig.h"
-#include "Data.h"
-#include "Clock.h"
-#include "Algorithms.h"
-#include "Clock.h"
+#include "FieldArray.hpp"
+#include "Particle.hpp"
+#include "RunConfig.hpp"
+#include "Data.hpp"
+#include "Clock.hpp"
+#include "Algorithms.hpp"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //

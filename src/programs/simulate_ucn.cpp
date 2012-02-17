@@ -4,11 +4,11 @@
 
 #include "TBenchmark.h"
 
-#include "ConfigFile.h"
-#include "RunConfig.h"
-#include "InitialConfig.h"
-#include "Run.h"
-#include "Algorithms.h"
+#include "ConfigFile.hpp"
+#include "RunConfig.hpp"
+#include "InitialConfig.hpp"
+#include "Run.hpp"
+#include "Algorithms.hpp"
 
 using std::cout;
 using std::endl;

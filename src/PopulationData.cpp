@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "PopulationData.h"
+#include "PopulationData.hpp"
 
 using namespace std;
 

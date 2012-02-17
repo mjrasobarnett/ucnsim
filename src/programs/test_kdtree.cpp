@@ -8,10 +8,10 @@
 #include <string>
 #include <cassert>
 
-#include "KDTree.h"
-#include "KDTreeNode.h"
-#include "FieldVertex.h"
-#include "VertexStack.h"
+#include "KDTree.hpp"
+#include "KDTreeNode.hpp"
+#include "FieldVertex.hpp"
+#include "VertexStack.hpp"
 
 #include "TRandom.h"
 

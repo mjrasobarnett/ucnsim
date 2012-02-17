@@ -4,7 +4,7 @@
 
 #include "TMath.h"
 #include "TGeoMatrix.h"
-#include "UniformMagField.h"
+#include "UniformMagField.hpp"
 
 using namespace std;
 

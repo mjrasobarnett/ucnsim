@@ -4,13 +4,13 @@
 #include <cmath>
 #include <iostream>
 
-#include "FieldMap.h"
-#include "FileParser.h"
-#include "VertexStack.h"
-#include "Particle.h"
-#include "Run.h"
+#include "FieldMap.hpp"
+#include "FileParser.hpp"
+#include "VertexStack.hpp"
+#include "Particle.hpp"
+#include "Run.hpp"
 
-#include "Algorithms.h"
+#include "Algorithms.hpp"
 
 //#define VERBOSE
 

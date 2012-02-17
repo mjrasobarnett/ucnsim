@@ -9,9 +9,9 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "FileParser.h"
-#include "FieldVertex.h"
-#include "Algorithms.h"
+#include "FileParser.hpp"
+#include "FieldVertex.hpp"
+#include "Algorithms.hpp"
 
 #define PRINT_CONSTRUCTORS 
 //#define VERBOSE_MODE

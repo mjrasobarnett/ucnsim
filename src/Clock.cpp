@@ -3,8 +3,8 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "Clock.h"
-#include "RunConfig.h"
+#include "Clock.hpp"
+#include "RunConfig.hpp"
 
 using namespace std;
 

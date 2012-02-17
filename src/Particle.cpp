@@ -5,16 +5,16 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "Constants.h"
-#include "Units.h"
+#include "Constants.hpp"
+#include "Units.hpp"
 
-#include "Particle.h"
-#include "Run.h"
-#include "Data.h"
-#include "Observer.h"
-#include "Volume.h"
-#include "Clock.h"
-#include "ValidStates.h"
+#include "Particle.hpp"
+#include "Run.hpp"
+#include "Data.hpp"
+#include "Observer.hpp"
+#include "Volume.hpp"
+#include "Clock.hpp"
+#include "ValidStates.hpp"
 
 #include "TMath.h"
 #include "TRandom.h"

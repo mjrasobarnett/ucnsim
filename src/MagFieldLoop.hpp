@@ -3,7 +3,7 @@
 #ifndef MAGFIELDLOOP_H
 #define MAGFIELDLOOP_H
 
-#include "MagField.h"
+#include "MagField.hpp"
 #include "TVector3.h"
 #include <string>
 

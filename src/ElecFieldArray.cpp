@@ -4,8 +4,8 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "ElecFieldArray.h"
-#include "Constants.h"
+#include "ElecFieldArray.hpp"
+#include "Constants.hpp"
 
 //#define VERBOSE_MODE
 

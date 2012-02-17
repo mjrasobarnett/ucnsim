@@ -4,7 +4,7 @@
 #ifndef UNIFORMELECFIELD_H
 #define UNIFORMELECFIELD_H
 
-#include "ElecField.h"
+#include "ElecField.hpp"
 #include "TVector3.h"
 #include <string>
 

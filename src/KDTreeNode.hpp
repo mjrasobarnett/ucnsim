@@ -4,7 +4,7 @@
 #define __KDTREE_NODE_HPP_
 
 #include <iostream>
-#include "FieldVertex.h"
+#include "FieldVertex.hpp"
 
 class VertexStack;
 

@@ -1,4 +1,4 @@
-#include "Data.h"
+#include "Data.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -14,14 +14,14 @@
 #include "TTree.h"
 #include "TBranch.h"
 
-#include "RunConfig.h"
-#include "Particle.h"
-#include "Experiment.h"
-#include "MagFieldArray.h"
-#include "ElecFieldArray.h"
-#include "ValidStates.h"
-#include "Algorithms.h"
-#include "DataAnalysis.h"
+#include "RunConfig.hpp"
+#include "Particle.hpp"
+#include "Experiment.hpp"
+#include "MagFieldArray.hpp"
+#include "ElecFieldArray.hpp"
+#include "ValidStates.hpp"
+#include "Algorithms.hpp"
+#include "DataAnalysis.hpp"
 
 using namespace std;
 

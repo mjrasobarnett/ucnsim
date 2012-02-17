@@ -4,12 +4,12 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "Algorithms.h"
-#include "Constants.h"
-#include "Units.h"
+#include "Algorithms.hpp"
+#include "Constants.hpp"
+#include "Units.hpp"
 
-#include "InitialConfig.h"
-#include "ConfigFile.h"
+#include "InitialConfig.hpp"
+#include "ConfigFile.hpp"
 
 using namespace std;
 

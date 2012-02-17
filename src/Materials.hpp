@@ -2,8 +2,8 @@
 #ifndef MATERIALS_H
 #define MATERIALS_H
 
-#include "Units.h"
-#include "Constants.h"
+#include "Units.hpp"
+#include "Constants.hpp"
 
 class TGeoManager;
 

@@ -5,10 +5,10 @@
 #include <cassert>
 #include <string>
 
-#include "Experiment.h"
+#include "Experiment.hpp"
 
-#include "Run.h"
-#include "ConfigFile.h"
+#include "Run.hpp"
+#include "ConfigFile.hpp"
 
 #include "TGeoManager.h"
 

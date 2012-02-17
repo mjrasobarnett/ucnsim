@@ -5,22 +5,22 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "State.h"
+#include "State.hpp"
 
 #include "TMath.h"
 #include "TRandom.h"
 
-#include "Run.h"
-#include "RunConfig.h"
-#include "Volume.h"
-#include "FieldManager.h"
-#include "GravField.h"
-#include "Particle.h"
-#include "Box.h"
-#include "Parabola.h"
-#include "MagField.h"
-#include "Observer.h"
-#include "Clock.h"
+#include "Run.hpp"
+#include "RunConfig.hpp"
+#include "Volume.hpp"
+#include "FieldManager.hpp"
+#include "GravField.hpp"
+#include "Particle.hpp"
+#include "Box.hpp"
+#include "Parabola.hpp"
+#include "MagField.hpp"
+#include "Observer.hpp"
+#include "Clock.hpp"
 
 #include "TGeoManager.h"
 #include "TGeoNavigator.h"
@@ -30,9 +30,9 @@
 #include "TGeoMatrix.h"
 #include "TGeoVoxelFinder.h"
 
-#include "Constants.h"
-#include "Units.h"
-#include "ValidStates.h"
+#include "Constants.hpp"
+#include "Units.hpp"
+#include "ValidStates.hpp"
 
 using namespace std;
 

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "TObject.h"
-#include "ValidStates.h"
+#include "ValidStates.hpp"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //

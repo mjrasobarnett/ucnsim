@@ -16,8 +16,8 @@
 #include "TGeoMatrix.h"
 #include "TGeoManager.h"
 
-#include "CompositeShape.h"
-#include "BoolNode.h"
+#include "CompositeShape.hpp"
+#include "BoolNode.hpp"
 
 #include "TVirtualPad.h"
 #include "TVirtualViewer3D.h"

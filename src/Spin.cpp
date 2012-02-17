@@ -4,11 +4,11 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "Algorithms.h"
-#include "Constants.h"
-#include "Units.h"
+#include "Algorithms.hpp"
+#include "Constants.hpp"
+#include "Units.hpp"
 
-#include "Spin.h"
+#include "Spin.hpp"
 #include "TRandom.h"
 
 /////////////////////////////////////////////////////////////////////////////

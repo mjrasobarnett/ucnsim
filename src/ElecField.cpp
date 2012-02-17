@@ -1,7 +1,7 @@
 // ElecField
 // Author: Matthew Raso-Barnett  30/09/2009
 
-#include "ElecField.h"
+#include "ElecField.hpp"
 
 //______________________________________________________________________________
 // ElecField - ABC for magnetic field.

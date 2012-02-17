@@ -10,7 +10,7 @@
 
 #include "TVector3.h"
 
-#include "GravField.h"
+#include "GravField.hpp"
 
 ClassImp(GravField)
 

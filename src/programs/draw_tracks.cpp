@@ -25,18 +25,18 @@
 #include "TTree.h"
 #include "TBranch.h"
 
-#include "Particle.h"
-#include "ConfigFile.h"
-#include "InitialConfig.h"
-#include "RunConfig.h"
-#include "Track.h"
-#include "ParticleManifest.h"
+#include "Particle.hpp"
+#include "ConfigFile.hpp"
+#include "InitialConfig.hpp"
+#include "RunConfig.hpp"
+#include "Track.hpp"
+#include "ParticleManifest.hpp"
 
-#include "Constants.h"
-#include "Units.h"
-#include "ValidStates.h"
-#include "Algorithms.h"
-#include "DataAnalysis.h"
+#include "Constants.hpp"
+#include "Units.hpp"
+#include "ValidStates.hpp"
+#include "Algorithms.hpp"
+#include "DataAnalysis.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>

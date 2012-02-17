@@ -7,10 +7,10 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "Algorithms.h"
+#include "Algorithms.hpp"
 
 #include "TDirectory.h"
-#include "ValidStates.h"
+#include "ValidStates.hpp"
 
 using namespace Algorithms;
 using namespace std;

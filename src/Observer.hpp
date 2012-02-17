@@ -18,11 +18,11 @@
 
 #include "TNamed.h"
 
-#include "SpinData.h"
-#include "BounceData.h"
-#include "FieldData.h"
-#include "Track.h"
-#include "PopulationData.h"
+#include "SpinData.hpp"
+#include "BounceData.hpp"
+#include "FieldData.hpp"
+#include "Track.hpp"
+#include "PopulationData.hpp"
 
 namespace Categories {
    // -- Define List of Observer categories. These define a "type" of observer

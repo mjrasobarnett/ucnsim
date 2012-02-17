@@ -10,8 +10,8 @@
 #include <iostream>
 #include "TVector3.h"
 
-#include "Field.h"
-#include "Observable.h"
+#include "Field.hpp"
+#include "Observable.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //

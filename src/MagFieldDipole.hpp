@@ -4,11 +4,11 @@
 #ifndef MAGFIELDDIPOLE_H
 #define MAGFIELDDIPOLE_H
 
-#include "MagField.h"
+#include "MagField.hpp"
 #include "TVector3.h"
 
 #include <string>
-#include "Particle.h"
+#include "Particle.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //

@@ -12,13 +12,13 @@
 #include "TVector3.h"
 #include "TDirectory.h"
 
-#include "Point.h"
-#include "Spin.h"
-#include "State.h"
-#include "Observable.h"
-#include "TRandom3a.h"
+#include "Point.hpp"
+#include "Spin.hpp"
+#include "State.hpp"
+#include "Observable.hpp"
+#include "TRandom3a.hpp"
 
-#include "Constants.h"
+#include "Constants.hpp"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //

@@ -2,14 +2,14 @@
 #include <string>
 #include <cassert>
 
-#include "ConfigFile.h"
-#include "InitialConfig.h"
-#include "Data.h"
-#include "Particle.h"
-#include "Box.h"
-#include "Tube.h"
-#include "Volume.h"
-#include "ParticleManifest.h"
+#include "ConfigFile.hpp"
+#include "InitialConfig.hpp"
+#include "Data.hpp"
+#include "Particle.hpp"
+#include "Box.hpp"
+#include "Tube.hpp"
+#include "Volume.hpp"
+#include "ParticleManifest.hpp"
 
 #include "TMath.h"
 #include "TGeoManager.h"
@@ -28,13 +28,13 @@
 #include "TTree.h"
 #include "TBranch.h"
 
-#include "Materials.h"
-#include "Constants.h"
-#include "Units.h"
-#include "ValidStates.h"
-#include "GeomParameters.h"
-#include "Algorithms.h"
-#include "DataAnalysis.h"
+#include "Materials.hpp"
+#include "Constants.hpp"
+#include "Units.hpp"
+#include "ValidStates.hpp"
+#include "GeomParameters.hpp"
+#include "Algorithms.hpp"
+#include "DataAnalysis.hpp"
 
 using std::cin;
 using std::cout;

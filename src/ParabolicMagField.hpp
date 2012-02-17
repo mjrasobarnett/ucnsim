@@ -4,9 +4,9 @@
 #ifndef ROOT_ParabolicMagField
 #define ROOT_ParabolicMagField
 
-#include "MagField.h"
+#include "MagField.hpp"
 #include "TVector3.h"
-#include "Particle.h"
+#include "Particle.hpp"
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////

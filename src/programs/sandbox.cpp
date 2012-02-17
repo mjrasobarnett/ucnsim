@@ -4,9 +4,9 @@
 
 #include "gsl/gsl_poly.h"
 
-#include "ConfigFile.h"
-#include "Run.h"
-#include "Particle.h"
+#include "ConfigFile.hpp"
+#include "Run.hpp"
+#include "Particle.hpp"
 #include "TTree.h"
 #include "TFile.h"
 #include "TH1F.h"
@@ -17,18 +17,18 @@
 #include "TRint.h"
 #include "TVector3.h"
 #include "TGeoMatrix.h"
-#include "UniformMagField.h"
-#include "MagFieldArray.h"
-#include "Data.h"
-#include "FieldMap.h"
-#include "FileParser.h"
-#include "Tube.h"
-#include "Polynomial.h"
+#include "UniformMagField.hpp"
+#include "MagFieldArray.hpp"
+#include "Data.hpp"
+#include "FieldMap.hpp"
+#include "FileParser.hpp"
+#include "Tube.hpp"
+#include "Polynomial.hpp"
 
-#include "Constants.h"
-#include "Units.h"
-#include "GeomParameters.h"
-#include "DataAnalysis.h"
+#include "Constants.hpp"
+#include "Units.hpp"
+#include "GeomParameters.hpp"
+#include "DataAnalysis.hpp"
 
 using namespace std;
 

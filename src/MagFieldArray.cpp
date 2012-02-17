@@ -4,8 +4,8 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "Point.h"
-#include "MagFieldArray.h"
+#include "Point.hpp"
+#include "MagFieldArray.hpp"
 
 //#define VERBOSE_MODE
 

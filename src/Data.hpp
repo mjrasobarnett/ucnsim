@@ -9,8 +9,8 @@
 #include "TTree.h"
 #include "TBranch.h"
 #include "TDirectory.h"
-#include "Observer.h"
-#include "ParticleManifest.h"
+#include "Observer.hpp"
+#include "ParticleManifest.hpp"
 
 class TGeoManager;
 class Experiment;

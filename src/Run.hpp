@@ -5,9 +5,9 @@
 #define ROOT_Run
 
 #include "TNamed.h"
-#include "Data.h"
-#include "Experiment.h"
-#include "RunConfig.h"
+#include "Data.hpp"
+#include "Experiment.hpp"
+#include "RunConfig.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //

@@ -19,15 +19,15 @@
 #include "TDirectory.h"
 #include "TClass.h"
 
-#include "Particle.h"
-#include "RunConfig.h"
-#include "SpinData.h"
+#include "Particle.hpp"
+#include "RunConfig.hpp"
+#include "SpinData.hpp"
 
-#include "Constants.h"
-#include "Units.h"
-#include "ValidStates.h"
-#include "Algorithms.h"
-#include "DataAnalysis.h"
+#include "Constants.hpp"
+#include "Units.hpp"
+#include "ValidStates.hpp"
+#include "Algorithms.hpp"
+#include "DataAnalysis.hpp"
 
 using namespace std;
 

@@ -4,9 +4,9 @@
 
 #include "TMath.h"
 #include "TGeoMatrix.h"
-#include "UniformElecField.h"
+#include "UniformElecField.hpp"
 
-#include "Algorithms.h"
+#include "Algorithms.hpp"
 
 using namespace std;
 using namespace Algorithms;

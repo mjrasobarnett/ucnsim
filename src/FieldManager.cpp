@@ -9,18 +9,18 @@
 #include "TFile.h"
 #include "TString.h"
 
-#include "ConfigFile.h"
-#include "Run.h"
-#include "GravField.h"
-#include "MagField.h"
-#include "UniformMagField.h"
-#include "ParabolicMagField.h"
-#include "Point.h"
+#include "ConfigFile.hpp"
+#include "Run.hpp"
+#include "GravField.hpp"
+#include "MagField.hpp"
+#include "UniformMagField.hpp"
+#include "ParabolicMagField.hpp"
+#include "Point.hpp"
 
-#include "FieldManager.h"
+#include "FieldManager.hpp"
 
-#include "Units.h"
-#include "Constants.h"
+#include "Units.hpp"
+#include "Constants.hpp"
 
 using std::cout;
 using std::endl;

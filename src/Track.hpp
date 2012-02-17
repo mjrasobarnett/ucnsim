@@ -6,7 +6,7 @@
 
 #include <vector>
 #include "TObject.h"
-#include "Point.h"
+#include "Point.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //

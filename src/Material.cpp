@@ -3,16 +3,16 @@
 #include <iostream>
 #include <cassert>
 
-#include "Material.h"
+#include "Material.hpp"
 
 #include "TGeoMaterial.h"
 #include "TMath.h"
 
-#include "Element.h"
+#include "Element.hpp"
 
-#include "Units.h"
-#include "Constants.h"
-#include "Materials.h"
+#include "Units.hpp"
+#include "Constants.hpp"
+#include "Materials.hpp"
 
 using namespace std;
 

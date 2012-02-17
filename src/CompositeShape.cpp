@@ -21,8 +21,8 @@
 #include "TBuffer3D.h"
 #include "TBuffer3DTypes.h"
 
-#include "BoolNode.h"
-#include "CompositeShape.h"
+#include "BoolNode.hpp"
+#include "CompositeShape.hpp"
 
 ClassImp(CompositeShape)
 

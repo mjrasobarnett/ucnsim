@@ -5,7 +5,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "ParticleManifest.h"
+#include "ParticleManifest.hpp"
 
 using namespace std;
 

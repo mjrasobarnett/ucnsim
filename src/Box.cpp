@@ -10,11 +10,11 @@
 #include "TVirtualGeoTrack.h"
 #include "TGeoBBox.h"
 
-#include "Particle.h"
-#include "Parabola.h"
-#include "Polynomial.h"
+#include "Particle.hpp"
+#include "Parabola.hpp"
+#include "Polynomial.hpp"
 
-#include "Box.h"
+#include "Box.hpp"
 
 using namespace std;
 

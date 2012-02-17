@@ -8,7 +8,7 @@
 #include <vector>
 #include <string>
 #include "TNamed.h"
-#include "FieldVertex.h"
+#include "FieldVertex.hpp"
 
 /////////////////////////////////////////////////////////////////////////////
 //                                                                         //

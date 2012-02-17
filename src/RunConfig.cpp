@@ -7,14 +7,14 @@
 #include <algorithm>
 #include <iterator>
 
-#include "Algorithms.h"
-#include "DataAnalysis.h"
-#include "Constants.h"
-#include "Units.h"
+#include "Algorithms.hpp"
+#include "DataAnalysis.hpp"
+#include "Constants.hpp"
+#include "Units.hpp"
 
-#include "RunConfig.h"
-#include "ConfigFile.h"
-#include "ValidStates.h"
+#include "RunConfig.hpp"
+#include "ConfigFile.hpp"
+#include "ValidStates.hpp"
 
 using namespace std;
 

@@ -4,7 +4,7 @@
 #ifndef MAGFIELD_H
 #define MAGFIELD_H
 
-#include "Field.h"
+#include "Field.hpp"
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////

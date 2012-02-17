@@ -1,7 +1,7 @@
 // MagField
 // Author: Matthew Raso-Barnett  30/09/2009
 
-#include "MagField.h"
+#include "MagField.hpp"
 
 //______________________________________________________________________________
 // MagField - ABC for magnetic field.

@@ -5,7 +5,7 @@
 #define MAGFIELDARRAY_H
 
 #include <string>
-#include "FieldArray.h"
+#include "FieldArray.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //

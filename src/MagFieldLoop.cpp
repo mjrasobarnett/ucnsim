@@ -1,15 +1,15 @@
 // MagFieldLoop
 #include <iostream>
 
-#include "MagFieldLoop.h"
+#include "MagFieldLoop.hpp"
 
-#include "Tube.h"
-#include "Point.h"
+#include "Tube.hpp"
+#include "Point.hpp"
 #include "TMath.h"
 #include "TGeoMatrix.h"
-#include "Constants.h"
-#include "Algorithms.h"
-#include "DataAnalysis.h"
+#include "Constants.hpp"
+#include "Algorithms.hpp"
+#include "DataAnalysis.hpp"
 
 #include "gsl/gsl_sf_ellint.h"
 

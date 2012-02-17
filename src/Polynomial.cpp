@@ -12,8 +12,8 @@
 
 #include "gsl/gsl_poly.h"
 
-#include "Polynomial.h"
-#include "Units.h"
+#include "Polynomial.hpp"
+#include "Units.hpp"
 
 using std::cout;
 using std::endl;

@@ -7,7 +7,7 @@
 #include "TMath.h"
 #include "TGeoShape.h"
 
-#include "Parabola.h"
+#include "Parabola.hpp"
 
 using std::runtime_error;
 

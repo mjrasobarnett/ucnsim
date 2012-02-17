@@ -2,7 +2,7 @@
 #define __FIELD_VERTEX_H
 
 #include "TVector3.h"
-#include "Point.h"
+#include "Point.hpp"
 
 class FieldVertex : public TObject {
    private:

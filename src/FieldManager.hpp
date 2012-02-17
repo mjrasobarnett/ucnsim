@@ -7,9 +7,9 @@
 #include <string>
 #include "TNamed.h"
 #include "TVector3.h"
-#include "GravField.h"
-#include "MagFieldArray.h"
-#include "ElecFieldArray.h"
+#include "GravField.hpp"
+#include "MagFieldArray.hpp"
+#include "ElecFieldArray.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //

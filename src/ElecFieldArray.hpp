@@ -6,7 +6,7 @@
 
 #include "TObject.h"
 #include <string>
-#include "FieldArray.h"
+#include "FieldArray.hpp"
 #include "TVector3.h"
 
 ////////////////////////////////////////////////////////////////////////////

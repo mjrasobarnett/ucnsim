@@ -4,8 +4,8 @@
 
 #include "TMath.h"
 #include "TGeoMatrix.h"
-#include "MagFieldDipole.h"
-#include "Constants.h"
+#include "MagFieldDipole.hpp"
+#include "Constants.hpp"
 
 using namespace std;
 

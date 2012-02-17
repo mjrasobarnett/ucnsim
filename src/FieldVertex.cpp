@@ -3,7 +3,7 @@
 #include <sstream>
 #include <cmath>
 
-#include "FieldVertex.h"
+#include "FieldVertex.hpp"
 
 //#define PRINT_CONSTRUCTORS 
 //#define VERBOSE

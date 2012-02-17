@@ -4,8 +4,8 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "Point.h"
-#include "FieldArray.h"
+#include "Point.hpp"
+#include "FieldArray.hpp"
 
 //#define VERBOSE_MODE
 

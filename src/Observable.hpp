@@ -6,7 +6,7 @@
 
 #include <vector>
 #include <string>
-#include "Observer.h"
+#include "Observer.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //

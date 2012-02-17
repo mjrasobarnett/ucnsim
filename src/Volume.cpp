@@ -4,7 +4,7 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "Volume.h"
+#include "Volume.hpp"
 
 #include "TGeoElement.h"
 #include "TMath.h"
@@ -14,13 +14,13 @@
 #include "TGeoNode.h"
 #include "TGeoMatrix.h"
 
-#include "Particle.h"
-#include "Material.h"
-#include "Observer.h"
-#include "RunConfig.h"
+#include "Particle.hpp"
+#include "Material.hpp"
+#include "Observer.hpp"
+#include "RunConfig.hpp"
 
-#include "Units.h"
-#include "Constants.h"
+#include "Units.hpp"
+#include "Constants.hpp"
 
 //#define VERBOSE_MODE
 

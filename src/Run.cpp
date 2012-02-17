@@ -6,18 +6,18 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "Run.h"
-#include "ConfigFile.h"
-#include "FieldManager.h"
-#include "Particle.h"
-#include "Data.h"
-#include "Clock.h"
+#include "Run.hpp"
+#include "ConfigFile.hpp"
+#include "FieldManager.hpp"
+#include "Particle.hpp"
+#include "Data.hpp"
+#include "Clock.hpp"
 
 #include "TFile.h"
 #include "TRandom.h"
 
-#include "Algorithms.h"
-#include "Units.h"
+#include "Algorithms.hpp"
+#include "Units.hpp"
 
 using namespace std;
 

@@ -4,7 +4,7 @@
 #include <cmath>
 #include <stdexcept>
 
-#include "KDTree.h"
+#include "KDTree.hpp"
 
 #define PRINT_CONSTRUCTORS 
 //#define VERBOSE

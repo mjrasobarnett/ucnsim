@@ -6,9 +6,9 @@
 #include <iostream>
 #include <vector>
 
-#include "FieldVertex.h"
-#include "KDTreeNode.h"
-#include "VertexStack.h"
+#include "FieldVertex.hpp"
+#include "KDTreeNode.hpp"
+#include "VertexStack.hpp"
 
 class KDTree {
    public:

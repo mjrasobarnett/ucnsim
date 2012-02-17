@@ -42,7 +42,7 @@
 
 #include <cstdio>
 
-#include "TRandom3a.h"
+#include "TRandom3a.hpp"
 #include "TClass.h"
 #include "TUUID.h"
 

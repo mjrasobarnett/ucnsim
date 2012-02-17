@@ -4,7 +4,7 @@
 #ifndef ROOT_Tube
 #define ROOT_Tube
 
-#include "Box.h"
+#include "Box.hpp"
 #include "TGeoTube.h"
 
 ////////////////////////////////////////////////////////////////////////////

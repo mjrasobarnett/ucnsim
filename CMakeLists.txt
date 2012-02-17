@@ -34,7 +34,7 @@ include_directories( ${INCLUDE_DIRECTORIES} )
 link_directories( ${ROOT_LIBRARY_DIR} ${GSL_LINK_DIRECTORIES} ${Boost_LIBRARY_DIRS})
 
 # Save the location of LinkDef.h;
-set(UCNLIB_LINKDEF "${CMAKE_CURRENT_LIST_DIR}/src/LinkDef.h")
+set(UCNLIB_LINKDEF "${CMAKE_CURRENT_LIST_DIR}/src/LinkDef.hpp")
 
 # Add the CMakeLists.txt from the src directory
 add_subdirectory(src)

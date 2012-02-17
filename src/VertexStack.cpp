@@ -3,8 +3,8 @@
 #include <sstream>
 #include <cmath>
 
-#include "VertexStack.h"
-#include "FieldVertex.h"
+#include "VertexStack.hpp"
+#include "FieldVertex.hpp"
 
 //#define PRINT_CONSTRUCTORS 
 //#define VERBOSE

@@ -14,9 +14,9 @@
 #include "TBuffer3DTypes.h"
 #include "TMath.h"
 
-#include "Tube.h"
-#include "Polynomial.h"
-#include "Parabola.h"
+#include "Tube.hpp"
+#include "Polynomial.hpp"
+#include "Parabola.hpp"
 
 using std::cout;
 using std::endl;

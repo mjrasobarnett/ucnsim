@@ -5,8 +5,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include "ConfigFile.h"
-#include "Algorithms.h"
+#include "ConfigFile.hpp"
+#include "Algorithms.hpp"
 
 using namespace std;
 

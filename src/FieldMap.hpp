@@ -8,9 +8,9 @@
 
 #include "TNamed.h"
 #include "TVector3.h"
-#include "MagField.h"
-#include "KDTree.h"
-#include "FieldVertex.h"
+#include "MagField.hpp"
+#include "KDTree.hpp"
+#include "FieldVertex.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //

@@ -4,11 +4,11 @@
 #ifndef ROOT_UniformMagField
 #define ROOT_UniformMagField
 
-#include "MagField.h"
+#include "MagField.hpp"
 #include "TVector3.h"
 
 #include <string>
-#include "Particle.h"
+#include "Particle.hpp"
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //

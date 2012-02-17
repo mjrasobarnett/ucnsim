@@ -10,12 +10,12 @@
 #include "TDirectory.h"
 #include "TGeoManager.h"
 
-#include "RunConfig.h"
-#include "ParticleManifest.h"
+#include "RunConfig.hpp"
+#include "ParticleManifest.hpp"
 
-#include "Algorithms.h"
-#include "DataAnalysis.h"
-#include "ValidStates.h"
+#include "Algorithms.hpp"
+#include "DataAnalysis.hpp"
+#include "ValidStates.hpp"
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;

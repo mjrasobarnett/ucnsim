@@ -2,7 +2,7 @@
 // Author: Matthew Raso-Barnett  22/05/2009
 #include <iostream>
 #include "TMath.h"
-#include "ParabolicMagField.h"
+#include "ParabolicMagField.hpp"
 
 using std::string;
 /*

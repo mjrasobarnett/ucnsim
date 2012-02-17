@@ -6,7 +6,7 @@
 #include <cassert>
 #include <stdexcept>
 
-#include "Track.h"
+#include "Track.hpp"
 
 //#define VERBOSE_MODE
 //#define PRINT_CONSTRUCTORS
