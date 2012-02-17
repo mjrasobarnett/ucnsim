@@ -93,6 +93,13 @@ Build Commands:
    ./bootstrap.sh --with-libraries=program_options
    ./bjam install
 
+5. Additional CMake Modules (git://rasobarnett.com/matt/cmake_modules.git)
+==========================================================================
+
+Two additional modules to help CMake find ROOT and GSL can be downloaded from the above public repository link, or otherwise you can write/download your own short modules to do the same.
+
+Once downloaded, either put the cmake_modules directory into the ucnsim directory or else provide a symlink in the top-level ucnsim directory (this is expected in the main CMakeLists file).  
+
 
 Building UCNSIM
 ===============
@@ -101,31 +108,22 @@ Finally we are ready to build the project.
 
 Firstly we need to configure some environment variables, so that the project can find ROOT, GSL and BOOST easily.
 
-You have two options. 
+The environment variables the build will expect are, (it's advisable to either put these into a config script or your .bashrc) 
 
-- a - Edit or copy the environment config file
-         
-         /path/to/UCNSIM/directory/config/ucnsim.sh
-      
-      This file attempts to set up the environment for me depending on what
-      machine I'm working on.
-      
-      If you can follow what is going on here, then either modify it to add your
-      own installation paths or else copy it and make your own version.
-      
-- b - Set the key environment variables manually.
-      
-         export UCN_DIR=/path/to/UCNSIM/directory
-         export ROOTSYS=/path/to/ROOT/installation/directory
-         export GSL=/path/to/GSL/installation/directory
-         export BOOST=/path/to/BOOST/installation/directory
-      
-Once you have done either of these, type
+- UCN_DIR=/path/to/ucnsim/directory
+- UCN_GEOM=/path/to/geom/directory (usually this is just ${UCN_DIR}/geom)
+- UCN_RUNS=/path/to/runs/directory (usually this is just ${UCN_DIR}/runs)
+
+- ROOTSYS=/path/to/root/installation_directory
+- BOOST_ROOT=/path/to/boost/installation_directory
+- GSL_DIR=/path/to/gsl/installation_directory
+
+Once you have done this, type
    
    source config/ucnsim.sh
    
 Now we are ready to build. Type
-
+   
    cd build
    cmake ..
    make
