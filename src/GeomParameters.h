@@ -1,8 +1,8 @@
 #ifndef MODEL_PARAMETERS_H
 #define MODEL_PARAMETERS_H
 
-#include "../include/Units.h"
-#include "../include/Constants.h"
+#include "Units.h"
+#include "Constants.h"
 
 namespace GeomParameters {
    // -- Top
