@@ -18,8 +18,8 @@ using namespace GeomParameters;
 //__________________________________________________________________________
 Int_t cryoedm_geom()
 {
-   // Load project's shared library
-   gSystem->Load("libUCN.so");
+   // Load project's shared library (see $ROOTALIAS for function definition)
+   load_library("libUCN.so");
    // Create the geoManager
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
    // Build and write to file the simulation and visualisation geoms
@@ -518,7 +518,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out geometry to file
-   const char *fileName = "$(UCN_GEOM)/cryoedm_geom.root";
+   const char *fileName = "cryoedm_geom.root";
    cout << "Simulation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    
@@ -536,7 +536,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out visualisation geometry to file
-   const char *visFileName = "$(UCN_GEOM)/cryoedm_vis.root";
+   const char *visFileName = "cryoedm_vis.root";
    cout << "Visualisation Geometry Built... Writing to file: " << visFileName << endl;
    geoManager->Export(visFileName);
    return kTRUE;
