@@ -100,6 +100,13 @@ Two additional modules to help CMake find ROOT and GSL can be downloaded from th
 
 Once downloaded, either put the cmake_modules directory into the ucnsim directory or else provide a symlink in the top-level ucnsim directory (this is expected in the main CMakeLists file).  
 
+6. C++ Algorithms (git://rasobarnett.com/matt/cpp_algorithms.git)
+=================================================================
+
+This repository just builds a library of useful C++ utility functions (things like floating point comparison functions, string manipulation, posix variable expansion...).
+
+See the repository itself for build instructions. Once built, include a symlink to the cpp_algorithms directory in the ucnsim project's top level directory so that cmake will see it.  
+
 
 Building UCNSIM
 ===============

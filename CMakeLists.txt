@@ -22,6 +22,15 @@ find_package(ROOT REQUIRED)
 find_package(GSL REQUIRED)
 find_package(Boost 1.46 REQUIRED COMPONENTS program_options)
 
+# Set location of the Matt's CPP Algorithms library 
+set (ALGORITHMS_DIR "${CMAKE_CURRENT_LIST_DIR}/cpp_algorithms")
+set (ALGORITHMS_INCLUDE_DIR "${ALGORITHMS_DIR}/src")
+set (ALGORITHMS_LIBRARY_DIR "${ALGORITHMS_DIR}/lib")
+set (ALGORITHMS_LIBRARY "-L${ALGORITHMS_LIBRARY_DIR} -lALGORITHMS")
+message(STATUS "Algorithms Dir: ${ALGORITHMS_DIR}")
+message(STATUS "Algorithms Include Dir: ${ALGORITHMS_INCLUDE_DIR}")
+message(STATUS "Algorithms Library: ${ALGORITHMS_LIBRARY}")
+
 # Store the path to the include directory
 set(UCNLIB_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/src")
 
@@ -29,9 +38,15 @@ set(UCNLIB_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/src")
 set(INCLUDE_DIRECTORIES ${UCNLIB_INCLUDE_DIR}
                         ${ROOT_INCLUDE_DIR}
                         ${GSL_INCLUDE_DIR}
-                        ${Boost_INCLUDE_DIRS})
+                        ${Boost_INCLUDE_DIRS}
+                        ${ALGORITHMS_INCLUDE_DIR})
+
 include_directories( ${INCLUDE_DIRECTORIES} )
-link_directories( ${ROOT_LIBRARY_DIR} ${GSL_LINK_DIRECTORIES} ${Boost_LIBRARY_DIRS})
+
+link_directories( ${ROOT_LIBRARY_DIR}
+                  ${GSL_LINK_DIRECTORIES}
+                  ${Boost_LIBRARY_DIRS}
+                  ${ALGORITHMS_LIBRARY_DIR})
 
 # Save the location of LinkDef.h;
 set(UCNLIB_LINKDEF "${CMAKE_CURRENT_LIST_DIR}/src/LinkDef.hpp")

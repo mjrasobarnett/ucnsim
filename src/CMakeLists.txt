@@ -1,8 +1,7 @@
 
 # add_subdirectory(classes)
 
-set(UCNLIB_SOURCES  Algorithms.cpp
-                    BoolNode.cpp
+set(UCNLIB_SOURCES  BoolNode.cpp
                     BounceData.cpp
                     Box.cpp
                     Clock.cpp
@@ -53,8 +52,7 @@ set(UCNLIB_SOURCES  Algorithms.cpp
                     DataAnalysis.cpp
                     Materials.cpp )
 
-set(UCNLIB_HEADER_NAMES   Algorithms.hpp
-                          BoolNode.hpp
+set(UCNLIB_HEADER_NAMES   BoolNode.hpp
                           BounceData.hpp
                           Box.hpp
                           Clock.hpp
@@ -109,7 +107,8 @@ set(UCNLIB_HEADER_NAMES   Algorithms.hpp
                           Materials.hpp
                           Units.hpp)
 
-set(UCNLIB_DICT_HEADERS   ${UCNLIB_HEADER_NAMES})
+set(UCNLIB_DICT_HEADERS   ${UCNLIB_HEADER_NAMES}
+                          "${ALGORITHMS_INCLUDE_DIR}/Algorithms.hpp")
                         
 # Generate the root dictionary for all of these
 set(UCNLIB_DICT UCNLibDict.cpp)
@@ -126,7 +125,11 @@ add_library(UCNLib  SHARED
                     ${UCNLIB_HEADER_NAMES} )
 
 set (ROOT_CUSTOM_LIBRARIES Geom RGL Ged)
-set (UCNLIB_LIBRARIES ${GSL_LIBRARIES} ${ROOT_CUSTOM_LIBRARIES} ${ROOT_LIBRARIES} ${Boost_LIBRARIES})
+set (UCNLIB_LIBRARIES ${GSL_LIBRARIES}
+                      ${ROOT_CUSTOM_LIBRARIES}
+                      ${ROOT_LIBRARIES}
+                      ${Boost_LIBRARIES}
+                      ${ALGORITHMS_LIBRARY})
 
 target_link_libraries(UCNLib ${UCNLIB_LIBRARIES} )
 
