@@ -30,5 +30,11 @@
       load_library(ucnlib);
    }
 */   
-   set_my_style();
+  
+  // Add project's src directory to CINT's include path so that it knows where
+  // our headers are located when including them in scripts 
+  gInterpreter->AddIncludePath("${UCN_DIR}/src");
+
+  // My custom style setup defined in $ROOTALIAS
+  set_my_style();
 } 

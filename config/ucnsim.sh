@@ -24,7 +24,7 @@ if [[ `uname` == Darwin ]] ; then
 fi
 
 export ROOTMACROS=${UCN_DIR}/macros:${ROOTSYS}/macros
-#export ROOTLOGON=${UCN_DIR}/config/ucn_rootlogon.C
+export ROOTLOGON=${UCN_DIR}/config/ucn_rootlogon.C
 #export ROOTLOGOFF=${UCN_DIR}/config/ucn_rootlogoff.C
 
 #------------------------------------------------------------------------------

@@ -7,10 +7,9 @@
 #include "TGLCamera.h"
 #include "TGLPerspectiveCamera.h"
 
-#include "include/Units.h"
-#include "include/Constants.h"
-#include "include/Materials.h"
-#include "include/GeomParameters.h"
+#include "Units.hpp"
+#include "Constants.hpp"
+#include "GeomParameters.hpp"
 
 Bool_t Build_Geom(const TGeoManager* geoManager);
 
@@ -19,6 +18,8 @@ using namespace GeomParameters;
 //__________________________________________________________________________
 Int_t cryoedm_geom()
 {
+   // Load project's shared library
+   gSystem->Load("libUCN.so");
    // Create the geoManager
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
    // Build and write to file the simulation and visualisation geoms
