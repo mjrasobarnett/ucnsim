@@ -67,7 +67,7 @@ private:
 protected:
    double GetMeasInterval() const {return fMeasInterval;}
    double GetPreviousMeasTime() const {return fPreviousMeasTime;}
-   double SetPreviousMeasTime(double newPrevMeasTime) {fPreviousMeasTime = newPrevMeasTime;}
+   void SetPreviousMeasTime(double newPrevMeasTime) {fPreviousMeasTime = newPrevMeasTime;}
    const TObject* GetSubject() const {return fSubject;}
    
 public:
