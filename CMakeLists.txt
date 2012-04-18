@@ -10,7 +10,7 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake_modules")
 
 # Set Build type
-set(CMAKE_BUILD_TYPE debug)
+set(CMAKE_BUILD_TYPE release)
 
 # Set Boost options
 set(Boost_USE_STATIC_LIBS        ON)
