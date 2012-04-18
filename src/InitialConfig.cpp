@@ -19,7 +19,7 @@ ClassImp(InitialConfig)
 InitialConfig::InitialConfig()
               :fGeomFile(""), fGeomVisFile(""), fOutputDataFile(""),
                fBeamShape(""), fBeamRadius(0.), fBeamLength(0.), fBeamPhi(0.), fBeamTheta(0.),
-               fBeamPsi(0.), fBeamDisplacement(), fInitialParticles(0), fInitialMaxVelocity(0.),
+               fBeamPsi(0.), fBeamDisplacement(), fInitialParticles(0), fVelocityDistribution(""), fInitialMaxVelocity(0.),
                fFillingTime(0.), fDirMinTheta(0.), fDirMaxTheta(0.), fDirMinPhi(0.), fDirMaxPhi(0.),
                fPercentagePolarised(0.), fSpinAxis(), fSpinUp(kTRUE)
 {
@@ -65,6 +65,15 @@ InitialConfig::InitialConfig(const ConfigFile& masterConfig)
    fBeamDisplacement.SetXYZ(xPosition,yPosition,zPosition);
    
    fInitialParticles = initialConfigFile.GetInt("InitialParticles", "Neutrons");
+   fVelocityDistribution = initialConfigFile.GetString("VelocityDistribution", "Neutrons");
+   if (fVelocityDistribution != VelocityDistributions::mono &&
+       fVelocityDistribution != VelocityDistributions::uniform &&
+       fVelocityDistribution != VelocityDistributions::v &&
+       fVelocityDistribution != VelocityDistributions::v_squared) {
+      // Check if VelocityDistribution isn't one of the expected options
+      throw runtime_error("Error, velocity distribution selected is not recognised");
+   }
+
    fInitialMaxVelocity = initialConfigFile.GetFloat("InitialMaxVelocity", "Neutrons");
    fFillingTime = initialConfigFile.GetFloat("FillingTime", "Neutrons");
    
@@ -107,6 +116,7 @@ InitialConfig::InitialConfig(const InitialConfig& other)
                fBeamPsi(other.fBeamPsi),
                fBeamDisplacement(other.fBeamDisplacement),
                fInitialParticles(other.fInitialParticles),
+               fVelocityDistribution(other.fVelocityDistribution), 
                fInitialMaxVelocity(other.fInitialMaxVelocity),
                fFillingTime(other.fFillingTime),
                fDirMinTheta(other.fDirMinTheta),
@@ -137,6 +147,7 @@ InitialConfig& InitialConfig::operator=(const InitialConfig& other)
       fBeamPsi = other.fBeamPsi;
       fBeamDisplacement = other.fBeamDisplacement;
       fInitialParticles = other.fInitialParticles;
+      fVelocityDistribution = other.fVelocityDistribution;
       fInitialMaxVelocity = other.fInitialMaxVelocity;
       fFillingTime = other.fFillingTime;
       fDirMinTheta = other.fDirMinTheta;
@@ -175,6 +186,7 @@ void InitialConfig::Print(Option_t* /*option*/) const
    cout << "Beam Displacement: " << endl;
    fBeamDisplacement.Print();
    cout << "InitialParticles: " << fInitialParticles << endl;
+   cout << "VelocityDistribution: " << fVelocityDistribution << endl;
    cout << "InitialMaxVelocity: " << fInitialMaxVelocity << " m/s" << endl;
    cout << "FillingTime: " << fFillingTime << " s" << endl;
    cout << "Beam Direction Min Theta: " << fDirMinTheta << "\t";
@@ -186,3 +198,4 @@ void InitialConfig::Print(Option_t* /*option*/) const
    fSpinAxis.Print();
    cout << "-------------------------------------------" << endl;
 }
+

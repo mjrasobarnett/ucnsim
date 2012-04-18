@@ -8,6 +8,14 @@
 #include "TVector3.h"
 #include <string>
 
+namespace VelocityDistributions {
+   static const std::string mono = "mono";
+   static const std::string uniform = "uniform";
+   static const std::string v = "v";
+   static const std::string v_squared = "v^2";
+}
+
+
 class ConfigFile;
 
 class InitialConfig {
@@ -26,6 +34,7 @@ private:
    TVector3 fBeamDisplacement;
    
    int fInitialParticles;
+   std::string fVelocityDistribution;
    double fInitialMaxVelocity; // m/s
    double fFillingTime;  // s
    
@@ -60,6 +69,7 @@ public:
    const TVector3& BeamDisplacement() const {return fBeamDisplacement;}
 
    int InitialParticles() const {return fInitialParticles;}
+   std::string VelocityDistribution() const {return fVelocityDistribution;}
    double InitialMaxVelocity() const {return fInitialMaxVelocity;}
    double FillingTime() const {return fFillingTime;}
    

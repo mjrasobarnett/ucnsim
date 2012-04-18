@@ -48,7 +48,7 @@ using namespace GeomParameters;
 void GenerateBeam(const InitialConfig& initialConfig);
 Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix);
 Bool_t CreateRandomParticle(Particle* particle, const Double_t fillTime, const TGeoVolume* beamVolume, const TGeoMatrix* beamMatrix); 
-Bool_t DetermineParticleVelocity(Particle* particle, const Double_t maxVelocity, const Double_t minTheta, const Double_t maxTheta, const Double_t minPhi, const Double_t maxPhi);
+Bool_t DetermineParticleVelocity(Particle* particle, const string vel_dist, const Double_t maxVelocity, const Double_t minTheta, const Double_t maxTheta, const Double_t minPhi, const Double_t maxPhi);
 void DefinePolarisation(Particle* particle, const Double_t percentPolarised, const TVector3& spinAxis, const Bool_t spinUp);
 
 //__________________________________________________________________________
@@ -136,6 +136,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    // Generates a uniform distribution of particles with random directions all with 
    // the same total energy (kinetic plus potential) defined at z = 0.   
    const Int_t particles = TMath::Abs(initialConfig.InitialParticles());
+   const string vel_dist = initialConfig.VelocityDistribution();
    const Double_t vmax = TMath::Abs(initialConfig.InitialMaxVelocity())*Units::m/Units::s;
    const Double_t maxEnergy = 0.5*Neutron::mass_eV_c2*TMath::Power(vmax,2.0);
    const Double_t fillTime = TMath::Abs(initialConfig.FillingTime())*Units::s;
@@ -221,7 +222,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
       particle->SetId(i);
       CreateRandomParticle(particle, fillTime, beamVolume, beamMatrix);
       // -- Initialise particle's momentum
-      DetermineParticleVelocity(particle, vmax, minTheta, maxTheta, minPhi, maxPhi);
+      DetermineParticleVelocity(particle, vel_dist, vmax, minTheta, maxTheta, minPhi, maxPhi);
       // -- Setup polarisation
       DefinePolarisation(particle, percentPolarised, spinAxis, spinUp); 
       // -- Fill histograms
@@ -307,7 +308,7 @@ Bool_t GenerateParticles(const InitialConfig& initialConfig, const TGeoVolume* b
    glViewer->UpdateScene();
    glViewer = 0;
    cout << "Successfully generated " << particles << " particles." << endl;
-   cout << "-------------------------------------------" << endl;	
+   cout << "-------------------------------------------" << endl; 
    // -- Write the initial positions out to file
    Analysis::DataFile::NavigateToHistDir(*file);
    positions->Write("initial:Positions",TObject::kOverwrite);
@@ -355,7 +356,7 @@ Bool_t CreateRandomParticle(Particle* particle, const Double_t fillTime, const T
 }
 
 //__________________________________________________________________________
-Bool_t DetermineParticleVelocity(Particle* particle, const Double_t maxVelocity, const Double_t minTheta, const Double_t maxTheta, const Double_t minPhi, const Double_t maxPhi)
+Bool_t DetermineParticleVelocity(Particle* particle, const string vel_dist, const Double_t maxVelocity, const Double_t minTheta, const Double_t maxTheta, const Double_t minPhi, const Double_t maxPhi)
 {
    // -- Determine a random direction vector on the unit sphere dOmega = sin(theta).dTheta.dPhi
    // Convert limits to radians
@@ -378,10 +379,39 @@ Bool_t DetermineParticleVelocity(Particle* particle, const Double_t maxVelocity,
    assert(TMath::Abs(TMath::Sqrt(dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2]) - 1.0) < 1.E-10);
 
    // -- Determine Particle Velocity
-   // Pick random velocity in range, distributed along curve alpha.v^2, alpha is normalisation
-   Double_t normalisation = (3.)/(TMath::Power(maxVelocity,3.0));
-   Double_t prob = gRandom->Uniform(0.0,1.0);
-   Double_t velocity = TMath::Power(((3.0*prob)/normalisation),(1.0/3.0));   
+   Double_t velocity = 0.0;
+   if (vel_dist == VelocityDistributions::mono) { 
+      // -- Mono-energetic distribution. All particles have SAME TOTAL energy (Kinetic + potential)
+      double maxTotalEnergy = 0.5*Neutron::mass_eV_c2*TMath::Power(maxVelocity,2.0);
+      double gravPotE = Neutron::mass_eV_c2*Constants::grav_acceleration*particle->Z();
+      double kineticE = maxTotalEnergy - gravPotE;
+      velocity = TMath::Sqrt(2.0*kineticE/Neutron::mass_eV_c2);
+      if (velocity < 0.0 || velocity > maxVelocity) {
+         cout << "Error, maxVelocity is set too low for height of beam volume : " << velocity << "\t" << particle->Z() << endl;
+         cout << "root(2*g*h) " << TMath::Sqrt(2.0*Constants::grav_acceleration*particle->Z()) << "\t" << maxVelocity << endl;
+         throw runtime_error("Error, maxVelocity is set too low for height of beam volume");
+      }
+   } else if (vel_dist == VelocityDistributions::uniform) {
+      // -- Uniform distribution
+      // Define velocity as just the max velocity
+      velocity = maxVelocity;
+   } else if (vel_dist == VelocityDistributions::v) {
+      // -- V distribution
+      // Define velocity as distributed along linear v distribution
+      Double_t normalisation = (2.)/(TMath::Power(maxVelocity,2.0));
+      Double_t prob = gRandom->Uniform(0.0,1.0);
+      velocity = TMath::Power(((2.0*prob)/normalisation),(1.0/2.0));
+   } else if (vel_dist == VelocityDistributions::v_squared) {
+      // -- V^2 distribution
+      // Define velocity as distributed along v^2 curve
+      Double_t normalisation = (3.)/(TMath::Power(maxVelocity,3.0));
+      Double_t prob = gRandom->Uniform(0.0,1.0);
+      velocity = TMath::Power(((3.0*prob)/normalisation),(1.0/3.0));
+   } else {
+      // Default case
+      throw runtime_error("Error, unrecognised velocity distribution set");
+   }
+   // Set velocity
    Double_t vel[3];
    vel[0] = velocity*dir[0];
    vel[1] = velocity*dir[1];
