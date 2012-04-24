@@ -66,8 +66,8 @@ public:
    Double_t CalculateProbSpinUp(const TVector3& axis) const;
    
    // -- Set initial polarisation
-   Bool_t Polarise(const TVector3& axis, const Bool_t up);
-   
+   void Polarise(const TVector3& axis, const Bool_t up);
+   void PolariseRandomly();   
    virtual void Print(Option_t* option = "") const;
    
    ClassDef(Spin, 1)

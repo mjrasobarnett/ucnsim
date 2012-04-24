@@ -76,7 +76,7 @@ void Spin::Print(Option_t* /*option*/) const
 }
 
 //_____________________________________________________________________________
-Bool_t Spin::Polarise(const TVector3& axis, const Bool_t up)
+void Spin::Polarise(const TVector3& axis, const Bool_t up)
 {
    // -- Set Spin's polarisation along defined axis
    if (up == kTRUE) {
@@ -84,7 +84,29 @@ Bool_t Spin::Polarise(const TVector3& axis, const Bool_t up)
    } else {
       fSpinor.PolariseDown(axis);
    }
-   return kTRUE;
+}
+
+//_____________________________________________________________________________
+void Spin::PolariseRandomly()
+{
+   // Define a random vector on the 3D sphere, and polarise
+   // at random either spin up or down along that.
+   Double_t phi = gRandom->Uniform(0.0, 1.0)*2.0*TMath::Pi();
+   Double_t u   = gRandom->Uniform(-1.0, 1.0);
+   Double_t theta = TMath::ACos(-u);
+   // Convert spherical polars into cartesian nx,ny,nz
+   Double_t dir[3];
+   dir[0] = TMath::Cos(phi)*TMath::Sin(theta);
+   dir[1] = TMath::Sin(phi)*TMath::Sin(theta);
+   dir[2] = TMath::Cos(theta);   
+   TVector3 randomvec(dir[0],dir[1],dir[2]);
+   TVector3 axis = randomvec.Unit();
+   // Polarise particle along random unit vector
+   if (gRandom->Uniform(0.0,2.0) <= 1.0) {
+      fSpinor.PolariseUp(axis);
+   } else {
+      fSpinor.PolariseDown(axis);         
+   }
 }
 
 //_____________________________________________________________________________

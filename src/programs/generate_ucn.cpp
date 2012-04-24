@@ -426,7 +426,7 @@ void DefinePolarisation(Particle* particle, const Double_t percentPolarised, con
    Double_t percentage;
    // Check if percent polarised falls outside allowed bounds
    if (percentPolarised < 0.0 || percentPolarised > 100.0) {
-      percentage = 100.0;
+      throw runtime_error("Error, unrecognised polarisation percentage");
    } else {
       percentage = percentPolarised;
    }
@@ -434,23 +434,6 @@ void DefinePolarisation(Particle* particle, const Double_t percentPolarised, con
    if (gRandom->Uniform(0.0, 100.0) <= percentage) {
       particle->Polarise(spinAxis, spinUp);
    } else {
-      // For the unpolarised ones, define a random vector on the 3D sphere, and polarise
-      // at random either spin up or down along that.
-      Double_t phi = gRandom->Uniform(0.0, 1.0)*2.0*TMath::Pi();
-      Double_t u   = gRandom->Uniform(-1.0, 1.0);
-      Double_t theta = TMath::ACos(-u);
-      // Convert spherical polars into cartesian nx,ny,nz
-      Double_t dir[3];
-      dir[0] = TMath::Cos(phi)*TMath::Sin(theta);
-      dir[1] = TMath::Sin(phi)*TMath::Sin(theta);
-      dir[2] = TMath::Cos(theta);   
-      TVector3 randomvec(dir[0],dir[1],dir[2]);
-      TVector3 unitvec = randomvec.Unit();
-      // Polarise particle along random unit vector
-      if (gRandom->Uniform(0.0,2.0) <= 1.0) {
-         particle->Polarise(unitvec, kTRUE);
-      } else {
-         particle->Polarise(unitvec, kFALSE);         
-      }
+      particle->PolariseRandomly();
    }
 }

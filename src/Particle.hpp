@@ -129,6 +129,7 @@ public:
    // -- Spin
    const Spin&          GetSpin() const {return fSpin;}
    void                 Polarise(const TVector3& axis, const Bool_t up);
+   void                 PolariseRandomly();
    void                 PrecessSpin(const TVector3& field, const Double_t precessTime);
    Bool_t               IsSpinUp(const TVector3& axis) const;
    
