@@ -2,16 +2,13 @@
 // Vishal Francis. 
 // 14/11/2010 - Model covers whole neutron facing geometry to a first approximation. 
 // Things missing currently includes valves
-#include "TGeoManager.h"
-#include "TGLViewer.h"
-#include "TGLCamera.h"
-#include "TGLPerspectiveCamera.h"
 
 #include "Units.hpp"
 #include "Constants.hpp"
 #include "GeomParameters.hpp"
 
 Bool_t Build_Geom(const TGeoManager* geoManager);
+Bool_t BuildFields(const TGeoManager* geoManager);
 
 using namespace GeomParameters;
 
@@ -19,7 +16,7 @@ using namespace GeomParameters;
 Int_t cryoedm_geom()
 {
    // Load project's shared library (see $ROOTALIAS for function definition)
-   load_library("libUCN.so");
+   load_library("$UCN_DIR/lib/libUCN.so");
    // Create the geoManager
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
    // Build and write to file the simulation and visualisation geoms
@@ -29,7 +26,8 @@ Int_t cryoedm_geom()
    geomCanvas->cd();
    double camera[3] = {preVolumeXPos, preVolumeYPos, preVolumeZPos};
    Analysis::Geometry::DrawGeometry(*geomCanvas, *geoManager, camera);
-
+   // Build Fields
+   BuildFields(geoManager);
    return 0;
 }
 
@@ -542,3 +540,23 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    return kTRUE;
 }
 
+//__________________________________________________________________________
+Bool_t BuildFields(const TGeoManager* geoManager)
+{
+   cout << "--------------------------------" << endl;
+   cout << "Building Fields" << endl;
+   cout << "--------------------------------" << endl;
+   // ---------------------------------
+   // -- Gravitational Field
+   GravField* gravField = new GravField(-1.0,0.0,0.0);
+   printf("Gravitational Field - nx: %.4f \t ny: %.4f \t nz: %.4f\n",gravField->Nx(),gravField->Ny(),gravField->Nz());
+   // -- Write fields to file
+   const char *fieldsFileName = "cryoedm_fields.root";
+   TFile *file = Analysis::DataFile::OpenRootFile(fieldsFileName, "recreate");
+   cout << "Fields Created... Writing to file: " << fieldsFileName << endl;
+   gravField->Write(gravField->GetName());
+   file->Close();
+   // Cleanup
+   delete gravField;
+   return kTRUE;
+}

@@ -1,32 +1,27 @@
-// This is a model of the cryoEDM experiment, using dimensions from the model created by
-// Vishal Francis. 
-// 14/11/2010 - Model covers whole neutron facing geometry to a first approximation. 
-// Things missing currently includes valves
-#include "TGeoManager.h"
-#include "TGLViewer.h"
-#include "TGLCamera.h"
-#include "TGLPerspectiveCamera.h"
-
-#include "include/Units.h"
-#include "include/Constants.h"
-#include "include/Materials.h"
-#include "include/GeomParameters.h"
+#include "Units.hpp"
+#include "Constants.hpp"
+#include "GeomParameters.hpp"
 
 Bool_t Build_Geom(const TGeoManager* geoManager);
-Bool_t Draw_Geom(const TGeoManager* geoManager);
-Bool_t BuildFieldMap(const TGeoHMatrix& matrix);
+Bool_t BuildFields(const TGeoManager* geoManager);
 
 using namespace GeomParameters;
-
 //__________________________________________________________________________
 Int_t guide_section_geom()
 {
+   // Load project's shared library (see $ROOTALIAS for function definition)
+   load_library("$UCN_DIR/lib/libUCN.so");
    // Create the geoManager
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
    // Build and write to file the simulation and visualisation geoms
    Build_Geom(geoManager);
-   Draw_Geom(geoManager);
-   
+   // Draw Geom
+   TCanvas* geomCanvas = new TCanvas("GeomCanvas","Canvas for visualisation of EDM Geom",60,40,200,200);
+   geomCanvas->cd();
+   double camera[3] = {detectorValveVolXPos, detectorValveVolYPos, detectorValveVolZPos};
+   Analysis::Geometry::DrawGeometry(*geomCanvas, *geoManager, camera);
+   // Build Fields
+   BuildFields(geoManager);
    return 0;
 }
 
@@ -73,14 +68,15 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    detectorValveVol->SetVisibility(kTRUE);
    detectorValveVol->SetTransparency(0);
    // -- Define the Valve volume back
-   TGeoRotation detectorValveVolRot("DetectorValveVolXPosRot",detectorValveVolPhi,detectorValveVolTheta,detectorValveVolPsi); // phi, theta, psi
-   TGeoTranslation detectorValveVolTra("DetectorValveVolXPosTra", detectorValveVolXPos, detectorValveVolYPos, detectorValveVolZPos);
+   TGeoRotation detectorValveVolRot("DetectorValveVolRot",detectorValveVolPhi, detectorValveVolTheta, detectorValveVolPsi);
+   TGeoTranslation detectorValveVolTra("DetectorValveVolTra",detectorValveVolXPos, detectorValveVolYPos, detectorValveVolZPos);
    TGeoCombiTrans detectorValveVolCom(detectorValveVolTra,detectorValveVolRot);
    TGeoHMatrix detectorValveVolMat = detectorValveVolCom;
+   detectorValveVolMat.SetName("DetectorValveVolMat");
    chamber->AddNode(detectorValveVol, 1, new TGeoHMatrix(detectorValveVolMat));
    Double_t detectorValveVolCapacity = detectorValveVolShape->Capacity();
-   
-   
+
+      
    // -------------------------------------
    // -- GUIDE SECTION
    // Guide section has *probably* 4 segments. 
@@ -90,12 +86,12 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    guideSeg->SetLineWidth(1);
    guideSeg->SetVisibility(kTRUE);
    guideSeg->SetTransparency(20);
-   Double_t guideSegXPos = guideXPos;
+   Double_t guideSegZPos = guideZPos;
    Double_t guideCapacity = 0.0;
-   for (Int_t segNum = 1; segNum <= 3; segNum++) {
+   for (Int_t segNum = 1; segNum <= 5; segNum++) {
       // Define Guide Seg matrix
-      TGeoRotation segmentRot("SegmentRot",guidePhi,guideTheta,0); // phi, theta, psi
-      TGeoTranslation segmentTra("SegmentTra",guideSegXPos, guideYPos, guideZPos);
+      TGeoRotation segmentRot("SegmentRot",guidePhi,guideTheta,guidePsi); // phi, theta, psi
+      TGeoTranslation segmentTra("SegmentTra",guideXPos, guideYPos, guideSegZPos);
       TGeoCombiTrans segmentCom(segmentTra,segmentRot);
       TGeoHMatrix segmentMat = segmentCom;
       Char_t sourceMatrixName[20];
@@ -103,7 +99,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
       segmentMat.SetName(sourceMatrixName);
       chamber->AddNode(guideSeg, segNum, new TGeoHMatrix(segmentMat));
       // Shift next segment along by length of segment
-      guideSegXPos = guideSegXPos - 2.0*guideSegHalfZ;
+      guideSegZPos = guideSegZPos + 2.0*guideSegHalfZ;
       // Calculate guide's volume
       guideCapacity += guideSegShape->Capacity();
    }
@@ -114,7 +110,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out geometry to file
-   const char *fileName = "$(UCN_GEOM)/guide_section_geom.root";
+   const char *fileName = "guide_section_geom.root";
    cout << "Simulation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    
@@ -128,91 +124,46 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    double end_boundary[3] = {guideSegShape->GetDX(),guideSegShape->GetDY(),guideSegShape->GetDZ()};
    cout << "Pre-Volume Origin: " << end_origin[0] << "\t" << end_origin[1] << "\t" << end_origin[2] << endl;
    cout << "Pre-Volume Boundary +/-: " << end_boundary[0] << "\t" << end_boundary[1] << "\t" << end_boundary[2] << endl;
-   
-   BuildFieldMap(detectorValveVolMat);
-   
+  
    return kTRUE;
 }
 
 //__________________________________________________________________________
-Bool_t Draw_Geom(const TGeoManager* geoManager) 
+Bool_t BuildFields(const TGeoManager* geoManager)
 {
-   // -------------------------------------
-   // -- Draw the vis-geometry in OpenGLViewer
-   TCanvas* canvas = new TCanvas("GeomCanvas","Canvas for visualisation of EDM Geom",60,40,600,600);
-   canvas->cd();
-   geoManager->GetTopVolume()->Draw("ogl");
-   geoManager->SetVisOption(0); // Default is 1, but 0 draws all the intermediate volumes not just the final bottom layer
-   
-   // -- Get the GLViewer so we can manipulate the camera
-   TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
-   // -- Select Draw style 
-   glViewer->SetStyle(TGLRnrCtx::kFill); // TGLRnrCtx::kFill, TGLRnrCtx::kOutline, TGLRnrCtx::kWireFrame
-   // -- Set Background colour
-   glViewer->SetClearColor(TColor::kWhite);
-   // -- Set Lights - turn some off if you wish
-// TGLLightSet* lightSet = glViewer->GetLightSet();
-// lightSet->SetLight(TGLLightSet::kLightLeft, kFALSE);
-   // -- Set Camera type
-   // kCameraPerspXOZ, kCameraPerspYOZ, kCameraPerspXOY, kCameraOrthoXOY
-   // kCameraOrthoXOZ, kCameraOrthoZOY, kCameraOrthoXnOY, kCameraOrthoXnOZ, kCameraOrthoZnOY
-   TGLViewer::ECameraType camera = 2;
-   glViewer->SetCurrentCamera(camera);
-   glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   Double_t cameraCentre[3] = {detectorValveVolXPos, detectorValveVolYPos, detectorValveVolZPos};
-   glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
-   // -- Draw Reference Point, Axes
-   Double_t refPoint[3] = {0.,0.,0.};
-   // Int_t axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const Double_t referencePos[3]
-   glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
-   glViewer->UpdateScene();
-   return kTRUE;
-}
+   cout << "--------------------------------" << endl;
+   cout << "Building Fields" << endl;
+   cout << "--------------------------------" << endl;
+   // ---------------------------------
+   // -- Gravitational Field
+   GravField* gravField = new GravField(-1.0,0.0,0.0);
+   printf("Gravitational Field - nx: %.4f \t ny: %.4f \t nz: %.4f\n",gravField->Nx(),gravField->Ny(),gravField->Nz());
 
-//__________________________________________________________________________
-Bool_t BuildFieldMap(const TGeoHMatrix& matrix)
-{
-   // Create a Uniform Magnetic field and write it to file
-   string filename = "runs/polarisation/guide_tube/C8=9 A +SQUIDs Coil =26_4 mA +D1=2 A + 6WS TC guide tube -100 z +80 cm.txt";
+   // ---------------------------------
+   // -- Create a Magnetic field and write it to file
+   string magfilename = "runs/polarisation/guide_tube/C8=9 A +SQUIDs Coil =26_4 mA +D1=2 A + 6WS TC guide tube -100 z +80 cm.txt";
    // Define shape of field
    TGeoShape* magFieldShape = new Box("FieldShape",0.031, 0.031, 3.0);
    // Define transformation that locates field in geometry
-   TGeoMatrix* magFieldPosition = new TGeoHMatrix(matrix);
-   magFieldPosition->Print();
+   TGeoMatrix* fieldMatrix = static_cast<TGeoMatrix*>(geoManager->GetListOfMatrices()->FindObject("DetectorValveVolMat"));
+   TGeoMatrix* magFieldPosition = new TGeoHMatrix(*fieldMatrix);
    MagFieldMap* field = new MagFieldMap("Field", magFieldShape, magFieldPosition);
-   if (field->BuildMap(filename) == kFALSE) {
-      Error("BuildFieldMap","Cannot open file: %s", filename);
+   if (field->BuildMap(magfilename) == kFALSE) {
+      Error("BuildFieldMap","Cannot open file: %s", magfilename);
       return kFALSE;
    }
    // Add field to magfield manager
    MagFieldArray* magFieldArray = new MagFieldArray();
    magFieldArray->AddField(field);
-   
-/*   // Elec Field
-   // Define shape of field
-   TGeoShape* elecFieldShape = new Tube("SolenoidFieldShape",hvCellRMin, hvCellRMax, hvCellHalfZ);
-   // Define transformation that locates field in geometry
-   TGeoMatrix* elecFieldPosition = new TGeoHMatrix(matrix);
-   TVector3 elecFieldStrength(hvCellEx, hvCellEy, hvCellEz);
-   ElecField* elecField = new UniformElecField("ElectricField", elecFieldStrength, elecFieldShape, elecFieldPosition);
-   // Add field to electric field manager
-   ElecFieldArray* elecFieldArray = new ElecFieldArray();
-   elecFieldArray->AddField(elecField);
-*/   
+  
+   // ---------------------------------
    // -- Write magfieldmanager to geometry file
-   const char *magFileName = "geom/fields.root";
-   TFile *f = TFile::Open(magFileName,"recreate");
-   if (!f || f->IsZombie()) {
-     Error("BuildFieldMap","Cannot open file: %s", magFileName);
-     return kFALSE;
-   }
+   const char *outputFileName = "guide_section_fields.root";
+   TFile *file = Analysis::DataFile::OpenRootFile(fieldsFileName, "recreate");
+   gravField->Write(gravField->GetName());
    magFieldArray->Write(magFieldArray->GetName());
-//   elecFieldArray->Write(elecFieldArray->GetName());
-   f->ls();
-   f->Close();
+   f->Close();s
+   delete gravField;
    delete magFieldArray;
-//   delete elecFieldArray;
-   magFieldArray = 0;
-//   elecFieldArray = 0;
    return kTRUE;
 }
