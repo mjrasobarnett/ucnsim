@@ -25,9 +25,7 @@ private:
    GravField*    fGravField;
    MagFieldArray* fMagFieldArray;
    ElecFieldArray* fElecFieldArray;
-   
-   GravField* AddGravField();
-   
+
 public:
    // -- constructors
    FieldManager();
