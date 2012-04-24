@@ -2,6 +2,7 @@
 // Author: Matthew Raso-Barnett  01/08/2009
 
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 #include <string>
 
@@ -22,10 +23,7 @@
 #include "Units.hpp"
 #include "Constants.hpp"
 
-using std::cout;
-using std::endl;
-using std::cerr;
-using std::string;
+using namespace std;
 
 //#define VERBOSE_MODE
 
@@ -39,7 +37,9 @@ FieldManager::FieldManager()
                   fElecFieldArray(NULL)
 {
 // -- Default constructor
-   Info("FieldManager", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldManager", "Default Constructor");
+   #endif
 } 
 
 //_____________________________________________________________________________
@@ -50,7 +50,9 @@ FieldManager::FieldManager(const FieldManager& other)
                   fElecFieldArray(other.fElecFieldArray)
 {
 // -- Copy Constructor
-   Info("FieldManager", "Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldManager", "Copy Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -70,7 +72,9 @@ FieldManager& FieldManager::operator=(const FieldManager& other)
 FieldManager::~FieldManager()
 { 
 // -- Destructor
-   Info("FieldManager", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldManager", "Destructor");
+   #endif
    if (fGravField) delete fGravField;
    if (fMagFieldArray) delete fMagFieldArray;
    if (fElecFieldArray) delete fElecFieldArray;
@@ -106,7 +110,7 @@ Bool_t FieldManager::Initialise(const RunConfig& runConfig)
    }
    // Search for the Gravitational Field
    if (runConfig.GravFieldOn() == kTRUE) {
-      Info("Initialise","Gravitational Field set to be ON. Creating...");
+      cout << setfill(' ') << setw(40) << left << "Gravitational Field set to be" << "ON" << endl;
       TString gravFieldName = "GravField";
       f->GetObject(gravFieldName,fGravField);
       if (fGravField == NULL) {
@@ -114,11 +118,11 @@ Bool_t FieldManager::Initialise(const RunConfig& runConfig)
          return kFALSE;
       }
    } else {
-      Info("Initialise","Gravitational Field set to be OFF.");
+      cout << setfill(' ') << setw(40) << left << "Gravitational Field set to be" << "OFF" << endl;
    }
    // Search for Magnetic Field Manager
    if (runConfig.MagFieldOn() == kTRUE) {
-      Info("Initialise","Magnetic Environment set to be ON. Creating...");
+      cout << setfill(' ') << setw(40) << left << "Magnetic Fields set to be" << "ON" << endl;
       TString magManagerName = "MagFieldArray";
       f->GetObject(magManagerName,fMagFieldArray);
       if (fMagFieldArray == NULL) {
@@ -126,11 +130,11 @@ Bool_t FieldManager::Initialise(const RunConfig& runConfig)
          return kFALSE;
       }
    } else {
-      Info("Initialise","Magnetic Environment set to be OFF.");
+      cout << setfill(' ') << setw(40) << left << "Magnetic Fields set to be" << "OFF" << endl;
    }
    // Search for Electric Field Manager
    if (runConfig.ElecFieldOn() == kTRUE) {
-      Info("Initialise","Electric Fields Environment set to be ON. Creating...");
+      cout << setfill(' ') << setw(40) << left << "Electric Fields set to be" << "ON" << endl;
       TString elecFieldArrayName = "ElecFieldArray";
       f->GetObject(elecFieldArrayName,fElecFieldArray);
       if (fElecFieldArray == NULL) {
@@ -138,7 +142,7 @@ Bool_t FieldManager::Initialise(const RunConfig& runConfig)
          return kFALSE;
       }
    } else {
-      Info("Initialise","Electric Environment set to be OFF.");
+      cout << setfill(' ') << setw(40) << left << "Electric Fields set to be" << "OFF" << endl;
    }
    // Clean up file
    f->Close();

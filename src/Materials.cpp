@@ -11,28 +11,37 @@
 using namespace std;
 using namespace Elements;
 
+//#define VERBOSE 
+
+//______________________________________________________________________________
 Bool_t Materials::BuildMaterials(TGeoManager* geoManager) {
    // Create the materials/media defined above
-   cout << "---------------------------------" << endl;
-   cout << "Building Experiment Materials List" << endl;
-   cout << "---------------------------------" << endl;
+   #ifdef VERBOSE
+      cout << "---------------------------------" << endl;
+      cout << "Building Experiment Materials List" << endl;
+      cout << "---------------------------------" << endl;
+   #endif
    if (!geoManager) {
       cout << "Error: Initialise GeoManager First before instantiating Materials" << endl;
       return kFALSE;
    }
    //________________________________________
    // BOUNDARY MATERIALS      
-   cout.setf(std::ios::left, std::ios::adjustfield);
-   cout << std::setw(15) << "Added Material" << "\t";
-   cout << std::setw(15) << "Fermi (neV)" << "\t";
-   cout << std::setw(15) << "Eta" << endl;
+   #ifdef VERBOSE
+      cout.setf(std::ios::left, std::ios::adjustfield);
+      cout << std::setw(15) << "Added Material" << "\t";
+      cout << std::setw(15) << "Fermi (neV)" << "\t";
+      cout << std::setw(15) << "Eta" << endl;
+   #endif
    // - Hydrogen
    Element* elemHydrogen = new Element("Hydrogen", Hydrogen::z, Hydrogen::a, Hydrogen::scatLength, Hydrogen::cohCrossSec, Hydrogen::incohCrossSec, Hydrogen::absCrossSec);
    Material* matHydrogen = new Material("Hydrogen", elemHydrogen, Densities::hydrogen);
    TGeoMedium* hydrogen = new TGeoMedium("Hydrogen", 1, matHydrogen);
-   cout << std::setw(15) << hydrogen->GetName() << "\t";
-   cout << std::setw(15) << matHydrogen->FermiPotential()/Units::neV << "\t";
-   cout << std::setw(15) << matHydrogen->LossFactor() << endl;
+   #ifdef VERBOSE
+      cout << std::setw(15) << hydrogen->GetName() << "\t";
+      cout << std::setw(15) << matHydrogen->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matHydrogen->LossFactor() << endl;
+   #endif
    /*
    cout << "---------------------------------" << endl;
    cout << "Density (kg/m^3): " << Densities::hydrogen << endl;
@@ -52,10 +61,11 @@ Bool_t Materials::BuildMaterials(TGeoManager* geoManager) {
    TGeoMedium* beryllium = new TGeoMedium("Beryllium", 1, matBeryllium);
    // Set Beryllium Loss factor to the experimentally determined value
    matBeryllium->LossFactor(LossFactor::beryllium);
-   cout << std::setw(15) << beryllium->GetName() << "\t";
-   cout << std::setw(15) << matBeryllium->FermiPotential()/Units::neV << "\t";
-   cout << std::setw(15) << matBeryllium->LossFactor() << endl;
-   
+   #ifdef VERBOSE
+      cout << std::setw(15) << beryllium->GetName() << "\t";
+      cout << std::setw(15) << matBeryllium->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matBeryllium->LossFactor() << endl;
+   #endif
    /*
    cout << "---------------------------------" << endl;
    cout << "Density (kg/m^3): " << Densities::beryllium << endl;
@@ -73,10 +83,11 @@ Bool_t Materials::BuildMaterials(TGeoManager* geoManager) {
    Element* elemCopper = new Element("Copper", Copper::z, Copper::a, Copper::scatLength, Copper::cohCrossSec, Copper::incohCrossSec, Copper::absCrossSec);
    Material* matCopper = new Material("Copper", elemCopper, Densities::copper);
    TGeoMedium* copper = new TGeoMedium("Copper", 1, matCopper);
-   cout << std::setw(15) << copper->GetName() << "\t";
-   cout << std::setw(15) << matCopper->FermiPotential()/Units::neV << "\t";
-   cout << std::setw(15) << matCopper->LossFactor() << endl;
-   
+   #ifdef VERBOSE
+      cout << std::setw(15) << copper->GetName() << "\t";
+      cout << std::setw(15) << matCopper->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matCopper->LossFactor() << endl;
+   #endif
    /*
    cout << "---------------------------------" << endl;
    cout << "Density (kg/m^3): " << Densities::copper << endl;
@@ -94,9 +105,11 @@ Bool_t Materials::BuildMaterials(TGeoManager* geoManager) {
    Element* elemAluminium = new Element("Aluminium", Aluminium::z, Aluminium::a, Aluminium::scatLength, Aluminium::cohCrossSec, Aluminium::incohCrossSec, Aluminium::absCrossSec);
    Material* matAluminium = new Material("Aluminium", elemAluminium, Densities::aluminium);
    TGeoMedium* aluminium = new TGeoMedium("Aluminium", 1, matAluminium);
-   cout << std::setw(15) << aluminium->GetName() << "\t";
-   cout << std::setw(15) << matAluminium->FermiPotential()/Units::neV << "\t";
-   cout << std::setw(15) << matAluminium->LossFactor() << endl;
+   #ifdef VERBOSE
+      cout << std::setw(15) << aluminium->GetName() << "\t";
+      cout << std::setw(15) << matAluminium->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matAluminium->LossFactor() << endl;
+   #endif
    /*
    cout << "---------------------------------" << endl;
    cout << "Density (kg/m^3): " << Densities::aluminium << endl;
@@ -117,9 +130,11 @@ Bool_t Materials::BuildMaterials(TGeoManager* geoManager) {
    // Set Beryllium Loss factor to the experimentally determined value
    matPTFE->FermiPotential(FermiPotential::ptfe);
    matPTFE->LossFactor(LossFactor::ptfe);
-   cout << std::setw(15) << ptfe->GetName() << "\t";
-   cout << std::setw(15) << matPTFE->FermiPotential()/Units::neV << "\t";
-   cout << std::setw(15) << matPTFE->LossFactor() << endl;
+   #ifdef VERBOSE
+      cout << std::setw(15) << ptfe->GetName() << "\t";
+      cout << std::setw(15) << matPTFE->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matPTFE->LossFactor() << endl;
+   #endif
    /*
    cout << "---------------------------------" << endl;
    cout << "Density (kg/m^3): " <<  << endl;
@@ -140,9 +155,11 @@ Bool_t Materials::BuildMaterials(TGeoManager* geoManager) {
    // Set Beryllium Loss factor to the experimentally determined value
    matQuartz->FermiPotential(FermiPotential::quartz);
    matQuartz->LossFactor(LossFactor::quartz);
-   cout << std::setw(15) << quartz->GetName() << "\t";
-   cout << std::setw(15) << matQuartz->FermiPotential()/Units::neV << "\t";
-   cout << std::setw(15) << matQuartz->LossFactor() << endl;
+   #ifdef VERBOSE
+      cout << std::setw(15) << quartz->GetName() << "\t";
+      cout << std::setw(15) << matQuartz->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matQuartz->LossFactor() << endl;
+   #endif
    /*
    cout << "---------------------------------" << endl;
    cout << "Density (kg/m^3): " <<  << endl;
@@ -162,9 +179,11 @@ Bool_t Materials::BuildMaterials(TGeoManager* geoManager) {
    Element* elemHeliumII = new Element("HeliumII", HeliumII::z, HeliumII::a, HeliumII::scatLength, HeliumII::cohCrossSec, HeliumII::incohCrossSec, HeliumII::absCrossSec);
    Material* matHeliumII = new Material("HeliumII", elemHeliumII, Densities::heliumII);
    TGeoMedium* heliumII = new TGeoMedium("HeliumII", 1, matHeliumII);
-   cout << std::setw(15) << heliumII->GetName() << "\t";
-   cout << std::setw(15) << matHeliumII->FermiPotential()/Units::neV << "\t";
-   cout << std::setw(15) << matHeliumII->LossFactor() << endl;
+   #ifdef VERBOSE
+      cout << std::setw(15) << heliumII->GetName() << "\t";
+      cout << std::setw(15) << matHeliumII->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matHeliumII->LossFactor() << endl;
+   #endif
    /*
    cout << "---------------------------------" << endl;
    cout << "Density (kg/m^3): " << Densities::heliumII << endl;
@@ -184,9 +203,11 @@ Bool_t Materials::BuildMaterials(TGeoManager* geoManager) {
    Element* elemVacuum = new Element("Vacuum", Vacuum::z, Vacuum::a, Vacuum::scatLength, Vacuum::cohCrossSec, Vacuum::incohCrossSec, Vacuum::absCrossSec);
    Material* matVacuum = new Material("Vacuum", elemVacuum, Densities::vacuum);
    TGeoMedium* vacuum = new TGeoMedium("Vacuum", 1, matVacuum);
-   cout << std::setw(15) << vacuum->GetName() << "\t";
-   cout << std::setw(15) << matVacuum->FermiPotential()/Units::neV << "\t";
-   cout << std::setw(15) << matVacuum->LossFactor() << endl;
+   #ifdef VERBOSE
+      cout << std::setw(15) << vacuum->GetName() << "\t";
+      cout << std::setw(15) << matVacuum->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matVacuum->LossFactor() << endl;
+   #endif
    /*
    cout << "---------------------------------" << endl;
    cout << "Density (kg/m^3): " << Densities::vacuum << endl;
@@ -206,9 +227,11 @@ Bool_t Materials::BuildMaterials(TGeoManager* geoManager) {
    Element* elemLithium6 = new Element("Lithium6", Lithium6::z, Lithium6::a, Lithium6::scatLength, Lithium6::cohCrossSec, Lithium6::incohCrossSec, Lithium6::absCrossSec);
    Material* matLithium6 = new Material("Lithium6", elemLithium6, Densities::lithium6);
    TGeoMedium* lithium6 = new TGeoMedium("Lithium6", 1, matLithium6);
-   cout << std::setw(15) << lithium6->GetName() << "\t";
-   cout << std::setw(15) << matLithium6->FermiPotential()/Units::neV << "\t";
-   cout << std::setw(15) << matLithium6->LossFactor() << endl;
+   #ifdef VERBOSE
+      cout << std::setw(15) << lithium6->GetName() << "\t";
+      cout << std::setw(15) << matLithium6->FermiPotential()/Units::neV << "\t";
+      cout << std::setw(15) << matLithium6->LossFactor() << endl;
+   #endif
    /*
    cout << "---------------------------------" << endl;
    cout << "Density (kg/m^3): " << Densities::lithium6 << endl;
@@ -222,6 +245,6 @@ Bool_t Materials::BuildMaterials(TGeoManager* geoManager) {
    cout << "LossFactor: " << matLithium6->LossFactor() << endl;
    cout << "---------------------------------" << endl;
    */
-   cout << "Completed Initialising UCN Materials" << endl;
+   cout << "Completed initialising standard set of materials" << endl;
    return kTRUE;
 }

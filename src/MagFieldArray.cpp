@@ -17,8 +17,10 @@ ClassImp(MagFieldArray)
 MagFieldArray::MagFieldArray()
               :FieldArray("MagFieldArray")
 {
-   // Default constructor
-   Info("MagFieldArray", "Default Constructor");
+  // Default constructor
+  #ifdef PRINT_CONSTRUCTORS
+    Info("MagFieldArray", "Default Constructor");
+  #endif
 }
 
 //_____________________________________________________________________________
@@ -26,14 +28,18 @@ MagFieldArray::MagFieldArray(const MagFieldArray& other)
               :FieldArray(other)
 {
    //copy constructor
-   Info("MagFieldArray", "Copy Constructor");
+  #ifdef PRINT_CONSTRUCTORS
+    Info("MagFieldArray", "Copy Constructor");
+  #endif
 }
 
 //_____________________________________________________________________________
 MagFieldArray::~MagFieldArray()
 {
-   // Destructor
-   Info("MagFieldArray", "Destructor");
+  // Destructor
+  #ifdef PRINT_CONSTRUCTORS
+    Info("MagFieldArray", "Destructor");
+  #endif
 }
 
 //_____________________________________________________________________________

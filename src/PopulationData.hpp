@@ -9,8 +9,8 @@
 class PopulationData : public std::map<double, std::map<std::string, int> >,  public TObject
 {
    public:
-      PopulationData() {Info("PopulationData","Constructor");}
-      virtual ~PopulationData() {Info("PopulationData","Destructor");}
+      PopulationData() {;}
+      virtual ~PopulationData() {;}
       
       void Fill(double t, std::string statename);
       

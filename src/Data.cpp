@@ -33,7 +33,9 @@ Data::Data()
           fObservers()
 {
    // -- Default Constructor
-   Info("Data","Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Data","Default Constructor");
+   #endif
    // -- Create the Trees
    fInputFile = NULL;
    fOutputFile = NULL;
@@ -57,14 +59,18 @@ Data::Data(const Data& other)
           fObservers(other.fObservers)
 {
    // Copy Constructor
-   Info("Data","Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Data","Copy Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
 Data::~Data()
 {
    // -- Destructor
-   Info("Data","Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Data","Destructor");
+   #endif
    fInputBranch = NULL; // Dont delete the branch, let the Tree clean it up
    if (fInputTree) fInputTree->Delete(); fInputTree = NULL;
    if (fOutputTree) fOutputTree->Delete(); fOutputTree = NULL;

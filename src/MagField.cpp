@@ -15,7 +15,9 @@ MagField::MagField()
          :Field()
 {
 // Default constructor.
-   Info("MagField", "Default Constructor");
+  #ifdef PRINT_CONSTRUCTORS
+    Info("MagField", "Default Constructor");
+  #endif
 }
 
 //_____________________________________________________________________________
@@ -23,7 +25,9 @@ MagField::MagField(const std::string& name, const TGeoShape* shape, const TGeoMa
          :Field(name, shape, matrix)
 {
 // Default constructor.
-   Info("MagField", "Constructor");
+  #ifdef PRINT_CONSTRUCTORS
+    Info("MagField", "Constructor");
+  #endif
 }
 
 //_____________________________________________________________________________
@@ -37,6 +41,8 @@ MagField::MagField(const MagField& other)
 MagField::~MagField()
 {
 // Destructor.
-   Info("MagField", "Destructor");
+  #ifdef PRINT_CONSTRUCTORS
+    Info("MagField", "Destructor");
+  #endif
 }
 

@@ -19,7 +19,9 @@ FieldArray::FieldArray()
             Observable()
 {
    // Default constructor
-   Info("FieldArray", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldArray", "Default Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -28,7 +30,9 @@ FieldArray::FieldArray(const std::string name)
             Observable()
 {
    // Named Constructor
-   Info("FieldArray", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldArray", "Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -38,14 +42,18 @@ FieldArray::FieldArray(const FieldArray& other)
             fFieldList(other.fFieldList)
 {
    //copy constructor
-   Info("FieldArray", "Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldArray", "Copy Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
 FieldArray::~FieldArray()
 {
    // Destructor
-   Info("FieldArray", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldArray", "Destructor");
+   #endif
    this->PurgeFields();
 }
 
