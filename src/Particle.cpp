@@ -318,6 +318,13 @@ void Particle::Polarise(const TVector3& axis, const Bool_t up)
 }
 
 //_____________________________________________________________________________
+void Particle::PolariseRandomly()
+{
+   // -- Set Particle's spin polarisation along a random direction within the unit sphere
+   fSpin.PolariseRandomly();
+}
+
+//_____________________________________________________________________________
 void Particle::PrecessSpin(const TVector3& field, const Double_t precessTime)
 {
    // -- Precess spin about field for time defined by precessTime 
