@@ -22,7 +22,7 @@ private:
    double fMaxStepInterval;
    
    // -- Event intervals
-   typedef struct EventTimer {
+   struct EventTimer {
       // EventTimer struct is just a convenient way to encapsulate the information
       // about any external events (think an Observer's periodic measurements)
       // needed by the clock to schedule them
