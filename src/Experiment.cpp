@@ -28,7 +28,9 @@ Experiment::Experiment()
             fGeoManager(NULL)
 {
 // -- Default constructor
-   Info("Experiment", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Experiment", "Default Constructor");
+   #endif
 } 
 
 //_____________________________________________________________________________
@@ -38,15 +40,19 @@ Experiment::Experiment(const Experiment& other)
                 fGeoManager(other.fGeoManager)
 {
 // -- Copy Constructor
-   Info("Experiment", "Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Experiment", "Copy Constructor");
+   #endif
 }
 
 //______________________________________________________________________________
 Experiment::~Experiment()
 { 
 // -- Destructor
-   Info("Experiment", "Destructor");
-//   Leave GeoManager to be cleaned up by ROOT, otherwise there are problems
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Experiment", "Destructor");
+   #endif
+   // Leave GeoManager to be cleaned up by ROOT, otherwise there are problems
 }
 
 // -- METHODS --

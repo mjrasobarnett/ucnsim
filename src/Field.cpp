@@ -16,8 +16,10 @@ Field::Field()
        fFieldShape(NULL), 
        fFieldMatrix(NULL)
 {
-// Default constructor.
-   Info("Field", "Default Constructor");
+   // Default constructor.
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Field", "Default Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -28,7 +30,9 @@ Field::Field(const std::string& name, const TGeoShape* shape, const TGeoMatrix* 
           
 {
    // Default constructor.
-   Info("Field", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Field", "Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -44,7 +48,9 @@ Field::Field(const Field& other)
 Field::~Field()
 {
 // Destructor.
-   Info("Field", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Field", "Destructor");
+   #endif
    if(fFieldShape) {delete fFieldShape; fFieldShape = NULL;}
    if(fFieldMatrix) {delete fFieldMatrix; fFieldMatrix = NULL;}
 }

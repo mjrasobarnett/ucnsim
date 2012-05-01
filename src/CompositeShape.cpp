@@ -31,8 +31,10 @@ CompositeShape::CompositeShape()
                       :Box(0, 0, 0)
 {
 // Default constructor
-   Info("CompositeShape", "Default Constructor");
-	SetShapeBit(TGeoShape::kGeoComb);
+   #ifdef PRINT_CONSTRUCTORS
+      Info("CompositeShape", "Default Constructor");
+	#endif
+   SetShapeBit(TGeoShape::kGeoComb);
    fNode  = 0;
 }   
 
@@ -41,8 +43,10 @@ CompositeShape::CompositeShape(const char *name, const char *expression)
                       :Box(0, 0, 0)
 {
 // Default constructor
-   Info("CompositeShape", "Constructor");
-	SetShapeBit(TGeoShape::kGeoComb);
+   #ifdef PRINT_CONSTRUCTORS
+      Info("CompositeShape", "Constructor");
+	#endif
+   SetShapeBit(TGeoShape::kGeoComb);
    SetName(name);
    fNode  = 0;
    MakeNode(expression);
@@ -58,7 +62,9 @@ CompositeShape::CompositeShape(const char *expression)
                       :Box(0, 0, 0)
 {
 // Default constructor
-   Info("CompositeShape", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("CompositeShape", "Constructor");
+   #endif
    SetShapeBit(TGeoShape::kGeoComb);
    fNode  = 0;
    MakeNode(expression);
@@ -75,7 +81,9 @@ CompositeShape::CompositeShape(const char *expression)
 CompositeShape::CompositeShape(const CompositeShape& gcs)
                :Box(gcs), fNode(gcs.fNode)
 {
-   Info("CompositeShape", "Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("CompositeShape", "Copy Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -92,7 +100,9 @@ CompositeShape& CompositeShape::operator=(const CompositeShape& gcs)
 CompositeShape::~CompositeShape()
 {
 // destructor
-   Info("CompositeShape", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("CompositeShape", "Destructor");
+   #endif
    if (fNode) delete fNode;
 }
 

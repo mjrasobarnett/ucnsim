@@ -32,7 +32,9 @@ Run::Run()
          fData()
 {
 // -- Default constructor
-   Info("Run", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Run", "Default Constructor");
+   #endif
    fExperiment = NULL;
 } 
 
@@ -43,7 +45,9 @@ Run::Run(const RunConfig& runConfig)
          fData()
 {
 // -- constructor
-   Info("Run", "Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Run", "Constructor");
+   #endif
    this->SetName(this->GetRunConfig().RunName().c_str());
    fExperiment = new Experiment();
 }
@@ -56,7 +60,9 @@ Run::Run(const Run& other)
          fExperiment(other.fExperiment)
 {
 // -- Copy Constructor
-   Info("RunManager", "Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("RunManager", "Copy Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -78,7 +84,9 @@ Run& Run::operator=(const Run& other)
 Run::~Run()
 {
 // -- Destructor
-   Info("Run", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Run", "Destructor");
+   #endif
    if(fExperiment) delete fExperiment;
 }
 

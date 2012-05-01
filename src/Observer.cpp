@@ -32,7 +32,9 @@ Observer::Observer()
           fPreviousMeasTime(0.0)
 {
    // Constructor
-   Info("Observer","Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Observer","Default Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -43,7 +45,9 @@ Observer::Observer(const string name, const double measureInterval)
           fPreviousMeasTime(Clock::Instance()->GetTime())
 {
    // Constructor
-   Info("Observer","Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Observer","Default Constructor");
+   #endif
    // Register ourselves with the clock as a periodic event
    Clock::Instance()->ScheduleEvent(name, measureInterval, fPreviousMeasTime);
 }
@@ -56,7 +60,9 @@ Observer::Observer(const Observer& other)
           fPreviousMeasTime(other.fPreviousMeasTime)
 {
    // Copy Constructor
-   Info("Observer","Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Observer","Copy Constructor");
+   #endif
    // Register ourselves with the clock as a periodic event
    Clock::Instance()->ScheduleEvent(this->GetName(), fMeasInterval, fPreviousMeasTime);
 }
@@ -64,7 +70,6 @@ Observer::Observer(const Observer& other)
 //_____________________________________________________________________________
 Observer& Observer::operator=(const Observer& other)
 {
-   Info("Observer","Assignment");
    if(this!=&other) {
       // Un-register ourselves from the Clock's list of events
       Clock::Instance()->CancelEvent(this->GetName());
@@ -83,7 +88,9 @@ Observer& Observer::operator=(const Observer& other)
 Observer::~Observer()
 {
    // Destructor
-   Info("Observer","Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("Observer","Destructor");
+   #endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -100,7 +107,9 @@ SpinObserver::SpinObserver(const std::string name, double measureInterval)
               fSpinData(NULL)
 {
    // Constructor
-   Info("SpinObserver","Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("SpinObserver","Default Constructor");
+   #endif
    fSpinData = new SpinData();
 }
 
@@ -110,7 +119,9 @@ SpinObserver::SpinObserver(const SpinObserver& other)
               fSpinData(NULL)
 {
    // Copy Constructor
-   Info("SpinObserver","Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("SpinObserver","Copy Constructor");
+   #endif
    if (other.fSpinData) fSpinData = new SpinData(*(other.fSpinData));
 }
 
@@ -118,7 +129,6 @@ SpinObserver::SpinObserver(const SpinObserver& other)
 SpinObserver& SpinObserver::operator=(const SpinObserver& other)
 {
    // Assignment
-   Info("SpinObserver","Assignment");
    if(this!=&other) {
       Observer::operator=(other);
       if (fSpinData) delete fSpinData;
@@ -131,7 +141,9 @@ SpinObserver& SpinObserver::operator=(const SpinObserver& other)
 SpinObserver::~SpinObserver()
 {
    // Destructor
-   Info("SpinObserver","Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("SpinObserver","Destructor");
+   #endif
    if (fSpinData != NULL) delete fSpinData;
 }
 
@@ -190,7 +202,9 @@ BounceObserver::BounceObserver(const std::string name)
                     fBounceData(NULL)
 {
    // Constructor
-   Info("BounceObserver","Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("BounceObserver","Default Constructor");
+   #endif
    fBounceData = new BounceData();
 }
 
@@ -200,7 +214,9 @@ BounceObserver::BounceObserver(const BounceObserver& other)
                   fBounceData(NULL)
 {
    // Copy Constructor
-   Info("BounceObserver","Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("BounceObserver","Copy Constructor");
+   #endif
    if (other.fBounceData) fBounceData = new BounceData(*(other.fBounceData));
 }
 
@@ -208,7 +224,6 @@ BounceObserver::BounceObserver(const BounceObserver& other)
 BounceObserver& BounceObserver::operator=(const BounceObserver& other)
 {
    // Assignment
-   Info("BounceObserver","Assignment");
    if(this!=&other) {
       Observer::operator=(other);
       if (fBounceData) delete fBounceData;
@@ -221,7 +236,9 @@ BounceObserver& BounceObserver::operator=(const BounceObserver& other)
 BounceObserver::~BounceObserver()
 {
    // Destructor
-   Info("BounceObserver","Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("BounceObserver","Destructor");
+   #endif
    if (fBounceData != NULL) delete fBounceData;
 }
 
@@ -268,7 +285,9 @@ TrackObserver::TrackObserver(const std::string name, double measInterval)
                     fTrack(NULL)
 {
    // Constructor
-   Info("TrackObserver","Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TrackObserver","Default Constructor");
+   #endif
    fTrack = new Track();
 }
 
@@ -278,7 +297,9 @@ TrackObserver::TrackObserver(const TrackObserver& other)
                   fTrack(NULL)
 {
    // Copy Constructor
-   Info("TrackObserver","Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TrackObserver","Copy Constructor");
+   #endif
    if (other.fTrack) fTrack = new Track(*(other.fTrack));
 }
 
@@ -286,7 +307,6 @@ TrackObserver::TrackObserver(const TrackObserver& other)
 TrackObserver& TrackObserver::operator=(const TrackObserver& other)
 {
    // Assignment
-   Info("TrackObserver","Assignment");
    if(this!=&other) {
       Observer::operator=(other);
       if (fTrack) delete fTrack;
@@ -299,7 +319,9 @@ TrackObserver& TrackObserver::operator=(const TrackObserver& other)
 TrackObserver::~TrackObserver()
 {
    // Destructor
-   Info("TrackObserver","Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("TrackObserver","Destructor");
+   #endif
    if (fTrack != NULL) delete fTrack;
 }
 
@@ -359,7 +381,9 @@ FieldObserver::FieldObserver(const std::string name, const double measureInterva
                fFieldData(NULL)
 {
    // Constructor
-   Info("FieldObserver","Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldObserver","Default Constructor");
+   #endif
    fFieldData = new FieldData(name);
 }
 
@@ -369,7 +393,9 @@ FieldObserver::FieldObserver(const FieldObserver& other)
               fFieldData(NULL)
 {
    // Copy Constructor
-   Info("FieldObserver","Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldObserver","Copy Constructor");
+   #endif
    if (other.fFieldData) fFieldData = new FieldData(*(other.fFieldData));
 }
 
@@ -377,7 +403,6 @@ FieldObserver::FieldObserver(const FieldObserver& other)
 FieldObserver& FieldObserver::operator=(const FieldObserver& other)
 {
    // Assignment
-   Info("FieldObserver","Assignment");
    if(this!=&other) {
       Observer::operator=(other);
       if (fFieldData) delete fFieldData;
@@ -390,7 +415,9 @@ FieldObserver& FieldObserver::operator=(const FieldObserver& other)
 FieldObserver::~FieldObserver()
 {
    // Destructor
-   Info("FieldObserver","Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldObserver","Destructor");
+   #endif
    if (fFieldData != NULL) delete fFieldData;
 }
 
@@ -447,7 +474,9 @@ PopulationObserver::PopulationObserver(const std::string name, const double meas
                fPopulationData(NULL)
 {
    // Constructor
-   Info("PopulationObserver","Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("PopulationObserver","Default Constructor");
+   #endif
    fPopulationData = new PopulationData();
 }
 
@@ -457,7 +486,9 @@ PopulationObserver::PopulationObserver(const PopulationObserver& other)
               fPopulationData(NULL)
 {
    // Copy Constructor
-   Info("PopulationObserver","Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("PopulationObserver","Copy Constructor");
+   #endif
    if (other.fPopulationData) fPopulationData = new PopulationData(*(other.fPopulationData));
 }
 
@@ -465,7 +496,6 @@ PopulationObserver::PopulationObserver(const PopulationObserver& other)
 PopulationObserver& PopulationObserver::operator=(const PopulationObserver& other)
 {
    // Assignment
-   Info("PopulationObserver","Assignment");
    if(this!=&other) {
       Observer::operator=(other);
       if (fPopulationData) delete fPopulationData;
@@ -478,7 +508,9 @@ PopulationObserver& PopulationObserver::operator=(const PopulationObserver& othe
 PopulationObserver::~PopulationObserver()
 {
    // Destructor
-   Info("PopulationObserver","Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("PopulationObserver","Destructor");
+   #endif
    if (fPopulationData != NULL) delete fPopulationData;
 }
 

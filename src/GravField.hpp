@@ -18,14 +18,15 @@ class GravField : public TNamed
 {
 
 private:
+	static const double fGravAcceleration; //*m/(s*s);
 	TVector3 						fGlobalFieldVector;
-	static const Double_t 		fGravAcceleration = 9.80665; //*m/(s*s);
 	
 public:
 	
 	// -- constructors
 	GravField();
-   GravField(const GravField&);
+  GravField(double nx, double ny, double nz);
+  GravField(const GravField&);
 	GravField& operator=(const GravField&);
 	   
 	// -- destructor

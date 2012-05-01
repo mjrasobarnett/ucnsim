@@ -1,28 +1,28 @@
-// This is a model of the 'Real' cryoEDM sourcetube - 25/01/2010
-#include "TGeoManager.h"
-#include "TGLViewer.h"
-#include "TGLCamera.h"
-#include "TGLPerspectiveCamera.h"
-
-#include "../../include/Units.h"
-#include "../../include/Constants.h"
-#include "../../include/Materials.h"
-#include "../../include/GeomParameters.h"
+#include "Units.hpp"
+#include "Constants.hpp"
+#include "GeomParameters.hpp"
 
 Bool_t Build_Geom(const TGeoManager* geoManager);
-Bool_t Draw_Geom(const TGeoManager* geoManager);
+Bool_t BuildFields(const TGeoManager* geoManager);
 
 using namespace GeomParameters;
 
 //__________________________________________________________________________
 Int_t vertical_tube()
 {
+   // Load project's shared library (see $ROOTALIAS for function definition)
+   load_library("$UCN_DIR/lib/libUCN.so");
    // Create the geoManager
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
    // Build and write to file the simulation and visualisation geoms
    Build_Geom(geoManager);
-   Draw_Geom(geoManager);
-   
+   // Draw Geom
+   TCanvas* geomCanvas = new TCanvas("GeomCanvas","Canvas for visualisation of EDM Geom",60,40,200,200);
+   geomCanvas->cd();
+   double camera[3] = {0., 0., 0.};
+   Analysis::Geometry::DrawGeometry(*geomCanvas, *geoManager, camera);
+   // Build Fields
+   BuildFields(geoManager);   
    return 0;
 }
 
@@ -84,7 +84,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out geometry to file
-   const char *fileName = "$(UCN_GEOM)/vertical_tube.root";
+   const char *fileName = "vertical_tube_geom.root";
    cerr << "Simulation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    
@@ -92,38 +92,22 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
 }
 
 //__________________________________________________________________________
-Bool_t Draw_Geom(const TGeoManager* geoManager) 
+Bool_t BuildFields(const TGeoManager* geoManager)
 {
-   // -------------------------------------
-   // -- Draw the vis-geometry in OpenGLViewer
-   TCanvas* canvas = new TCanvas("GeomCanvas","Canvas for visualisation of EDM Geom",60,40,600,600);
-   canvas->cd();
-   geoManager->GetTopVolume()->Draw("ogl");
-   geoManager->SetVisLevel(4); // Default draws 4 levels down volume heirarchy
-   geoManager->SetVisOption(0); // Default is 1, but 0 draws all the intermediate volumes not just the final bottom layer
-   geoManager->ViewLeaves(kTRUE);
-   
-   // -- Get the GLViewer so we can manipulate the camera
-   TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
-   // -- Select Draw style 
-   glViewer->SetStyle(TGLRnrCtx::kFill); // TGLRnrCtx::kFill, TGLRnrCtx::kOutline, TGLRnrCtx::kWireFrame
-   // -- Set Background colour
-   glViewer->SetClearColor(TColor::kWhite);
-   // -- Set Lights - turn some off if you wish
-// TGLLightSet* lightSet = glViewer->GetLightSet();
-// lightSet->SetLight(TGLLightSet::kLightLeft, kFALSE);
-   // -- Set Camera type
-   // kCameraPerspXOZ, kCameraPerspYOZ, kCameraPerspXOY, kCameraOrthoXOY
-   // kCameraOrthoXOZ, kCameraOrthoZOY, kCameraOrthoXnOY, kCameraOrthoXnOZ, kCameraOrthoZnOY
-   TGLViewer::ECameraType camera = 2;
-   glViewer->SetCurrentCamera(camera);
-   glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   Double_t cameraCentre[3] = {0., 0., 0.};
-   glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
-   // -- Draw Reference Point, Axes
-   Double_t refPoint[3] = {0.,0.,0.};
-   // Int_t axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const Double_t referencePos[3]
-   glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
-   glViewer->UpdateScene();
+   cout << "--------------------------------" << endl;
+   cout << "Building Fields" << endl;
+   cout << "--------------------------------" << endl;
+   // ---------------------------------
+   // -- Gravitational Field
+   GravField* gravField = new GravField();
+   printf("Gravitational Field - nx: %.4f \t ny: %.4f \t nz: %.4f\n",gravField->Nx(),gravField->Ny(),gravField->Nz());
+   // -- Write fields to file
+   const char *fieldsFileName = "vertical_tube_fields.root";
+   TFile *file = Analysis::DataFile::OpenRootFile(fieldsFileName, "recreate");
+   cout << "Fields Created... Writing to file: " << fieldsFileName << endl;
+   gravField->Write(gravField->GetName());
+   file->Close();
+   // Cleanup
+   delete gravField;
    return kTRUE;
 }

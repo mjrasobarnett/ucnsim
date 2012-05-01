@@ -2,6 +2,7 @@
 // Author: Matthew Raso-Barnett  01/08/2009
 
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 #include <string>
 
@@ -22,10 +23,7 @@
 #include "Units.hpp"
 #include "Constants.hpp"
 
-using std::cout;
-using std::endl;
-using std::cerr;
-using std::string;
+using namespace std;
 
 //#define VERBOSE_MODE
 
@@ -39,7 +37,9 @@ FieldManager::FieldManager()
                   fElecFieldArray(NULL)
 {
 // -- Default constructor
-   Info("FieldManager", "Default Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldManager", "Default Constructor");
+   #endif
 } 
 
 //_____________________________________________________________________________
@@ -50,7 +50,9 @@ FieldManager::FieldManager(const FieldManager& other)
                   fElecFieldArray(other.fElecFieldArray)
 {
 // -- Copy Constructor
-   Info("FieldManager", "Copy Constructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldManager", "Copy Constructor");
+   #endif
 }
 
 //_____________________________________________________________________________
@@ -70,7 +72,9 @@ FieldManager& FieldManager::operator=(const FieldManager& other)
 FieldManager::~FieldManager()
 { 
 // -- Destructor
-   Info("FieldManager", "Destructor");
+   #ifdef PRINT_CONSTRUCTORS
+      Info("FieldManager", "Destructor");
+   #endif
    if (fGravField) delete fGravField;
    if (fMagFieldArray) delete fMagFieldArray;
    if (fElecFieldArray) delete fElecFieldArray;
@@ -81,88 +85,71 @@ FieldManager::~FieldManager()
 //______________________________________________________________________________
 Bool_t FieldManager::Initialise(const RunConfig& runConfig)
 {
-// -- Read in the field environment for the experiment from configFile.
+   // -- Check what fields to read in from the configFile and import them from
+   // -- Fields file.
+   if (runConfig.GravFieldOn() == false && runConfig.MagFieldOn() == false && runConfig.ElecFieldOn() == false) {
+      // No fields active
+      return kTRUE;
+   }
+   // Read in the gravitational & electric/magnetic fields
    cout << "-------------------------------------------" << endl;
    cout << "Initialising the Field Environment" << endl;
    cout << "-------------------------------------------" << endl;
-   // Set-up the Grav Field
+   // Look for Fields file
+   TString fieldsFileName = runConfig.FieldsFileName();
+   if (fieldsFileName == "") { 
+      Error("Initialise","No Fields File has been specified");
+      return kFALSE;
+   }
+   cout << "Loading Electromagnetic Field environment from file: " << fieldsFileName << endl;
+   // Open Electro-magnetic Field file
+   TFile *f = TFile::Open(fieldsFileName,"read");
+   if (!f || f->IsZombie()) {
+      Error("Initialise","Cannot open file: %s", fieldsFileName.Data());
+      return kFALSE;
+   }
+   // Search for the Gravitational Field
    if (runConfig.GravFieldOn() == kTRUE) {
-      Info("Initialise","Gravitational Field set to be ON. Creating...");
-      this->AddGravField();
+      cout << setfill(' ') << setw(40) << left << "Gravitational Field set to be" << "ON" << endl;
+      TString gravFieldName = "GravField";
+      f->GetObject(gravFieldName,fGravField);
+      if (fGravField == NULL) {
+         Error("Initialise","Could not find: %s in file", gravFieldName.Data());
+         return kFALSE;
+      }
    } else {
-      Info("Initialise","Gravitational Field set to be OFF.");
+      cout << setfill(' ') << setw(40) << left << "Gravitational Field set to be" << "OFF" << endl;
    }
-   // Set-up the electric/magnetic fields
-   if (runConfig.MagFieldOn() == kTRUE || runConfig.ElecFieldOn() == kTRUE) {
-      // Look for Fields file
-      TString fieldsFileName = runConfig.FieldsFileName();
-      if (fieldsFileName == "") { 
-         Error("Initialise","No Fields File has been specified");
+   // Search for Magnetic Field Manager
+   if (runConfig.MagFieldOn() == kTRUE) {
+      cout << setfill(' ') << setw(40) << left << "Magnetic Fields set to be" << "ON" << endl;
+      TString magManagerName = "MagFieldArray";
+      f->GetObject(magManagerName,fMagFieldArray);
+      if (fMagFieldArray == NULL) {
+         Error("Initialise","Could not find: %s in file", magManagerName.Data());
          return kFALSE;
       }
-      cout << "Loading Electromagnetic Field environment from file: " << fieldsFileName << endl;
-      // Open Electro-magnetic Field file
-      TFile *f = TFile::Open(fieldsFileName,"read");
-      if (!f || f->IsZombie()) {
-         Error("Initialise","Cannot open file: %s", fieldsFileName.Data());
+   } else {
+      cout << setfill(' ') << setw(40) << left << "Magnetic Fields set to be" << "OFF" << endl;
+   }
+   // Search for Electric Field Manager
+   if (runConfig.ElecFieldOn() == kTRUE) {
+      cout << setfill(' ') << setw(40) << left << "Electric Fields set to be" << "ON" << endl;
+      TString elecFieldArrayName = "ElecFieldArray";
+      f->GetObject(elecFieldArrayName,fElecFieldArray);
+      if (fElecFieldArray == NULL) {
+         Error("Initialise","Could not find: %s in file", elecFieldArrayName.Data());
          return kFALSE;
       }
-      f->ls();
-      // Search for Magnetic Field Manager
-      if (runConfig.MagFieldOn() == kTRUE) {
-         Info("Initialise","Magnetic Environment set to be ON. Creating...");
-         TString magManagerName = "MagFieldArray";
-         MagFieldArray* importedMagFieldArray = 0;
-         f->GetObject(magManagerName,importedMagFieldArray);
-         if (importedMagFieldArray == NULL) {
-            Error("Initialise","Could not find: %s in file", magManagerName.Data());
-            return kFALSE;
-         }
-         // Store MagField Manager
-         fMagFieldArray = importedMagFieldArray;
-         importedMagFieldArray = 0;
-      } else {
-         Info("Initialise","Magnetic Environment set to be OFF.");
-      }
-      // Search for Electric Field Manager
-      if (runConfig.ElecFieldOn() == kTRUE) {
-         Info("Initialise","Electric Fields Environment set to be ON. Creating...");
-         TString elecFieldArrayName = "ElecFieldArray";
-         ElecFieldArray* importedElecFieldArray = 0;
-         f->GetObject(elecFieldArrayName,importedElecFieldArray);
-         if (importedElecFieldArray == NULL) {
-            Error("Initialise","Could not find: %s in file", elecFieldArrayName.Data());
-            return kFALSE;
-         }
-         // Store ElecField Manager
-         fElecFieldArray = importedElecFieldArray;
-         importedElecFieldArray = 0;
-      } else {
-         Info("Initialise","Electric Environment set to be OFF.");
-      }
-      // Clean up file
-      f->Close();
-      delete f;
-      f = 0;
+   } else {
+      cout << setfill(' ') << setw(40) << left << "Electric Fields set to be" << "OFF" << endl;
    }
-   
+   // Clean up file
+   f->Close();
    cout << "-------------------------------------------" << endl;
    cout << "Field Environment initialised successfully" << endl;
    cout << "-------------------------------------------" << endl;
    return kTRUE;
-}
-
-//______________________________________________________________________________
-GravField* FieldManager::AddGravField()
-{
-// Create and store reference to grav field object	
-   if (fGravField) {
-      Warning("AddGravField","GravField: %s already exists!", fGravField->GetName());
-   } else {
-      fGravField = new GravField();
-      Info("AddGravField","GravField: %s created.", fGravField->GetName());
-   }
-   return fGravField;
 }
 
 //______________________________________________________________________________

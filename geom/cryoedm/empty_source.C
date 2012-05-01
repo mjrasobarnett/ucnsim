@@ -1,31 +1,28 @@
-// This is a model of the cryoEDM experiment, using dimensions from the model created by
-// Vishal Francis. 
-// 14/11/2010 - Model covers whole neutron facing geometry to a first approximation. 
-// Things missing currently includes valves
-#include "TGeoManager.h"
-#include "TGLViewer.h"
-#include "TGLCamera.h"
-#include "TGLPerspectiveCamera.h"
-
-#include "include/Units.h"
-#include "include/Constants.h"
-#include "include/Materials.h"
-#include "include/GeomParameters.h"
+#include "Units.hpp"
+#include "Constants.hpp"
+#include "GeomParameters.hpp"
 
 Bool_t Build_Geom(const TGeoManager* geoManager);
-Bool_t Draw_Geom(const TGeoManager* geoManager);
+Bool_t BuildFields(const TGeoManager* geoManager);
 
 using namespace GeomParameters;
 
 //__________________________________________________________________________
 Int_t empty_source()
 {
+   // Load project's shared library (see $ROOTALIAS for function definition)
+   load_library("$UCN_DIR/lib/libUCN.so");
    // Create the geoManager
    TGeoManager* geoManager = new TGeoManager("GeoManager","Geometry Manager");
    // Build and write to file the simulation and visualisation geoms
    Build_Geom(geoManager);
-   Draw_Geom(geoManager);
-   
+   // Draw Geom
+   TCanvas* geomCanvas = new TCanvas("GeomCanvas","Canvas for visualisation of EDM Geom",60,40,200,200);
+   geomCanvas->cd();
+   double camera[3] = {preVolumeXPos, preVolumeYPos, preVolumeZPos};
+   Analysis::Geometry::DrawGeometry(*geomCanvas, *geoManager, camera);
+   // Build Fields
+   BuildFields(geoManager);
    return 0;
 }
 
@@ -60,12 +57,12 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    chamber->SetTransparency(80);
    // Add to geom
    top->AddNode(chamber,1);
-   
+
    // -------------------------------------
    // -- SOURCE TUBE
    // Source tube has 13 segments, all of which are identical 
    // (except one which has a hole in the top)
-   
+
    // -- Make a SourceTube Segment
    Tube *sourceSegShape = new Tube("SourceSeg", sourceSegRMin, sourceSegRMax, sourceSegHalfLength);
    TrackingVolume* sourceSeg = new TrackingVolume("SourceSeg", sourceSegShape, heliumII);
@@ -90,7 +87,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
       segmentYPos += 2.*sourceSegHalfLength; // Shift next segment along by length of segment 
       sourceCapacity += sourceSegShape->Capacity();
    }
-   
+
    // -------------------------------------
    // -- SOURCE VALVE
    // Valve entrance volume is a shorter source-tube segment-like that connects
@@ -108,7 +105,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix valveVolEntranceMat = valveVolEntranceCom;
    chamber->AddNode(valveVolEntrance, 1, new TGeoHMatrix(valveVolEntranceMat));
    Double_t valveVolEntraceCapacity = valveVolEntranceShape->Capacity();
-   
+
    // -------------------------------------
    // -- Valve volume front - this is what the valve press against
    Tube *valveVolFrontShape = new Tube("ValveVolFront", valveVolFrontRMin, valveVolFrontRMax, valveVolFrontHalfLength);
@@ -124,7 +121,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix valveVolFrontMat = valveVolFrontCom;
    chamber->AddNode(valveVolFront, 1, new TGeoHMatrix(valveVolFrontMat));
    Double_t valveVolFrontCapacity = valveVolFrontShape->Capacity();
-   
+
    // -------------------------------------
    // -- Valve volume - this is what the valve sits in
    // -- This is joined together with the start of the bend volume to make a composite volume
@@ -137,7 +134,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix *valveVolBackMatrix = new TGeoHMatrix(valveVolBackMat);
    valveVolBackMatrix->SetName("ValveVolBackMatrix");
    valveVolBackMatrix->RegisterYourself();
-   
+
    // -- BendEntrance - this is joined to the valve volume back  
    Box *bendEntranceShape = new Box("BendEntrance", bendEntranceHalfX, bendEntranceHalfY, bendEntranceHalfZ);
    TrackingVolume* bendEntrance = new TrackingVolume("BendEntrance", bendEntranceShape, heliumII);
@@ -148,7 +145,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix *bendEntranceMatrix = new TGeoHMatrix(bendEntranceMat);
    bendEntranceMatrix->SetName("BendEntranceMatrix");
    bendEntranceMatrix->RegisterYourself();
-   
+
    // -- Create the composite Valve volume
    CompositeShape *valveVolShape = new CompositeShape("ValveVol", "(BendEntrance:BendEntranceMatrix + ValveVolBack:ValveVolBackMatrix)");
    TrackingVolume* valveVol = new TrackingVolume("ValveVol",valveVolShape,heliumII);
@@ -162,15 +159,45 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix valveVolMat = valveVolCom;
    chamber->AddNode(valveVol, 1, new TGeoHMatrix(valveVolMat));
    Double_t valveVolCapacity = valveVolShape->Capacity();
-   
+
+/* // -- Define the valve in its open state 
+   Double_t openValveRMin = 0., openValveRMax = 36.0*Units::mm, openValveHalfLength = 1.375*Units::mm;
+   TGeoVolume *openValve = Builder::UCNInstance(geoManager)->MakeUCNTube("OpenValve", boundary, openValveRMin, openValveRMax, openValveHalfLength);
+   Double_t openValveAngle = 90.0;
+   Double_t openValveYPos = valveVolBackHalfLength - openValveHalfLength;
+   TGeoRotation openValveRot("ValveVolBackRot",0,openValveAngle,0); // phi, theta, psi
+   TGeoTranslation openValveTra("ValveVolBackTra",0.,openValveYPos,0.); // x, y, z
+   TGeoCombiTrans openValveCom(openValveTra,openValveRot);
+   TGeoHMatrix openValveMat = openValveCom;
+   openValve->SetLineColor(kBlue+3);
+   openValve->SetLineWidth(1);
+   openValve->SetVisibility(kTRUE);
+   openValve->SetTransparency(20);
+
+   // -- Define the valve in its closed state 
+   Double_t closedValveRMin = 0., closedValveRMax = 36.0*Units::mm, closedValveHalfLength = 1.375*Units::mm;
+   TGeoVolume *closedValve = Builder::UCNInstance(geoManager)->MakeUCNTube("OpenValve", vacuum, closedValveRMin, closedValveRMax, closedValveHalfLength);
+   Double_t closedValveAngle = 90.0;
+   Double_t closedValveYPos = closedValveHalfLength - valveVolBackHalfLength;
+   TGeoRotation closedValveRot("ValveVolBackRot",0,closedValveAngle,0); // phi, theta, psi
+   TGeoTranslation closedValveTra("ValveVolBackTra",0.,closedValveYPos,0.); // x, y, z
+   TGeoCombiTrans closedValveCom(closedValveTra,closedValveRot);
+   TGeoHMatrix closedValveMat = closedValveCom;
+   closedValve->SetLineColor(kBlue+3);
+   closedValve->SetLineWidth(1);
+   closedValve->SetVisibility(kTRUE);
+   closedValve->SetTransparency(20);
+   valveVol->AddNode(closedValve,1,new TGeoHMatrix(closedValveMat));
+   valveVol->AddNode(openValve,1,new TGeoHMatrix(openValveMat));
+*/ 
    // -------------------------------------
    // -- BEND
    Tube *circleBendShape = new Tube("CircleBend", bendRMin, bendRMax, bendHalfLength);
    TrackingVolume* circleBend = new TrackingVolume("CircleBend", circleBendShape, heliumII);
-      
+
    Box *bendBoxShape = new Box("BendBox", 2.0*bendHalfLength, bendRMax, bendRMax);
    Boundary* bendBox = new Boundary("BendBox", bendBoxShape, beryllium, surfaceRoughness);
-   
+
    // -- Define the transformation of bendbox
    TGeoRotation bendBoxRot("BendBoxRot",bendBoxPhi,bendBoxTheta,bendBoxPsi);
    TGeoTranslation bendBoxTra("BendBoxTra",bendBoxXPos,bendBoxYPos,bendBoxZPos);
@@ -193,7 +220,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix bendVolMat = bendVolCom;
    chamber->AddNode(bendVol, 1, new TGeoHMatrix(bendVolMat));
    Double_t bendCapacity = bendShape->Capacity();
-   
+
    // -------------------------------------
    // -- DETECTOR VALVE
    // DetectorValveVol
@@ -210,8 +237,8 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix detectorValveVolMat = detectorValveVolCom;
    chamber->AddNode(detectorValveVol, 1, new TGeoHMatrix(detectorValveVolMat));
    Double_t detectorValveVolCapacity = detectorValveVolShape->Capacity();
-   
-   // -------------------------------------
+
+/*   // -------------------------------------
    // -- DetectorValve
    Box *detectorValveShape = new Box("DetectorValveShape", detectorValveHalfX, detectorValveHalfY, detectorValveHalfZ);
    Boundary* detectorValve = new Boundary("DetectorValve", detectorValveShape, beryllium, surfaceRoughness);
@@ -225,7 +252,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoCombiTrans detectorValveCom(detectorValveTra,detectorValveRot);
    TGeoHMatrix detectorValveMat = detectorValveCom;
    detectorValveVol->AddNode(detectorValve, 1, new TGeoHMatrix(detectorValveMat));
-   
+*/
    // -------------------------------------
    // -- DETECTOR TUBE
    // DetectorTubeTop - Entrance into the detector tube
@@ -242,7 +269,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix detectorTubeTopMat = detectorTubeTopCom; 
    chamber->AddNode(detectorTubeTop, 1, new TGeoHMatrix(detectorTubeTopMat));
    Double_t detectorTubeTopCapacity = detectorTubeTopShape->Capacity();
-   
+
    // -------------------------------------
    // -- DetectorTube
    Tube *detectorTubeShape = new Tube("DetectorTube", detectorTubeRMin, detectorTubeRMax, detectorTubeHalfLength);
@@ -258,7 +285,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    TGeoHMatrix detectorTubeMat = detectorTubeCom;
    chamber->AddNode(detectorTube, 1, new TGeoHMatrix(detectorTubeMat));
    Double_t detectorTubeCapacity = detectorTubeShape->Capacity();
-   
+
    // -------------------------------------
    // -- Detector
    Double_t detectorEfficiency = 1.0;
@@ -284,12 +311,12 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    guideSeg->SetLineWidth(1);
    guideSeg->SetVisibility(kTRUE);
    guideSeg->SetTransparency(20);
-   Double_t guideSegXPos = guideXPos;
+   Double_t guideSegZPos = guideZPos;
    Double_t guideCapacity = 0.0;
    for (Int_t segNum = 1; segNum <= 5; segNum++) {
       // Define Guide Seg matrix
-      TGeoRotation segmentRot("SegmentRot",guidePhi,guideTheta,guidePsi);
-      TGeoTranslation segmentTra("SegmentTra",guideSegXPos, guideYPos, guideZPos);
+      TGeoRotation segmentRot("SegmentRot",guidePhi,guideTheta,guidePsi); // phi, theta, psi
+      TGeoTranslation segmentTra("SegmentTra",guideXPos, guideYPos, guideSegZPos);
       TGeoCombiTrans segmentCom(segmentTra,segmentRot);
       TGeoHMatrix segmentMat = segmentCom;
       Char_t sourceMatrixName[20];
@@ -297,10 +324,13 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
       segmentMat.SetName(sourceMatrixName);
       chamber->AddNode(guideSeg, segNum, new TGeoHMatrix(segmentMat));
       // Shift next segment along by length of segment
-      guideSegXPos = guideSegXPos - 2.0*guideSegHalfZ;
+      guideSegZPos = guideSegZPos + 2.0*guideSegHalfZ;
       // Calculate guide's volume
       guideCapacity += guideSegShape->Capacity();
    }
+   
+   Double_t totalVolume = sourceCapacity + valveVolEntraceCapacity + valveVolFrontCapacity + valveVolCapacity + bendCapacity + detectorValveVolCapacity + detectorTubeTopCapacity + guideCapacity;
+   
    
    // -------------------------------------
    // -- RAMSEY CELL PRE-VOLUME SECTION
@@ -311,7 +341,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    preVolumeBox->SetLineWidth(1);
    preVolumeBox->SetVisibility(kTRUE);
    preVolumeBox->SetTransparency(20);
-   TGeoRotation preVolumeBoxRot("PreVolumeBoxRot", preVolumePhi, preVolumeTheta, preVolumePsi);
+   TGeoRotation preVolumeBoxRot("PreVolumeBoxRot", preVolumePhi, preVolumeTheta, 45);
    TGeoTranslation preVolumeBoxTra("PreVolumeBoxTra", preVolumeXPos, preVolumeYPos, preVolumeZPos);
    TGeoCombiTrans preVolumeBoxCom(preVolumeBoxTra,preVolumeBoxRot);
    TGeoHMatrix preVolumeBoxMat = preVolumeBoxCom;
@@ -324,7 +354,7 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out geometry to file
-   const char *fileName = "$(UCN_GEOM)/empty_source.root";
+   const char *fileName = "empty_source_geom.root";
    cout << "Simulation Geometry Built... Writing to file: " << fileName << endl;
    geoManager->Export(fileName);
    
@@ -342,44 +372,32 @@ Bool_t Build_Geom(const TGeoManager* geoManager)
    
    // -------------------------------------
    // -- Write out visualisation geometry to file
-   const char *visFileName = "$(UCN_GEOM)/empty_source_vis.root";
+   const char *visFileName = "empty_source_vis.root";
    cout << "Visualisation Geometry Built... Writing to file: " << visFileName << endl;
    geoManager->Export(visFileName);
    
    return kTRUE;
 }
 
+
 //__________________________________________________________________________
-Bool_t Draw_Geom(const TGeoManager* geoManager) 
+Bool_t BuildFields(const TGeoManager* geoManager)
 {
-   // -------------------------------------
-   // -- Draw the vis-geometry in OpenGLViewer
-   TCanvas* canvas = new TCanvas("GeomCanvas","Canvas for visualisation of EDM Geom",60,40,600,600);
-   canvas->cd();
-   geoManager->GetTopVolume()->Draw("ogl");
-   geoManager->SetVisOption(0); // Default is 1, but 0 draws all the intermediate volumes not just the final bottom layer
-   
-   // -- Get the GLViewer so we can manipulate the camera
-   TGLViewer * glViewer = dynamic_cast<TGLViewer*>(gPad->GetViewer3D());
-   // -- Select Draw style 
-   glViewer->SetStyle(TGLRnrCtx::kFill); // TGLRnrCtx::kFill, TGLRnrCtx::kOutline, TGLRnrCtx::kWireFrame
-   // -- Set Background colour
-   glViewer->SetClearColor(TColor::kWhite);
-   // -- Set Lights - turn some off if you wish
-// TGLLightSet* lightSet = glViewer->GetLightSet();
-// lightSet->SetLight(TGLLightSet::kLightLeft, kFALSE);
-   // -- Set Camera type
-   // kCameraPerspXOZ, kCameraPerspYOZ, kCameraPerspXOY, kCameraOrthoXOY
-   // kCameraOrthoXOZ, kCameraOrthoZOY, kCameraOrthoXnOY, kCameraOrthoXnOZ, kCameraOrthoZnOY
-   TGLViewer::ECameraType camera = 2;
-   glViewer->SetCurrentCamera(camera);
-   glViewer->CurrentCamera().SetExternalCenter(kTRUE);
-   Double_t cameraCentre[3] = {detectorValveVolXPos, detectorValveVolYPos, detectorValveVolZPos};
-   glViewer->SetPerspectiveCamera(camera,4,100,&cameraCentre[0],0,0);
-   // -- Draw Reference Point, Axes
-   Double_t refPoint[3] = {0.,0.,0.};
-   // Int_t axesType = 0(Off), 1(EDGE), 2(ORIGIN), Bool_t axesDepthTest, Bool_t referenceOn, const Double_t referencePos[3]
-   glViewer->SetGuideState(0, kFALSE, kFALSE, refPoint);
-   glViewer->UpdateScene();
+   cout << "--------------------------------" << endl;
+   cout << "Building Fields" << endl;
+   cout << "--------------------------------" << endl;
+   // ---------------------------------
+   // -- Gravitational Field
+   GravField* gravField = new GravField(-1.0,0.0,0.0);
+   printf("Gravitational Field - nx: %.4f \t ny: %.4f \t nz: %.4f\n",gravField->Nx(),gravField->Ny(),gravField->Nz());
+   // -- Write fields to file
+   const char *fieldsFileName = "empty_source_fields.root";
+   TFile *file = Analysis::DataFile::OpenRootFile(fieldsFileName, "recreate");
+   cout << "Fields Created... Writing to file: " << fieldsFileName << endl;
+   gravField->Write(gravField->GetName());
+   file->Close();
+   // Cleanup
+   delete gravField;
    return kTRUE;
 }
+

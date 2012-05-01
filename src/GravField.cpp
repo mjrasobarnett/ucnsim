@@ -15,16 +15,30 @@
 ClassImp(GravField)
 
 // -- Static Data Members Initialised
-const Double_t 	GravField::fGravAcceleration; 
+const double GravField::fGravAcceleration = 9.80665; 
 
 //_____________________________________________________________________________
 GravField::GravField()
 				  :TNamed("GravField","Universal Grav Field Vector"),
-					fGlobalFieldVector(0.,0.,-1.)
+					 fGlobalFieldVector(0.,0.,-1.)
 {
 // -- Default constructor.
-	Info("GravField", "Constructor");
+	#ifdef PRINT_CONSTRUCTORS
+    Info("GravField", "Constructor");
+  #endif
 } 
+
+//_____________________________________________________________________________
+GravField::GravField(double nx, double ny, double nz)
+          :TNamed("GravField","Universal Grav Field Vector"),
+           fGlobalFieldVector(0.,0.,0.)
+{
+  // constructor
+  #ifdef PRINT_CONSTRUCTORS
+    Info("GravField", "Constructor");
+  #endif
+  this->Direction(nx, ny, nz);
+}
 
 //_____________________________________________________________________________
 GravField::GravField(const GravField& other)
@@ -32,7 +46,9 @@ GravField::GravField(const GravField& other)
 					fGlobalFieldVector(other.fGlobalFieldVector)
 {
 // -- Copy constructor.
-   Info("GravField","Copy Constructor");
+  #ifdef PRINT_CONSTRUCTORS
+    Info("GravField","Copy Constructor");
+  #endif
 } 
 
 //_____________________________________________________________________________
@@ -50,7 +66,9 @@ GravField& GravField::operator=(const GravField& other)
 GravField::~GravField()
 {
 // -- Destructor.
-	Info("GravField", "Destructor");
+	#ifdef PRINT_CONSTRUCTORS
+    Info("GravField", "Destructor");
+  #endif
 }   
 
 //_____________________________________________________________________________
