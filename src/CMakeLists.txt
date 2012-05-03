@@ -1,6 +1,3 @@
-
-# add_subdirectory(classes)
-
 set(UCNLIB_SOURCES  BoolNode.cpp
                     BounceData.cpp
                     Box.cpp
@@ -119,10 +116,9 @@ ROOT_GENERATE_DICTIONARY("${UCNLIB_DICT_HEADERS}"
 
 # Add the library. The header files aren't required, however doing so
 # lets the IDE's know that they are related
-add_library(UCNLib  SHARED
-                    ${UCNLIB_SOURCES}
-                    ${UCNLIB_DICT}
-                    ${UCNLIB_HEADER_NAMES} )
+add_library(UCN SHARED ${UCNLIB_SOURCES}
+                       ${UCNLIB_DICT}
+                       ${UCNLIB_HEADER_NAMES} )
 
 set (ROOT_CUSTOM_LIBRARIES Geom RGL Ged)
 set (UCNLIB_LIBRARIES ${GSL_LIBRARIES}
@@ -131,6 +127,6 @@ set (UCNLIB_LIBRARIES ${GSL_LIBRARIES}
                       ${Boost_LIBRARIES}
                       ${ALGORITHMS_LIBRARY})
 
-target_link_libraries(UCNLib ${UCNLIB_LIBRARIES} )
+target_link_libraries(UCN ${UCNLIB_LIBRARIES} )
 
 add_subdirectory(programs)
