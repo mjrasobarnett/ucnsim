@@ -4,6 +4,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 #include "ConfigFile.hpp"
 #include "Algorithms.hpp"
@@ -28,8 +29,8 @@ Int_t main(Int_t argc, Char_t **argv)
    }
    // Check formatting of queue name
    boost::to_lower(queueName);
-   if (queueName != "short" && queueName != "general" && queueName != "long") {
-      cerr << "Queue name must be either: short, general, long" << endl;
+   if (queueName != "epp_short" && queueName != "epp_general" && queueName != "epp_long") {
+      cerr << "Queue name must be either: epp_short, epp_general, epp_long" << endl;
       return EXIT_FAILURE;
    }
    // Load config file
@@ -48,9 +49,10 @@ Int_t main(Int_t argc, Char_t **argv)
    for (int runNum = 1; runNum <= numberOfRuns; runNum++) {
       // Get the current run name and check that a section for this run exists in the config file
       ostringstream runName, jobName;
-      boost::gregorian::date today_date(boost::gregorian::day_clock::local_day());
       runName << "Run" << runNum;
-      jobName << "job_" << today_date << "_Run" << runNum;
+      boost::posix_time::ptime today(boost::posix_time::second_clock::local_time());
+      jobName << today.date().year() << "_" << today.date().month() << "_" << today.date().day() << "_";
+      jobName << today.time_of_day().hours() << today.time_of_day().minutes() << "_run" << runNum;
       map<string,string> section = configFile.GetSection(runName.str());
       if (section.empty()) {
          cerr << "Error: Could not find Section - " << runName.str() << endl;
@@ -61,7 +63,8 @@ Int_t main(Int_t argc, Char_t **argv)
       string script = Algorithms::FileSystem::ExpandFilePath("$UCN_DIR");
       script += "/scripts/submit_job.sh";
       ostringstream command;
-      command << "qsub -q " << queueName << ".q ";
+      command << "qsub -j y "; // Merge error stream into output stream 
+      command << "-q " << queueName << ".q ";
       command << "-N " << jobName.str() << " ";
       command << script << " ";
       command << configFileName << " ";
