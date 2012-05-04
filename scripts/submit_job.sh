@@ -24,15 +24,16 @@ else
 fi
 #
 # -- Setup the required environment variables on machine
-export HOME=/home/mb325
+export HOME=/home/m/mb/mb325
 echo "Configuring for Feynman remote machine"
-export UCN_DIR=${HOME}/projects/ucnsim
+export UCN_DIR=${HOME}/projects/cryoedm/ucnsim
 export UCN_GEOM=${UCN_DIR}/geom
-export UCN_RUNS=/epp/scratch/nedm/mb325/runs
-export ROOTSYS=${HOME}/root/root
+export SCRATCH=/epp/scratch/nedm/mb325/
+export UCN_RUNS=${SCRATCH}/runs
+export ROOTSYS=${SCRATCH}/ROOT/root
 export PATH=${UCN_DIR}/build:${ROOTSYS}/bin:${PATH}
 export GSL=${HOME}/gsl/gsl
-export BOOST=${HOME}/boost/boost
+export BOOST_ROOT=${HOME}/packages/boost/boost
 export LD_LIBRARY_PATH=${UCN_DIR}/build:${ROOTSYS}/lib/root:${LD_LIBRARY_PATH}
 export ROOTMACROS=${UCN_DIR}/macros:${ROOTSYS}/macros
 export ROOTALIAS=${UCN_DIR}/config/ucn_rootalias.C
