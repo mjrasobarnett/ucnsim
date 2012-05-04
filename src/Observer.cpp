@@ -457,7 +457,7 @@ void FieldObserver::ResetData()
 void FieldObserver::WriteToFile(Data& data)
 {
    // -- Write out the current observer's data to the observer's branch on the tree
-   data.WriteObjectToTree(fFieldData, fFieldData->GetName());
+   data.WriteObjectToTree(fFieldData, fFieldData->ClassName());
 }
 
 /////////////////////////////////////////////////////////////////////////////
