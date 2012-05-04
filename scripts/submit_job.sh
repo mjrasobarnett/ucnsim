@@ -31,17 +31,19 @@ export UCN_GEOM=${UCN_DIR}/geom
 export SCRATCH=/epp/scratch/nedm/mb325/
 export UCN_RUNS=${SCRATCH}/runs
 export ROOTSYS=${SCRATCH}/ROOT/root
-export PATH=${UCN_DIR}/build:${ROOTSYS}/bin:${PATH}
 export GSL=${HOME}/gsl/gsl
 export BOOST_ROOT=${HOME}/packages/boost/boost
+export PATH=${UCN_DIR}/build:${ROOTSYS}/bin:${PATH}
 export LD_LIBRARY_PATH=${UCN_DIR}/build:${ROOTSYS}/lib/root:${LD_LIBRARY_PATH}
 export ROOTMACROS=${UCN_DIR}/macros:${ROOTSYS}/macros
 export ROOTALIAS=${UCN_DIR}/config/ucn_rootalias.C
 export ROOTLOGON=${UCN_DIR}/config/ucn_rootlogon.C
 export ROOTLOGOFF=${UCN_DIR}/config/ucn_rootlogoff.C
+echo "------------------------------------------------------------------------"
 echo "ROOT  : $ROOTSYS"
 echo "GSL   : $GSL"
-echo "BOOST : $BOOST"
+echo "BOOST : $BOOST_ROOT"
+echo "PATH  : $PATH"
 echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
 echo "------------------------------------------------------------------------"
 echo "UCN_DIR  : $UCN_DIR"
