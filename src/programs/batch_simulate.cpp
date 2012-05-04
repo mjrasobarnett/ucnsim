@@ -52,7 +52,7 @@ Int_t main(Int_t argc, Char_t **argv)
       runName << "Run" << runNum;
       boost::posix_time::ptime today(boost::posix_time::second_clock::local_time());
       jobName << "job_" << today.date().year() << "_" << today.date().month() << "_" << today.date().day() << "_";
-      jobName << today.time_of_day().hours() << today.time_of_day().minutes() << "_run" << runNum;
+      jobName << setfill('0') << setw(2) << today.time_of_day().hours() << today.time_of_day().minutes() << "_run" << runNum;
       map<string,string> section = configFile.GetSection(runName.str());
       if (section.empty()) {
          cerr << "Error: Could not find Section - " << runName.str() << endl;
