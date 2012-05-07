@@ -35,7 +35,7 @@ UniformElecField::UniformElecField(const string& name, const TVector3& field, co
    // Zero out any rounding errors
    for (int i=0; i<3; i++) {global[i] = Precision::IsEqual(global[i], 0.0) ? 0.0 : global[i];}
    fField.SetXYZ(global[0],global[1],global[2]);
-   cout << "Built Uniform Electric Field (kV) - ";
+   cout << "Built Uniform Electric Field (kV/m) - ";
    cout << "Ex: " << fField[0] << "\t Ey: " << fField[1];
    cout << "\t Ez: " << fField[2] << endl;
 }

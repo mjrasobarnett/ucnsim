@@ -40,16 +40,16 @@ ElecFieldArray::~ElecFieldArray()
 const TVector3 ElecFieldArray::GetMagField(const Point& point, const TVector3& velocity, const string volume) const
 {
    // -- Calculate the magnetic field seen by the particle in a frame moving w.r.t
-   // -- the electric field(s)
+   // -- the electric field(s) ( B = E x v / c^2 )
    TVector3 efield = GetField(point,volume);
+//   printf("EField - Ex:%f \t Ey:%f \t Ez: %f \n", efield.X(), efield.Y(), efield.Z());
    // Calculate relativistic velocity vector
-   TVector3 beta = velocity*(1.0/Constants::c_light);
-   // Calculate relativistic gamma factor, gamma/c
-   Double_t gamma_over_c = (Constants::c_light/TMath::Sqrt(1 - TMath::Power(beta.Mag(),2.0)));
+//   printf("Velocity - vx:%f \t vy:%f \t vz: %f \n", velocity.X(), velocity.Y(), velocity.Z());
    // Calculate motional BField
-   Double_t bx = gamma_over_c*(beta.Z()*efield.Y() - beta.Y()*efield.Z());
-   Double_t by = gamma_over_c*(beta.X()*efield.Z() - beta.Z()*efield.X());
-   Double_t bz = gamma_over_c*(beta.Y()*efield.X() - beta.X()*efield.Y());
+   Double_t bx = (velocity.Z()*efield.Y() - velocity.Y()*efield.Z())/(TMath::Power(Constants::c_light,2.0));
+   Double_t by = (velocity.X()*efield.Z() - velocity.Z()*efield.X())/(TMath::Power(Constants::c_light,2.0));
+   Double_t bz = (velocity.Y()*efield.X() - velocity.X()*efield.Y())/(TMath::Power(Constants::c_light,2.0));
    TVector3 bfield(bx, by, bz);
+//   printf("BField - Bx:%0.14f \t By:%0.14f \t Bz: %0.14f \n", bfield.X(), bfield.Y(), bfield.Z());
    return bfield;
 }

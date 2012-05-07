@@ -183,14 +183,16 @@ namespace Units
 	//
 	static const Double_t tesla     = 1.0;
 	static const Double_t uT        = 1.E-6*tesla;
-   static const Double_t nT        = 1.E-9*tesla;
-   
+  static const Double_t nT        = 1.E-9*tesla;
+  static const Double_t gauss			= 1.E-4*tesla;
+  static const Double_t milligauss = 1.E-3*gauss; 
+
    //
    // Electric Field [V]
    //
    static const Double_t volt      = 1.0;
-   static const Double_t kiloVolt  = 1.E3*volt;
-   static const Double_t KV        = kiloVolt;
+   static const Double_t kilovolt  = 1.E3*volt;
+   static const Double_t KV        = kilovolt;
    
    // Current [A]
    static const Double_t amp = 1.0;
