@@ -6,6 +6,10 @@ export ROOTMACROS=${UCN_DIR}/macros:${ROOTSYS}/macros
 export ROOTLOGON=${UCN_DIR}/config/ucn_rootlogon.C
 export ROOTLOGOFF=${UCN_DIR}/config/ucn_rootlogoff.C
 export ROOTALIAS=${UCN_DIR}/config/ucn_rootalias.C
+export LD_LIBRARY_PATH=${UCN_DIR}/lib:${LD_LIBRARY_PATH}
+if [[ `uname` == Darwin ]] ; then
+    export DYLD_LIBRARY_PATH=${UCN_DIR}/lib:${DYLD_LIBRARY_PATH}
+fi
 #------------------------------------------------------------------------------
 if [[ -n $PS1 ]]
 then

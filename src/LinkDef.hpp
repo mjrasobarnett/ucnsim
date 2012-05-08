@@ -139,6 +139,7 @@
 
 #pragma link C++ namespace Analysis::Polarisation;
 #pragma link C++ struct Analysis::Polarisation::Coords;
+#pragma link C++ function Analysis::Polarisation::PlotSpinPolarisationAlongAxis(const std::string, const std::vector<int>, TTree*, const RunConfig&, const TVector3&);
 #pragma link C++ function Analysis::Polarisation::PlotSpinPolarisation(const std::string, const std::vector<int>, TTree*, const RunConfig&);
 #pragma link C++ function Analysis::Polarisation::PlotField(const std::string, const std::vector<int>, TTree*, const RunConfig&);
 #pragma link C++ function Analysis::Polarisation::CalculateT2(TFile&, std::vector<std::string>, double&, double&);

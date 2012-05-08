@@ -620,6 +620,61 @@ bool FinalStates::PlotFinalTime(const std::string state,
 }
 
 //_____________________________________________________________________________
+TGraph* Polarisation::PlotSpinPolarisationAlongAxis(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig, const TVector3& axis)
+{
+   /////////////////////////////////////////////////////////////////////////////
+   // -- Define Histograms
+   const double runTime = runConfig.RunTime();
+   const double spinMeasInterval = runConfig.SpinMeasureInterval();
+   const int nbins = ceil(runTime/spinMeasInterval);
+   /////////////////////////////////////////////////////////////////////////////
+   TH1F* spinUpHist = new TH1F("SpinUp","SpinUp", nbins, 0.0, runTime);      
+   TH1F* spinDownHist = new TH1F("SpinDown","SpinDown", nbins, 0.0, runTime);      
+   TGraph* spinAlpha = new TGraph(nbins);
+/////////////////////////////////////////////////////////////////////////////
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   SpinData* data = new SpinData();
+   TBranch* spinBranch = dataTree->GetBranch(data->ClassName());
+   if (spinBranch == NULL) {
+      cerr << "Error - Could not find branch: " << data->ClassName() << " in input tree" << endl;
+      throw runtime_error("Failed to find branch in input tree");
+   }
+   dataTree->SetBranchAddress(spinBranch->GetName(), &data);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      spinBranch->GetEntry(particleIndex);
+      // Loop over spin data recorded for particle
+      SpinData::const_iterator dataIter;
+      for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
+         // Measure polarisation along axis
+         const Spin* spin = dataIter->second;
+         if (spin->IsSpinUp(axis)) {
+            spinUpHist->Fill(dataIter->first);
+         } else {
+            spinDownHist->Fill(dataIter->first);
+         }
+      }
+      Algorithms::ProgressBar::PrintProgress(particleIndex,particleIndexes.size(),1);
+   }
+   // Calculate polarisation
+   for (int i = 0; i < spinUpHist->GetNbinsX(); i++) {
+      double binCentre = spinUpHist->GetBinLowEdge(i);
+      double upCounts = spinUpHist->GetBinContent(i);
+      double downCounts = spinDownHist->GetBinContent(i);
+      double totalCounts = upCounts + downCounts;
+      double alpha = totalCounts == 0 ? 0.0 : (upCounts - downCounts) / totalCounts;
+      spinAlpha->SetPoint(i, binCentre, alpha);
+   }
+
+   delete spinUpHist; spinUpHist = NULL;
+   delete spinDownHist; spinDownHist = NULL;
+   delete data; data = NULL;
+   return spinAlpha; 
+}
+
+
+//_____________________________________________________________________________
 void Polarisation::PlotSpinPolarisation(const std::string state, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig) 
 {
    //////////////////////////////////////////////////////////////////////////////////////

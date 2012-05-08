@@ -16,6 +16,7 @@ class TBranch;
 class TF1;
 class TH1F;
 class TGeoMatrix;
+class TVector3;
 
 class RunConfig;
 class Track;
@@ -79,6 +80,8 @@ namespace Analysis {
          double fSinTheta;
          double fTheta;
       } Coords;
+      //_____________________________________________________________________________
+      TGraph* PlotSpinPolarisationAlongAxis(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig, const TVector3& axis);
       //_____________________________________________________________________________
       void PlotSpinPolarisation(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig);
       //_____________________________________________________________________________
