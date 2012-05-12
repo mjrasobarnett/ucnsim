@@ -142,8 +142,8 @@
 #pragma link C++ function Analysis::Polarisation::PlotSpinPolarisationAlongAxis(const std::string, const std::vector<int>, TTree*, const RunConfig&, const TVector3&);
 #pragma link C++ function Analysis::Polarisation::PlotSpinPolarisation(const std::string, const std::vector<int>, TTree*, const RunConfig&);
 #pragma link C++ function Analysis::Polarisation::PlotField(const std::string, const std::vector<int>, TTree*, const RunConfig&);
-#pragma link C++ function Analysis::Polarisation::CalculateT2(TFile&, std::vector<std::string>, double&, double&);
-#pragma link C++ function Analysis::Polarisation::CreateT2AlphaGraph(std::vector<TDirectory*>, double, unsigned int);
+#pragma link C++ function Analysis::Polarisation::CalculateT2(const std::string, const std::vector<int>, TTree*, const RunConfig&);
+#pragma link C++ function Analysis::Polarisation::CreateT2AlphaGraph(const std::string, const std::vector<int>, TTree*, double, unsigned int);
 #pragma link C++ function Analysis::Polarisation::PlotPhaseAngleSnapShots(std::vector<std::vector<Analysis::Polarisation::Coords> >& , const unsigned int );
 #pragma link C++ function Analysis::Polarisation::PlotT2_vs_Runs(const std::string, const std::string);
 #pragma link C++ function Analysis::Polarisation::CalculateMeanPhase(std::vector<std::vector<Analysis::Polarisation::Coords> >& , const unsigned int);

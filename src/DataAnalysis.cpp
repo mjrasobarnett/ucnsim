@@ -1122,11 +1122,9 @@ void Polarisation::PlotPhaseAngleSnapShots(vector<vector<Polarisation::Coords> >
 }
 
 //_____________________________________________________________________________
-bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNames, double& t2, double& t2error)
+bool Polarisation::CalculateT2(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree, const RunConfig& runConfig)
 {
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Load the RunConfig into memory and store key parameters required
-   const RunConfig& runConfig = DataFile::LoadRunConfig(dataFile);
    const double runTime = runConfig.RunTime();
    const double spinMeasInterval = runConfig.SpinMeasureInterval();
    if (spinMeasInterval <= 0 || runTime <= 0) {
@@ -1138,14 +1136,11 @@ bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNa
    cout << "Run Time: " << runTime << "\t";
    cout << "Spin Measurement interval length: " << spinMeasInterval << endl;
    cout << "Measurement intervals: " << intervals << endl;
-   // Make a list of the folders for each state to be included in analysis
-   vector<TDirectory*> stateDirs;
-//   if (DataFile::FetchStateDirectories(dataFile, stateNames, stateDirs) == false) return false;
-   
-   TGraph* alphaT2 = Polarisation::CreateT2AlphaGraph(stateDirs, runTime, intervals);
+ 
+   TGraph* alphaT2 = Polarisation::CreateT2AlphaGraph(states, particleIndexes, dataTree, runTime, intervals);
    // Draw graph
-   TDirectory* histDir = DataFile::NavigateToHistDir(dataFile);
-   histDir->cd();
+//   TDirectory* histDir = DataFile::NavigateToHistDir(dataFile);
+//   histDir->cd();
    TCanvas *alphaT2canvas = new TCanvas("Alpha T2","Alpha T2",60,0,1200,800);
    alphaT2canvas->cd();
    alphaT2->SetMarkerStyle(7);
@@ -1169,20 +1164,16 @@ bool Polarisation::CalculateT2(TFile& dataFile, std::vector<std::string> stateNa
    expo->SetParameters(1.0,1.0);
    alphaT2->Fit(expo, "RQ");
    // Extract T2
-   t2 = expo->GetParameter(1);
-   t2error = expo->GetParError(1);
+   double t2 = expo->GetParameter(1);
+   double t2error = expo->GetParError(1);
    cout << "T2: " << t2 << "\t Error: " << t2error << endl;
    // Clean up
-   delete alphaT2;
-   delete alphaT2canvas;
    return true;
 }
 
 //_____________________________________________________________________________
-TGraph* Polarisation::CreateT2AlphaGraph(vector<TDirectory*> stateDirs, double runTime, unsigned int intervals)
+TGraph* Polarisation::CreateT2AlphaGraph(const std::string states, const std::vector<int> particleIndexes, TTree* dataTree, double runTime, unsigned int intervals)
 {
-   // Define name of combined states
-   string stateName = "";//DataFile::ConcatenateStateNames(stateDirs);
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Define Histograms
    // Define axes of coordinate system
@@ -1193,79 +1184,61 @@ TGraph* Polarisation::CreateT2AlphaGraph(vector<TDirectory*> stateDirs, double r
    TH1F time_data("T2 Time Data","T2 Time Data", intervals, 0.0, runTime);
    vector<vector<Coords> > phase_data;
    TGraph* alphaT2 = new TGraph(intervals);
-   Char_t histname[40];
-   sprintf(histname,"%s:T2_Polarisation",stateName.c_str());
+   Char_t histname[80];
+   sprintf(histname,"%s:T2_Polarisation",states.c_str());
    alphaT2->SetName(histname);
    //////////////////////////////////////////////////////////////////////////////////////
-   // -- Loop over each state to be included in histogram
-   vector<TDirectory*>::const_iterator dirIter;
-   for (dirIter = stateDirs.begin(); dirIter != stateDirs.end(); dirIter++) {
-      // -- cd into the State's folder
-      (*dirIter)->cd();
-      //////////////////////////////////////////////////////////////////////////////////////
-      // -- Loop over all particle folders in the current state's folder
-      TKey *folderKey;
-      TIter folderIter((*dirIter)->GetListOfKeys());
-      while ((folderKey = dynamic_cast<TKey*>(folderIter.Next()))) {
-         const char *classname = folderKey->GetClassName();
-         TClass *cl = gROOT->GetClass(classname);
-         if (!cl) continue;
-         if (cl->InheritsFrom("TDirectory")) {
-            // Loop over all objects in particle dir
-            (*dirIter)->cd(folderKey->GetName());
-            TDirectory* particleDir = gDirectory;
-            TKey *objKey;
-            TIter objIter(particleDir->GetListOfKeys());
-            while ((objKey = static_cast<TKey*>(objIter.Next()))) {
-               // For Each object in the particle's directory, check its class name and what it
-               // inherits from to determine what to do.
-               classname = objKey->GetClassName();
-               cl = gROOT->GetClass(classname);
-               if (!cl) continue;
-               if (cl->InheritsFrom("SpinData")) {
-                  // -- Extract Spin Observer Data if recorded
-                  const SpinData* data = dynamic_cast<const SpinData*>(objKey->ReadObj());
-                  assert(data->size() == intervals);
-                  // Create storage for this particle's phase information
-                  vector<Coords> phases;
-                  // Loop over spin data recorded for particle
-                  SpinData::const_iterator dataIter;
-                  for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
-                     // Bin the time in the histogram 
-                     time_data.Fill(dataIter->first);
-                     // -- For a holding Field aligned along the X-Axis, we want to find the
-                     // -- phase of the spin in the Y-Z plane. 
-                     const Spin* spin = dataIter->second;
-                     // Calculate probability of spin up along Y axis
-                     double yprob = spin->CalculateProbSpinUp(yAxis);
-                     // Calculate probability of spin up along Z axis
-                     double zprob = spin->CalculateProbSpinUp(zAxis);
-                     // Remap probabilities, [0,1] into a unit vector in the y-z plane [-1,1] 
-                     double ycoord = (2.0*yprob - 1.0);
-                     double zcoord = (2.0*zprob - 1.0);
-                     // Normalize vector
-                     double mag = ycoord*ycoord + zcoord*zcoord;
-                     assert(Algorithms::Precision::IsNotEqual(mag,0.0));
-                     ycoord = ycoord/mag;
-                     zcoord = zcoord/mag;
-                     // Calculate theta
-                     double theta = TMath::ATan2(zcoord,ycoord);
-                     // Store the current coordinates on the unit circle in the y-z plane
-                     Coords currentCoords;
-                     currentCoords.fSinTheta = zcoord;
-                     currentCoords.fCosTheta = ycoord;
-                     currentCoords.fTheta = theta;
-                     // Add set of y-z coords to list
-                     phases.push_back(currentCoords);
-                  }
-                  // Store particle's phases
-                  phase_data.push_back(phases);
-                  delete data;
-               }
-            }
-         }
-      }
+   // Fetch the 'final' state branch from the data tree, and prepare to read particles from it 
+   SpinData* data = new SpinData();
+   TBranch* spinBranch = dataTree->GetBranch(data->ClassName());
+   if (spinBranch == NULL) {
+      cerr << "Error - Could not find branch: " << data->ClassName() << " in input tree" << endl;
+      throw runtime_error("Failed to find branch in input tree");
    }
+   dataTree->SetBranchAddress(spinBranch->GetName(), &data);
+   // Loop over all selected particles 
+   BOOST_FOREACH(int particleIndex, particleIndexes) {
+      // Extract Final Particle State Data
+      spinBranch->GetEntry(particleIndex);
+      // Check we get the expect number of readings
+      assert(data->size() == intervals);
+      // Create storage for this particle's phase information
+      vector<Coords> phases;
+      // Loop over spin data recorded for particle
+      SpinData::const_iterator dataIter;
+      for (dataIter = data->begin(); dataIter != data->end(); dataIter++) {
+         // Bin the time in the histogram 
+         time_data.Fill(dataIter->first);
+         // -- For a holding Field aligned along the Z-Axis, we want to find the
+         // -- phase of the spin in the X-Y plane. 
+         const Spin* spin = dataIter->second;
+         // Calculate probability of spin up along Y axis
+         double yprob = spin->CalculateProbSpinUp(yAxis);
+         // Calculate probability of spin up along X axis
+         double xprob = spin->CalculateProbSpinUp(xAxis);
+         // Remap probabilities, [0,1] into a unit vector in the x-y plane [-1,1] 
+         double ycoord = (2.0*yprob - 1.0);
+         double xcoord = (2.0*xprob - 1.0);
+         // Normalize vector
+         double mag = ycoord*ycoord + xcoord*xcoord;
+         assert(Algorithms::Precision::IsNotEqual(mag,0.0));
+         ycoord = ycoord/mag;
+         xcoord = xcoord/mag;
+         // Calculate theta
+         double theta = TMath::ATan2(ycoord,xcoord);
+         // Store the current coordinates on the unit circle in the x-y plane
+         Coords currentCoords;
+         currentCoords.fSinTheta = ycoord;
+         currentCoords.fCosTheta = xcoord;
+         currentCoords.fTheta = theta;
+         // Add set of y-z coords to list
+         phases.push_back(currentCoords);
+      }
+      // Store particle's phases
+      phase_data.push_back(phases);
+      Algorithms::ProgressBar::PrintProgress(particleIndex,particleIndexes.size(),1);
+   }
+   delete data; data = NULL;
    //////////////////////////////////////////////////////////////////////////////////////
    // -- Plot snapshots of the particles phase distribution over time
    Analysis::Polarisation::PlotPhaseAngleSnapShots(phase_data,intervals);
@@ -1280,7 +1253,7 @@ TGraph* Polarisation::CreateT2AlphaGraph(vector<TDirectory*> stateDirs, double r
       // Add point to graph
       cout << setw(4) << intervalNum << "\t";
       cout << setw(12) << "Alpha: " << setw(6) << alpha << "\t";
-      cout << setw(12) << "Mean Phase: " << setw(6) << meanPhase*180.0/TMath::Pi() << "\t";
+      cout << setw(12) << "Mean Phase: " << setw(6) << meanPhase*180.0/TMath::Pi() << endl;
       alphaT2->SetPoint(intervalNum, timebin, alpha);
    }
    return alphaT2;
@@ -1289,7 +1262,7 @@ TGraph* Polarisation::CreateT2AlphaGraph(vector<TDirectory*> stateDirs, double r
 //_____________________________________________________________________________
 bool Polarisation::PlotT2_vs_Runs(string configFileName, string statename)
 {
-   // Read in list of states to be included in histogram and check that they are valid state names
+/*   // Read in list of states to be included in histogram and check that they are valid state names
    vector<string> stateNames;
    stateNames.push_back(statename);
    if (Analysis::DataFile::IsValidStateName(stateNames) == false) {
@@ -1343,7 +1316,7 @@ bool Polarisation::PlotT2_vs_Runs(string configFileName, string statename)
    // Clean up graph
    delete graph;
    delete canvas;
-   return true;
+*/   return true;
 }
 
 //_____________________________________________________________________________
