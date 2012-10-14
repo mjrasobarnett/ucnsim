@@ -24,3 +24,5 @@ build_xcode
 !LICENSE.txt
 *.sublime-project
 *.doc
+*.pyc
+*.swp
