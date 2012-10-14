@@ -186,7 +186,8 @@ Bool_t Run::Start()
             Error("Start", "Propagation Failed to Begin.");
             return kFALSE;
          }
-      } catch (...) {
+      } catch (std::runtime_error err) {
+         cout << err.what() << endl;
          // Serious tracking errors (eg: particle cannot be located correctly) will be thrown
          Error("Start","Particle %i has failed to propagate properly.", particleNumber);
          // Store the initial random generator's state for this particle
