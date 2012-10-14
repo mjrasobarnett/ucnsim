@@ -63,8 +63,8 @@ def build_geometries(path_to_run, geom_macro='*.C'):
     run("root -l -b -q {0}".format(geom_macro));
  
 @task
-def list_running_jobs(username="mb325"):
+def list_jobs(username="mb325"):
   with settings(hide('warnings'), warn_only=True):
-    result = run("qstat | grep {}".format(username))
+    result = run("qstat -u {}".format(username))
   if result.failed:
     print "No jobs still running"
